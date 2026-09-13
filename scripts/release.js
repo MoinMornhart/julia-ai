@@ -5,7 +5,9 @@
 //   npm run release -- funktion  "Julia kann jetzt Termine vorlesen"
 //   npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
 // Optionen: --kein-push, --kein-release, --ohne-tests, --ohne-audit,
-// --trailer "Zeile" (mehrfach möglich, landet unter der Commit-Nachricht)
+// --trailer "Zeile" (mehrfach möglich, landet unter der Commit-Nachricht),
+// --text-datei <pfad> (Changelog-Zeile aus einer UTF-8-Datei – Windows
+// PowerShell 5.1 verschluckt sonst typografische Anführungszeichen wie „ “)
 //
 // Vorher laufen die Tests und npm audit. Schlagen Tests fehl oder gibt es
 // bekannte Lücken ab Stufe "high", wird nichts veröffentlicht.
@@ -34,6 +36,7 @@ function argumente(argv) {
     else if (a === '--kein-release') opt.githubRelease = false;
     else if (a === '--ohne-tests') opt.tests = false;
     else if (a === '--ohne-audit') opt.audit = false;
+    else if (a === '--text-datei') opt.textDatei = argv[++i] || '';
     else if (a === '--hinweis') opt.hinweis = argv[++i] || '';
     else if (a === '--trailer') opt.trailer.push(argv[++i] || '');
     else pos.push(a);
@@ -56,6 +59,7 @@ function changelogEinfuegen(inhalt, eintrag) {
 
 function main() {
   const a = argumente(process.argv.slice(2));
+  if (a.textDatei) a.text = fs.readFileSync(a.textDatei, 'utf8').replace(/^﻿/, '').replace(/\s+/g, ' ').trim();
   if (!version.ARTEN.includes(a.art) || !a.text) {
     console.error('Aufruf: npm run release -- <korrektur|funktion|bruch> "Changelog-Zeile in Nutzersprache" [--hinweis "…"] [--kein-push]');
     process.exit(1);
