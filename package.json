@@ -1,0 +1,23 @@
+{
+  "name": "julia-ai",
+  "productName": "Julia",
+  "version": "0.0.1",
+  "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
+  "main": "src/main/main.js",
+  "private": true,
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/",
+    "release": "node scripts/release.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0"
+  },
+  "devDependencies": {
+    "electron": "^44.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
