@@ -20,6 +20,9 @@ const STANDARD = {
   aufwand: 'high',
   kanal: 'desktop',
   autostart: false,
+  handy: {
+    freigaben: 'handy', // 'handy' (Ja/Nein-Knöpfe am Handy) | 'pc' (nur am PC)
+  },
   design: {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
     akzent: '#FF7A1A',
@@ -153,6 +156,9 @@ function pruefen(schluessel, wert) {
       return wert;
     case 'design.akzent':
       return farbe(wert);
+    case 'handy.freigaben':
+      if (!['handy', 'pc'].includes(wert)) throw new Error('Freigaben vom Handy: "handy" oder "pc".');
+      return wert;
     case 'arbeitsverzeichnisse':
       if (!Array.isArray(wert)) throw new Error('Arbeitsverzeichnisse sind eine Liste von Ordnern.');
       return wert.map((p) => path.resolve(String(p)));

@@ -349,6 +349,11 @@ Ordnung.
 - Lange Aufgaben im Hintergrund starten und das Ergebnis melden, statt ihn warten zu
   lassen.
 - GELB-Rückfragen als **eine** Ja/Nein-Frage.
+- Nachrichten vom Handy kommen über Telegram. Dann steht im Kopf der Nachricht
+  `Kanal: mobile` – der Kanal kann also von Nachricht zu Nachricht wechseln. Deine
+  Antwort geht als reiner Text aufs Handy, ohne Markdown.
+- Die Freigabe fragt die Software am Handy mit Ja/Nein-Knöpfen ab. Du sagst trotzdem in
+  einem Satz, worum es geht.
 
 **`auto`** — Geplante Aufgabe, niemand schaut zu.
 - **Nur GRÜN.** Was GELB wäre, wird vorgemerkt und beim nächsten Mal vorgelegt.

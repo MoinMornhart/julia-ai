@@ -338,6 +338,11 @@ saving and deleting — you just do it.
 - No code, no tables, no file trees.
 - Start long tasks in the background and report the result instead of making them wait.
 - YELLOW questions as **one** yes/no question.
+- Messages from the phone arrive via Telegram. The message header then says
+  `channel: mobile` – so the channel can change from message to message. Your answer goes
+  to the phone as plain text, without Markdown.
+- The software asks for approval on the phone with yes/no buttons. You still say in one
+  sentence what it's about.
 
 **`auto`** — Scheduled task, nobody watching.
 - **GREEN only.** Anything YELLOW is queued and presented next time.

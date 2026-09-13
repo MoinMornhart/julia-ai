@@ -72,6 +72,9 @@
 
 * { box-sizing: border-box; }
 
+/* "hidden" muss immer gewinnen, auch gegen Regeln wie .feld { display: flex }. */
+[hidden] { display: none !important; }
+
 html, body {
   margin: 0;
   height: 100%;

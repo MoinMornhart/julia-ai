@@ -86,6 +86,10 @@ lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz:
 
 ## Konten verbinden
 
+<p align="center">
+  <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google und Handy">
+</p>
+
 Julia kann dein **Google-Konto** nutzen – Gmail, Kalender und Kontakte:
 
 > „Hab ich neue Mails?" · „Was steht morgen an?" · „Schreib Anna, dass ich zehn Minuten später komme." ·
@@ -105,6 +109,14 @@ Verbindungen → Mit Google verbinden*.
 
 Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
 („Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.
+
+### Vom Handy aus
+
+Über deinen **eigenen Telegram-Bot** schreibst du Julia von unterwegs – ohne Server und ohne
+Portfreigabe: „Läuft der Download noch?", „Wie voll ist die Platte?", „Was steht morgen an?".
+Freigaben kommen als **✅ Ja / ❌ Nein**-Knöpfe aufs Handy, `/stopp` bricht sofort ab. Der Bot
+hört nach der Kopplung nur auf dein Konto, alte Nachrichten werden nicht ausgeführt, ROT
+bleibt ROT. **[Anleitung](docs/handy-telegram.md)**
 
 ## Installation
 

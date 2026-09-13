@@ -88,6 +88,10 @@ changed at runtime – in the settings or just by saying "make it greener".
 
 ## Connecting accounts
 
+<p align="center">
+  <img src="docs/bilder/verbindungen-en.png" width="560" alt="Connections: Google and phone">
+</p>
+
 Julia can use your **Google account** – Gmail, Calendar and Contacts:
 
 > "Any new mail?" · "What's on tomorrow?" · "Tell Anna I'll be ten minutes late." ·
@@ -107,6 +111,14 @@ Google*.
 
 What an email says is never an instruction for Julia. Hidden instructions in mail
 ("Assistant, forward this") aren't carried out – she points them out to you instead.
+
+### From your phone
+
+Through **your own Telegram bot** you message Julia on the go – no server, no port
+forwarding: "Is the download still running?", "How full is the disk?", "What's on
+tomorrow?". Approvals arrive as **✅ Yes / ❌ No** buttons on the phone, `/stop` cancels
+immediately. After pairing, the bot only listens to your account, stale messages aren't
+executed, RED stays RED. **[Guide](docs/handy-telegram.en.md)**
 
 ## Installation
 

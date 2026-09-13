@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.3.0 – 2026-09-13
+- Du kannst Julia jetzt vom Handy aus schreiben: über deinen eigenen Telegram-Bot, mit Ja/Nein-Knöpfen für Freigaben und /stopp zum sofortigen Abbrechen
+
 ## 0.2.0 – 2026-09-13
 - Julia hat einen neuen Look: dunkles Gaming-Design mit Orange, dazu Hell und wie Windows, sieben Akzentfarben oder eine eigene, Leuchteffekte und passende Blasenfarben per Klick
 

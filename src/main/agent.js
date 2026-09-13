@@ -83,18 +83,19 @@ class Agent extends EventEmitter {
   }
 
   // Liefert den Text der letzten Antwort (für die Sprachausgabe) oder null.
-  async senden(text, { perSprache = false } = {}) {
+  // kanal: 'desktop' (Chat oder Sprache am PC), 'mobile' (Handy) oder 'auto'.
+  async senden(text, { perSprache = false, kanal = 'desktop' } = {}) {
     if (this.beschaeftigt) throw new Error('BESCHAEFTIGT');
     this.beschaeftigt = true;
+    this.aktiverKanal = kanal;
     this.abbruch = new AbortController();
     this.emit('zustand', 'thinking');
-    this.emit('start');
+    this.emit('start', { kanal });
     const sc = this.config.get('sprachcode');
-    const zeit = require('./prompt').zeitstempel(sc);
-    const hinweis = perSprache
-      ? (sc === 'en' ? ' · by voice, answer will be read aloud' : ' · per Sprache, Antwort wird vorgelesen')
-      : '';
-    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: `[${zeit}${hinweis}]\n${text}` }] });
+    const kopf = [require('./prompt').zeitstempel(sc)];
+    if (perSprache) kopf.push(sc === 'en' ? 'by voice, answer will be read aloud' : 'per Sprache, Antwort wird vorgelesen');
+    if (kanal !== 'desktop') kopf.push(sc === 'en' ? `channel: ${kanal}` : `Kanal: ${kanal}`);
+    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: `[${kopf.join(' · ')}]\n${text}` }] });
     let letzterText = null;
     try {
       letzterText = await this._schleife();
@@ -109,6 +110,7 @@ class Agent extends EventEmitter {
     } finally {
       this._reparieren();
       this.auftrag = null;
+      this.aktiverKanal = null;
       this.abbruch = null;
       this.beschaeftigt = false;
       this.emit('fertig');
@@ -265,13 +267,13 @@ class Agent extends EventEmitter {
     const id = this.naechsteFreigabe++;
     return new Promise((resolve) => {
       this.offeneFreigaben.set(id, resolve);
-      this.emit('freigabe', { id, ...anfrage });
+      this.emit('freigabe', { id, kanal: this.aktiverKanal, ...anfrage });
       this.emit('zustand', 'idle');
     }).finally(() => this.emit('zustand', 'thinking'));
   }
 
   async _freigabe({ werkzeug, beschreibung, grund, kategorie }) {
-    if (this.config.get('kanal') === 'auto') {
+    if (this.config.get('kanal') === 'auto' || this.aktiverKanal === 'auto') {
       this.ctx.protokoll.vormerken({ werkzeug, beschreibung });
       this.ctx.kontextGeaendert();
       return { erlaubt: false, vorgemerkt: true, grund: 'Kanal auto: GELB-Aktion wurde vorgemerkt und nicht ausgeführt.' };

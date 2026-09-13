@@ -120,6 +120,38 @@
           <small class="konto-meldung" id="googleMeldung"></small>
         </div>
       </div>
+
+      <div class="konto" id="kontoHandy">
+        <div class="konto-kopf">
+          <span class="konto-logo handy">✈</span>
+          <div class="konto-name">
+            <strong data-t="handy.titel"></strong>
+            <small id="handyStatus"></small>
+          </div>
+          <button class="zweit" id="handyTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div id="handyEinrichten" class="konto-einrichten">
+          <p class="hinweis"><span data-t="handy.text"></span> <a id="handyAnleitung" target="_blank" rel="noreferrer" data-t="konten.anleitung"></a></p>
+          <div class="feld">
+            <label for="handyToken" data-t="handy.token"></label>
+            <input id="handyToken" type="password" placeholder="123456789:AA…" spellcheck="false" autocomplete="off">
+          </div>
+          <button class="primaer klein" id="handyVerbinden" data-t="handy.verbinden"></button>
+          <small class="konto-meldung" id="handyMeldung"></small>
+        </div>
+        <div id="handyKoppeln" class="konto-einrichten" hidden>
+          <p class="hinweis" data-t="handy.koppeln_text"></p>
+          <div class="kopplungscode" id="handyCode"></div>
+          <a class="zweit" id="handyLink" target="_blank" rel="noreferrer" data-t="handy.oeffnen"></a>
+        </div>
+        <div class="feld schmal" id="handyFreigabenFeld" hidden>
+          <label for="handyFreigaben" data-t="handy.freigaben"></label>
+          <select id="handyFreigaben" data-k="handy.freigaben">
+            <option value="handy" data-t="handy.freigaben_handy"></option>
+            <option value="pc" data-t="handy.freigaben_pc"></option>
+          </select>
+        </div>
+      </div>
     </section>
 
     <section class="gruppe">
