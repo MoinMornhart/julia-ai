@@ -45,6 +45,7 @@ const MAIL_FELDER = {
 const WERKZEUGE = [
   {
     name: 'mail_suchen',
+    fremd: true,
     description: 'Gmail durchsuchen. Nutzt die Gmail-Suchsyntax, z. B. "is:unread in:inbox", "from:anna newer_than:7d", "has:attachment rechnung", "subject:Angebot". Liefert id, Absender, Betreff, Datum, ungelesen und eine Vorschau.',
     input_schema: {
       type: 'object',
@@ -61,6 +62,7 @@ const WERKZEUGE = [
   },
   {
     name: 'mail_lesen',
+    fremd: true,
     description: 'Eine Gmail-Nachricht vollständig lesen: Kopf, Text, Liste der Anhänge (mit anhang_id).',
     input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
     einstufen: gruen,
@@ -123,6 +125,7 @@ const WERKZEUGE = [
   },
   {
     name: 'termine_anzeigen',
+    fremd: true,
     description: 'Termine aus dem Google Kalender. Ohne Angaben: die nächsten 7 Tage. von/bis als Datum (2026-09-15) oder Zeitpunkt (2026-09-15T14:00).',
     input_schema: {
       type: 'object',
@@ -142,6 +145,7 @@ const WERKZEUGE = [
   },
   {
     name: 'kalender_liste',
+    fremd: true,
     description: 'Alle Google-Kalender des Kontos mit id, Name und ob beschreibbar.',
     input_schema: { type: 'object', properties: {} },
     einstufen: gruen,
@@ -185,6 +189,7 @@ const WERKZEUGE = [
   },
   {
     name: 'kontakte_suchen',
+    fremd: true,
     description: 'Google-Kontakte und bisher angeschriebene Adressen nach Name oder Adresse durchsuchen, z. B. um die Mailadresse von "Anna" zu finden.',
     input_schema: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
     einstufen: gruen,

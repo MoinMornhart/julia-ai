@@ -35,6 +35,14 @@ function lauf(befehl, args) {
   if (r.status !== 0) throw new Error(`${befehl} ${args[0]} ist fehlgeschlagen (Code ${r.status}).`);
 }
 
+// Lockfile-genau und ohne die Installationsskripte der Pakete – über solche
+// Skripte verbreiten sich Lieferketten-Würmer (Shai-Hulud, 2025). Nur Electrons
+// eigenes Skript läuft danach, es lädt das Programm selbst herunter.
+function abhaengigkeiten() {
+  lauf('npm', ['ci', '--ignore-scripts', '--no-audit', '--no-fund']);
+  lauf('node', [path.join('node_modules', 'electron', 'install.js')]);
+}
+
 function starten(extraEnv) {
   const exe = path.join(repo, 'node_modules', 'electron', 'dist', 'electron.exe');
   const env = { ...process.env, ...extraEnv };
@@ -65,7 +73,7 @@ async function main() {
   let neuPid = null;
   try {
     lauf('git', ['-c', 'advice.detachedHead=false', 'checkout', '--quiet', ziel]);
-    lauf('npm', ['install', '--no-audit', '--no-fund']);
+    abhaengigkeiten();
     status({ phase: 'probe' });
     neuPid = starten({});
     for (let i = 0; i < 90; i++) {
@@ -83,7 +91,7 @@ async function main() {
     if (neuPid && lebt(neuPid)) spawnSync('taskkill', ['/pid', String(neuPid), '/T', '/F'], { windowsHide: true });
     try {
       lauf('git', ['-c', 'advice.detachedHead=false', 'checkout', '--quiet', vorher]);
-      lauf('npm', ['install', '--no-audit', '--no-fund']);
+      abhaengigkeiten();
     } catch (e2) {
       log(`Rückweg hatte Probleme: ${e2.message}`);
     }

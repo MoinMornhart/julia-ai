@@ -294,7 +294,7 @@
 <main class="rahmen" id="oben">
   <section class="einstieg">
     <div class="einstieg-text">
-      <p class="etikett" data-i18n="einstieg.etikett">Persönliche KI für Windows · v0.7.1</p>
+      <p class="etikett" data-i18n="einstieg.etikett">Persönliche KI für Windows · v0.9.1</p>
       <h1><span data-i18n="einstieg.titel1">Sieht deinen Bildschirm.</span><span class="zweite" data-i18n="einstieg.titel2">Fragt, bevor sie handelt.</span></h1>
       <p class="lead" data-i18n="einstieg.lead">Julia läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt sie dir vorher vor.</p>
       <div class="knoepfe">
@@ -429,7 +429,7 @@
   const TEXTE = {
     de: {
       'nav.ampel': 'Ampel', 'nav.funktionen': 'Funktionen', 'nav.anpassen': 'Anpassen', 'nav.installieren': 'Installieren', 'nav.versionen': 'Versionen',
-      'einstieg.etikett': 'Persönliche KI für Windows · v0.7.1',
+      'einstieg.etikett': 'Persönliche KI für Windows · v0.9.1',
       'einstieg.titel1': 'Sieht deinen Bildschirm.', 'einstieg.titel2': 'Fragt, bevor sie handelt.',
       'einstieg.lead': '{name} läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt {name} dir vorher vor.',
       'einstieg.installieren': 'Installieren', 'einstieg.github': 'Auf GitHub ansehen',
@@ -458,7 +458,7 @@
     },
     en: {
       'nav.ampel': 'Traffic light', 'nav.funktionen': 'Features', 'nav.anpassen': 'Customise', 'nav.installieren': 'Install', 'nav.versionen': 'Versions',
-      'einstieg.etikett': 'Personal AI for Windows · v0.7.1',
+      'einstieg.etikett': 'Personal AI for Windows · v0.9.1',
       'einstieg.titel1': 'Sees your screen.', 'einstieg.titel2': 'Asks before acting.',
       'einstieg.lead': '{name} lives in the tray, answers a hotkey and handles whatever comes up on your PC – from renaming 200 files to an email to Anna. Anything that can’t be undone, {name} shows you first.',
       'einstieg.installieren': 'Install', 'einstieg.github': 'View on GitHub',
@@ -501,6 +501,8 @@
         'Was in Mails oder auf Webseiten steht, ist Information – nie ein Auftrag.',
         'Kostenbremse: Tageslimit für die API-Kosten, Stopp auch mitten im Auftrag.',
         'Das Protokoll ist eine Prüfsummen-Kette – nachträgliches Ändern fällt auf.',
+        'Nach fremden Inhalten fragt sie auch vor Links und Netzwerk-Befehlen – Schutz gegen Datenabfluss.',
+        'Passwortfelder, Passwortmanager und private Browserfenster schwärzt sie im Screenshot.',
       ],
       funktionen: [
         ['Sehen', 'Screenshots aller Monitore, offene Fenster, Prozesse, Akku, Platte.', ['screenshot', 'fenster_auflisten']],
@@ -519,6 +521,9 @@
         ['Optional verbinden', 'Google für Mails und Kalender, Telegram fürs Handy – mit Schritt-für-Schritt-Anleitungen.'],
       ],
       versionen: [
+        ['0.9.1', 'Schutz gegen Datenabfluss: Nach fremden Inhalten fragt Julia auch vor Links und Netzwerk-Befehlen; heruntergeladene Programme startet sie nie.'],
+        ['0.9.0', 'Passwortfelder, Passwortmanager und private Browserfenster werden im Screenshot geschwärzt.'],
+        ['0.8.0', '„Hey Julia“ als Aktivierungswort – mit deinem eigenen Namen, nur lokal, standardmäßig aus.'],
         ['0.7.1', 'Protokoll als Prüfsummen-Kette; veröffentlicht wird nur mit grünen Tests und ohne bekannte Lücken.'],
         ['0.7.0', 'Kostenbremse: Tageslimit für die API-Kosten, Warnung bei 80 %.'],
         ['0.6.0', 'Erinnerungen und Timer: per Satz stellen, als Meldung, im Chat, vorgelesen und aufs Handy.'],
@@ -564,6 +569,8 @@
         'What emails or web pages say is information – never an instruction.',
         'Cost brake: a daily limit for API costs, stops even in the middle of a task.',
         'The log is a checksum chain – edits after the fact show up.',
+        'After foreign content she also asks before links and network commands – an exfiltration guard.',
+        'She blacks out password fields, password managers and private browser windows in screenshots.',
       ],
       funktionen: [
         ['See', 'Screenshots of every monitor, open windows, processes, battery, disk.', ['screenshot', 'fenster_auflisten']],
@@ -582,6 +589,9 @@
         ['Connect if you like', 'Google for mail and calendar, Telegram for your phone – with step-by-step guides.'],
       ],
       versionen: [
+        ['0.9.1', 'Exfiltration guard: after foreign content Julia also asks before links and network commands; downloaded programs never run.'],
+        ['0.9.0', 'Password fields, password managers and private browser windows are blacked out in screenshots.'],
+        ['0.8.0', '“Hey Julia” as a wake word – with your own name, local only, off by default.'],
         ['0.7.1', 'Log as a checksum chain; releases only ship with green tests and no known vulnerabilities.'],
         ['0.7.0', 'Cost brake: a daily limit for API costs, warning at 80 %.'],
         ['0.6.0', 'Reminders and timers: set by sentence, as a notification, in the chat, read aloud and on your phone.'],

@@ -60,6 +60,8 @@ What the software enforces itself:
 - Julia's own files (configuration, API key, memory) are never writable without asking.
 - Every YELLOW action is logged; overwritten files are backed up first. The log is a checksum chain: if something in the middle is changed or deleted, Julia reports it on start.
 - **Cost brake:** Julia tracks API costs and stops once the daily limit is reached (default 10 US$) – even in the middle of a task. At 80 % you get a warning. So neither an endless loop nor a manipulated task runs up a bill.
+- **Data-exfiltration guard:** Once foreign content is in the conversation (emails, files, web pages, the screen), Julia also asks before opening links and before network commands such as `ping` or `nslookup` – those are ways data could be smuggled out. Invisible characters used to hide commands in text are removed beforehand.
+- Julia never starts programs downloaded from the internet (Mark-of-the-Web), and updates install packages without their install scripts.
 - An approval covers exactly one action. In **hands-on** mode ("just push it through") Julia presents the whole task once, then only the categories named there run without individual questions.
 
 What the software **cannot** detect: that a specific click sends an email or places an order.

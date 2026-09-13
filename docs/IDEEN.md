@@ -25,7 +25,8 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
 | ✅ 0.7.1 | Protokoll als Prüfsummen-Kette; Release nur mit grünen Tests und ohne bekannte Lücken ab Stufe „high" |
 | ✅ 0.8.0 | „Hey <Name>" als Aktivierungswort – standardmäßig aus, nur lokal, pausiert beim eigenen Sprechen |
-| ✅ 0.9.0 | Passwortfelder im Vordergrundfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt |
+| ✅ 0.9.0 | Passwortfelder, Passwortmanager, Messenger und private Browserfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt |
+| ✅ 0.9.1 | Schutz gegen Datenabfluss nach fremden Inhalten, unsichtbare Zeichen entfernt, heruntergeladene Programme ROT, Updates ohne Installationsskripte |
 
 ## Als Nächstes
 
@@ -86,11 +87,11 @@ Veröffentlichungen zur Sicherheit von KI-Agenten.
 
 | | Maßnahme | Quelle |
 |---|---|---|
-| 🔨 0.9.1 | **Nach fremden Inhalten wird „nach außen" GELB:** Links öffnen, Netzwerk-Befehle (`ping`, `nslookup`, `Resolve-DnsName` – DNS kann Daten tragen) | [Willison](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), [Brave zu Comet](https://brave.com/blog/comet-prompt-injection/) |
-| 🔨 0.9.1 | **Unsichtbare Zeichen aus fremden Inhalten entfernen** (Unicode-Tag-Zeichen, Richtungswechsel) – damit wurden Befehle versteckt | [Spotlighting](https://arxiv.org/pdf/2403.14720), [Brave](https://brave.com/blog/unseeable-prompt-injections/) |
-| 🔨 0.9.1 | **Heruntergeladene Programme starten ist ROT** (Mark-of-the-Web) | [ZombAIs](https://embracethered.com/blog/posts/2024/claude-computer-use-c2-the-zombais-are-coming/) |
-| 🔨 0.9.1 | **Updates mit `npm ci --ignore-scripts`**, nur Electrons eigenes Installationsskript läuft – Lieferketten-Würmer verbreiten sich über Installationsskripte | [CISA zu Shai-Hulud](https://www.cisa.gov/news-events/alerts/2025/09/23/widespread-supply-chain-compromise-impacting-npm-ecosystem) |
-| 🔨 0.9.0 | **Passwortmanager, Messenger und private Browserfenster** im Screenshot komplett schwärzen – Recalls reiner Textfilter hat versagt | [Tom's Hardware](https://www.tomshardware.com/software/windows/microsoft-recall-screenshots-credit-cards-and-social-security-numbers-even-with-the-sensitive-information-filter-enabled) |
+| ✅ 0.9.1 | **Nach fremden Inhalten wird „nach außen" GELB:** Links öffnen, Netzwerk-Befehle (`ping`, `nslookup`, `Resolve-DnsName` – DNS kann Daten tragen) | [Willison](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), [Brave zu Comet](https://brave.com/blog/comet-prompt-injection/) |
+| ✅ 0.9.1 | **Unsichtbare Zeichen aus fremden Inhalten entfernen** (Unicode-Tag-Zeichen, Richtungswechsel) – damit wurden Befehle versteckt | [Spotlighting](https://arxiv.org/pdf/2403.14720), [Brave](https://brave.com/blog/unseeable-prompt-injections/) |
+| ✅ 0.9.1 | **Heruntergeladene Programme starten ist ROT** (Mark-of-the-Web) | [ZombAIs](https://embracethered.com/blog/posts/2024/claude-computer-use-c2-the-zombais-are-coming/) |
+| ✅ 0.9.1 | **Updates mit `npm ci --ignore-scripts`**, nur Electrons eigenes Installationsskript läuft – Lieferketten-Würmer verbreiten sich über Installationsskripte | [CISA zu Shai-Hulud](https://www.cisa.gov/news-events/alerts/2025/09/23/widespread-supply-chain-compromise-impacting-npm-ecosystem) |
+| ✅ 0.9.0 | **Passwortmanager, Messenger und private Browserfenster** im Screenshot komplett schwärzen – Recalls reiner Textfilter hat versagt | [Tom's Hardware](https://www.tomshardware.com/software/windows/microsoft-recall-screenshots-credit-cards-and-social-security-numbers-even-with-the-sensitive-information-filter-enabled) |
 | ✅ | Freigaben zeigen die echten Parameter (vollständiger Mailtext, ungekürzter Befehl), nicht die Zusammenfassung des Modells | [MCP-Sicherheitsleitfaden](https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices) |
 | ✅ | Julia kann ihre eigenen Freigaben nicht bestätigen: Solange eine Freigabe offen ist, läuft kein Werkzeug | – |
 | ✅ | Keine externen Bilder im Chat, strenge CSP – EchoLeak zog Daten über automatisch geladene Bilder ab | [EchoLeak](https://arxiv.org/abs/2509.10540) |

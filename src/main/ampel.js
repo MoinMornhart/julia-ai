@@ -22,6 +22,7 @@ const KATEGORIEN = [
   'update',         // Julia selbst aktualisieren
   'programm',       // unbekannte ausführbare Dateien starten
   'nachricht',      // E-Mails senden, Kalendereinladungen verschicken
+  'netz',           // Links öffnen und Netzwerk-Befehle, nachdem fremde Inhalte im Gespräch waren
   'kalender',       // Termine im eigenen Kalender anlegen
   'shell',          // sonstige Shell-Befehle, die nicht nur lesen
 ];
@@ -157,13 +158,37 @@ function einstufenPfade(pfade, arbeitsverzeichnisse, geschuetzt) {
 
 const AUSFUEHRBAR = /\.(exe|msi|msix|appx|bat|cmd|ps1|psm1|vbs|vbe|js|jse|wsf|scr|com|pif|hta|jar|lnk|reg)$/i;
 
-function einstufenProgramm(name, bekannteOrte) {
+// zoneLesen(pfad) liefert die Zone aus der Mark-of-the-Web-Kennzeichnung
+// (3 = Internet, 4 = nicht vertrauenswürdig) oder null.
+function einstufenProgramm(name, bekannteOrte, zoneLesen) {
   const text = String(name || '').trim();
   if (/^(https?|mailto|ms-settings|ms-[\w-]+):/i.test(text)) return { stufe: GRUEN, kategorie: null, grund: 'Link oder Systemseite' };
   if (!/[\\/]/.test(text)) return { stufe: GRUEN, kategorie: null, grund: 'Programm über den Namen' };
   if (!AUSFUEHRBAR.test(text)) return { stufe: GRUEN, kategorie: null, grund: 'Datei mit zugeordnetem Programm öffnen' };
+  const zone = zoneLesen ? zoneLesen(text) : null;
+  if (zone !== null && zone >= 3) {
+    return { stufe: ROT, kategorie: null, grund: 'aus dem Internet heruntergeladene Datei ausführen (Mark-of-the-Web)' };
+  }
   if ((bekannteOrte || []).some((o) => o && liegtIn(text, o))) return { stufe: GRUEN, kategorie: null, grund: 'installiertes Programm' };
   return { stufe: GELB, kategorie: 'programm', grund: `ausführbare Datei außerhalb der Programmordner: ${text}` };
+}
+
+// Befehle, die Daten nach außen tragen können, obwohl sie "nur lesen" –
+// DNS-Anfragen etwa lassen sich als Kanal für Datenabfluss missbrauchen.
+const NETZ_BEFEHLE = /\b(ping|tracert|pathping|nslookup|Resolve-DnsName|Test-Connection|Test-NetConnection)\b/i;
+
+// Die "tödliche Dreifaltigkeit": private Daten + fremde Inhalte + Wege nach
+// außen. Sobald fremde Inhalte im Gespräch sind, wird jede Aktion nach außen,
+// die sonst GRÜN wäre, GELB – ein getäuschtes Modell kann so keine Daten
+// unbemerkt über einen Link oder eine DNS-Anfrage hinausschmuggeln.
+function nachFremdemInhalt(stufe, fremdKontakt, nachAussen) {
+  if (!fremdKontakt || !nachAussen || stufe.stufe !== GRUEN) return stufe;
+  return {
+    ...stufe,
+    stufe: GELB,
+    kategorie: 'netz',
+    grund: 'Nach fremden Inhalten im Gespräch: Aktion nach außen (Schutz gegen Datenabfluss)',
+  };
 }
 
 // Kartennummern (Luhn-geprüft) und IBANs tippt Julia nie ein.
@@ -189,6 +214,6 @@ function luhn(ziffern) {
 
 module.exports = {
   GRUEN, GELB, ROT, KATEGORIEN,
-  einstufenShell, einstufenPfade, einstufenProgramm,
+  einstufenShell, einstufenPfade, einstufenProgramm, nachFremdemInhalt, NETZ_BEFEHLE,
   inArbeitsverzeichnis, liegtIn, enthaeltZahlungsdaten,
 };

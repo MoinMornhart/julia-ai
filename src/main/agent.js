@@ -44,6 +44,9 @@ class Agent extends EventEmitter {
     this.auftrag = null;
     this.client = null;
     this.clientSchluessel = null;
+    // Waren im Gespräch schon fremde Inhalte (Mail, Datei, Web, Bildschirm)?
+    // Dann werden Aktionen nach außen GELB (ampel.nachFremdemInhalt).
+    this.fremdKontakt = false;
   }
 
   _client() {
@@ -63,6 +66,7 @@ class Agent extends EventEmitter {
   neu() {
     if (this.beschaeftigt) this.abbrechen();
     this.verlauf = [];
+    this.fremdKontakt = false;
   }
 
   abbrechen() {
@@ -215,6 +219,8 @@ class Agent extends EventEmitter {
       this._kostenErfassen(msg.model || parameter.model, msg.usage);
 
       if (msg.content && msg.content.length) this.verlauf.push({ role: 'assistant', content: msg.content });
+      // Websuche und Seitenabruf laufen bei Anthropic; ihre Ergebnisse sind fremde Inhalte.
+      if ((msg.content || []).some((b) => /^(web_search|web_fetch)_tool_result$/.test(b.type))) this.fremdKontakt = true;
       const text = textAus(msg.content);
       if (text) letzterText = text;
 
@@ -260,8 +266,9 @@ class Agent extends EventEmitter {
         return ergebnis(text);
       }
       const e = aufruf.input || {};
-      const stufe = w.einstufen(e, this.ctx);
-      const beschreibung = stufe.beschreibung || `${aufruf.name} ${kurzeEingabe(e)}`;
+      const stufe = ampel.nachFremdemInhalt(w.einstufen(e, this.ctx), this.fremdKontakt, w.nachAussen ? w.nachAussen(e) : false);
+      // Freigaben zeigen immer die vollständigen Parameter, nie eine gekürzte Fassung.
+      const beschreibung = stufe.beschreibung || `${aufruf.name} ${JSON.stringify(e)}`;
 
       if (stufe.stufe === ampel.ROT) {
         this.ctx.protokoll.eintragen({ werkzeug: aufruf.name, eingabe: e, stufe: 'ROT', ergebnis: 'gesperrt', grund: stufe.grund });
@@ -279,6 +286,7 @@ class Agent extends EventEmitter {
       }
 
       const inhalt = await w.ausfuehren(e, this.ctx);
+      if (w.fremd) this.fremdKontakt = true;
       if (stufe.stufe === ampel.GELB) {
         const zusammenfassung = typeof inhalt === 'string' ? inhalt.slice(0, 500) : 'ok';
         this.ctx.protokoll.eintragen({ werkzeug: aufruf.name, eingabe: e, stufe: 'GELB', kategorie: stufe.kategorie, ergebnis: zusammenfassung });
