@@ -118,7 +118,33 @@ class Agent extends EventEmitter {
     }
   }
 
+  // Kostenbremse: vor jeder Runde, damit auch ein langer Auftrag mittendrin stoppt.
+  _limitPruefen() {
+    const limit = Number(this.config.get('kosten.tageslimit_usd')) || 0;
+    if (!limit || !this.ctx.kosten) return;
+    const { usd } = this.ctx.kosten.heute();
+    if (usd < limit) return;
+    const en = this.config.get('sprachcode') === 'en';
+    const e = new Error(en
+      ? `Daily cost limit reached (${usd.toFixed(2)} of ${limit.toFixed(2)} US$). It resets tomorrow, or raise the limit in the settings.`
+      : `Tageslimit für API-Kosten erreicht (${usd.toFixed(2)} von ${limit.toFixed(2)} US-$). Morgen geht es weiter, oder erhöhe das Limit in den Einstellungen.`);
+    e.limit = true;
+    throw e;
+  }
+
+  _kostenErfassen(modell, usage) {
+    if (!this.ctx.kosten) return;
+    const stand = this.ctx.kosten.erfassen(modell, usage);
+    this.emit('kosten', stand);
+    const limit = Number(this.config.get('kosten.tageslimit_usd')) || 0;
+    if (limit && stand.usd >= limit * 0.8 && this.warnTag !== stand.tag) {
+      this.warnTag = stand.tag;
+      this.emit('hinweis', { art: 'kosten_warnung' });
+    }
+  }
+
   _fehlertext(e) {
+    if (e.limit) return { art: 'text', text: e.message };
     if (e.keinSchluessel) return { art: 'kein_schluessel' };
     if (e instanceof Anthropic.AuthenticationError) return { art: 'text', text: 'Der API-Schlüssel wurde abgelehnt (401). Bitte in den Einstellungen prüfen.' };
     if (e instanceof Anthropic.PermissionDeniedError) return { art: 'text', text: `Kein Zugriff auf dieses Modell oder diese Funktion (403): ${e.message}` };
@@ -181,9 +207,12 @@ class Agent extends EventEmitter {
     const client = this._client();
     let letzterText = null;
     for (let runde = 0; runde < MAX_RUNDEN; runde++) {
-      const stream = client.beta.messages.stream(this._parameter(), { signal: this.abbruch.signal });
+      this._limitPruefen();
+      const parameter = this._parameter();
+      const stream = client.beta.messages.stream(parameter, { signal: this.abbruch.signal });
       stream.on('text', (d) => this.emit('text', d));
       const msg = await stream.finalMessage();
+      this._kostenErfassen(msg.model || parameter.model, msg.usage);
 
       if (msg.content && msg.content.length) this.verlauf.push({ role: 'assistant', content: msg.content });
       const text = textAus(msg.content);

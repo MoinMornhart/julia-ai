@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.7.0 – 2026-09-13
+- Julia hat jetzt eine Kostenbremse: Sie rechnet die API-Kosten mit, warnt bei 80 Prozent und stoppt beim Tageslimit, auch mitten in einem Auftrag
+
 ## 0.6.0 – 2026-09-13
 - Julia erinnert dich jetzt: Termine und Timer per Satz stellen, zur Zeit als Meldung, im Chat, vorgelesen und aufs Handy – verpasste kommen beim nächsten Start
 

@@ -21,12 +21,13 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.4.0 | Eigener Name für die KI, ihre Form und deine Pronomen – Namen gegen Prompt-Tricks geprüft |
 | ✅ 0.5.0 | Gaming-Overlay: kleines Chatfenster über dem Spiel, Freigaben darin, Antworten auf Sprachbefehle passiv eingeblendet |
 | ✅ 0.6.0 | Erinnerungen und Timer: Meldung, Chat, Vorlesen, Handy; verpasste werden nachgeliefert |
+| ✅ – | Webseite mit Live-Vorführung, Ampel, Funktionen und Versionen ([site/index.html](../site/index.html)) |
+| ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 📋 | **Webseite, Doku, Vorführmodus** – kleine Seite mit animierter Vorführung, Funktionsübersicht, Download-Anleitung | M | mittel | GitHub Pages braucht ein öffentliches Repo oder GitHub Pro |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |
 | 📋 | **„Hey <Name>" als Aktivierungswort** – nur wenn eingeschaltet | M | hoch | Standard aus; nur das Schlüsselwort wird lokal erkannt, nichts wird gespeichert oder verschickt; sichtbare Anzeige, wenn das Mikrofon lauscht |
@@ -36,7 +37,6 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | | Maßnahme | Warum |
 |---|---|---|
 | 📋 | **Signierte Update-Tags** (`git verify-tag` mit SSH-Signatur, erlaubte Schlüssel im Repo) | Heute vertraut das Update dem GitHub-Konto. Mit Signatur spielt Julia nur Stände ein, die mit deinem Schlüssel signiert sind. Braucht einmalig einen Signierschlüssel von dir. |
-| 📋 | **Kostenbremse** – Tageslimit für API-Nutzung mit Warnung und Stopp | Eine Endlosschleife oder ein manipulierter Auftrag soll keine Rechnung erzeugen |
 | 📋 | **Manipulationssicheres Protokoll** – jede Zeile enthält den Hash der vorigen | Nachträgliches Löschen oder Ändern fällt auf |
 | 📋 | **Handy-PIN für GELB** – optional eine PIN zusätzlich zum Ja-Knopf | Schutz, falls jemand dein entsperrtes Handy hat |
 | 📋 | **Electron Fuses und ASAR-Integrität**, sobald es einen Installer gibt | Verhindert, dass jemand das gebaute Programm verändert oder als Node startet |

@@ -82,7 +82,7 @@ body {
 .feld small { color: var(--text-3); font-size: 12px; }
 .feld .fehler, .regler .fehler, .farbe .fehler { color: var(--rot); font-size: 12px; }
 
-input[type="text"], input[type="password"], input:not([type]), select {
+input[type="text"], input[type="password"], input[type="number"], input:not([type]), select {
   font: inherit;
   color: var(--text);
   background: var(--grund-2);

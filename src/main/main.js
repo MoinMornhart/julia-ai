@@ -25,6 +25,7 @@ const { Sprache } = require('./sprache');
 const { Konten } = require('./konten');
 const { TelegramHandy } = require('./handy/telegram');
 const { Erinnerungen } = require('./erinnerungen');
+const { Kosten } = require('./kosten');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -539,6 +540,7 @@ function ipcEinrichten() {
       if (einstFenster && !einstFenster.isDestroyed()) einstFenster.focus();
     }
   });
+  ipc.handle('kosten:heute', () => agent.ctx.kosten.heute());
   ipc.handle('handy:status', () => handy.status());
   ipc.handle('handy:verbinden', async (_e, token) => {
     try {
@@ -602,6 +604,7 @@ const HINWEIS_TEXT = {
   verweigert: 'hinweis.verweigert',
   max_tokens: 'hinweis.max_tokens',
   zu_viele_runden: 'hinweis.zu_viele_runden',
+  kosten_warnung: 'hinweis.kosten_warnung',
 };
 
 async function handyNachricht(text) {
@@ -700,6 +703,7 @@ function agentVerdrahten() {
     updater.aufgabeFertig();
   });
   agent.on('zustand', (z) => zustandSetzen(z));
+  agent.on('kosten', (k) => anAlle('kosten', k));
 }
 
 function erststartSprache() {
@@ -719,6 +723,7 @@ async function start() {
   gedaechtnis = new Gedaechtnis(DATEN);
   protokoll = new Protokoll(DATEN);
   erinnerungen = new Erinnerungen(DATEN);
+  const kosten = new Kosten(DATEN);
   konten = new Konten({
     ordner: DATEN,
     krypto: {
@@ -740,6 +745,7 @@ async function start() {
     protokoll,
     konten,
     erinnerungen,
+    kosten,
     datenOrdner: DATEN,
     appOrdner: APP,
     arbeitsordner: () => config.get('arbeitsverzeichnisse')[0] || os.homedir(),

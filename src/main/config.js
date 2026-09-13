@@ -35,6 +35,9 @@ const STANDARD = {
     vorlesen: true,
     handy: true,
   },
+  kosten: {
+    tageslimit_usd: 10, // 0 = keine Bremse
+  },
   design: {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
     akzent: '#FF7A1A',
@@ -201,6 +204,8 @@ function pruefen(schluessel, wert) {
       return farbe(wert);
     case 'hotkey.overlay':
       return String(wert ?? '').trim();
+    case 'kosten.tageslimit_usd':
+      return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'overlay.deckkraft': return zahl(wert, 0.3, 1.0, 'Deckkraft');
     case 'overlay.ecke':

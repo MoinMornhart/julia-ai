@@ -68,6 +68,14 @@ function texteAnwenden(daten) {
   if (cfg) designZeigen();
 }
 
+// --- Kostenbremse ---
+
+function kostenZeigen(k) {
+  const betrag = Number(k && k.usd) || 0;
+  const zahl = betrag.toLocaleString(document.documentElement.lang === 'en' ? 'en-GB' : 'de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  $('kostenHeute').textContent = tx('einst.kosten_heute', { usd: zahl, anfragen: (k && k.anfragen) || 0 });
+}
+
 // --- Handy (Telegram) ---
 
 function handyZeigen(s) {
@@ -433,6 +441,8 @@ async function init() {
   designZeigen();
   handyVerbinden();
   handyZeigen(await julia.handyStatus());
+  kostenZeigen(await julia.kostenHeute());
+  julia.on('kosten', kostenZeigen);
 
   julia.on('config:geaendert', (neu) => {
     const fokus = document.activeElement;

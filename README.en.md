@@ -58,6 +58,7 @@ What the software enforces itself:
 - `klick`, `tippen` and `taste` only work with a fresh screenshot ("never click blind") and return a new one afterwards automatically.
 - Julia's own files (configuration, API key, memory) are never writable without asking.
 - Every YELLOW action is logged; overwritten files are backed up first.
+- **Cost brake:** Julia tracks API costs and stops once the daily limit is reached (default 10 US$) – even in the middle of a task. At 80 % you get a warning. So neither an endless loop nor a manipulated task runs up a bill.
 - An approval covers exactly one action. In **hands-on** mode ("just push it through") Julia presents the whole task once, then only the categories named there run without individual questions.
 
 What the software **cannot** detect: that a specific click sends an email or places an order.
