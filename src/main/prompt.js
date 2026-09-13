@@ -22,10 +22,66 @@ function zeitzone() {
   }
 }
 
-function platzhalterWerte({ sprachcode, name, arbeitsverzeichnisse }) {
+// Die Form der Assistenz bestimmt, wie der deutsche Prompt über sie spricht.
+const FORMEN = {
+  weiblich: { ROLLE: 'die persönliche Assistentin', KOLLEGE: 'eine kompetente Kollegin', BERUFE: 'keine Ärztin, Anwältin oder Finanzberaterin' },
+  maennlich: { ROLLE: 'der persönliche Assistent', KOLLEGE: 'ein kompetenter Kollege', BERUFE: 'kein Arzt, Anwalt oder Finanzberater' },
+  neutral: { ROLLE: 'die persönliche KI', KOLLEGE: 'jemand Kompetentes aus dem Team', BERUFE: 'kein Ersatz für ärztlichen, rechtlichen oder finanziellen Rat' },
+};
+
+// Namen gelangen in den System-Prompt. Alles, was dort Anweisungen oder
+// Formatierung einschleusen könnte, fliegt raus (Config prüft das auch).
+function sichererName(text, max, ersatz) {
+  const s = String(text || '').replace(/[^\p{L}\p{N} .'’-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, max);
+  return s || ersatz;
+}
+
+function genitiv(name) {
+  return /[sßxz]$/i.test(name) ? `${name}'` : `${name}s`;
+}
+
+// Pronomen für den deutschen Text; im Englischen bleibt der Prompt beim
+// neutralen "they", dort steht nur die Hinweiszeile.
+function pronomenWerte(pronomen, eigen, name) {
+  const neutral = { ER: name, IHN: name, IHM: name, SEIN: genitiv(name), SEINEM: genitiv(name) };
+  switch (pronomen) {
+    case 'er':
+      return { ER: 'er', IHN: 'ihn', IHM: 'ihm', SEIN: 'sein', SEINEM: 'seinem', de: `Sprich über ${name} mit er/ihm.`, en: `Refer to ${name} as he/him.` };
+    case 'sie':
+      return { ER: 'sie', IHN: 'sie', IHM: 'ihr', SEIN: 'ihr', SEINEM: 'ihrem', de: `Sprich über ${name} mit sie/ihr.`, en: `Refer to ${name} as she/her.` };
+    case 'eigene': {
+      // Eigene Pronomen brauchen den Schrägstrich ("xier/xiem"), Ziffern und Punkte nicht.
+      const p = String(eigen || '').replace(/[^\p{L} /'’-]/gu, '').replace(/\s+/g, ' ').trim().slice(0, 30);
+      if (p) {
+        return {
+          ...neutral,
+          de: `${name} verwendet die Pronomen „${p}". Nutze sie, wenn du über ${name} sprichst; im Zweifel nimm einfach den Namen.`,
+          en: `${name} uses the pronouns "${p}". Use them when you refer to ${name}.`,
+        };
+      }
+      return { ...neutral, de: `Sprich über ${name} ohne Pronomen, nur mit dem Namen.`, en: `Refer to ${name} as they/them or simply by name.` };
+    }
+    default:
+      return { ...neutral, de: `Sprich über ${name} ohne Pronomen, nur mit dem Namen.`, en: `Refer to ${name} as they/them or simply by name.` };
+  }
+}
+
+function platzhalterWerte({ sprachcode, name, arbeitsverzeichnisse, assistent, pronomen, pronomenEigen }) {
   const en = sprachcode === 'en';
+  const nutzer = sichererName(name, 40, en ? 'the user' : 'Nutzer');
+  const a = assistent || {};
+  const form = FORMEN[a.form] || FORMEN.weiblich;
+  const p = pronomenWerte(pronomen, pronomenEigen, nutzer);
   return {
-    NUTZER: (name || '').trim() || (en ? 'your user' : 'deinem Nutzer'),
+    NUTZER: nutzer,
+    ASSISTENT: sichererName(a.name, 24, 'Julia'),
+    ...form,
+    ER: p.ER,
+    IHN: p.IHN,
+    IHM: p.IHM,
+    SEIN: p.SEIN,
+    SEINEM: p.SEINEM,
+    PRONOMEN_ZEILE: en ? p.en : p.de,
     HOSTNAME: os.hostname(),
     VERSION: windowsBezeichnung(),
     USERNAME: os.userInfo().username,

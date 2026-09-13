@@ -404,6 +404,11 @@ async function init() {
   $('willkommen').hidden = !einrichtung;
   felderFuellen();
   felderVerbinden();
+  const pronomenUmschalten = () => { $('pronomenEigenFeld').hidden = $('pronomen').value !== 'eigene'; };
+  $('pronomen').addEventListener('change', pronomenUmschalten);
+  pronomenUmschalten();
+  // Neuer Name: Titel und Texte der Seite sofort nachziehen.
+  $('assistentName').addEventListener('change', async () => texteAnwenden(await julia.texte()));
   monitoreFuellen();
   ordnerZeigen();
   farbenZeigen();

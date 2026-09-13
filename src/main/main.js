@@ -52,7 +52,12 @@ let zustand = 'idle';
 let promptCache = null;
 let hoert = false;
 
-const t = (k, w) => tt(config.get('sprachcode'), k, w);
+const t = (k, w) => tt(config.get('sprachcode'), k, { name: assistentName(), ...w });
+
+// Der Name, den der Nutzer seiner KI gegeben hat ("Julia" ist nur der Standard).
+function assistentName() {
+  return (config && config.get('assistent.name')) || 'Julia';
+}
 
 function version() {
   return JSON.parse(fs.readFileSync(path.join(APP, 'package.json'), 'utf8')).version;
@@ -83,6 +88,9 @@ function systemPromptText() {
       sprachcode: config.get('sprachcode'),
       name: config.get('nutzer.name'),
       arbeitsverzeichnisse: config.get('arbeitsverzeichnisse'),
+      assistent: config.get('assistent'),
+      pronomen: config.get('nutzer.pronomen'),
+      pronomenEigen: config.get('nutzer.pronomen_eigen'),
     });
   }
   return promptCache;
@@ -127,7 +135,10 @@ function oeffentlicheConfig() {
 
 function texteFuerRenderer() {
   const sc = config.get('sprachcode');
-  return { sprachcode: sc, texte: { ...TEXTE.de, ...TEXTE[sc] } };
+  const name = assistentName();
+  const texte = {};
+  for (const [k, v] of Object.entries({ ...TEXTE.de, ...TEXTE[sc] })) texte[k] = v.split('{name}').join(name);
+  return { sprachcode: sc, texte };
 }
 
 function melden(titel, text) {
@@ -189,7 +200,7 @@ function chatFensterErstellen() {
     minHeight: 420,
     x: wa.x + wa.width - breite - 20,
     y: wa.y + wa.height - hoehe - 20,
-    title: 'Julia',
+    title: assistentName(),
   }, 50));
   chatFenster.juliaKopfHoehe = 50;
   chatFenster.loadFile(path.join(RENDERER, 'chat.html'));
@@ -308,7 +319,7 @@ function hotkeysRegistrieren() {
   for (const [taste, aktion] of paare) {
     let ok = false;
     try { ok = globalShortcut.register(taste, aktion); } catch { ok = false; }
-    if (!ok) melden('Julia', t('hotkey.fehler', { hotkey: taste }));
+    if (!ok) melden(assistentName(),t('hotkey.fehler', { hotkey: taste }));
   }
 }
 
@@ -577,7 +588,7 @@ function erststartSprache() {
 
 async function start() {
   config = new Konfiguration(DATEN);
-  config.on('warnung', (text) => melden('Julia', text));
+  config.on('warnung', (text) => melden(assistentName(),text));
   config.laden();
   erststartSprache();
   designAnwenden();
@@ -632,11 +643,12 @@ async function start() {
   config.on('aenderung', (k) => {
     if (k.startsWith('blase')) blaseAktualisieren();
     if (k.startsWith('design')) designAnwenden();
-    if (/^(nutzer\.name|arbeitsverzeichnisse|sprachcode)$/.test(k)) promptCache = null;
+    if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k === 'autostart') autostartSetzen();
-    if (k === 'sprachcode' || k === 'blase.an') trayMenue();
-    if (k === 'sprachcode') anAlle('texte:geaendert', texteFuerRenderer());
+    if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name') trayMenue();
+    if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
+    if (k === 'assistent.name' && chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
     anAlle('config:geaendert', oeffentlicheConfig());
   });
 

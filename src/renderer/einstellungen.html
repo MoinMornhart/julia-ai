@@ -38,6 +38,35 @@
           </select>
         </div>
       </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="assistentName" data-t="einst.assistent_name"></label>
+          <input id="assistentName" data-k="assistent.name" type="text" maxlength="24" autocomplete="off" spellcheck="false">
+        </div>
+        <div class="feld">
+          <label for="assistentForm" data-t="einst.assistent_form"></label>
+          <select id="assistentForm" data-k="assistent.form">
+            <option value="weiblich" data-t="einst.form_weiblich"></option>
+            <option value="maennlich" data-t="einst.form_maennlich"></option>
+            <option value="neutral" data-t="einst.form_neutral"></option>
+          </select>
+        </div>
+      </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="pronomen" data-t="einst.pronomen"></label>
+          <select id="pronomen" data-k="nutzer.pronomen">
+            <option value="er" data-t="einst.pronomen_er"></option>
+            <option value="sie" data-t="einst.pronomen_sie"></option>
+            <option value="neutral" data-t="einst.pronomen_neutral"></option>
+            <option value="eigene" data-t="einst.pronomen_eigene"></option>
+          </select>
+        </div>
+        <div class="feld" id="pronomenEigenFeld" hidden>
+          <label for="pronomenEigen" data-t="einst.pronomen_eigen"></label>
+          <input id="pronomenEigen" data-k="nutzer.pronomen_eigen" type="text" maxlength="30" placeholder="xier/xiem" autocomplete="off">
+        </div>
+      </div>
       <div class="feld">
         <label for="schluessel" data-t="einst.schluessel"></label>
         <input id="schluessel" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">

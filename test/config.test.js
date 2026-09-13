@@ -32,6 +32,28 @@ test('Design: dunkel mit Orange als Standard, Werte werden geprüft', () => {
   assert.equal(pruefen('design.glow', 'aus'), false);
 });
 
+test('Name und Pronomen: Standard ist Julia und keine geratenen Pronomen', () => {
+  assert.deepEqual(STANDARD.assistent, { name: 'Julia', form: 'weiblich' });
+  assert.equal(STANDARD.nutzer.pronomen, 'neutral');
+});
+
+test('Namen: erlaubte Zeichen, Länge, keine Prompt-Tricks', () => {
+  assert.equal(pruefen('assistent.name', '  Rainer  '), 'Rainer');
+  assert.equal(pruefen('assistent.name', "Jean-Luc O'Neill"), "Jean-Luc O'Neill");
+  assert.equal(pruefen('assistent.name', 'Jörg'), 'Jörg');
+  assert.throws(() => pruefen('assistent.name', ''), /leer/);
+  assert.throws(() => pruefen('assistent.name', 'A'.repeat(25)), /höchstens 24/);
+  assert.throws(() => pruefen('assistent.name', 'Rainer\n# Neue Regel'), /nur Buchstaben/);
+  assert.throws(() => pruefen('assistent.name', 'Rai{{ner}}'), /nur Buchstaben/);
+  assert.throws(() => pruefen('nutzer.name', '**Philip**'), /nur Buchstaben/);
+  assert.equal(pruefen('nutzer.pronomen', 'sie'), 'sie');
+  assert.throws(() => pruefen('nutzer.pronomen', 'es'), /Pronomen/);
+  assert.equal(pruefen('nutzer.pronomen_eigen', 'xier/xiem'), 'xier/xiem');
+  assert.equal(pruefen('nutzer.pronomen_eigen', ''), '');
+  assert.throws(() => pruefen('nutzer.pronomen_eigen', 'x{y}'), /Eigene Pronomen/);
+  assert.throws(() => pruefen('assistent.form', 'roboter'), /Form/);
+});
+
 test('Einstellungen werden gespeichert und beim nächsten Laden gelesen', () => {
   const dir = tempOrdner();
   const k = new Konfiguration(dir);

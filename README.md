@@ -68,6 +68,11 @@ Freigabekarten mit Warnstreifen, Werkzeugschritte im Terminal-Stil. Dazu gibt es
 Gold), dazu eine eigene aus dem Farbwähler. Die Leuchteffekte lassen sich abschalten, und ein
 Knopf passt die Blase an die Akzentfarbe an. Alles greift sofort, ohne Neustart.
 
+**Deine KI, dein Name:** In den Einstellungen gibst du ihr einen eigenen Namen („Rainer"
+statt „Julia"), wählst ihre Form (Assistentin, Assistent oder neutral) und deine eigenen
+Pronomen – er, sie, nur dein Name oder eigene. Der Name erscheint überall: im Chat, im Tray,
+in den Meldungen und im Gespräch.
+
 ## Die Blase
 
 Auf Wunsch liegt eine animierte Kugel auf deinem Nebenmonitor und zeigt, was Julia gerade tut.
@@ -204,8 +209,8 @@ npm run release -- funktion  "Julia liest jetzt Termine vor"
 npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
 ```
 
-Das Release-Skript setzt die Version, schreibt die Changelog-Zeile, committet mit derselben
-Zeile, setzt den Tag und pusht. Ohne Tag kein Update.
+Das Release-Skript setzt die Version, schreibt die Changelog-Zeile, committet mit
+`vX.Y.Z – <Zeile>`, setzt den Tag, pusht und legt ein GitHub-Release an. Ohne Tag kein Update.
 
 Screenshots für diese README entstehen im Vorführmodus mit einem getrennten Datenordner:
 

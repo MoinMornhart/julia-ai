@@ -70,6 +70,11 @@ approval cards with hazard stripes, tool steps in terminal style. There is also 
 Gold), plus a custom one from the colour picker. Glow effects can be switched off, and one
 button matches the orb to the accent colour. Everything applies instantly, no restart.
 
+**Your AI, your name:** In the settings you give her your own name ("Rainer" instead of
+"Julia"), choose her form (she, he or neutral) and your own pronouns – he, she, just your
+name, or custom. The name shows up everywhere: in the chat, the tray, notifications and the
+conversation.
+
 ## The orb
 
 If you want, an animated sphere sits on your secondary monitor and shows what Julia is doing.
@@ -204,8 +209,9 @@ npm run release -- funktion  "Julia now reads appointments aloud"
 npm run release -- bruch     "New settings file" --hinweis "Set hotkeys again"
 ```
 
-The release script sets the version, writes the changelog line, commits with the same line,
-tags and pushes. No tag, no update. The code base, identifiers and changelog are German.
+The release script sets the version, writes the changelog line, commits with
+`vX.Y.Z – <line>`, tags, pushes and creates a GitHub release. No tag, no update. The code base,
+identifiers and changelog are German.
 
 Screenshots for this README are made in demo mode with a separate data folder:
 

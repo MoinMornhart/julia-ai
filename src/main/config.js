@@ -13,7 +13,15 @@ const ECKEN = ['unten-rechts', 'unten-links', 'oben-rechts', 'oben-links'];
 const STANDARD = {
   einrichtung_fertig: false,
   sprachcode: 'de', // 'de' | 'en' – Oberfläche und Julias Sprache
-  nutzer: { name: '' },
+  assistent: {
+    name: 'Julia',
+    form: 'weiblich', // 'weiblich' | 'maennlich' | 'neutral'
+  },
+  nutzer: {
+    name: '',
+    pronomen: 'neutral', // 'er' | 'sie' | 'neutral' (nur Name) | 'eigene'
+    pronomen_eigen: '',
+  },
   arbeitsverzeichnisse: [],
   api: { schluessel_verschluesselt: '' },
   modell: 'claude-opus-5',
@@ -139,9 +147,31 @@ function pruefen(schluessel, wert) {
     case 'hotkey.sprechen':
     case 'hotkey.chat':
     case 'modell':
-    case 'nutzer.name':
       if (typeof wert !== 'string' || !wert.trim()) throw new Error(`${schluessel} darf nicht leer sein.`);
       return wert.trim();
+    // Namen landen im System-Prompt: nur Buchstaben, Ziffern, Leerzeichen, Punkt,
+    // Apostroph und Bindestrich – keine Zeilenumbrüche, Klammern oder Formatierung.
+    case 'nutzer.name':
+    case 'assistent.name': {
+      const max = schluessel === 'assistent.name' ? 24 : 40;
+      const s = String(wert ?? '').replace(/\s+/g, ' ').trim();
+      if (!s) throw new Error('Der Name darf nicht leer sein.');
+      if (s.length > max) throw new Error(`Der Name darf höchstens ${max} Zeichen haben.`);
+      if (!/^[\p{L}\p{N}][\p{L}\p{N} .'’-]*$/u.test(s)) throw new Error('Im Namen sind nur Buchstaben, Ziffern, Leerzeichen, Punkt, Apostroph und Bindestrich erlaubt.');
+      return s;
+    }
+    case 'assistent.form':
+      if (!['weiblich', 'maennlich', 'neutral'].includes(wert)) throw new Error('Form ist "weiblich", "maennlich" oder "neutral".');
+      return wert;
+    case 'nutzer.pronomen':
+      if (!['er', 'sie', 'neutral', 'eigene'].includes(wert)) throw new Error('Pronomen sind "er", "sie", "neutral" oder "eigene".');
+      return wert;
+    case 'nutzer.pronomen_eigen': {
+      const s = String(wert ?? '').replace(/\s+/g, ' ').trim();
+      if (s.length > 30) throw new Error('Eigene Pronomen: höchstens 30 Zeichen.');
+      if (s && !/^[\p{L} /'’-]+$/u.test(s)) throw new Error('Eigene Pronomen: nur Buchstaben, Schrägstrich, Leerzeichen, Apostroph und Bindestrich.');
+      return s;
+    }
     case 'aufwand':
       if (!['low', 'medium', 'high', 'xhigh', 'max'].includes(wert)) throw new Error('Aufwand ist low, medium, high, xhigh oder max.');
       return wert;

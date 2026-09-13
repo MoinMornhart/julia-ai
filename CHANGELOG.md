@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.4.0 – 2026-09-13
+- Du kannst deiner KI jetzt einen eigenen Namen geben und deine Pronomen festlegen – der Name erscheint überall, im Chat, im Tray und im Gespräch
+
 ## 0.3.0 – 2026-09-13
 - Du kannst Julia jetzt vom Handy aus schreiben: über deinen eigenen Telegram-Bot, mit Ja/Nein-Knöpfen für Freigaben und /stopp zum sofortigen Abbrechen
 

@@ -4,11 +4,12 @@
 //   npm run release -- korrektur "Blase startet jetzt ausgeschaltet"
 //   npm run release -- funktion  "Julia kann jetzt Termine vorlesen"
 //   npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
-// Optionen: --kein-push, --trailer "Zeile" (mehrfach möglich, landet unter der Commit-Nachricht)
+// Optionen: --kein-push, --kein-release, --trailer "Zeile" (mehrfach möglich,
+// landet unter der Commit-Nachricht)
 //
 // Setzt die Version in package.json (und package-lock.json), schreibt die
-// Changelog-Zeile, committet mit derselben Zeile als Nachricht, setzt den Tag
-// und pusht beides.
+// Changelog-Zeile, committet mit "vX.Y.Z – <Zeile>" als Nachricht, setzt den
+// Tag, pusht beides und legt ein GitHub-Release an (über die gh-CLI).
 
 const fs = require('fs');
 const path = require('path');
@@ -23,10 +24,11 @@ function git(...args) {
 
 function argumente(argv) {
   const pos = [];
-  const opt = { trailer: [], push: true, hinweis: '' };
+  const opt = { trailer: [], push: true, githubRelease: true, hinweis: '' };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--kein-push') opt.push = false;
+    else if (a === '--kein-release') opt.githubRelease = false;
     else if (a === '--hinweis') opt.hinweis = argv[++i] || '';
     else if (a === '--trailer') opt.trailer.push(argv[++i] || '');
     else pos.push(a);
@@ -88,10 +90,13 @@ function main() {
   if (a.hinweis) eintrag += `- Nach dem Update von Hand prüfen: ${a.hinweis}\n`;
   fs.writeFileSync(clDatei, changelogEinfuegen(bestand, eintrag), 'utf8');
 
-  const nachricht = [a.text, ...(a.trailer.length ? ['', ...a.trailer] : [])].join('\n');
+  // Die Version steht vorne in der Nachricht, damit sie in der Commit-Liste auf
+  // GitHub sichtbar ist.
+  const titel = `${tag} – ${a.text}`;
+  const nachricht = [titel, ...(a.trailer.length ? ['', ...a.trailer] : [])].join('\n');
   git('add', '-A');
   git('commit', '-q', '-m', nachricht);
-  git('tag', '-a', tag, '-m', a.text);
+  git('tag', '-a', tag, '-m', titel);
   console.log(`${alt} → ${neu}, Tag ${tag} gesetzt.`);
 
   const remotes = git('remote').split(/\s+/);
@@ -99,8 +104,19 @@ function main() {
     git('push', '-q', 'origin', 'HEAD');
     git('push', '-q', 'origin', tag);
     console.log('Gepusht.');
+    if (a.githubRelease) githubRelease(tag, a);
   } else if (a.push) {
     console.log('Kein Remote "origin", nicht gepusht.');
+  }
+}
+
+function githubRelease(tag, a) {
+  const notizen = [`- ${a.text}`, ...(a.hinweis ? [`- Nach dem Update von Hand prüfen: ${a.hinweis}`] : [])].join('\n');
+  try {
+    execFileSync('gh', ['release', 'create', tag, '--verify-tag', '--title', `${tag} – ${a.text}`.slice(0, 120), '--notes', notizen], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+    console.log('GitHub-Release angelegt.');
+  } catch (e) {
+    console.log(`GitHub-Release nicht angelegt (gh fehlt oder ist nicht angemeldet): ${String(e.stderr || e.message).trim().slice(0, 200)}`);
   }
 }
 

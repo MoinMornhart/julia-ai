@@ -223,6 +223,8 @@ function texteAnwenden(daten) {
   T = daten.texte;
   document.documentElement.lang = daten.sprachcode;
   const hk = tastenAnzeige(hotkey);
+  $('assistentName').textContent = tx('chat.titel');
+  document.title = tx('chat.titel');
   $('text').placeholder = tx('chat.platzhalter');
   $('btnNeu').title = tx('chat.neu');
   $('btnEinst').title = tx('chat.einstellungen');
