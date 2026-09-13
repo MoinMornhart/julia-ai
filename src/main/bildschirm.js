@@ -1,6 +1,7 @@
 'use strict';
 
-const { desktopCapturer, screen } = require('electron');
+const { desktopCapturer, screen, nativeImage } = require('electron');
+const schwaerzen = require('./schwaerzen');
 
 // Screenshots und die Umrechnung von Bildkoordinaten auf echte Bildschirm-
 // pixel. Julia klickt in Koordinaten des zuletzt gesehenen Bildes; hier wird
@@ -27,7 +28,9 @@ function beschreibung() {
   });
 }
 
-async function aufnehmen(index) {
+// rechtecke: Bereiche in physischen Bildschirmpixeln, die geschwärzt werden
+// (Passwortfelder), bevor das Bild weitergegeben wird.
+async function aufnehmen(index, { rechtecke = [] } = {}) {
   const ds = monitore();
   const ziele = index == null ? ds.map((_, i) => i) : [index];
   const bilder = [];
@@ -47,12 +50,19 @@ async function aufnehmen(index) {
     if (!q || q.thumbnail.isEmpty()) throw new Error(`Monitor ${i} ließ sich nicht aufnehmen.`);
     const s = q.thumbnail.getSize();
     letzte.set(i, { phys, breite: s.width, hoehe: s.height });
+    let bild = q.thumbnail;
+    const bereiche = schwaerzen.aufBild(rechtecke, phys, s.width, s.height);
+    if (bereiche.length) {
+      const puffer = schwaerzen.fuellen(Buffer.from(bild.toBitmap()), s.width, bereiche);
+      bild = nativeImage.createFromBitmap(puffer, { width: s.width, height: s.height });
+    }
     bilder.push({
       index: i,
       haupt: i === 0,
       breite: s.width,
       hoehe: s.height,
-      jpeg: q.thumbnail.toJPEG(80).toString('base64'),
+      geschwaerzt: bereiche.length,
+      jpeg: bild.toJPEG(80).toString('base64'),
     });
   }
   letzterScreenshot = Date.now();

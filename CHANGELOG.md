@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.9.0 – 2026-09-14
+- Julia schwärzt jetzt Passwortfelder, Passwortmanager, Messenger und private Browserfenster im Screenshot, bevor das Bild den PC verlässt
+
 ## 0.8.0 – 2026-09-14
 - Julia hört jetzt auf Wunsch auf ihr Aktivierungswort – „Hey Julia“ oder mit deinem eigenen Namen, nur lokal erkannt und standardmäßig aus
 

@@ -34,6 +34,10 @@ public static class JuliaWin {
   [DllImport("user32.dll")] static extern void keybd_event(byte vk, byte scan, uint flags, UIntPtr extra);
   delegate bool EnumProc(IntPtr h, IntPtr l);
   [DllImport("user32.dll")] static extern bool EnumWindows(EnumProc cb, IntPtr l);
+  [DllImport("user32.dll")] static extern bool EnumChildWindows(IntPtr eltern, EnumProc cb, IntPtr l);
+  [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int index);
+  [StructLayout(LayoutKind.Sequential)] public struct RECT { public int L, T, R, B; }
+  [DllImport("user32.dll")] static extern bool GetWindowRect(IntPtr h, out RECT r);
   [DllImport("user32.dll", SetLastError = true)] static extern uint SendInput(uint n, INPUT[] inputs, int size);
 
   [StructLayout(LayoutKind.Sequential)] struct MOUSEINPUT { public int dx; public int dy; public uint mouseData; public uint dwFlags; public uint time; public IntPtr dwExtraInfo; }
@@ -123,6 +127,29 @@ public static class JuliaWin {
     var t = new StringBuilder(512); GetWindowText(h, t, t.Capacity);
     var k = new StringBuilder(256); GetClassName(h, k, k.Capacity);
     return pid + "\t" + k.ToString() + "\t" + t.ToString();
+  }
+
+  // Klassische Windows-Eingabefelder mit ES_PASSWORD (0x20). UI Automation meldet
+  // z. B. Windows-Forms-Felder nur als "Pane" ohne Passwort-Kennzeichen, das
+  // Stilbit ist dagegen verlässlich. Es gilt nur für Edit-Klassen.
+  public static List<string> PasswortFelderWin32(IntPtr eltern) {
+    var r = new List<string>();
+    EnumChildWindows(eltern, delegate (IntPtr h, IntPtr l) {
+      if (!IsWindowVisible(h)) return true;
+      var k = new StringBuilder(256);
+      GetClassName(h, k, k.Capacity);
+      if (k.ToString().IndexOf("EDIT", StringComparison.OrdinalIgnoreCase) < 0) return true;
+      if ((GetWindowLong(h, -16) & 0x20) == 0) return true;
+      RECT rc;
+      if (GetWindowRect(h, out rc) && rc.R > rc.L && rc.B > rc.T) r.Add(rc.L + "\t" + rc.T + "\t" + (rc.R - rc.L) + "\t" + (rc.B - rc.T));
+      return true;
+    }, IntPtr.Zero);
+    return r;
+  }
+
+  public static string FensterRechteck(IntPtr h) {
+    RECT rc;
+    return GetWindowRect(h, out rc) ? (rc.L + "\t" + rc.T + "\t" + (rc.R - rc.L) + "\t" + (rc.B - rc.T)) : "";
   }
 
   public static bool Fokus(long id) {

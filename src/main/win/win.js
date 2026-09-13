@@ -132,6 +132,61 @@ $up = (Get-Date) - $os.LastBootUpTime
 }`, 30000);
 }
 
+// Programme, deren Fenster im Screenshot komplett geschwärzt werden, wenn sie
+// im Vordergrund sind (Prozessname ohne .exe, klein geschrieben).
+const SENSIBLE_PROGRAMME = [
+  'keepass', 'keepassxc', '1password', 'bitwarden', 'dashlane', 'lastpass', 'keeper', 'nordpass',
+  'enpass', 'roboform', 'protonpass', 'signal', 'threema', 'credentialuibroker',
+];
+// Private Browserfenster erkennt man am Titel.
+const PRIVAT_TITEL = '(InPrivate|Inkognito|Incognito|Privates Fenster|Private Browsing|Privater Modus)';
+
+// Bereiche im Vordergrundfenster, die im Screenshot geschwärzt werden
+// (physische Pixel, der Hilfsprozess ist DPI-bewusst):
+// - das ganze Fenster bei Passwortmanagern, Messengern, privaten Browserfenstern
+// - sonst Passwortfelder, gefunden über zwei Wege: das Win32-Stilbit ES_PASSWORD
+//   (klassische Programme) und UI Automation (Browser, WPF, moderne Apps).
+// Nur das Vordergrundfenster, damit die Suche schnell bleibt.
+async function passwortFelder() {
+  const d = await worker.ausfuehren(mitArgs({ sensibel: SENSIBLE_PROGRAMME, privat: PRIVAT_TITEL }, `
+$ergebnis = New-Object System.Collections.ArrayList
+function Rechteck($text, $grund) {
+  $t = $text -split [char]9
+  if ($t.Count -eq 4) { [void]$ergebnis.Add([pscustomobject]@{ x = [int]$t[0]; y = [int]$t[1]; w = [int]$t[2]; h = [int]$t[3]; grund = $grund }) }
+}
+$h = [JuliaWin]::GetForegroundWindow()
+if ($h -ne [IntPtr]::Zero) {
+  $v = [JuliaWin]::Vordergrund() -split [char]9, 3
+  $prozess = Get-Process -Id ([int]$v[0]) -ErrorAction SilentlyContinue
+  $name = if ($prozess) { $prozess.ProcessName.ToLower() } else { '' }
+  if (($a.sensibel -contains $name) -or ($v[2] -match $a.privat)) {
+    Rechteck ([JuliaWin]::FensterRechteck($h)) 'fenster'
+  } else {
+    foreach ($z in [JuliaWin]::PasswortFelderWin32($h)) { Rechteck $z 'feld' }
+    try {
+      $wurzel = [System.Windows.Automation.AutomationElement]::FromHandle($h)
+      $bedingung = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::IsPasswordProperty, $true)
+      foreach ($f in $wurzel.FindAll([System.Windows.Automation.TreeScope]::Descendants, $bedingung)) {
+        $r = $f.Current.BoundingRectangle
+        if (-not $r.IsEmpty -and $r.Width -gt 0 -and $r.Height -gt 0) {
+          [void]$ergebnis.Add([pscustomobject]@{ x = [int]$r.X; y = [int]$r.Y; w = [int]$r.Width; h = [int]$r.Height; grund = 'feld' })
+        }
+      }
+    } catch {}
+  }
+}
+$ergebnis`), 10000);
+  return liste(d);
+}
+
+// Für Tests: dieselbe Suche, aber in einem bestimmten Fenster statt im Vordergrund.
+async function passwortFelderIn(hwnd) {
+  const d = await worker.ausfuehren(mitArgs({ hwnd }, `
+$h = [IntPtr]([int64]$a.hwnd)
+[JuliaWin]::PasswortFelderWin32($h)`), 10000);
+  return liste(d);
+}
+
 async function klick(x, y, taste = 'links', doppelt = false) {
   await worker.ausfuehren(mitArgs({ x, y, taste, doppelt }, '[JuliaWin]::Klick([int]$a.x, [int]$a.y, [string]$a.taste, [bool]$a.doppelt)'));
 }
@@ -209,6 +264,6 @@ $true`), 30000);
 }
 
 module.exports = {
-  worker, aufwaermen, fensterAuflisten, vordergrund, prozesse, systemStatus,
+  worker, aufwaermen, fensterAuflisten, vordergrund, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
   klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen,
 };

@@ -25,6 +25,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
 | ✅ 0.7.1 | Protokoll als Prüfsummen-Kette; Release nur mit grünen Tests und ohne bekannte Lücken ab Stufe „high" |
 | ✅ 0.8.0 | „Hey <Name>" als Aktivierungswort – standardmäßig aus, nur lokal, pausiert beim eigenen Sprechen |
+| ✅ 0.9.0 | Passwortfelder im Vordergrundfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt |
 
 ## Als Nächstes
 
@@ -40,7 +41,6 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | 📋 | **Signierte Update-Tags** (`git verify-tag` mit SSH-Signatur, erlaubte Schlüssel im Repo) | Heute vertraut das Update dem GitHub-Konto. Mit Signatur spielt Julia nur Stände ein, die mit deinem Schlüssel signiert sind. Braucht einmalig einen Signierschlüssel von dir. |
 | 📋 | **Handy-PIN für GELB** – optional eine PIN zusätzlich zum Ja-Knopf | Schutz, falls jemand dein entsperrtes Handy hat |
 | 📋 | **Electron Fuses und ASAR-Integrität**, sobald es einen Installer gibt | Verhindert, dass jemand das gebaute Programm verändert oder als Node startet |
-| 💡 | **Passwortfelder im Screenshot schwärzen** | Bildschirminhalte mit Passwortfeldern gehen gar nicht erst an die API |
 
 ## Weitere Ideen
 
@@ -63,8 +63,76 @@ Ein paar Dinge kann Julia nicht für dich erledigen, weil sie Konten oder Schlü
 - **Google:** einmalig einen OAuth-Client anlegen ([Anleitung](google-einrichten.md)).
 - **Handy:** einmalig einen Bot bei @BotFather anlegen ([Anleitung](handy-telegram.md)).
 
-## Aus der Recherche
+## Aus der Recherche (September 2026)
 
-*Hier kommen die Ideen aus dem Vergleich mit anderen Assistenten (Siri, Gemini, Copilot,
-Alexa+, ChatGPT, Claude, Open Interpreter, Raycast, Nvidia G-Assist, Xbox Game Bar …) und
-die Sicherheits-Empfehlungen dazu. Die Recherche läuft noch.*
+Verglichen wurden Siri/Apple Intelligence, Gemini Live, Copilot unter Windows (Vision, Recall,
+Click to Do), Alexa+, ChatGPT-Agent, Claude, Raycast, Home Assistant, Nvidia G-Assist, Xbox
+Game Bar, Steam- und Discord-Overlay sowie Open-Source-„Jarvis"-Projekte, dazu die aktuellen
+Veröffentlichungen zur Sicherheit von KI-Agenten.
+
+**Die zwei wichtigsten Erkenntnisse:**
+
+1. **Die „tödliche Dreifaltigkeit"** ([Simon Willison](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/),
+   [Meta „Rule of Two"](https://ai.meta.com/blog/practical-ai-agent-security/)): Ein Agent, der private Daten
+   liest, fremde Inhalte sieht *und* nach außen wirken kann, lässt sich zum Datenabfluss bringen.
+   Julia hat alle drei. Die Antwort darauf: Sobald fremde Inhalte im Gespräch sind, wird jede
+   Aktion nach außen GELB.
+2. **Prompt Injection ist nicht vollständig lösbar.** Veröffentlichte Abwehrmethoden wurden zu
+   über 90 % umgangen ([arXiv 2510.09023](https://arxiv.org/abs/2510.09023)); OpenAI und Anthropic sagen
+   selbst, dass es ein Restrisiko bleibt. Wirksamer als Filtern ist, einzuschränken, was ein
+   getäuschtes Modell überhaupt tun kann – genau das ist Julias Ampel.
+
+### Sicherheit – Stand und Plan
+
+| | Maßnahme | Quelle |
+|---|---|---|
+| 🔨 0.9.1 | **Nach fremden Inhalten wird „nach außen" GELB:** Links öffnen, Netzwerk-Befehle (`ping`, `nslookup`, `Resolve-DnsName` – DNS kann Daten tragen) | [Willison](https://simonwillison.net/2025/Jun/16/the-lethal-trifecta/), [Brave zu Comet](https://brave.com/blog/comet-prompt-injection/) |
+| 🔨 0.9.1 | **Unsichtbare Zeichen aus fremden Inhalten entfernen** (Unicode-Tag-Zeichen, Richtungswechsel) – damit wurden Befehle versteckt | [Spotlighting](https://arxiv.org/pdf/2403.14720), [Brave](https://brave.com/blog/unseeable-prompt-injections/) |
+| 🔨 0.9.1 | **Heruntergeladene Programme starten ist ROT** (Mark-of-the-Web) | [ZombAIs](https://embracethered.com/blog/posts/2024/claude-computer-use-c2-the-zombais-are-coming/) |
+| 🔨 0.9.1 | **Updates mit `npm ci --ignore-scripts`**, nur Electrons eigenes Installationsskript läuft – Lieferketten-Würmer verbreiten sich über Installationsskripte | [CISA zu Shai-Hulud](https://www.cisa.gov/news-events/alerts/2025/09/23/widespread-supply-chain-compromise-impacting-npm-ecosystem) |
+| 🔨 0.9.0 | **Passwortmanager, Messenger und private Browserfenster** im Screenshot komplett schwärzen – Recalls reiner Textfilter hat versagt | [Tom's Hardware](https://www.tomshardware.com/software/windows/microsoft-recall-screenshots-credit-cards-and-social-security-numbers-even-with-the-sensitive-information-filter-enabled) |
+| ✅ | Freigaben zeigen die echten Parameter (vollständiger Mailtext, ungekürzter Befehl), nicht die Zusammenfassung des Modells | [MCP-Sicherheitsleitfaden](https://modelcontextprotocol.io/docs/2026-07-28/tutorials/security/security_best_practices) |
+| ✅ | Julia kann ihre eigenen Freigaben nicht bestätigen: Solange eine Freigabe offen ist, läuft kein Werkzeug | – |
+| ✅ | Keine externen Bilder im Chat, strenge CSP – EchoLeak zog Daten über automatisch geladene Bilder ab | [EchoLeak](https://arxiv.org/abs/2509.10540) |
+| ✅ | Electron-Berechtigungen standardmäßig abgelehnt, `openExternal` nur für sichere Protokolle | [Electron-Checkliste](https://www.electronjs.org/docs/latest/tutorial/security) |
+| 📋 | Julias eigene Fenster per `WDA_EXCLUDEFROMCAPTURE` aus Screenshots, Streams und OBS heraushalten; wichtige Freigaben mit Windows Hello bestätigen | [SetWindowDisplayAffinity](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity) |
+| 📋 | Gedächtnis mit Herkunft: Was während fremder Inhalte gemerkt werden soll, erst nach Bestätigung | [Studie](https://arxiv.org/pdf/2506.17318) |
+| 📋 | Plan zuerst: Die Werkzeugfolge steht nach der Anfrage fest, fremde Inhalte können sie nicht erweitern (vereinfachtes CaMeL) | [CaMeL](https://simonwillison.net/2025/Apr/11/camel/) |
+| 📋 | Signierte Tags mit fest hinterlegtem Schlüssel, keine Downgrades außer beim Rückweg | [CVE-2024-39698](https://github.com/advisories/GHSA-9jxc-qjr9-vjxq) |
+| 📋 | Für MCP: nur lokale Server, Version fest, Tool-Beschreibungen hashen (Schutz gegen nachträglich getauschte Tools), Präfix pro Server | [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) |
+| 📋 | „Alles widerrufen"-Knopf für alle Konten; DPAPI schützt nicht gegen Schadsoftware unter demselben Nutzer | [safeStorage](https://www.electronjs.org/docs/latest/api/safe-storage) |
+| 📋 | Injection-Tests mit vergifteten Mails, Webseiten und Einladungen | [promptfoo](https://www.promptfoo.dev/blog/lethal-trifecta-testing/) |
+| 📋 | Electron Fuses und ASAR-Integrität, sobald es einen Installer gibt | [Electron Fuses](https://www.electronjs.org/docs/latest/tutorial/fuses) |
+
+### Funktionen – Ideen
+
+| Idee | Vorbild | Aufwand | Nutzen | Ampel |
+|---|---|---|---|---|
+| **Markieren und handeln:** Hotkey, Bereich aufziehen, „zusammenfassen", „übersetzen", „als Termin" | Copilot Click to Do | M | hoch | GRÜN, nur der Ausschnitt geht raus |
+| **Markierter Text als Kontext:** „schreib das freundlicher" wirkt auf die Markierung | Raycast | S | hoch | nur auf Befehl |
+| **Folgefragen ohne Weckwort** (kurzes Nachhör-Fenster, „Danke Julia" beendet) | Alexa+, Copilot | S | mittel | Mikrofon sichtbar |
+| **Natürliche Offline-Stimme** (Piper, deutsche Stimme „Thorsten") | Home Assistant | M | hoch | lokal, als eigener Prozess (GPL) |
+| **Reinsprechen unterbricht das Vorlesen** | Gemini Live | M | mittel | – |
+| **Live-Modus:** Gespräch, während Julia ein Fenster mitsieht | Gemini Live, Copilot Vision | L | hoch | Leuchtrahmen, nur ein Fenster, Kostenbremse |
+| **Persönlichkeits-Regler** (Butler, Coach, knapp) | ChatGPT | S | mittel | darf die Ampel nie berühren |
+| **Gedächtnis-Übersicht** zum Ansehen und Bearbeiten | ChatGPT Memory | S | hoch | – |
+| **Eigene Sprachbefehle** („Streaming-Modus" = feste Befehlsfolge) | Siri App Intents | S | hoch | ohne Rückfrage nur, wenn alles GRÜN |
+| **Spiel erkennen und Tipps aus dem Wiki** | Xbox Gaming Copilot | M | hoch | in Online-Spielen keine Eingabe-Automatisierung (Anti-Cheat) |
+| **Notizen pro Spiel** per Stimme im Overlay | Steam Notes | S | mittel | GRÜN |
+| **„Warum ruckelt es?"** – CPU, GPU, Temperaturen, Hintergrundlast erklären | Nvidia G-Assist | M | mittel | GRÜN |
+| **PC-Tuning per Sprache** (Energieplan, HDR) | G-Assist | M | mittel | GELB, nur feste Aktionen, kein freies PowerShell |
+| **Knöpfe über UI Automation statt Pixelklicks** | Copilot Actions | M | hoch | weniger Bildinhalt = weniger Angriffsfläche |
+| **Übernahme-Modus:** Julia pausiert, du loggst dich ein, Julia macht weiter | ChatGPT Agent | S | hoch | passt zu ROT „Logins" |
+| **Rückgängig-Knopf** für Dateiaktionen je Auftrag | – | M | hoch | – |
+| **Teilbare Themes** als JSON | Raycast | S | mittel | kein CSS/JS, sonst Code-Einschleusung |
+| **Home Assistant** mit ausgewählten Geräten | HA Assist | M | hoch | Schlösser, Garage, Heizung GELB |
+| **Eigene Skripte als Werkzeuge** | HA Scripts | S | hoch | an Prüfsumme gebunden, jede Änderung neu freigeben |
+
+### Was bei anderen schiefging
+
+- **Recall:** Die Datenbank lag anfangs im Klartext, der Filter übersah Kreditkartennummern. Lehre: keinen dauerhaften Bildschirmverlauf speichern. ([The Register](https://www.theregister.com/security/2025/08/01/microsoft-recall-can-still-nab-credit-cards-passwords-info/971447))
+- **EchoLeak:** Eine einzige Mail reichte, ohne Klick; der Abfluss lief über automatisch geladene Bilder einer erlaubten Domain. ([arXiv](https://arxiv.org/abs/2509.10540))
+- **Kalendereinladungen bei Gemini:** Ein Einladungstitel steuerte Smart-Home-Geräte. Julia hat Kalenderzugriff – Termintitel gelten deshalb als fremde Inhalte. ([SafeBreach](https://www.safebreach.com/blog/invitation-is-all-you-need-hacking-gemini/))
+- **ZombAIs:** „Lade das herunter und starte es" auf einer Webseite genügte, um einen Agenten Schadsoftware installieren zu lassen. ([Embrace The Red](https://embracethered.com/blog/posts/2024/claude-computer-use-c2-the-zombais-are-coming/))
+- **postmark-mcp:** Eine Zeile Code setzte jede Mail in Blindkopie an den Angreifer. Erweiterungen nur durch dich in den Einstellungen, nie per Sprachbefehl. ([The Hacker News](https://thehackernews.com/2025/09/first-malicious-mcp-server-found.html))
+- **Alexa strich die lokale Sprachoption:** Datenschutz technisch absichern, nicht über einen Schalter, der später verschwinden kann. Julias Sprache bleibt offline. ([TechCrunch](https://techcrunch.com/2025/03/15/amazons-echo-will-send-all-voice-recordings-to-the-cloud-starting-march-28))
