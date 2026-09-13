@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">Deutsch</a> · <b>English</b>
+  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="site/index.html">Website with live demo</a>
 </p>
 
 ---

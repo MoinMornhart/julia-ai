@@ -1,0 +1,882 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Julia für Windows</title>
+<meta name="description" content="Julia – persönliche KI für den Windows-PC. Sieht den Bildschirm, spricht mit dir und fragt, bevor sie handelt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+  /* Dunkel zuerst – das ist Julias Standard. Hell über System oder Umschalter. */
+  :root {
+    --akzent: #FF7A1A;
+    --akzent-auf: #160A02;
+    --grund: #0B0A10;
+    --grund-2: #111019;
+    --panel: #16151F;
+    --panel-2: #1E1C29;
+    --linie: rgba(255, 255, 255, 0.08);
+    --linie-stark: rgba(255, 255, 255, 0.16);
+    --text: #F3F2F7;
+    --text-2: #B6B3C6;
+    --text-3: #7C798E;
+    --gruen: #3EE08F;
+    --gelb: #FFB547;
+    --rot: #FF5A6E;
+    --raster: rgba(255, 255, 255, 0.028);
+    --schatten: 0 24px 60px rgba(0, 0, 0, 0.55);
+    --akzent-tinte: var(--akzent);
+    --titel: "Chakra Petch", "Bahnschrift", "Segoe UI", system-ui, sans-serif;
+    --text-schrift: "Hanken Grotesk", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --mono: "JetBrains Mono", "Cascadia Mono", Consolas, ui-monospace, monospace;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --grund: #F3F3F7;
+      --grund-2: #EAEAF1;
+      --panel: #FFFFFF;
+      --panel-2: #F1F0F6;
+      --linie: rgba(20, 18, 40, 0.09);
+      --linie-stark: rgba(20, 18, 40, 0.18);
+      --text: #15141C;
+      --text-2: #4E4B5E;
+      --text-3: #84819A;
+      --gruen: #0F8A55;
+      --gelb: #A86400;
+      --rot: #D12C48;
+      --raster: rgba(20, 18, 40, 0.045);
+      --schatten: 0 18px 44px rgba(20, 18, 40, 0.14);
+      --akzent-tinte: color-mix(in srgb, var(--akzent) 70%, #000);
+      color-scheme: light;
+    }
+  }
+  :root[data-theme="light"] {
+    --grund: #F3F3F7;
+    --grund-2: #EAEAF1;
+    --panel: #FFFFFF;
+    --panel-2: #F1F0F6;
+    --linie: rgba(20, 18, 40, 0.09);
+    --linie-stark: rgba(20, 18, 40, 0.18);
+    --text: #15141C;
+    --text-2: #4E4B5E;
+    --text-3: #84819A;
+    --gruen: #0F8A55;
+    --gelb: #A86400;
+    --rot: #D12C48;
+    --raster: rgba(20, 18, 40, 0.045);
+    --schatten: 0 18px 44px rgba(20, 18, 40, 0.14);
+    --akzent-tinte: color-mix(in srgb, var(--akzent) 70%, #000);
+    color-scheme: light;
+  }
+  :root {
+    --akzent-weich: color-mix(in srgb, var(--akzent) 14%, transparent);
+    --akzent-rand: color-mix(in srgb, var(--akzent) 50%, transparent);
+    --glow: 0 0 0 1px color-mix(in srgb, var(--akzent) 60%, transparent), 0 0 26px color-mix(in srgb, var(--akzent) 34%, transparent);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    padding-inline: 20px;
+    color: var(--text);
+    font: 16px/1.6 var(--text-schrift);
+    background:
+      radial-gradient(900px 480px at 78% -120px, color-mix(in srgb, var(--akzent) 16%, transparent), transparent 70%),
+      linear-gradient(var(--raster) 1px, transparent 1px) 0 0 / 32px 32px,
+      linear-gradient(90deg, var(--raster) 1px, transparent 1px) 0 0 / 32px 32px,
+      var(--grund);
+    -webkit-font-smoothing: antialiased;
+  }
+  .rahmen { max-width: 1160px; margin-inline: auto; }
+  a { color: var(--akzent-tinte); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--akzent); outline-offset: 3px; }
+  code, kbd { font-family: var(--mono); }
+  h1, h2, h3 { font-family: var(--titel); text-wrap: balance; margin: 0; }
+  h2 { font-size: clamp(26px, 3.4vw, 34px); line-height: 1.15; letter-spacing: 0.01em; }
+  h3 { font-size: 19px; line-height: 1.25; }
+  p { margin: 0; }
+  .etikett {
+    font-family: var(--titel);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--akzent-tinte);
+  }
+  .abschnitt { padding-block: 72px 8px; display: grid; gap: 28px; }
+  .abschnitt > header { display: grid; gap: 10px; max-width: 62ch; }
+  .abschnitt > header p { color: var(--text-2); }
+
+  /* --- Kopfleiste --- */
+  .leiste {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin-inline: -20px;
+    padding: 12px 20px;
+    background: color-mix(in srgb, var(--grund) 78%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--linie);
+  }
+  .leiste .rahmen { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .marke { display: flex; align-items: center; gap: 10px; font-family: var(--titel); font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; margin-right: auto; }
+  .punkt-kugel { width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 32% 28%, rgba(255,255,255,.6), transparent 44%), linear-gradient(135deg, color-mix(in srgb, var(--akzent) 80%, #fff), color-mix(in srgb, var(--akzent) 70%, #000)); box-shadow: 0 0 14px var(--akzent-rand); }
+  .leiste nav { display: flex; gap: 18px; flex-wrap: wrap; }
+  .leiste nav a { color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500; }
+  .leiste nav a:hover { color: var(--text); }
+  .sprachknopf { font: 600 12px var(--mono); letter-spacing: 0.08em; color: var(--text); background: var(--panel-2); border: 1px solid var(--linie-stark); border-radius: 7px; padding: 5px 9px; cursor: pointer; }
+  .sprachknopf:hover { border-color: var(--akzent); }
+
+  /* --- Einstieg --- */
+  .einstieg { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 480px); gap: 56px; align-items: center; padding-block: 64px 24px; }
+  .einstieg-text { display: grid; gap: 22px; }
+  h1 { font-size: clamp(36px, 5.2vw, 60px); line-height: 1.04; letter-spacing: -0.005em; font-weight: 700; }
+  h1 .zweite { display: block; color: var(--akzent-tinte); }
+  .lead { font-size: 19px; line-height: 1.55; color: var(--text-2); max-width: 36ch; }
+  .knoepfe { display: flex; gap: 12px; flex-wrap: wrap; }
+  .knopf { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border-radius: 10px; font-weight: 700; font-size: 15px; text-decoration: none; border: 1px solid var(--linie-stark); color: var(--text); background: var(--panel); transition: border-color .15s, box-shadow .15s, filter .15s; }
+  .knopf:hover { border-color: var(--akzent); }
+  .knopf.primaer { background: var(--akzent); color: var(--akzent-auf); border-color: var(--akzent); box-shadow: var(--glow); }
+  .knopf.primaer:hover { filter: brightness(1.08); }
+  .tasten { display: grid; grid-template-columns: repeat(3, auto); gap: 6px 22px; justify-content: start; margin: 0; }
+  .tasten div { display: grid; gap: 4px; }
+  .tasten dt { font-size: 12px; color: var(--text-3); letter-spacing: 0.04em; }
+  .tasten dd { margin: 0; display: flex; gap: 3px; align-items: center; color: var(--text-3); font-size: 12px; }
+  kbd { font-size: 11.5px; color: var(--text); background: var(--panel-2); border: 1px solid var(--linie-stark); border-bottom-width: 2px; border-radius: 5px; padding: 2px 6px; }
+
+  /* --- Vorführung: das eine laute Element der Seite --- */
+  .vorfuehrung { position: relative; padding-top: 36px; padding-left: 36px; }
+  .kugel { position: absolute; top: 0; left: 0; width: 132px; height: 132px; z-index: 2; pointer-events: none; }
+  .fenster {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--akzent-rand);
+    clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
+    box-shadow: var(--schatten);
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    height: 500px;
+  }
+  .fenster-kopf { display: flex; align-items: center; gap: 10px; padding: 12px 14px 11px 80px; border-bottom: 1px solid var(--linie); background: linear-gradient(90deg, transparent, var(--akzent-weich)); }
+  .fenster-kopf b { font-family: var(--titel); font-size: 14px; }
+  .status { display: flex; align-items: center; gap: 6px; font: 11.5px var(--mono); color: var(--text-3); margin-left: auto; }
+  .status i { width: 7px; height: 7px; border-radius: 50%; background: var(--gruen); box-shadow: 0 0 8px var(--gruen); }
+  .status[data-z="thinking"] i { background: var(--akzent); box-shadow: 0 0 10px var(--akzent); }
+  .status[data-z="listening"] i { background: #FF6F9C; box-shadow: 0 0 10px #FF6F9C; }
+  .status[data-z="speaking"] i { background: #35E0C8; box-shadow: 0 0 10px #35E0C8; }
+  .verlauf { overflow-y: auto; padding: 16px 14px; display: flex; flex-direction: column; gap: 9px; scrollbar-width: thin; }
+  .zeile-nutzer { align-self: flex-end; max-width: 86%; background: linear-gradient(135deg, color-mix(in srgb, var(--akzent) 92%, #fff), color-mix(in srgb, var(--akzent) 74%, #000)); color: var(--akzent-auf); font-weight: 600; font-size: 14px; padding: 8px 12px; border-radius: 13px 13px 4px 13px; }
+  .zeile-nutzer small { display: block; font-weight: 500; font-size: 11px; opacity: .72; }
+  .zeile-ki { align-self: flex-start; max-width: 90%; background: var(--panel-2); border: 1px solid var(--linie); border-left: 2px solid var(--akzent); font-size: 14px; padding: 8px 12px; border-radius: 4px 13px 13px 13px; }
+  .zeile-werkzeug { font: 12px var(--mono); color: var(--text-3); display: flex; gap: 8px; align-items: center; padding-left: 4px; }
+  .zeile-werkzeug::before { content: "›"; color: var(--akzent-tinte); font-weight: 700; }
+  .zeile-werkzeug b { color: var(--text-2); font-weight: 600; }
+  .zeile-werkzeug .ok { color: var(--gruen); }
+  .dreher { width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--linie-stark); border-top-color: var(--akzent); animation: drehen .8s linear infinite; }
+  @keyframes drehen { to { transform: rotate(360deg); } }
+  .freigabe { position: relative; border: 1px solid color-mix(in srgb, var(--gelb) 45%, transparent); background: color-mix(in srgb, var(--gelb) 7%, var(--panel)); border-radius: 12px; padding: 14px 12px 11px; display: grid; gap: 8px; overflow: hidden; }
+  .freigabe::before { content: ""; position: absolute; inset: 0 0 auto; height: 4px; background: repeating-linear-gradient(-45deg, var(--gelb) 0 8px, transparent 8px 16px); }
+  .freigabe strong { font: 700 11.5px var(--titel); letter-spacing: .1em; text-transform: uppercase; color: var(--gelb); }
+  .freigabe pre { margin: 0; font: 13px/1.45 var(--text-schrift); white-space: pre-wrap; background: var(--grund-2); border-radius: 7px; padding: 8px 10px; }
+  .freigabe .ja-nein { display: flex; gap: 7px; }
+  .freigabe .ja-nein span { font-size: 13px; font-weight: 700; padding: 5px 13px; border-radius: 8px; border: 1px solid var(--linie-stark); }
+  .freigabe .ja-nein .ja { background: var(--akzent); color: var(--akzent-auf); border-color: var(--akzent); transition: transform .12s, box-shadow .12s; }
+  .freigabe .ja-nein .ja.gedrueckt { transform: scale(.94); box-shadow: var(--glow); }
+  .freigabe .erledigt { font: 600 12px var(--mono); color: var(--gruen); }
+  .eingabe-mock { display: flex; align-items: center; gap: 8px; margin: 0 12px 12px; padding: 9px 10px 9px 13px; border: 1px solid var(--linie-stark); border-radius: 12px; color: var(--text-3); font-size: 13.5px; }
+  .eingabe-mock span { flex: 1; }
+  .eingabe-mock i { width: 28px; height: 28px; border-radius: 8px; background: var(--akzent); box-shadow: var(--glow); }
+  .hinweis-beispiel { font-size: 12px; color: var(--text-3); margin-top: 10px; padding-left: 36px; }
+
+  /* --- Ampel: drei Spuren --- */
+  .ampel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .spur { --lampe: var(--gruen); background: var(--panel); border: 1px solid var(--linie); border-top: 3px solid var(--lampe); border-radius: 12px; padding: 20px 20px 18px; display: grid; gap: 12px; align-content: start; }
+  .spur.gelb { --lampe: var(--gelb); }
+  .spur.rot { --lampe: var(--rot); }
+  .spur-kopf { display: flex; align-items: center; gap: 10px; }
+  .lampe { width: 14px; height: 14px; border-radius: 50%; background: var(--lampe); box-shadow: 0 0 14px var(--lampe); flex: none; }
+  .spur-kopf h3 { font-size: 17px; letter-spacing: .06em; }
+  .spur-kopf span { margin-left: auto; font-size: 13px; color: var(--text-2); }
+  .spur p { color: var(--text-2); font-size: 15px; }
+  .werkzeuge { display: flex; flex-wrap: wrap; gap: 6px; }
+  .werkzeuge code { font-size: 12px; padding: 2px 7px; border-radius: 6px; background: var(--grund-2); border: 1px solid var(--linie); color: var(--text-2); }
+  .im-code { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 28px; padding: 18px 20px; border: 1px dashed var(--linie-stark); border-radius: 12px; }
+  .im-code p { font-size: 15px; color: var(--text-2); padding-left: 18px; position: relative; }
+  .im-code p::before { content: ""; position: absolute; left: 0; top: .6em; width: 8px; height: 8px; transform: rotate(45deg); background: var(--akzent); }
+
+  /* --- Funktionen: Nachschlage-Liste, keine Kachelwand --- */
+  .funktionen { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 28px; }
+  .funktion { display: grid; gap: 8px; align-content: start; padding-block: 18px; border-top: 1px solid var(--linie-stark); }
+  .funktion h3 { font-size: 16px; }
+  .funktion p { font-size: 14.5px; color: var(--text-2); }
+
+  /* --- Deine Julia --- */
+  .spielwiese { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 36px; align-items: start; background: var(--panel); border: 1px solid var(--linie); border-radius: 14px; padding: 28px; }
+  .regler { display: grid; gap: 20px; }
+  .feld { display: grid; gap: 7px; }
+  .feld label, .feld .beschriftung { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .feld input { font: 600 18px var(--titel); color: var(--text); background: var(--grund-2); border: 1px solid var(--linie-stark); border-radius: 9px; padding: 9px 12px; max-width: 280px; }
+  .feld input:focus { border-color: var(--akzent); box-shadow: var(--glow); outline: none; }
+  .feld small { font-size: 12.5px; color: var(--text-3); }
+  .feld small.fehler { color: var(--rot); }
+  .farben { display: flex; flex-wrap: wrap; gap: 10px; }
+  .farbe { display: grid; gap: 5px; justify-items: center; background: none; border: 0; padding: 0; cursor: pointer; color: var(--text-3); font: 500 11.5px var(--text-schrift); }
+  .farbe i { width: 34px; height: 34px; border-radius: 9px; border: 2px solid transparent; box-shadow: inset 0 0 0 1px rgba(255,255,255,.2); transition: transform .15s; }
+  .farbe:hover i { transform: translateY(-2px); }
+  .farbe[aria-pressed="true"] { color: var(--text); font-weight: 700; }
+  .farbe[aria-pressed="true"] i { border-color: var(--text); box-shadow: 0 0 16px var(--akzent-rand); }
+  .vorschau { display: grid; gap: 9px; background: var(--grund-2); border: 1px solid var(--linie); border-radius: 12px; padding: 18px 16px; }
+  .vorschau .etikett { margin-bottom: 4px; }
+
+  /* --- Installieren --- */
+  .installieren { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 28px; align-items: start; }
+  .schritte { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; counter-reset: schritt; }
+  .schritte li { display: grid; grid-template-columns: 34px 1fr; gap: 12px; counter-increment: schritt; }
+  .schritte li::before { content: counter(schritt); font: 700 16px var(--titel); color: var(--akzent-auf); background: var(--akzent); border-radius: 8px; width: 30px; height: 30px; display: grid; place-items: center; }
+  .schritte h3 { font-size: 16px; margin-bottom: 4px; }
+  .schritte p { color: var(--text-2); font-size: 15px; }
+  .code { position: relative; background: var(--grund-2); border: 1px solid var(--linie-stark); border-radius: 12px; padding: 18px 18px 16px; overflow-x: auto; }
+  .code pre { margin: 0; font: 13.5px/1.75 var(--mono); color: var(--text); }
+  .code .kommentar { color: var(--text-3); }
+  .code .prompt { color: var(--akzent-tinte); user-select: none; }
+
+  /* --- Versionen: echte Reihenfolge, daher Zeitleiste --- */
+  .versionen { list-style: none; margin: 0; padding: 0; display: grid; }
+  .versionen li { display: grid; grid-template-columns: 92px 1fr; gap: 18px; padding-block: 12px; border-top: 1px solid var(--linie); align-items: baseline; }
+  .versionen code { font-size: 14px; font-weight: 600; color: var(--akzent-tinte); font-variant-numeric: tabular-nums; }
+  .versionen li:first-child code::after { content: " ●"; color: var(--gruen); font-size: 10px; vertical-align: 2px; }
+  .versionen p { color: var(--text-2); font-size: 15px; }
+  .zehner { font-size: 14px; color: var(--text-3); }
+
+  footer { margin-top: 80px; padding-block: 28px 40px; border-top: 1px solid var(--linie); }
+  footer .rahmen { display: flex; flex-wrap: wrap; gap: 14px 26px; align-items: center; font-size: 14px; color: var(--text-3); }
+  footer a { color: var(--text-2); text-decoration: none; }
+  footer a:hover { color: var(--akzent-tinte); }
+  footer .rechts { margin-left: auto; }
+
+  @media (max-width: 960px) {
+    .einstieg { grid-template-columns: 1fr; gap: 40px; padding-top: 40px; }
+    .funktionen { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .ampel, .spielwiese, .installieren { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 560px) {
+    .funktionen, .im-code { grid-template-columns: 1fr; }
+    .tasten { grid-template-columns: 1fr 1fr; }
+    .leiste nav { display: none; }
+    .vorfuehrung { padding-left: 20px; }
+    .kugel { width: 96px; height: 96px; }
+    .fenster-kopf { padding-left: 64px; }
+    .spielwiese { padding: 20px; }
+    .versionen li { grid-template-columns: 70px 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .dreher { animation: none; }
+  }
+</style>
+
+<div class="leiste">
+  <div class="rahmen">
+    <a class="marke" href="#oben"><span class="punkt-kugel"></span><span class="ki-name">Julia</span></a>
+    <nav>
+      <a href="#ampel" data-i18n="nav.ampel">Ampel</a>
+      <a href="#funktionen" data-i18n="nav.funktionen">Funktionen</a>
+      <a href="#anpassen" data-i18n="nav.anpassen">Anpassen</a>
+      <a href="#installieren" data-i18n="nav.installieren">Installieren</a>
+      <a href="#versionen" data-i18n="nav.versionen">Versionen</a>
+    </nav>
+    <button class="sprachknopf" id="sprachKnopf" type="button">EN</button>
+  </div>
+</div>
+
+<main class="rahmen" id="oben">
+  <section class="einstieg">
+    <div class="einstieg-text">
+      <p class="etikett" data-i18n="einstieg.etikett">Persönliche KI für Windows · v0.6.0</p>
+      <h1><span data-i18n="einstieg.titel1">Sieht deinen Bildschirm.</span><span class="zweite" data-i18n="einstieg.titel2">Fragt, bevor sie handelt.</span></h1>
+      <p class="lead" data-i18n="einstieg.lead">Julia läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt sie dir vorher vor.</p>
+      <div class="knoepfe">
+        <a class="knopf primaer" href="#installieren" data-i18n="einstieg.installieren">Installieren</a>
+        <a class="knopf" href="https://github.com/MoinMornhart/julia-ai" data-i18n="einstieg.github">Auf GitHub ansehen</a>
+      </div>
+      <dl class="tasten">
+        <div><dt data-i18n="taste.sprechen">Sprechen</dt><dd id="tasteSprechen"></dd></div>
+        <div><dt data-i18n="taste.chat">Chat</dt><dd id="tasteChat"></dd></div>
+        <div><dt data-i18n="taste.overlay">Overlay im Spiel</dt><dd id="tasteOverlay"></dd></div>
+      </dl>
+    </div>
+
+    <div>
+      <div class="vorfuehrung" aria-label="Vorführung">
+        <canvas class="kugel" id="kugel" aria-hidden="true"></canvas>
+        <div class="fenster">
+          <div class="fenster-kopf">
+            <b class="ki-name">Julia</b>
+            <span class="status" id="status" data-z="idle"><i></i><span id="statusText">wartet</span></span>
+          </div>
+          <div class="verlauf" id="demoVerlauf" aria-live="off"></div>
+          <div class="eingabe-mock"><span id="eingabeText">Schreib Julia etwas …</span><i></i></div>
+        </div>
+      </div>
+      <p class="hinweis-beispiel" data-i18n="einstieg.beispiel">Beispielgespräch mit ausgedachten Mails – so läuft es in der App ab.</p>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="ampel">
+    <header>
+      <p class="etikett" data-i18n="ampel.etikett">Das Sicherheitsmodell</p>
+      <h2 data-i18n="ampel.titel">Jede Aktion hat eine Farbe</h2>
+      <p data-i18n="ampel.text">Im Zweifel gilt die höhere Stufe. Eine Freigabe gilt für genau eine Aktion – ein Ja für eine Mail ist kein Ja für die nächste.</p>
+    </header>
+    <div class="ampel" id="ampelSpuren"></div>
+    <div class="im-code" id="imCode"></div>
+  </section>
+
+  <section class="abschnitt" id="funktionen">
+    <header>
+      <p class="etikett" data-i18n="funk.etikett">Was sie kann</p>
+      <h2 data-i18n="funk.titel">Für alles, was an diesem Rechner anfällt</h2>
+    </header>
+    <div class="funktionen" id="funktionenListe"></div>
+  </section>
+
+  <section class="abschnitt" id="anpassen">
+    <header>
+      <p class="etikett" data-i18n="anp.etikett">Anpassen</p>
+      <h2 data-i18n="anp.titel">Deine KI, dein Name, deine Farbe</h2>
+      <p data-i18n="anp.text">Probier es hier aus – die Seite reagiert genauso wie die App. In Julia stellst du außerdem Hell, Dunkel oder wie Windows ein, die Form der KI und deine eigenen Pronomen.</p>
+    </header>
+    <div class="spielwiese">
+      <div class="regler">
+        <div class="feld">
+          <label for="kiNameEingabe" data-i18n="anp.name">Name deiner KI</label>
+          <input id="kiNameEingabe" type="text" maxlength="24" value="Julia" autocomplete="off" spellcheck="false">
+          <small id="nameHinweis" data-i18n="anp.namehinweis">Buchstaben, Ziffern, Leerzeichen, Punkt, Apostroph, Bindestrich – so kommt nichts in den Prompt, was dort nicht hingehört.</small>
+        </div>
+        <div class="feld">
+          <span class="beschriftung" data-i18n="anp.akzent">Akzentfarbe</span>
+          <div class="farben" id="farben"></div>
+        </div>
+      </div>
+      <div class="vorschau">
+        <p class="etikett" data-i18n="anp.vorschau">Vorschau</p>
+        <div class="zeile-nutzer" id="vorschauFrage"></div>
+        <div class="zeile-werkzeug"><b>termine_anzeigen</b><span class="ok">✓</span></div>
+        <div class="zeile-ki" id="vorschauAntwort"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="installieren">
+    <header>
+      <p class="etikett" data-i18n="inst.etikett">Installieren</p>
+      <h2 data-i18n="inst.titel">In fünf Minuten auf deinem PC</h2>
+    </header>
+    <div class="installieren">
+      <ol class="schritte" id="schritte"></ol>
+      <div class="code">
+<pre><span class="kommentar" data-i18n="inst.k1"># Herunterladen und auf die neueste Version</span>
+<span class="prompt">&gt; </span>git clone https://github.com/MoinMornhart/julia-ai.git
+<span class="prompt">&gt; </span>cd julia-ai
+<span class="prompt">&gt; </span>git checkout (git describe --tags --abbrev=0)
+
+<span class="kommentar" data-i18n="inst.k2"># Abhängigkeiten und Start</span>
+<span class="prompt">&gt; </span>npm install
+<span class="prompt">&gt; </span>npm start</pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="abschnitt" id="versionen">
+    <header>
+      <p class="etikett" data-i18n="ver.etikett">Versionen</p>
+      <h2 data-i18n="ver.titel">Jede Funktion ein eigenes Release</h2>
+      <p class="zehner" data-i18n="ver.zehner">Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates gibt es nur auf getaggte Stände – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und mit automatischem Rückweg.</p>
+    </header>
+    <ol class="versionen" id="versionenListe"></ol>
+  </section>
+</main>
+
+<footer>
+  <div class="rahmen">
+    <a href="https://github.com/MoinMornhart/julia-ai#readme">README</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/handy-telegram.md" data-i18n="fuss.handy">Handy verbinden</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/IDEEN.md" data-i18n="fuss.ideen">Ideen und Fahrplan</a>
+    <span class="rechts" data-i18n="fuss.lokal">Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.</span>
+  </div>
+</footer>
+
+<script>
+(() => {
+  'use strict';
+
+  const $ = (s) => document.querySelector(s);
+  const ruhig = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const speicher = {
+    lesen(k) { try { return window.localStorage.getItem(k); } catch { return null; } },
+    schreiben(k, v) { try { window.localStorage.setItem(k, v); } catch { /* egal */ } },
+  };
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  const AKZENTE = [
+    ['Glut', 'Ember', '#FF7A1A'], ['Neon', 'Neon', '#8B5CFF'], ['Cyber', 'Cyber', '#00D1FF'], ['Toxic', 'Toxic', '#39FF88'],
+    ['Magenta', 'Magenta', '#FF3DA5'], ['Blut', 'Blood', '#FF3B3B'], ['Gold', 'Gold', '#FFC23D'],
+  ];
+
+  const TEXTE = {
+    de: {
+      'nav.ampel': 'Ampel', 'nav.funktionen': 'Funktionen', 'nav.anpassen': 'Anpassen', 'nav.installieren': 'Installieren', 'nav.versionen': 'Versionen',
+      'einstieg.etikett': 'Persönliche KI für Windows · v0.6.0',
+      'einstieg.titel1': 'Sieht deinen Bildschirm.', 'einstieg.titel2': 'Fragt, bevor sie handelt.',
+      'einstieg.lead': '{name} läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt {name} dir vorher vor.',
+      'einstieg.installieren': 'Installieren', 'einstieg.github': 'Auf GitHub ansehen',
+      'einstieg.beispiel': 'Beispielgespräch mit ausgedachten Mails – so läuft es in der App ab.',
+      'taste.sprechen': 'Sprechen', 'taste.chat': 'Chat', 'taste.overlay': 'Overlay im Spiel',
+      'tasten.strg': 'Strg', 'tasten.umschalt': 'Umschalt', 'tasten.leer': 'Leertaste',
+      'status.idle': 'wartet', 'status.listening': 'hört zu', 'status.thinking': 'arbeitet', 'status.speaking': 'spricht',
+      'eingabe': 'Schreib {name} etwas …', 'per.sprache': '🎙 per Sprache',
+      'freigabe': 'Freigabe nötig', 'ja': 'Ja, machen', 'nein': 'Nein', 'freigegeben': '✓ Freigegeben',
+      'ampel.etikett': 'Das Sicherheitsmodell', 'ampel.titel': 'Jede Aktion hat eine Farbe',
+      'ampel.text': 'Im Zweifel gilt die höhere Stufe. Eine Freigabe gilt für genau eine Aktion – ein Ja für eine Mail ist kein Ja für die nächste.',
+      'funk.etikett': 'Was sie kann', 'funk.titel': 'Für alles, was an diesem Rechner anfällt',
+      'anp.etikett': 'Anpassen', 'anp.titel': 'Deine KI, dein Name, deine Farbe',
+      'anp.text': 'Probier es hier aus – die Seite reagiert genauso wie die App. In Julia stellst du außerdem Hell, Dunkel oder wie Windows ein, die Form der KI und deine eigenen Pronomen.',
+      'anp.name': 'Name deiner KI', 'anp.akzent': 'Akzentfarbe', 'anp.vorschau': 'Vorschau',
+      'anp.namehinweis': 'Buchstaben, Ziffern, Leerzeichen, Punkt, Apostroph, Bindestrich – so kommt nichts in den Prompt, was dort nicht hingehört.',
+      'anp.namefehler': 'Dieses Zeichen nimmt Julia im Namen nicht an – der Name landet im System-Prompt.',
+      'anp.frage': 'Hey {name}, was steht heute noch an?',
+      'anp.antwort': 'Um 15 Uhr der Anruf mit der Werkstatt, um 18:30 Training. Soll ich dich um 14:50 erinnern?',
+      'inst.etikett': 'Installieren', 'inst.titel': 'In fünf Minuten auf deinem PC',
+      'inst.k1': '# Herunterladen und auf die neueste Version', 'inst.k2': '# Abhängigkeiten und Start',
+      'ver.etikett': 'Versionen', 'ver.titel': 'Jede Funktion ein eigenes Release',
+      'ver.zehner': 'Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates gibt es nur auf getaggte Stände – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und mit automatischem Rückweg.',
+      'fuss.google': 'Google verbinden', 'fuss.handy': 'Handy verbinden', 'fuss.ideen': 'Ideen und Fahrplan',
+      'fuss.lokal': 'Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.',
+    },
+    en: {
+      'nav.ampel': 'Traffic light', 'nav.funktionen': 'Features', 'nav.anpassen': 'Customise', 'nav.installieren': 'Install', 'nav.versionen': 'Versions',
+      'einstieg.etikett': 'Personal AI for Windows · v0.6.0',
+      'einstieg.titel1': 'Sees your screen.', 'einstieg.titel2': 'Asks before acting.',
+      'einstieg.lead': '{name} lives in the tray, answers a hotkey and handles whatever comes up on your PC – from renaming 200 files to an email to Anna. Anything that can’t be undone, {name} shows you first.',
+      'einstieg.installieren': 'Install', 'einstieg.github': 'View on GitHub',
+      'einstieg.beispiel': 'Sample conversation with made-up emails – this is how it runs in the app.',
+      'taste.sprechen': 'Talk', 'taste.chat': 'Chat', 'taste.overlay': 'In-game overlay',
+      'tasten.strg': 'Ctrl', 'tasten.umschalt': 'Shift', 'tasten.leer': 'Space',
+      'status.idle': 'idle', 'status.listening': 'listening', 'status.thinking': 'working', 'status.speaking': 'speaking',
+      'eingabe': 'Write to {name} …', 'per.sprache': '🎙 by voice',
+      'freigabe': 'Approval needed', 'ja': 'Yes, do it', 'nein': 'No', 'freigegeben': '✓ Approved',
+      'ampel.etikett': 'The safety model', 'ampel.titel': 'Every action has a colour',
+      'ampel.text': 'When in doubt, the higher level applies. An approval covers exactly one action – a yes for one email is not a yes for the next.',
+      'funk.etikett': 'What she does', 'funk.titel': 'For everything that comes up on this PC',
+      'anp.etikett': 'Customise', 'anp.titel': 'Your AI, your name, your colour',
+      'anp.text': 'Try it here – the page reacts just like the app. In Julia you also pick light, dark or like Windows, the AI’s form and your own pronouns.',
+      'anp.name': 'Your AI’s name', 'anp.akzent': 'Accent colour', 'anp.vorschau': 'Preview',
+      'anp.namehinweis': 'Letters, digits, spaces, dot, apostrophe, hyphen – so nothing ends up in the prompt that doesn’t belong there.',
+      'anp.namefehler': 'Julia doesn’t accept that character in a name – the name goes into the system prompt.',
+      'anp.frage': 'Hey {name}, what’s left for today?',
+      'anp.antwort': 'The call with the garage at 3 pm, training at 6:30. Want a reminder at 2:50?',
+      'inst.etikett': 'Install', 'inst.titel': 'On your PC in five minutes',
+      'inst.k1': '# Download and switch to the latest version', 'inst.k2': '# Dependencies and start',
+      'ver.etikett': 'Versions', 'ver.titel': 'Every feature is its own release',
+      'ver.zehner': 'Julia counts in steps of ten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates only go to tagged releases – after your yes, once the current task is done, with automatic rollback.',
+      'fuss.google': 'Connect Google', 'fuss.handy': 'Connect your phone', 'fuss.ideen': 'Ideas and roadmap',
+      'fuss.lokal': 'Runs locally on your PC. No server of its own, no cloud storage.',
+    },
+  };
+
+  const DATEN = {
+    de: {
+      spuren: [
+        { klasse: 'gruen', name: 'GRÜN', kurz: 'einfach machen', text: 'Lesen, Screenshots, Fenster ordnen, Dateien in deinen Arbeitsordnern, lesende Befehle, Tests.', werkzeuge: ['screenshot', 'datei_lesen', 'mail_suchen', 'termine_anzeigen'] },
+        { klasse: 'gelb', name: 'GELB', kurz: 'erst fragen', text: 'Mails senden, Software installieren, Dateien außerhalb, Registry, git push, Admin. Die Freigabekarte zeigt Empfänger und den vollständigen Text.', werkzeuge: ['mail_senden', 'termin_anlegen', 'winget install', 'datei_papierkorb'] },
+        { klasse: 'rot', name: 'ROT', kurz: 'niemals', text: 'Passwörter tippen, Anmeldungen, Zahlungen, rm -rf, Papierkorb leeren, Virenschutz abschalten, Code aus dem Netz ausführen – auch nicht auf ausdrückliche Anweisung.', werkzeuge: ['rm -rf', 'Clear-RecycleBin', 'iwr … | iex'] },
+      ],
+      imCode: [
+        'Shell-Befehle werden eingestuft – nur eindeutig lesende sind GRÜN, alles Unklare wird GELB.',
+        'Passwortfelder erkennt sie über UI Automation und tippt dort nichts ein.',
+        'Nie blind klicken: Jede Klick- oder Tipp-Aktion braucht einen frischen Screenshot.',
+        'Was in Mails oder auf Webseiten steht, ist Information – nie ein Auftrag.',
+      ],
+      funktionen: [
+        ['Sehen', 'Screenshots aller Monitore, offene Fenster, Prozesse, Akku, Platte.', ['screenshot', 'fenster_auflisten']],
+        ['Handeln', 'Klicken, tippen, Programme öffnen, Dateien schreiben, PowerShell.', ['klick', 'tippen', 'shell']],
+        ['Google', 'Mails lesen und senden, Termine, Kontakte. Anmeldung im Browser, Tokens verschlüsselt.', ['mail_senden', 'kontakte_suchen']],
+        ['Handy', 'Über deinen eigenen Telegram-Bot. Hört nur auf dein Konto, alte Befehle werden verworfen.', ['/stopp', '/status']],
+        ['Overlay', 'Kleines Chatfenster über dem Spiel, Freigaben direkt darin, Antworten passiv eingeblendet.', ['Strg+Umschalt+Leertaste']],
+        ['Erinnerungen', '„In 20 Minuten Pizza raus" – als Meldung, im Chat, vorgelesen und aufs Handy.', ['erinnerung_setzen']],
+        ['Gedächtnis', 'Merkt sich Projekte, Arbeitsweisen und Geräte. Zugangsdaten nie.', ['gedaechtnis_schreiben']],
+        ['Updates', 'Nur getaggte Versionen, erst nach der laufenden Aufgabe, mit Rückweg.', ['update_pruefen']],
+      ],
+      schritte: [
+        ['Voraussetzungen', 'Windows 10 oder 11, Node.js ab Version 20, Git und ein API-Schlüssel von Anthropic.'],
+        ['Herunterladen und starten', 'Die Befehle rechts in PowerShell ausführen.'],
+        ['Einmal einrichten', 'Beim ersten Start fragt Julia nach deinem Vornamen, dem Schlüssel und den Ordnern, in denen sie ohne Rückfrage schreiben darf.'],
+        ['Optional verbinden', 'Google für Mails und Kalender, Telegram fürs Handy – mit Schritt-für-Schritt-Anleitungen.'],
+      ],
+      versionen: [
+        ['0.6.0', 'Erinnerungen und Timer: per Satz stellen, als Meldung, im Chat, vorgelesen und aufs Handy.'],
+        ['0.5.0', 'Gaming-Overlay: kleines Chatfenster über dem Spiel, Antworten auf Sprachbefehle passiv eingeblendet.'],
+        ['0.4.0', 'Eigener Name für die KI, ihre Form und deine Pronomen.'],
+        ['0.3.0', 'Handy über den eigenen Telegram-Bot, Freigaben per Knopf, /stopp bricht sofort ab.'],
+        ['0.2.0', 'Gaming-Look: Dunkel mit Glut-Orange, Hell, wie Windows, sieben Akzentfarben.'],
+        ['0.1.1', 'Härtung: Sandbox, geprüfte Absender, gefährliche Link-Protokolle blockiert.'],
+        ['0.1.0', 'Google-Konto: Gmail, Kalender und Kontakte.'],
+        ['0.0.1', 'Erster Start: Tray, Chat, Sprache, Blase, Ampel, Gedächtnis, Updates.'],
+      ],
+      demo: [
+        { t: 'zustand', z: 'listening' },
+        { t: 'nutzer', text: 'Hab ich neue Mails?', sprache: true },
+        { t: 'zustand', z: 'thinking' },
+        { t: 'werkzeug', name: 'mail_suchen', arg: '{"suche":"is:unread"}' },
+        { t: 'zustand', z: 'speaking' },
+        { t: 'ki', text: 'Drei neue. Anna fragt, ob Freitag 14 Uhr passt, die Telekom schickt die Septemberrechnung, der Rest sind Newsletter.' },
+        { t: 'zustand', z: 'idle' },
+        { t: 'pause', ms: 1600 },
+        { t: 'nutzer', text: 'Sag Anna zu und trag es ein.' },
+        { t: 'zustand', z: 'thinking' },
+        { t: 'werkzeug', name: 'kontakte_suchen', arg: '{"name":"Anna"}' },
+        { t: 'freigabe', text: 'E-Mail senden\nAn: anna@example.com\nBetreff: Re: Freitag?\n\nPasst, bis Freitag um 14 Uhr!' },
+        { t: 'werkzeug', name: 'mail_senden', arg: '' },
+        { t: 'freigabe', text: 'Termin anlegen\nTitel: Treffen mit Anna\nStart: Fr 14:00, Dauer: 60 Min.' },
+        { t: 'werkzeug', name: 'termin_anlegen', arg: '' },
+        { t: 'zustand', z: 'speaking' },
+        { t: 'ki', text: '✓ Erledigt: Zusage an Anna gesendet, Termin Freitag 14–15 Uhr im Kalender.' },
+        { t: 'zustand', z: 'idle' },
+      ],
+    },
+    en: {
+      spuren: [
+        { klasse: 'gruen', name: 'GREEN', kurz: 'just do it', text: 'Reading, screenshots, arranging windows, files in your working folders, read-only commands, tests.', werkzeuge: ['screenshot', 'datei_lesen', 'mail_suchen', 'termine_anzeigen'] },
+        { klasse: 'gelb', name: 'YELLOW', kurz: 'ask first', text: 'Sending mail, installing software, files elsewhere, registry, git push, admin. The approval card shows the recipients and the full text.', werkzeuge: ['mail_senden', 'termin_anlegen', 'winget install', 'datei_papierkorb'] },
+        { klasse: 'rot', name: 'RED', kurz: 'never', text: 'Typing passwords, logins, payments, rm -rf, emptying the bin, disabling antivirus, running code from the internet – not even on explicit instruction.', werkzeuge: ['rm -rf', 'Clear-RecycleBin', 'iwr … | iex'] },
+      ],
+      imCode: [
+        'Shell commands are classified – only clearly read-only ones are GREEN, anything unclear becomes YELLOW.',
+        'She detects password fields via UI Automation and types nothing there.',
+        'Never click blind: every click or typing action needs a fresh screenshot.',
+        'What emails or web pages say is information – never an instruction.',
+      ],
+      funktionen: [
+        ['See', 'Screenshots of every monitor, open windows, processes, battery, disk.', ['screenshot', 'fenster_auflisten']],
+        ['Act', 'Click, type, open programs, write files, PowerShell.', ['klick', 'tippen', 'shell']],
+        ['Google', 'Read and send mail, events, contacts. Sign-in in the browser, tokens encrypted.', ['mail_senden', 'kontakte_suchen']],
+        ['Phone', 'Through your own Telegram bot. Listens only to your account, stale commands are dropped.', ['/stop', '/status']],
+        ['Overlay', 'Small chat window over the game, approvals right inside, answers shown passively.', ['Ctrl+Shift+Space']],
+        ['Reminders', '"Pizza out in 20 minutes" – as a notification, in the chat, read aloud and on your phone.', ['erinnerung_setzen']],
+        ['Memory', 'Remembers projects, ways of working and devices. Never credentials.', ['gedaechtnis_schreiben']],
+        ['Updates', 'Tagged releases only, after the current task, with rollback.', ['update_pruefen']],
+      ],
+      schritte: [
+        ['Requirements', 'Windows 10 or 11, Node.js 20 or newer, Git and an API key from Anthropic.'],
+        ['Download and start', 'Run the commands on the right in PowerShell.'],
+        ['Set up once', 'On first start Julia asks for your first name, the key and the folders where she may write without asking.'],
+        ['Connect if you like', 'Google for mail and calendar, Telegram for your phone – with step-by-step guides.'],
+      ],
+      versionen: [
+        ['0.6.0', 'Reminders and timers: set by sentence, as a notification, in the chat, read aloud and on your phone.'],
+        ['0.5.0', 'Gaming overlay: small chat window over the game, answers to voice commands shown passively.'],
+        ['0.4.0', 'Your own name for the AI, its form and your pronouns.'],
+        ['0.3.0', 'Phone via your own Telegram bot, approvals by button, /stop cancels immediately.'],
+        ['0.2.0', 'Gaming look: dark with ember orange, light, like Windows, seven accent colours.'],
+        ['0.1.1', 'Hardening: sandbox, verified senders, dangerous link protocols blocked.'],
+        ['0.1.0', 'Google account: Gmail, Calendar and Contacts.'],
+        ['0.0.1', 'First start: tray, chat, voice, orb, traffic light, memory, updates.'],
+      ],
+      demo: [
+        { t: 'zustand', z: 'listening' },
+        { t: 'nutzer', text: 'Any new mail?', sprache: true },
+        { t: 'zustand', z: 'thinking' },
+        { t: 'werkzeug', name: 'mail_suchen', arg: '{"suche":"is:unread"}' },
+        { t: 'zustand', z: 'speaking' },
+        { t: 'ki', text: 'Three new ones. Anna asks whether Friday 2 pm works, Telekom sent the September invoice, the rest are newsletters.' },
+        { t: 'zustand', z: 'idle' },
+        { t: 'pause', ms: 1600 },
+        { t: 'nutzer', text: 'Say yes to Anna and put it in.' },
+        { t: 'zustand', z: 'thinking' },
+        { t: 'werkzeug', name: 'kontakte_suchen', arg: '{"name":"Anna"}' },
+        { t: 'freigabe', text: 'Send email\nTo: anna@example.com\nSubject: Re: Friday?\n\nWorks for me, see you Friday at 2 pm!' },
+        { t: 'werkzeug', name: 'mail_senden', arg: '' },
+        { t: 'freigabe', text: 'Create event\nTitle: Meeting with Anna\nStart: Fri 14:00, duration: 60 min' },
+        { t: 'werkzeug', name: 'termin_anlegen', arg: '' },
+        { t: 'zustand', z: 'speaking' },
+        { t: 'ki', text: '✓ Done: reply sent to Anna, event Friday 2–3 pm is in the calendar.' },
+        { t: 'zustand', z: 'idle' },
+      ],
+    },
+  };
+
+  let sprache = speicher.lesen('julia-seite-sprache') === 'en' ? 'en' : 'de';
+  let kiName = speicher.lesen('julia-seite-name') || 'Julia';
+  let akzent = speicher.lesen('julia-seite-akzent') || '#FF7A1A';
+  const NAME_MUSTER = /^[\p{L}\p{N}][\p{L}\p{N} .'’-]{0,23}$/u;
+  if (!NAME_MUSTER.test(kiName)) kiName = 'Julia';
+
+  const t = (k) => (TEXTE[sprache][k] ?? TEXTE.de[k] ?? k).split('{name}').join(kiName);
+
+  function tasten(liste) {
+    return liste.map((k) => `<kbd>${esc(k)}</kbd>`).join('+');
+  }
+
+  function statischeListen() {
+    const d = DATEN[sprache];
+    $('#ampelSpuren').innerHTML = d.spuren.map((s) => `
+      <div class="spur ${s.klasse}">
+        <div class="spur-kopf"><i class="lampe"></i><h3>${esc(s.name)}</h3><span>${esc(s.kurz)}</span></div>
+        <p>${esc(s.text)}</p>
+        <div class="werkzeuge">${s.werkzeuge.map((w) => `<code>${esc(w)}</code>`).join('')}</div>
+      </div>`).join('');
+    $('#imCode').innerHTML = d.imCode.map((x) => `<p>${esc(x)}</p>`).join('');
+    $('#funktionenListe').innerHTML = d.funktionen.map(([titel, text, w]) => `
+      <div class="funktion"><h3>${esc(titel)}</h3><p>${esc(text)}</p><div class="werkzeuge">${w.map((x) => `<code>${esc(x)}</code>`).join('')}</div></div>`).join('');
+    $('#schritte').innerHTML = d.schritte.map(([titel, text]) => `<li><div><h3>${esc(titel)}</h3><p>${esc(text)}</p></div></li>`).join('');
+    $('#versionenListe').innerHTML = d.versionen.map(([v, text]) => `<li><code>v${esc(v)}</code><p>${esc(text)}</p></li>`).join('');
+    const strg = t('tasten.strg');
+    $('#tasteSprechen').innerHTML = tasten([strg, 'Alt', t('tasten.leer')]);
+    $('#tasteChat').innerHTML = tasten([strg, 'Alt', 'J']);
+    $('#tasteOverlay').innerHTML = tasten([strg, t('tasten.umschalt'), t('tasten.leer')]);
+  }
+
+  function texteAnwenden() {
+    document.documentElement.lang = sprache;
+    document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
+    document.querySelectorAll('.ki-name').forEach((el) => { el.textContent = kiName; });
+    $('#sprachKnopf').textContent = sprache === 'de' ? 'EN' : 'DE';
+    $('#sprachKnopf').setAttribute('aria-label', sprache === 'de' ? 'Switch to English' : 'Auf Deutsch umschalten');
+    $('#eingabeText').textContent = t('eingabe');
+    $('#vorschauFrage').textContent = t('anp.frage');
+    $('#vorschauAntwort').textContent = t('anp.antwort');
+    statischeListen();
+    farbenZeigen();
+    zustandSetzen(kZustand);
+  }
+
+  // --- Akzentfarbe ---
+
+  function hexRgb(h) { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function luminanz(hex) {
+    const kanal = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+    const [r, g, b] = hexRgb(hex);
+    return 0.2126 * kanal(r) + 0.7152 * kanal(g) + 0.0722 * kanal(b);
+  }
+  function akzentSetzen(hex, merken = true) {
+    akzent = hex;
+    document.documentElement.style.setProperty('--akzent', hex);
+    document.documentElement.style.setProperty('--akzent-auf', luminanz(hex) > 0.28 ? '#160A02' : '#FFFFFF');
+    if (merken) speicher.schreiben('julia-seite-akzent', hex);
+    farbenZeigen();
+  }
+  function farbenZeigen() {
+    $('#farben').innerHTML = AKZENTE.map(([de, en, hex]) => `
+      <button class="farbe" type="button" data-farbe="${hex}" aria-pressed="${hex === akzent}"><i style="background:${hex}"></i>${esc(sprache === 'de' ? de : en)}</button>`).join('');
+  }
+  $('#farben').addEventListener('click', (e) => {
+    const knopf = e.target.closest('[data-farbe]');
+    if (knopf) akzentSetzen(knopf.dataset.farbe);
+  });
+
+  // --- Name ---
+
+  const nameEingabe = $('#kiNameEingabe');
+  nameEingabe.value = kiName;
+  nameEingabe.addEventListener('input', () => {
+    const wert = nameEingabe.value.replace(/\s+/g, ' ').trim();
+    const hinweis = $('#nameHinweis');
+    if (wert && !NAME_MUSTER.test(wert)) {
+      hinweis.textContent = t('anp.namefehler');
+      hinweis.classList.add('fehler');
+      return;
+    }
+    hinweis.classList.remove('fehler');
+    kiName = wert || 'Julia';
+    speicher.schreiben('julia-seite-name', kiName);
+    texteAnwenden();
+    hinweis.textContent = t('anp.namehinweis');
+  });
+
+  $('#sprachKnopf').addEventListener('click', () => {
+    sprache = sprache === 'de' ? 'en' : 'de';
+    speicher.schreiben('julia-seite-sprache', sprache);
+    texteAnwenden();
+    demoStarten(7);
+  });
+
+  // --- Die Blase (wie in der App: Lichtflecken in einer Kugel) ---
+
+  const kugel = $('#kugel');
+  const kctx = kugel.getContext('2d');
+  const TEMPO = { idle: 0.35, listening: 0.8, thinking: 1.8, speaking: 1.0 };
+  const OEFFNUNG = { idle: 1, listening: 1.07, thinking: 0.96, speaking: 1.03 };
+  const KLECKSE = Array.from({ length: 6 }, (_, i) => ({ phase: i * 1.7, f1: 0.55 + i * 0.13, f2: 0.75 + ((i * 37) % 5) * 0.11, bahn: 0.26 + (i % 3) * 0.13, gr: 0.55 + (i % 2) * 0.2 }));
+  let kZustand = 'idle';
+  let kZeit = 0;
+  let kLetzte = performance.now();
+  let kOeffnung = 1;
+  let kFarben = KLECKSE.map(() => hexRgb(akzent));
+  const mischen = (a, b, x) => a.map((v, i) => v + (b[i] - v) * x);
+  const rgba = (c, a) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`;
+
+  function palette(z) {
+    const a = hexRgb(akzent);
+    const w = [255, 255, 255];
+    if (z === 'listening') return [mischen(a, w, 0.25), [255, 111, 156]];
+    if (z === 'thinking') return [mischen(a, [255, 193, 94], 0.4), a];
+    if (z === 'speaking') return [a, mischen(a, w, 0.45)];
+    return [a, mischen(a, [26, 16, 48], 0.55)];
+  }
+
+  function kugelGroesse() {
+    const dpr = window.devicePixelRatio || 1;
+    const r = kugel.getBoundingClientRect();
+    kugel.width = Math.max(1, Math.round(r.width * dpr));
+    kugel.height = Math.max(1, Math.round(r.height * dpr));
+  }
+
+  function kugelZeichnen(jetzt) {
+    const dt = Math.min(0.05, (jetzt - kLetzte) / 1000);
+    kLetzte = jetzt;
+    kZeit += dt * TEMPO[kZustand];
+    kOeffnung += (OEFFNUNG[kZustand] - kOeffnung) * Math.min(1, dt * 4);
+    const ziel = palette(kZustand);
+    kFarben = kFarben.map((c, i) => mischen(c, ziel[i % 2], Math.min(1, dt * 3)));
+    const pegel = kZustand === 'speaking' ? 0.35 + 0.35 * Math.abs(Math.sin(kZeit * 9)) : 0;
+    const w = kugel.width;
+    const h = kugel.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const R = Math.min(w, h) * 0.36 * kOeffnung * (1 + 0.02 * Math.sin(kZeit * 2.1)) * (1 + pegel * 0.12);
+    kctx.clearRect(0, 0, w, h);
+    const schein = kctx.createRadialGradient(cx, cy, R * 0.7, cx, cy, R * 1.34);
+    schein.addColorStop(0, rgba(kFarben[0], 0.34));
+    schein.addColorStop(1, rgba(kFarben[1], 0));
+    kctx.fillStyle = schein;
+    kctx.beginPath(); kctx.arc(cx, cy, R * 1.34, 0, Math.PI * 2); kctx.fill();
+    kctx.save();
+    kctx.beginPath(); kctx.arc(cx, cy, R, 0, Math.PI * 2); kctx.clip();
+    const basis = kctx.createRadialGradient(cx - R * 0.3, cy - R * 0.35, R * 0.1, cx, cy, R);
+    basis.addColorStop(0, rgba(mischen(kFarben[0], [255, 255, 255], 0.12), 1));
+    basis.addColorStop(1, rgba(mischen(kFarben[1], [12, 10, 34], 0.45), 1));
+    kctx.fillStyle = basis;
+    kctx.fillRect(0, 0, w, h);
+    kctx.globalCompositeOperation = 'screen';
+    KLECKSE.forEach((k, i) => {
+      const x = cx + Math.sin(kZeit * k.f1 + k.phase) * R * k.bahn;
+      const y = cy + Math.cos(kZeit * k.f2 + k.phase * 1.3) * R * k.bahn;
+      const r = R * k.gr * (1 + pegel * 0.1);
+      const g = kctx.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, rgba(kFarben[i % 2], 0.6));
+      g.addColorStop(0.55, rgba(kFarben[i % 2], 0.2));
+      g.addColorStop(1, rgba(kFarben[i % 2], 0));
+      kctx.fillStyle = g;
+      kctx.fillRect(0, 0, w, h);
+    });
+    kctx.globalCompositeOperation = 'source-over';
+    const licht = kctx.createRadialGradient(cx - R * 0.35, cy - R * 0.45, 0, cx - R * 0.35, cy - R * 0.45, R * 0.75);
+    licht.addColorStop(0, 'rgba(255,255,255,0.32)');
+    licht.addColorStop(1, 'rgba(255,255,255,0)');
+    kctx.fillStyle = licht;
+    kctx.fillRect(0, 0, w, h);
+    kctx.restore();
+    kctx.lineWidth = Math.max(1, R * 0.014);
+    kctx.strokeStyle = 'rgba(255,255,255,0.24)';
+    kctx.beginPath(); kctx.arc(cx, cy, R - kctx.lineWidth / 2, 0, Math.PI * 2); kctx.stroke();
+    if (!ruhig) requestAnimationFrame(kugelZeichnen);
+  }
+
+  function zustandSetzen(z) {
+    kZustand = z in TEMPO ? z : 'idle';
+    const s = $('#status');
+    s.dataset.z = kZustand;
+    $('#statusText').textContent = t(`status.${kZustand}`);
+    if (ruhig) { kFarben = KLECKSE.map((_, i) => palette(kZustand)[i % 2]); kugelZeichnen(performance.now()); }
+  }
+
+  // --- Die Vorführung ---
+
+  const verlauf = $('#demoVerlauf');
+  const warte = (ms) => new Promise((r) => setTimeout(r, ms));
+  let demoLauf = 0;
+
+  function anhaengen(el) {
+    verlauf.appendChild(el);
+    verlauf.scrollTop = verlauf.scrollHeight;
+    return el;
+  }
+
+  function element(klasse) {
+    const d = document.createElement('div');
+    d.className = klasse;
+    return d;
+  }
+
+  async function schritt(s, sofort, lauf) {
+    const aktiv = () => lauf === demoLauf;
+    if (s.t === 'zustand') { zustandSetzen(s.z); return; }
+    if (s.t === 'pause') { if (!sofort) await warte(s.ms); return; }
+    if (s.t === 'nutzer') {
+      const d = anhaengen(element('zeile-nutzer'));
+      const text = document.createElement('span');
+      d.appendChild(text);
+      if (s.sprache) { const k = document.createElement('small'); k.textContent = t('per.sprache'); d.appendChild(k); }
+      if (sofort) { text.textContent = s.text; return; }
+      for (let i = 1; i <= s.text.length && aktiv(); i++) { text.textContent = s.text.slice(0, i); await warte(34); }
+      await warte(350);
+      return;
+    }
+    if (s.t === 'werkzeug') {
+      const d = anhaengen(element('zeile-werkzeug'));
+      d.innerHTML = `<b>${esc(s.name)}</b>${s.arg ? `<span>${esc(s.arg)}</span>` : ''}<i class="dreher"></i>`;
+      if (!sofort) await warte(750);
+      d.querySelector('.dreher').outerHTML = '<span class="ok">✓</span>';
+      return;
+    }
+    if (s.t === 'ki') {
+      const d = anhaengen(element('zeile-ki'));
+      if (sofort) { d.textContent = s.text; return; }
+      const woerter = s.text.split(' ');
+      for (let i = 1; i <= woerter.length && aktiv(); i++) { d.textContent = woerter.slice(0, i).join(' '); verlauf.scrollTop = verlauf.scrollHeight; await warte(55); }
+      await warte(400);
+      return;
+    }
+    if (s.t === 'freigabe') {
+      zustandSetzen('idle');
+      const d = anhaengen(element('freigabe'));
+      d.innerHTML = `<strong>⚠ ${esc(t('freigabe'))}</strong><pre>${esc(s.text)}</pre><div class="ja-nein"><span class="ja">${esc(t('ja'))}</span><span>${esc(t('nein'))}</span></div>`;
+      verlauf.scrollTop = verlauf.scrollHeight;
+      if (!sofort) {
+        await warte(1700);
+        if (!aktiv()) return;
+        d.querySelector('.ja').classList.add('gedrueckt');
+        await warte(320);
+      }
+      d.querySelector('.ja-nein').outerHTML = `<span class="erledigt">${esc(t('freigegeben'))}</span>`;
+      zustandSetzen('thinking');
+    }
+  }
+
+  // Die ersten Schritte stehen sofort da, damit die Seite schon ohne Warten
+  // etwas zeigt; danach läuft das Gespräch weiter und wiederholt sich.
+  async function demoStarten(sofortBis = 0) {
+    const lauf = ++demoLauf;
+    verlauf.innerHTML = '';
+    const schritte = DATEN[sprache].demo;
+    for (let i = 0; i < schritte.length; i++) {
+      if (lauf !== demoLauf) return;
+      await schritt(schritte[i], ruhig || i < sofortBis, lauf);
+    }
+    if (ruhig || lauf !== demoLauf) return;
+    await warte(5500);
+    if (lauf === demoLauf) demoStarten(0);
+  }
+
+  // --- Start ---
+  kugelGroesse();
+  window.addEventListener('resize', kugelGroesse);
+  akzentSetzen(akzent, false);
+  texteAnwenden();
+  if (!ruhig) requestAnimationFrame(kugelZeichnen); else kugelZeichnen(performance.now());
+  demoStarten(7);
+})();
+</script>
