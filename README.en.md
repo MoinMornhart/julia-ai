@@ -176,6 +176,11 @@ without asking. The key is stored encrypted with Windows (DPAPI).
 Hotkeys can be changed in the settings. Answers are read aloud when you spoke (configurable:
 always, never, when I spoke).
 
+**"Hey Julia":** If you like, Julia reacts to her wake word – with the name you gave her, so
+"Hey Rainer" works too. It's off by default because the microphone stays open for it. Only
+the word is detected, right on the PC; nothing is recorded or sent. The tray shows when Julia
+is listening, and it pauses while she speaks herself.
+
 **Speech recognition:** Julia uses the built-in Windows recognizer (System.Speech). The
 matching language pack with speech recognition must be installed (Settings → Time & language
 → Language). Quality is decent, but not at the level of current cloud dictation.

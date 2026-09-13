@@ -176,6 +176,11 @@ verschlüsselt gespeichert.
 Die Hotkeys lassen sich in den Einstellungen ändern. Antworten werden vorgelesen, wenn du
 gesprochen hast (einstellbar: immer, nie, bei Sprache).
 
+**„Hey Julia":** Auf Wunsch reagiert Julia auf ihr Aktivierungswort – mit dem Namen, den du
+ihr gegeben hast, also auch „Hey Rainer". Standardmäßig ist das aus, weil das Mikrofon dafür
+offen bleibt. Erkannt wird nur das Wort, direkt auf dem PC; nichts wird aufgenommen oder
+verschickt. Das Tray zeigt an, wenn Julia lauscht, und solange sie selbst spricht, pausiert es.
+
 **Spracherkennung:** Julia nutzt die Windows-eigene Erkennung (System.Speech). Für Deutsch
 bzw. Englisch muss das passende Sprachpaket mit Spracherkennung installiert sein
 (Einstellungen → Zeit und Sprache → Sprache). Die Qualität ist ordentlich, aber nicht auf dem

@@ -24,6 +24,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ – | Webseite mit Live-Vorführung, Ampel, Funktionen und Versionen ([site/index.html](../site/index.html)) |
 | ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
 | ✅ 0.7.1 | Protokoll als Prüfsummen-Kette; Release nur mit grünen Tests und ohne bekannte Lücken ab Stufe „high" |
+| ✅ 0.8.0 | „Hey <Name>" als Aktivierungswort – standardmäßig aus, nur lokal, pausiert beim eigenen Sprechen |
 
 ## Als Nächstes
 
@@ -31,7 +32,6 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 |---|---|---|---|---|
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |
-| 📋 | **„Hey <Name>" als Aktivierungswort** – nur wenn eingeschaltet | M | hoch | Standard aus; nur das Schlüsselwort wird lokal erkannt, nichts wird gespeichert oder verschickt; sichtbare Anzeige, wenn das Mikrofon lauscht |
 
 ## Sicherheit – geplant
 

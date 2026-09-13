@@ -38,6 +38,10 @@ const STANDARD = {
   kosten: {
     tageslimit_usd: 10, // 0 = keine Bremse
   },
+  weckwort: {
+    an: false, // Mikrofon bleibt offen – deshalb nur, wenn ausdrücklich eingeschaltet
+    schwelle: 0.8,
+  },
   design: {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
     akzent: '#FF7A1A',
@@ -140,6 +144,7 @@ function pruefen(schluessel, wert) {
     case 'design.glow':
     case 'erinnerung.vorlesen':
     case 'erinnerung.handy':
+    case 'weckwort.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
@@ -204,6 +209,8 @@ function pruefen(schluessel, wert) {
       return farbe(wert);
     case 'hotkey.overlay':
       return String(wert ?? '').trim();
+    case 'weckwort.schwelle':
+      return Math.round(zahl(wert, 0.5, 0.95, 'Erkennungsschwelle') * 100) / 100;
     case 'kosten.tageslimit_usd':
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));

@@ -26,6 +26,7 @@ const { Konten } = require('./konten');
 const { TelegramHandy } = require('./handy/telegram');
 const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
+const { Weckwort } = require('./weckwort');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -46,6 +47,8 @@ let sprache;
 let konten;
 let handy;
 let erinnerungen;
+let weckwort;
+let weckwortZuletzt = 0;
 let tray = null;
 let chatFenster = null;
 let orbFenster = null;
@@ -390,6 +393,7 @@ function trayMenue() {
     { label: `${t('tray.overlay')}   (${config.get('hotkey.overlay') || '–'})`, click: overlayUmschalten },
     { type: 'separator' },
     { label: t('tray.blase'), type: 'checkbox', checked: config.get('blase.an'), click: (m) => config.set('blase.an', m.checked) },
+    { label: t('tray.weckwort'), type: 'checkbox', checked: config.get('weckwort.an'), click: (m) => config.set('weckwort.an', m.checked) },
     { label: t('tray.neu'), click: () => { agent.neu(); anAlle('chat:geleert'); } },
     { label: t('tray.einstellungen'), click: () => einstellungenOeffnen(false) },
     { type: 'separator' },
@@ -399,7 +403,8 @@ function trayMenue() {
     { label: `${t('tray.beenden')}  ·  v${version()}`, click: () => { beendenLaeuft = true; app.quit(); } },
   ]);
   tray.setContextMenu(menue);
-  tray.setToolTip(`${t('tray.tooltip')} ${version()}`);
+  // Sichtbar machen, wenn das Mikrofon auf das Aktivierungswort lauscht.
+  tray.setToolTip(config.get('weckwort.an') ? t('tray.tooltip_weckwort') : `${t('tray.tooltip')} ${version()}`);
 }
 
 function hotkeysRegistrieren() {
@@ -675,6 +680,38 @@ function erinnerungMelden(e) {
   }
 }
 
+// --- Aktivierungswort ("Hey Julia") ---
+// Läuft nur, wenn eingeschaltet, und pausiert, solange Julia selbst zuhört oder
+// spricht – sonst hörte sie ihren eigenen Namen aus dem Lautsprecher.
+
+function weckwortAktualisieren() {
+  if (!weckwort) return;
+  const an = config.get('weckwort.an') && !VORFUEHRUNG && !sprache.hoertZu && !sprache.sprichtGerade;
+  if (an) weckwort.starten({ name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle') });
+  else weckwort.stoppen();
+}
+
+function weckwortVerdrahten() {
+  let fehlerGemeldet = false;
+  weckwort.on('erkannt', () => {
+    if (Date.now() - weckwortZuletzt < 3000) return;
+    weckwortZuletzt = Date.now();
+    if (agent.beschaeftigt || sprache.hoertZu || sprache.sprichtGerade) return;
+    sprachUmschalten();
+  });
+  weckwort.on('fehler', (f) => {
+    if (fehlerGemeldet) return;
+    fehlerGemeldet = true;
+    let text = f;
+    if (f === 'KEIN_ERKENNER') text = t('weckwort.fehler', { sprache: config.get('sprachcode') === 'en' ? 'English' : 'Deutsch' });
+    else if (f === 'KEIN_MIKROFON') text = t('weckwort.kein_mikrofon');
+    melden(assistentName(), text);
+  });
+  sprache.on('mikrofon', (an) => { if (an) weckwort.stoppen(); else weckwortAktualisieren(); });
+  sprache.on('lautsprecher', (an) => { if (an) weckwort.stoppen(); else weckwortAktualisieren(); });
+  weckwortAktualisieren();
+}
+
 function erinnerungenVerdrahten() {
   erinnerungen.on('faellig', erinnerungMelden);
   if (!VORFUEHRUNG) erinnerungen.starten();
@@ -764,6 +801,8 @@ async function start() {
   agentVerdrahten();
   handyVerdrahten();
   erinnerungenVerdrahten();
+  weckwort = new Weckwort();
+  weckwortVerdrahten();
   ipcEinrichten();
 
   // Keine Seite bekommt Kamera, Mikrofon, Standort, Benachrichtigungen o. Ä.
@@ -781,7 +820,8 @@ async function start() {
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k === 'autostart') autostartSetzen();
-    if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name') trayMenue();
+    if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name' || k === 'weckwort.an') trayMenue();
+    if (/^(weckwort\.|assistent\.name$|sprachcode$)/.test(k)) weckwortAktualisieren();
     if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
     if (k === 'assistent.name' && chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
     anAlle('config:geaendert', oeffentlicheConfig());
@@ -836,6 +876,7 @@ if (!app.requestSingleInstanceLock()) {
     win.worker.beenden();
     if (handy) handy.stoppen();
     if (erinnerungen) erinnerungen.stoppen();
+    if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }
   });
   app.whenReady().then(start).catch((e) => {

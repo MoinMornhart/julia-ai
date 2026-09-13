@@ -28,7 +28,7 @@ try {
   if (-not $info) { Aus 'E KEIN_ERKENNER'; exit 2 }
   $rec = New-Object System.Speech.Recognition.SpeechRecognitionEngine($info)
   $rec.LoadGrammar((New-Object System.Speech.Recognition.DictationGrammar))
-  $rec.SetInputToDefaultAudioDevice()
+  try { $rec.SetInputToDefaultAudioDevice() } catch { Aus 'E KEIN_MIKROFON'; exit 3 }
   $rec.InitialSilenceTimeout = [TimeSpan]::FromSeconds(8)
   $rec.EndSilenceTimeout = [TimeSpan]::FromSeconds(1.0)
   $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.5)
@@ -119,6 +119,7 @@ class Sprache extends EventEmitter {
     return new Promise((resolve, reject) => {
       const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur });
       this.hoeren = p;
+      this.emit('mikrofon', true);
       let text = '';
       let fehler = null;
       readline.createInterface({ input: p.stdout }).on('line', (z) => {
@@ -129,7 +130,12 @@ class Sprache extends EventEmitter {
       p.on('exit', () => {
         this.hoeren = null;
         this.emit('pegel', 0);
-        if (fehler === 'KEIN_ERKENNER') {
+        this.emit('mikrofon', false);
+        if (fehler === 'KEIN_MIKROFON') {
+          reject(new Error(kultur === 'en'
+            ? 'No microphone found. Please connect one or pick it as the default recording device in the Windows sound settings.'
+            : 'Kein Mikrofon gefunden. Bitte eines anschließen oder in den Windows-Soundeinstellungen als Standard-Aufnahmegerät wählen.'));
+        } else if (fehler === 'KEIN_ERKENNER') {
           reject(new Error(kultur === 'en'
             ? 'No English speech recognizer is installed. Add one under Windows Settings > Time & language > Speech.'
             : 'Für Deutsch ist keine Spracherkennung installiert. Unter Windows-Einstellungen > Zeit und Sprache > Spracherkennung nachrüsten.'));
@@ -155,6 +161,7 @@ class Sprache extends EventEmitter {
         JULIA_KULTUR: sprachcode === 'en' ? 'en' : 'de',
       });
       this.sprechenProc = p;
+      this.emit('lautsprecher', true);
       readline.createInterface({ input: p.stdout }).on('line', (z) => {
         if (!z.startsWith('V ')) return;
         const vis = Number(z.slice(2));
@@ -163,6 +170,7 @@ class Sprache extends EventEmitter {
       p.on('exit', () => {
         if (this.sprechenProc === p) this.sprechenProc = null;
         this.emit('pegel', 0);
+        this.emit('lautsprecher', false);
         resolve();
       });
     });
