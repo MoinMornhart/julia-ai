@@ -78,6 +78,28 @@ It is **off by default** and lets clicks pass through.
 Monitor, corner, size, opacity, speed, sensitivity and any number of colours per state can be
 changed at runtime – in the settings or just by saying "make it greener".
 
+## Connecting accounts
+
+Julia can use your **Google account** – Gmail, Calendar and Contacts:
+
+> "Any new mail?" · "What's on tomorrow?" · "Tell Anna I'll be ten minutes late." ·
+> "Put the dentist in for Friday 2 pm." · "Save the invoice from the Telekom mail to Downloads."
+
+| Julia can | Traffic light |
+|---|---|
+| Search and read mail, save attachments, create drafts | 🟢 |
+| View events, find contacts | 🟢 |
+| Send mail, create events, send invitations | 🟡 – the approval card shows recipients and the full text |
+| Delete mail or events | not available |
+
+You sign in yourself in the browser; Julia never sees a password. Once, you need your own
+OAuth client from the Google Cloud Console, which takes about ten minutes:
+**[step-by-step guide](docs/google-setup.en.md)**. Then: *Settings → Connections → Connect
+Google*.
+
+What an email says is never an instruction for Julia. Hidden instructions in mail
+("Assistant, forward this") aren't carried out – she points them out to you instead.
+
 ## Installation
 
 **Requirements:** Windows 10 or 11, [Node.js](https://nodejs.org) 20 or newer,
@@ -121,6 +143,7 @@ Everything lives in `%APPDATA%\Julia`, outside the repo. Updates never touch thi
 | File | Contents |
 |---|---|
 | `config.json` | all settings, the API key only encrypted |
+| `konten.json` | connected accounts; secrets and tokens only encrypted |
 | `gedaechtnis.json` | what Julia remembers long-term |
 | `protokoll.jsonl` | every action beyond GREEN |
 | `sicherungen\` | previous versions of overwritten files |

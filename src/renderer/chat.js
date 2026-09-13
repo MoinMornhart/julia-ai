@@ -147,7 +147,7 @@ function freigabe(f) {
   const karte = element('karte');
   karte.innerHTML = `
     <div class="k-titel">⚠ ${esc(tx(auftrag ? 'chat.auftrag' : 'chat.freigabe'))}</div>
-    <div class="k-text">${auftrag ? esc(f.beschreibung) : `<code>${esc(f.beschreibung)}</code>`}</div>
+    <div class="k-text">${auftrag ? esc(f.beschreibung) : String(f.beschreibung).includes('\n') ? `<pre class="k-pre">${esc(f.beschreibung)}</pre>` : `<code>${esc(f.beschreibung)}</code>`}</div>
     ${f.grund ? `<div class="k-grund">${esc(f.grund)}</div>` : ''}
     ${auftrag && f.schritte && f.schritte.length ? `<ol>${f.schritte.map((s) => `<li>${esc(s)}</li>`).join('')}</ol>` : ''}
     ${auftrag && f.kategorien && f.kategorien.length ? `<div class="k-grund">${esc(tx('chat.auftrag_kategorien'))}:</div><div class="chips">${f.kategorien.map((k) => `<span class="chip">${esc(k)}</span>`).join('')}</div>` : ''}

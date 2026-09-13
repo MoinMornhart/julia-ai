@@ -19,6 +19,7 @@ const { Protokoll } = require('./protokoll');
 const { Agent } = require('./agent');
 const { Updater } = require('./updater');
 const { Sprache } = require('./sprache');
+const { Konten } = require('./konten');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -36,6 +37,7 @@ let protokoll;
 let agent;
 let updater;
 let sprache;
+let konten;
 let tray = null;
 let chatFenster = null;
 let orbFenster = null;
@@ -90,6 +92,7 @@ function laufzeitText() {
     monitore: bildschirm.beschreibung(),
     gedaechtnis: gedaechtnis.alsText(),
     vorgemerkt: kanal !== 'auto' ? protokoll.vorgemerkt() : [],
+    konten: konten.beschreibung(),
   });
 }
 
@@ -191,6 +194,10 @@ function einstellungenOeffnen(einrichtung = false) {
     title: t('einst.titel'),
   }));
   einstFenster.loadFile(path.join(RENDERER, 'einstellungen.html'), { query: { einrichtung: einrichtung ? '1' : '0' } });
+  einstFenster.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https:\/\//.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
   einstFenster.once('ready-to-show', () => einstFenster.show());
   einstFenster.on('closed', () => { einstFenster = null; });
   return einstFenster;
@@ -382,6 +389,25 @@ function ipcEinrichten() {
     return r.canceled ? null : r.filePaths[0];
   });
   ipcMain.handle('stimmen', () => sprache.stimmen());
+  ipcMain.handle('konten:status', () => konten.status());
+  ipcMain.handle('konten:google:verbinden', async (_e, daten) => {
+    try {
+      await konten.google.verbinden(daten || {});
+      return { status: konten.status() };
+    } catch (e) {
+      return { fehler: e.message, status: konten.status() };
+    } finally {
+      if (einstFenster && !einstFenster.isDestroyed()) einstFenster.focus();
+    }
+  });
+  ipcMain.handle('konten:google:trennen', async () => {
+    try {
+      await konten.google.trennen();
+      return { status: konten.status() };
+    } catch (e) {
+      return { fehler: e.message, status: konten.status() };
+    }
+  });
   ipcMain.handle('einrichtung:fertig', () => {
     config.set('einrichtung_fertig', true);
     if (einstFenster) einstFenster.close();
@@ -446,6 +472,17 @@ async function start() {
 
   gedaechtnis = new Gedaechtnis(DATEN);
   protokoll = new Protokoll(DATEN);
+  konten = new Konten({
+    ordner: DATEN,
+    krypto: {
+      verschluesseln: (text) => {
+        if (!safeStorage.isEncryptionAvailable()) throw new Error('Die Windows-Verschlüsselung ist nicht verfügbar.');
+        return safeStorage.encryptString(text).toString('base64');
+      },
+      entschluesseln: (b64) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
+    },
+    oeffnen: (url) => shell.openExternal(url),
+  });
   sprache = new Sprache();
   sprache.on('pegel', (p) => anAlle('pegel', p));
 
@@ -453,6 +490,7 @@ async function start() {
     config,
     gedaechtnis,
     protokoll,
+    konten,
     datenOrdner: DATEN,
     appOrdner: APP,
     arbeitsordner: () => config.get('arbeitsverzeichnisse')[0] || os.homedir(),

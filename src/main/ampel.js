@@ -21,6 +21,8 @@ const KATEGORIEN = [
   'einstellungen',  // Julias eigene Einstellungen außer dem Aussehen der Blase
   'update',         // Julia selbst aktualisieren
   'programm',       // unbekannte ausführbare Dateien starten
+  'nachricht',      // E-Mails senden, Kalendereinladungen verschicken
+  'kalender',       // Termine im eigenen Kalender anlegen
   'shell',          // sonstige Shell-Befehle, die nicht nur lesen
 ];
 

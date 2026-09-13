@@ -74,6 +74,37 @@
     </section>
 
     <section class="gruppe">
+      <h2 data-t="konten.titel"></h2>
+      <p class="hinweis" data-t="konten.hinweis"></p>
+      <div class="konto" id="kontoGoogle">
+        <div class="konto-kopf">
+          <span class="konto-logo">G</span>
+          <div class="konto-name">
+            <strong>Google</strong>
+            <small id="googleStatus"></small>
+          </div>
+          <button class="zweit" id="googleTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div id="googleEinrichten" class="konto-einrichten">
+          <p class="hinweis"><span data-t="konten.google_text"></span> <a id="googleAnleitung" target="_blank" rel="noreferrer" data-t="konten.anleitung"></a></p>
+          <div class="zwei">
+            <div class="feld">
+              <label for="googleClientId" data-t="konten.client_id"></label>
+              <input id="googleClientId" spellcheck="false" autocomplete="off" placeholder="…apps.googleusercontent.com">
+            </div>
+            <div class="feld">
+              <label for="googleClientSecret" data-t="konten.client_secret"></label>
+              <input id="googleClientSecret" type="password" spellcheck="false" autocomplete="off">
+              <small id="googleSecretHinweis"></small>
+            </div>
+          </div>
+          <button class="primaer klein" id="googleVerbinden" data-t="konten.verbinden"></button>
+          <small class="konto-meldung" id="googleMeldung"></small>
+        </div>
+      </div>
+    </section>
+
+    <section class="gruppe">
       <h2 data-t="einst.sprache"></h2>
       <div class="zwei">
         <div class="feld">

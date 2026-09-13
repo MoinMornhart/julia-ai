@@ -76,6 +76,28 @@ Sie ist **standardmäßig aus** und lässt Klicks durch sich hindurch.
 Monitor, Ecke, Größe, Deckkraft, Tempo, Empfindlichkeit und beliebig viele Farben je Zustand
 lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz: „Mach sie grüner."
 
+## Konten verbinden
+
+Julia kann dein **Google-Konto** nutzen – Gmail, Kalender und Kontakte:
+
+> „Hab ich neue Mails?" · „Was steht morgen an?" · „Schreib Anna, dass ich zehn Minuten später komme." ·
+> „Leg mir Freitag 14 Uhr Zahnarzt ein." · „Speicher die Rechnung aus der Mail von Telekom in Downloads."
+
+| Julia kann | Ampel |
+|---|---|
+| Mails suchen und lesen, Anhänge speichern, Entwürfe anlegen | 🟢 |
+| Termine ansehen, Kontakte finden | 🟢 |
+| Mails senden, Termine anlegen, Einladungen verschicken | 🟡 – die Freigabekarte zeigt Empfänger und den vollständigen Text |
+| Mails oder Termine löschen | gibt es nicht |
+
+Anmelden tust du selbst im Browser, Julia sieht nie ein Passwort. Einmalig brauchst du einen
+eigenen OAuth-Client aus der Google Cloud Console, das dauert etwa zehn Minuten:
+**[Schritt-für-Schritt-Anleitung](docs/google-einrichten.md)**. Danach: *Einstellungen →
+Verbindungen → Mit Google verbinden*.
+
+Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
+(„Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.
+
 ## Installation
 
 **Voraussetzungen:** Windows 10 oder 11, [Node.js](https://nodejs.org) 20 oder neuer,
@@ -121,6 +143,7 @@ Alles liegt in `%APPDATA%\Julia`, außerhalb des Repos. Updates fassen diesen Or
 | Datei | Inhalt |
 |---|---|
 | `config.json` | alle Einstellungen, der API-Schlüssel nur verschlüsselt |
+| `konten.json` | verbundene Konten; Secrets und Tokens nur verschlüsselt |
 | `gedaechtnis.json` | was Julia sich dauerhaft merkt |
 | `protokoll.jsonl` | jede Aktion über GRÜN hinaus |
 | `sicherungen\` | vorherige Fassungen überschriebener Dateien |

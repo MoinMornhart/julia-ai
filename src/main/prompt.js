@@ -48,17 +48,19 @@ function systemPrompt(opts) {
 
 // Der zweite Block im System-Prompt: ändert sich selten (Gedächtnis, Kanal),
 // deshalb getrennt vom großen, gecachten ersten Block.
-function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vorgemerkt }) {
+function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vorgemerkt, konten }) {
   const en = sprachcode === 'en';
   const mon = (monitore || [])
     .map((m) => `${m.index}${m.haupt ? (en ? ' (primary)' : ' (Hauptmonitor)') : ''}: ${m.breite}x${m.hoehe}`)
     .join(', ');
+  const kontoText = (konten || []).map((k) => `${k.dienst}${k.konto ? ` – ${k.konto}` : ''}`).join('; ');
   const zeilen = en
     ? [
       '## Runtime',
       `- Channel: \`${kanal}\``,
       `- Julia version: ${version}`,
       `- Monitors: ${mon || 'unknown'}`,
+      `- Connected accounts: ${kontoText || 'none'}`,
       '',
       '## Memory',
       gedaechtnis,
@@ -68,6 +70,7 @@ function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vo
       `- Kanal: \`${kanal}\``,
       `- Julia-Version: ${version}`,
       `- Monitore: ${mon || 'unbekannt'}`,
+      `- Verbundene Konten: ${kontoText || 'keine'}`,
       '',
       '## Gedächtnis',
       gedaechtnis,

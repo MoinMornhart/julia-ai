@@ -15,6 +15,12 @@ const STANDARDFARBEN = {
 
 let T = {};
 let cfg = null;
+let kontenStand = null;
+
+const ANLEITUNG = {
+  de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md',
+  en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-setup.en.md',
+};
 
 function tx(k, werte) {
   let s = T[k] ?? k;
@@ -38,6 +44,8 @@ function texteAnwenden(daten) {
     farbenZeigen();
     schluesselHinweis();
   }
+  $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
+  if (kontenStand) kontenZeigen(kontenStand);
 }
 
 function fehlerZeigen(el, text) {
@@ -212,6 +220,46 @@ async function speichern() {
   setTimeout(() => julia.schliessen(), 600);
 }
 
+// --- Verbindungen ---
+
+function kontenZeigen(status) {
+  kontenStand = status;
+  const g = status.google;
+  $('kontoGoogle').classList.toggle('verbunden', g.verbunden);
+  $('googleStatus').textContent = g.verbunden ? tx('konten.verbunden_als', { email: g.email || '?' }) : tx('konten.nicht_verbunden');
+  $('googleTrennen').hidden = !g.verbunden;
+  $('googleEinrichten').hidden = g.verbunden;
+  if (g.clientId && !$('googleClientId').value) $('googleClientId').value = g.clientId;
+  $('googleSecretHinweis').textContent = g.clientIdGesetzt ? tx('konten.secret_gespeichert') : '';
+}
+
+function kontoMeldung(text, fehler = false) {
+  const m = $('googleMeldung');
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function kontenVerbinden() {
+  $('googleVerbinden').onclick = async () => {
+    const knopf = $('googleVerbinden');
+    knopf.disabled = true;
+    kontoMeldung(tx('konten.warte_browser'));
+    const r = await julia.googleVerbinden({
+      clientId: $('googleClientId').value.trim(),
+      clientSecret: $('googleClientSecret').value.trim(),
+    });
+    knopf.disabled = false;
+    $('googleClientSecret').value = '';
+    kontenZeigen(r.status);
+    kontoMeldung(r.fehler || '', !!r.fehler);
+  };
+  $('googleTrennen').onclick = async () => {
+    const r = await julia.googleTrennen();
+    kontenZeigen(r.status);
+    kontoMeldung(r.fehler || '', !!r.fehler);
+  };
+}
+
 async function init() {
   cfg = await julia.config();
   texteAnwenden(await julia.texte());
@@ -235,6 +283,8 @@ async function init() {
     if (!r.fehler) { cfg.blase.farben = r.wert; farbenZeigen(); }
   };
   $('speichern').onclick = speichern;
+  kontenVerbinden();
+  kontenZeigen(await julia.kontenStatus());
 
   julia.on('config:geaendert', (neu) => {
     const fokus = document.activeElement;

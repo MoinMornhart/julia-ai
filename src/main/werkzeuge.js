@@ -534,12 +534,18 @@ const WERKZEUGE = [
   },
 ];
 
-function definitionen() {
-  return WERKZEUGE.map(({ name, description, input_schema }) => ({ name, description, input_schema }));
+// Grundwerkzeuge plus die Werkzeuge verbundener Konten.
+function alle(ctx) {
+  const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
+  return [...WERKZEUGE, ...extra];
 }
 
-function finden(name) {
-  return WERKZEUGE.find((w) => w.name === name);
+function definitionen(ctx) {
+  return alle(ctx).map(({ name, description, input_schema }) => ({ name, description, input_schema }));
+}
+
+function finden(name, ctx) {
+  return alle(ctx).find((w) => w.name === name);
 }
 
 module.exports = { WERKZEUGE, definitionen, finden, shellAusfuehren, bildBloecke };

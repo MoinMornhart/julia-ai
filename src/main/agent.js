@@ -146,7 +146,7 @@ class Agent extends EventEmitter {
     const betas = ['context-management-2025-06-27'];
     if (f.fallback) betas.push('server-side-fallback-2026-07-01');
     const tools = [
-      ...werkzeuge.definitionen(),
+      ...werkzeuge.definitionen(this.ctx),
       f.webNeu
         ? { type: 'web_search_20260209', name: 'web_search', max_uses: 8 }
         : { type: 'web_search_20250305', name: 'web_search', max_uses: 8 },
@@ -216,7 +216,7 @@ class Agent extends EventEmitter {
 
   async _werkzeug(aufruf) {
     const ergebnis = (content, istFehler = false) => ({ type: 'tool_result', tool_use_id: aufruf.id, content, ...(istFehler ? { is_error: true } : {}) });
-    const w = werkzeuge.finden(aufruf.name);
+    const w = werkzeuge.finden(aufruf.name, this.ctx);
     this.emit('werkzeug', { id: aufruf.id, name: aufruf.name, eingabe: kurzeEingabe(aufruf.input) });
     if (!w) {
       this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
