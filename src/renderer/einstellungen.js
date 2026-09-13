@@ -17,6 +17,16 @@ let T = {};
 let cfg = null;
 let kontenStand = null;
 
+const AKZENTE = [
+  ['glut', '#FF7A1A'],
+  ['neon', '#8B5CFF'],
+  ['cyber', '#00D1FF'],
+  ['toxic', '#39FF88'],
+  ['magenta', '#FF3DA5'],
+  ['blut', '#FF3B3B'],
+  ['gold', '#FFC23D'],
+];
+
 const ANLEITUNG = {
   de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md',
   en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-setup.en.md',
@@ -46,6 +56,80 @@ function texteAnwenden(daten) {
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   if (kontenStand) kontenZeigen(kontenStand);
+  if (cfg) designZeigen();
+}
+
+// --- Design ---
+
+function mischen(hex, ziel, anteil) {
+  const a = parseInt(hex.slice(1), 16);
+  const b = parseInt(ziel.slice(1), 16);
+  const kanal = (x, s) => (x >> s) & 255;
+  const m = (s) => Math.round(kanal(a, s) + (kanal(b, s) - kanal(a, s)) * anteil);
+  return '#' + [16, 8, 0].map((s) => m(s).toString(16).padStart(2, '0')).join('').toUpperCase();
+}
+
+function designZeigen() {
+  const d = cfg.design;
+  document.querySelectorAll('#modus button').forEach((b) => b.classList.toggle('aktiv', b.dataset.wert === d.modus));
+  const box = $('akzente');
+  box.innerHTML = '';
+  const gleich = (a, b) => String(a).toUpperCase() === String(b).toUpperCase();
+  for (const [name, hex] of AKZENTE) {
+    const b = document.createElement('button');
+    b.className = 'akzent-knopf' + (gleich(hex, d.akzent) ? ' aktiv' : '');
+    b.style.setProperty('--farbe', hex);
+    const muster = document.createElement('i');
+    muster.style.background = hex;
+    const text = document.createElement('span');
+    text.textContent = tx(`design.p.${name}`);
+    b.append(muster, text);
+    b.onclick = () => akzentSetzen(hex);
+    box.appendChild(b);
+  }
+  const eigen = document.createElement('label');
+  const istEigen = !AKZENTE.some(([, h]) => gleich(h, d.akzent));
+  eigen.className = 'akzent-knopf akzent-eigen' + (istEigen ? ' aktiv' : '');
+  eigen.style.setProperty('--farbe', d.akzent);
+  const muster = document.createElement('i');
+  const text = document.createElement('span');
+  text.textContent = tx('design.eigene');
+  const waehler = document.createElement('input');
+  waehler.type = 'color';
+  waehler.value = d.akzent.toLowerCase();
+  waehler.addEventListener('input', () => window.juliaDesign.setzen({ akzent: waehler.value }));
+  waehler.addEventListener('change', () => akzentSetzen(waehler.value));
+  eigen.append(muster, text, waehler);
+  box.appendChild(eigen);
+}
+
+async function akzentSetzen(hex) {
+  const r = await setzen('design.akzent', hex);
+  if (!r.fehler) {
+    cfg.design.akzent = r.wert;
+    designZeigen();
+  }
+}
+
+function designVerbinden() {
+  document.querySelectorAll('#modus button').forEach((b) => {
+    b.onclick = async () => {
+      const r = await setzen('design.modus', b.dataset.wert);
+      if (!r.fehler) { cfg.design.modus = r.wert; designZeigen(); }
+    };
+  });
+  // Blasenfarben aus der Akzentfarbe ableiten, damit alles zusammenpasst.
+  $('blaseAkzent').onclick = async () => {
+    const a = cfg.design.akzent;
+    const farben = {
+      idle: [a, mischen(a, '#1A1030', 0.55)],
+      listening: [mischen(a, '#FFFFFF', 0.25), '#FF6F9C'],
+      thinking: [mischen(a, '#FFC15E', 0.4), a],
+      speaking: [a, mischen(a, '#FFFFFF', 0.45)],
+    };
+    const r = await setzen('blase.farben', farben);
+    if (!r.fehler) { cfg.blase.farben = r.wert; farbenZeigen(); }
+  };
 }
 
 function fehlerZeigen(el, text) {
@@ -285,10 +369,13 @@ async function init() {
   $('speichern').onclick = speichern;
   kontenVerbinden();
   kontenZeigen(await julia.kontenStatus());
+  designVerbinden();
+  designZeigen();
 
   julia.on('config:geaendert', (neu) => {
     const fokus = document.activeElement;
     cfg = { ...neu };
+    if (!document.activeElement || !document.activeElement.closest('#akzente')) designZeigen();
     document.querySelectorAll('[data-k]').forEach((el) => {
       if (el === fokus) return;
       const w = holen(cfg, el.dataset.k);

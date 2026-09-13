@@ -22,6 +22,16 @@ test('Blase ist standardmäßig aus, mit den vorgegebenen Werten', () => {
   assert.equal(STANDARD.update.kanal, 'stabil');
 });
 
+test('Design: dunkel mit Orange als Standard, Werte werden geprüft', () => {
+  assert.deepEqual(STANDARD.design, { modus: 'dunkel', akzent: '#FF7A1A', glow: true });
+  assert.equal(pruefen('design.modus', 'hell'), 'hell');
+  assert.equal(pruefen('design.modus', 'system'), 'system');
+  assert.throws(() => pruefen('design.modus', 'bunt'), /Modus/);
+  assert.equal(pruefen('design.akzent', 'ff7a1a'), '#FF7A1A');
+  assert.throws(() => pruefen('design.akzent', 'orange'), /Hex-Farbe/);
+  assert.equal(pruefen('design.glow', 'aus'), false);
+});
+
 test('Einstellungen werden gespeichert und beim nächsten Laden gelesen', () => {
   const dir = tempOrdner();
   const k = new Konfiguration(dir);

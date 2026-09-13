@@ -62,6 +62,14 @@ What the software enforces itself:
 What the software **cannot** detect: that a specific click sends an email or places an order.
 That's Julia's own job – she asks in the chat.
 
+## Design
+
+The default is **dark gaming look**: deep background with a subtle grid, glowing accents,
+approval cards with hazard stripes, tool steps in terminal style. There is also **Light** and
+**Like Windows**. Seven accent colours are ready (Ember, Neon, Cyber, Toxic, Magenta, Blood,
+Gold), plus a custom one from the colour picker. Glow effects can be switched off, and one
+button matches the orb to the accent colour. Everything applies instantly, no restart.
+
 ## The orb
 
 If you want, an animated sphere sits on your secondary monitor and shows what Julia is doing.

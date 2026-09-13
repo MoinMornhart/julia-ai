@@ -20,6 +20,11 @@ const STANDARD = {
   aufwand: 'high',
   kanal: 'desktop',
   autostart: false,
+  design: {
+    modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
+    akzent: '#FF7A1A',
+    glow: true,
+  },
   hotkey: {
     sprechen: 'Control+Alt+Space',
     chat: 'Control+Alt+J',
@@ -107,6 +112,7 @@ function pruefen(schluessel, wert) {
     case 'update.automatisch':
     case 'autostart':
     case 'einrichtung_fertig':
+    case 'design.glow':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
@@ -142,6 +148,11 @@ function pruefen(schluessel, wert) {
     case 'sprachcode':
       if (!['de', 'en'].includes(wert)) throw new Error('Sprache ist "de" oder "en".');
       return wert;
+    case 'design.modus':
+      if (!['dunkel', 'hell', 'system'].includes(wert)) throw new Error('Modus ist "dunkel", "hell" oder "system".');
+      return wert;
+    case 'design.akzent':
+      return farbe(wert);
     case 'arbeitsverzeichnisse':
       if (!Array.isArray(wert)) throw new Error('Arbeitsverzeichnisse sind eine Liste von Ordnern.');
       return wert.map((p) => path.resolve(String(p)));

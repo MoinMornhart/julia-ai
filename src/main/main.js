@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
-  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session,
+  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme,
 } = require('electron');
 const sicherheit = require('./sicherheit');
 
@@ -134,12 +134,43 @@ function melden(titel, text) {
 
 // --- Fenster ---
 
-function fensterOptionen(extra) {
+// --- Design: Theme und Fensterrahmen ---
+
+function hintergrund() {
+  return nativeTheme.shouldUseDarkColors ? '#09090D' : '#F3F3F7';
+}
+
+// Die Fensterknöpfe (minimieren, schließen) zeichnet Windows über den eigenen Kopf.
+function titelLeiste(hoehe) {
+  return {
+    color: nativeTheme.shouldUseDarkColors ? '#0B0B10' : '#F1F1F5',
+    symbolColor: nativeTheme.shouldUseDarkColors ? '#E8E8F0' : '#22222C',
+    height: hoehe,
+  };
+}
+
+function fensterFarben() {
+  for (const w of [chatFenster, einstFenster]) {
+    if (!w || w.isDestroyed()) continue;
+    w.setBackgroundColor(hintergrund());
+    try { w.setTitleBarOverlay(titelLeiste(w.juliaKopfHoehe || 48)); } catch { /* ältere Windows-Versionen */ }
+  }
+}
+
+function designAnwenden() {
+  const modus = config.get('design.modus');
+  nativeTheme.themeSource = modus === 'hell' ? 'light' : modus === 'system' ? 'system' : 'dark';
+  fensterFarben();
+}
+
+function fensterOptionen(extra, kopfHoehe = 48) {
   return {
     icon: fensterBild(),
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#15151C',
+    backgroundColor: hintergrund(),
+    titleBarStyle: 'hidden',
+    titleBarOverlay: titelLeiste(kopfHoehe),
     webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true },
     ...extra,
   };
@@ -157,7 +188,8 @@ function chatFensterErstellen() {
     x: wa.x + wa.width - breite - 20,
     y: wa.y + wa.height - hoehe - 20,
     title: 'Julia',
-  }));
+  }, 50));
+  chatFenster.juliaKopfHoehe = 50;
   chatFenster.loadFile(path.join(RENDERER, 'chat.html'));
   chatFenster.on('close', (e) => {
     if (!beendenLaeuft) {
@@ -191,7 +223,8 @@ function einstellungenOeffnen(einrichtung = false) {
     minWidth: 520,
     minHeight: 500,
     title: t('einst.titel'),
-  }));
+  }, 64));
+  einstFenster.juliaKopfHoehe = 64;
   einstFenster.loadFile(path.join(RENDERER, 'einstellungen.html'), { query: { einrichtung: einrichtung ? '1' : '0' } });
   einstFenster.once('ready-to-show', () => einstFenster.show());
   einstFenster.on('closed', () => { einstFenster = null; });
@@ -467,6 +500,8 @@ async function start() {
   config.on('warnung', (text) => melden('Julia', text));
   config.laden();
   erststartSprache();
+  designAnwenden();
+  nativeTheme.on('updated', fensterFarben);
 
   gedaechtnis = new Gedaechtnis(DATEN);
   protokoll = new Protokoll(DATEN);
@@ -514,6 +549,7 @@ async function start() {
 
   config.on('aenderung', (k) => {
     if (k.startsWith('blase')) blaseAktualisieren();
+    if (k.startsWith('design')) designAnwenden();
     if (/^(nutzer\.name|arbeitsverzeichnisse|sprachcode)$/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k === 'autostart') autostartSetzen();

@@ -40,7 +40,34 @@ function geladen(fenster) {
   });
 }
 
-async function aufnehmenFenster(fenster, datei) {
+// Nimmt das Fenster so auf, wie es auf dem Bildschirm aussieht – mit den
+// Windows-Fensterknöpfen, die capturePage nicht mitzeichnet. Klappt das nicht,
+// wird nur der Fensterinhalt aufgenommen.
+async function aufnehmenFenster(fenster, datei, { mitRahmen = false } = {}) {
+  if (mitRahmen) {
+    try {
+      const { desktopCapturer, screen } = require('electron');
+      fenster.moveTop();
+      fenster.focus();
+      await warte(500);
+      const grenzen = fenster.getBounds();
+      const d = screen.getDisplayMatching(grenzen);
+      const phys = screen.dipToScreenRect(null, d.bounds);
+      const quellen = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: phys.width, height: phys.height } });
+      const q = quellen.find((s) => s.display_id === String(d.id));
+      if (q && !q.thumbnail.isEmpty()) {
+        const f = d.scaleFactor;
+        const aus = q.thumbnail.crop({
+          x: Math.round((grenzen.x - d.bounds.x) * f),
+          y: Math.round((grenzen.y - d.bounds.y) * f),
+          width: Math.round(grenzen.width * f),
+          height: Math.round(grenzen.height * f),
+        });
+        fs.writeFileSync(datei, aus.toPNG());
+        return;
+      }
+    } catch { /* unten ohne Rahmen */ }
+  }
   const bild = await fenster.webContents.capturePage();
   fs.writeFileSync(datei, bild.toPNG());
 }
@@ -60,14 +87,14 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.show();
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
-  await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`));
+  await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
   chatFenster.hide();
 
   const einst = einstellungenOeffnen(false);
   await geladen(einst);
   einst.show();
   await warte(2500);
-  await aufnehmenFenster(einst, path.join(ziel, `einstellungen-${sc}.png`));
+  await aufnehmenFenster(einst, path.join(ziel, `einstellungen-${sc}.png`), { mitRahmen: true });
   einst.destroy();
 
   if (sc === 'de') {

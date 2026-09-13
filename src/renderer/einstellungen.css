@@ -4,36 +4,73 @@ body {
   overflow: hidden;
 }
 
+.einst-kopf {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 64px;
+  padding: 0 150px 0 24px;
+  background: var(--kopf-grund);
+  backdrop-filter: blur(14px);
+  flex: none;
+}
+.einst-kopf::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--akzent) 30%, var(--akzent-rand) 70%, transparent);
+}
+.einst-kopf h1 { font-family: var(--schrift-titel); font-size: 18px; margin: 0; font-weight: 700; letter-spacing: 0.01em; }
+.version { margin: 0; color: var(--text-3); font-size: 11.5px; font-family: var(--mono); }
+.mini-kugel.gross { width: 34px; height: 34px; }
+
 .huelle {
   flex: 1;
   overflow-y: auto;
-  padding: 22px 26px 30px;
+  padding: 18px 24px 30px;
 }
-
-.einst-kopf { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
-.einst-kopf h1 { font-size: 20px; margin: 0; font-weight: 650; }
-.version { margin: 0; color: var(--text-3); font-size: 12px; }
-.mini-kugel.gross { width: 40px; height: 40px; }
 
 .willkommen {
-  background: linear-gradient(135deg, var(--akzent-weich), color-mix(in srgb, var(--aqua) 18%, var(--flaeche)));
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--akzent-weich), transparent 70%), var(--flaeche);
+  border: 1px solid var(--akzent-rand);
   border-radius: var(--radius);
   padding: 16px 18px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--glow-klein);
 }
-.willkommen h2 { margin: 0 0 4px; font-size: 16px; }
+.willkommen h2 { margin: 0 0 4px; font-size: 16px; font-family: var(--schrift-titel); }
 .willkommen p { margin: 0; color: var(--text-2); }
 
 .gruppe {
+  position: relative;
   background: var(--flaeche);
   border: 1px solid var(--linie);
   border-radius: var(--radius);
   padding: 16px 18px 18px;
   margin-bottom: 14px;
   box-shadow: var(--schatten);
+  backdrop-filter: blur(10px);
 }
-.gruppe h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin: 0 0 12px; font-weight: 650; }
-.gruppe h3 { font-size: 13px; margin: 16px 0 8px; font-weight: 600; color: var(--text-2); }
+.gruppe h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--schrift-titel);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-2);
+  margin: 0 0 14px;
+  font-weight: 700;
+}
+.gruppe h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--akzent); box-shadow: var(--glow-klein); transform: rotate(45deg); }
+.gruppe h3 { font-size: 12.5px; margin: 16px 0 8px; font-weight: 650; color: var(--text-2); }
 .hinweis { color: var(--text-2); margin: -4px 0 10px; font-size: 13px; }
 
 .zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -41,52 +78,72 @@ body {
 
 .feld { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; min-width: 0; }
 .feld.schmal { max-width: 280px; margin-top: 6px; }
-.feld label, .regler label { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
+.feld label, .regler label { font-size: 12px; font-weight: 650; color: var(--text-2); letter-spacing: 0.02em; }
 .feld small { color: var(--text-3); font-size: 12px; }
 .feld .fehler, .regler .fehler, .farbe .fehler { color: var(--rot); font-size: 12px; }
 
 input[type="text"], input[type="password"], input:not([type]), select {
   font: inherit;
   color: var(--text);
-  background: var(--grund);
-  border: 1px solid var(--linie);
+  background: var(--grund-2);
+  border: 1px solid var(--linie-stark);
   border-radius: var(--radius-klein);
   padding: 8px 10px;
   min-width: 0;
   width: 100%;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-input:focus, select:focus { border-color: var(--akzent); outline: none; }
+input:focus, select:focus { border-color: var(--akzent); box-shadow: var(--glow-klein); outline: none; }
+select option { background: var(--flaeche-fest); color: var(--text); }
 
 .regler { display: grid; grid-template-columns: 150px 1fr 48px; align-items: center; gap: 12px; margin: 8px 0; }
-.regler output { font-family: var(--mono); font-size: 12px; color: var(--text-2); text-align: right; }
+.regler output { font-family: var(--mono); font-size: 12px; color: var(--akzent); text-align: right; }
 input[type="range"] { width: 100%; accent-color: var(--akzent); }
 
 .schalter { display: flex; align-items: center; gap: 10px; padding: 6px 0; cursor: pointer; }
-.schalter input { appearance: none; width: 36px; height: 20px; border-radius: 20px; background: var(--linie); position: relative; cursor: pointer; flex: none; transition: background 0.2s; margin: 0; }
-.schalter input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25); }
-.schalter input:checked { background: var(--akzent); }
-.schalter input:checked::after { transform: translateX(16px); }
+.schalter input { appearance: none; width: 38px; height: 21px; border-radius: 21px; background: var(--flaeche-2); border: 1px solid var(--linie-stark); position: relative; cursor: pointer; flex: none; transition: background 0.2s, box-shadow 0.2s; margin: 0; }
+.schalter input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--text-2); transition: transform 0.2s, background 0.2s; }
+.schalter input:checked { background: var(--akzent); border-color: var(--akzent); box-shadow: var(--glow-klein); }
+.schalter input:checked::after { transform: translateX(17px); background: var(--akzent-text); }
+
+/* Segmentierte Auswahl (Dunkel / Hell / wie Windows) */
+.segment { display: inline-flex; background: var(--grund-2); border: 1px solid var(--linie-stark); border-radius: 11px; padding: 3px; gap: 3px; width: fit-content; }
+.segment button { padding: 6px 16px; border-radius: 8px; font-weight: 600; font-size: 13px; color: var(--text-2); transition: background 0.15s, color 0.15s, box-shadow 0.15s; }
+.segment button:hover { color: var(--text); }
+.segment button.aktiv { background: var(--akzent); color: var(--akzent-text); box-shadow: var(--glow-klein); }
+
+/* Akzentfarben */
+.akzente { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.feld .akzent-knopf { display: flex; flex-direction: column; align-items: center; gap: 5px; font-size: 11px; font-weight: 500; letter-spacing: 0; color: var(--text-3); cursor: pointer; }
+.akzent-knopf i { width: 30px; height: 30px; border-radius: 9px; display: block; border: 2px solid transparent; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18); transition: transform 0.15s, box-shadow 0.15s; }
+.akzent-knopf:hover i { transform: translateY(-2px); }
+.feld .akzent-knopf.aktiv { color: var(--text); font-weight: 650; }
+.akzent-knopf.aktiv i { border-color: var(--text); box-shadow: 0 0 16px var(--farbe, transparent); }
+.akzent-eigen { position: relative; }
+.akzent-eigen input[type="color"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.akzent-eigen i { background: conic-gradient(#ff3b3b, #ffc23d, #39ff88, #00d1ff, #8b5cff, #ff3da5, #ff3b3b); }
 
 .ordner { list-style: none; margin: 0 0 10px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-.ordner li { display: flex; align-items: center; gap: 8px; background: var(--grund); border: 1px solid var(--linie); border-radius: var(--radius-klein); padding: 6px 6px 6px 12px; }
+.ordner li { display: flex; align-items: center; gap: 8px; background: var(--grund-2); border: 1px solid var(--linie); border-radius: var(--radius-klein); padding: 6px 6px 6px 12px; }
 .ordner li span { flex: 1; font-family: var(--mono); font-size: 12.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ordner li button { color: var(--text-3); padding: 4px 8px; border-radius: 7px; font-size: 12px; }
 .ordner li button:hover { background: var(--rot-weich); color: var(--rot); }
 .ordner .leer { color: var(--text-3); font-style: italic; background: none; border-style: dashed; }
 
-.zweit { background: var(--flaeche-2); border: 1px solid var(--linie); border-radius: var(--radius-klein); padding: 7px 14px; font-weight: 600; font-size: 13px; }
-.zweit:hover { border-color: var(--akzent); }
+.zweit { background: var(--flaeche-2); border: 1px solid var(--linie-stark); border-radius: var(--radius-klein); padding: 7px 14px; font-weight: 650; font-size: 13px; transition: border-color 0.15s, color 0.15s; }
+.zweit:hover { border-color: var(--akzent); color: var(--akzent); }
+.knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
 
 .farben { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .farbe { display: grid; grid-template-columns: 90px auto 1fr; align-items: center; gap: 10px; }
 .farbe .zname { font-size: 12.5px; font-weight: 600; color: var(--text-2); }
 .farbe .muster { display: flex; gap: 4px; }
-.farbe .muster i { width: 20px; height: 20px; border-radius: 6px; border: 1px solid rgba(0, 0, 0, 0.1); display: block; }
+.farbe .muster i { width: 20px; height: 20px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.15); display: block; }
 .farbe input { font-family: var(--mono); font-size: 12.5px; }
 .farbe .fehler { grid-column: 3; }
 
-.konto { border: 1px solid var(--linie); border-radius: var(--radius); padding: 12px 14px; background: var(--grund); }
-.konto.verbunden { border-color: color-mix(in srgb, var(--gruen) 45%, var(--linie)); }
+.konto { border: 1px solid var(--linie-stark); border-radius: var(--radius); padding: 12px 14px; background: var(--grund-2); }
+.konto.verbunden { border-color: color-mix(in srgb, var(--gruen) 45%, transparent); box-shadow: 0 0 18px color-mix(in srgb, var(--gruen) 12%, transparent); }
 .konto-kopf { display: flex; align-items: center; gap: 12px; }
 .konto-logo { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; color: #fff; background: conic-gradient(from 200deg, #4285f4, #34a853, #fbbc05, #ea4335, #4285f4); flex: none; }
 .konto-name { display: flex; flex-direction: column; flex: 1; line-height: 1.3; }
@@ -95,19 +152,20 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .konto-einrichten { margin-top: 12px; }
 .konto-meldung { display: block; margin-top: 8px; color: var(--text-2); }
 .konto-meldung.fehler { color: var(--rot); }
-.primaer.klein { padding: 7px 16px; font-size: 13px; }
-.primaer:disabled { opacity: 0.6; cursor: progress; }
 
 .einst-fuss {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 14px;
-  padding: 12px 26px;
+  padding: 12px 24px;
   border-top: 1px solid var(--linie);
-  background: var(--flaeche);
+  background: var(--kopf-grund);
+  backdrop-filter: blur(14px);
 }
 #meldung { color: var(--text-2); font-size: 13px; flex: 1; }
 #meldung.fehler { color: var(--rot); }
-.primaer { background: var(--akzent); color: var(--akzent-text); padding: 9px 20px; border-radius: 10px; font-weight: 650; }
-.primaer:hover { filter: brightness(1.08); }
+.primaer { background: var(--akzent); color: var(--akzent-text); padding: 9px 22px; border-radius: 10px; font-weight: 700; box-shadow: var(--glow-klein); transition: filter 0.15s, box-shadow 0.15s; }
+.primaer:hover { filter: brightness(1.1); box-shadow: var(--glow); }
+.primaer.klein { padding: 7px 16px; font-size: 13px; }
+.primaer:disabled { opacity: 0.6; cursor: progress; }

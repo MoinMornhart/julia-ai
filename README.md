@@ -60,6 +60,14 @@ Was die Software selbst durchsetzt:
 Was die Software **nicht** erkennen kann: dass ein bestimmter Klick eine Mail abschickt oder eine
 Bestellung auslöst. Dafür ist Julia selbst zuständig, sie fragt dann im Chat.
 
+## Design
+
+Standard ist **Dunkel im Gaming-Look**: tiefer Hintergrund mit feinem Raster, Leuchtakzente,
+Freigabekarten mit Warnstreifen, Werkzeugschritte im Terminal-Stil. Dazu gibt es **Hell** und
+**Wie Windows**. Sieben Akzentfarben stehen bereit (Glut, Neon, Cyber, Toxic, Magenta, Blut,
+Gold), dazu eine eigene aus dem Farbwähler. Die Leuchteffekte lassen sich abschalten, und ein
+Knopf passt die Blase an die Akzentfarbe an. Alles greift sofort, ohne Neustart.
+
 ## Die Blase
 
 Auf Wunsch liegt eine animierte Kugel auf deinem Nebenmonitor und zeigt, was Julia gerade tut.

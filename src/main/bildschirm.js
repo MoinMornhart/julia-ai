@@ -40,8 +40,11 @@ async function aufnehmen(index) {
     const f = Math.min(1, MAX_KANTE / Math.max(phys.width, phys.height));
     const groesse = { width: Math.round(phys.width * f), height: Math.round(phys.height * f) };
     const quellen = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: groesse });
+    if (!quellen.length) {
+      throw new Error('Windows liefert gerade kein Bildschirmbild. Das passiert bei gesperrtem Bildschirm, in Remote-Sitzungen ohne Desktop oder wenn der Zugriff auf Bildschirmaufnahmen in den Windows-Datenschutzeinstellungen gesperrt ist.');
+    }
     const q = quellen.find((s) => s.display_id === String(d.id)) || quellen[i];
-    if (!q) throw new Error(`Monitor ${i} ließ sich nicht aufnehmen.`);
+    if (!q || q.thumbnail.isEmpty()) throw new Error(`Monitor ${i} ließ sich nicht aufnehmen.`);
     const s = q.thumbnail.getSize();
     letzte.set(i, { phys, breite: s.width, hoehe: s.height });
     bilder.push({

@@ -1,49 +1,73 @@
-:root {
-  --grund: #f6f6fa;
-  --flaeche: #ffffff;
-  --flaeche-2: #eeeef5;
-  --linie: #e1e1ea;
-  --text: #1b1b24;
-  --text-2: #5d5d6e;
-  --text-3: #8a8a9a;
-  --akzent: #6b5cff;
-  --akzent-text: #ffffff;
-  --akzent-weich: #ecebff;
-  --aqua: #35e0c8;
-  --rose: #ff6f9c;
-  --bernstein: #ffc15e;
-  --gruen: #1f9d6b;
-  --gelb: #b77a00;
-  --gelb-weich: #fff5dc;
-  --rot: #d23c4f;
-  --rot-weich: #ffe9ec;
-  --radius: 14px;
-  --radius-klein: 9px;
-  --schatten: 0 1px 2px rgba(20, 20, 40, 0.06), 0 4px 16px rgba(20, 20, 40, 0.06);
-  --schrift: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
-  --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+/* Julias Design-System. Dunkel ist der Standard (Gaming-Look), Hell und
+   "wie Windows" gibt es auch. Die Akzentfarbe setzt design.js zur Laufzeit. */
+
+:root,
+:root[data-theme="dunkel"] {
+  --akzent: #ff7a1a;
+  --akzent-text: #140a02;
+  --grund: #09090d;
+  --grund-2: #0f0f16;
+  --flaeche: rgba(24, 24, 34, 0.72);
+  --flaeche-fest: #15151e;
+  --flaeche-2: #1d1d29;
+  --linie: rgba(255, 255, 255, 0.07);
+  --linie-stark: rgba(255, 255, 255, 0.14);
+  --text: #f2f2f7;
+  --text-2: #b4b4c6;
+  --text-3: #767689;
+  --raster: rgba(255, 255, 255, 0.022);
+  --gelb: #ffb547;
+  --gelb-weich: rgba(255, 181, 71, 0.09);
+  --rot: #ff5a6e;
+  --rot-weich: rgba(255, 90, 110, 0.12);
+  --gruen: #3ee08f;
+  --schatten: 0 10px 34px rgba(0, 0, 0, 0.5);
+  --kopf-grund: rgba(9, 9, 13, 0.62);
+  color-scheme: dark;
+}
+
+:root[data-theme="hell"] {
+  --akzent-text: #140a02;
+  --grund: #f3f3f7;
+  --grund-2: #ebebf2;
+  --flaeche: rgba(255, 255, 255, 0.82);
+  --flaeche-fest: #ffffff;
+  --flaeche-2: #ececf3;
+  --linie: rgba(20, 20, 40, 0.09);
+  --linie-stark: rgba(20, 20, 40, 0.18);
+  --text: #16161f;
+  --text-2: #50505f;
+  --text-3: #85859a;
+  --raster: rgba(20, 20, 40, 0.035);
+  --gelb: #b36b00;
+  --gelb-weich: rgba(255, 170, 40, 0.12);
+  --rot: #d23048;
+  --rot-weich: rgba(210, 48, 72, 0.09);
+  --gruen: #148a55;
+  --schatten: 0 8px 26px rgba(20, 20, 40, 0.1);
+  --kopf-grund: rgba(243, 243, 247, 0.72);
   color-scheme: light;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --grund: #121218;
-    --flaeche: #1b1b24;
-    --flaeche-2: #24242f;
-    --linie: #2e2e3b;
-    --text: #ececf3;
-    --text-2: #a9a9b8;
-    --text-3: #767687;
-    --akzent: #8577ff;
-    --akzent-weich: #2a2745;
-    --gelb: #ffc15e;
-    --gelb-weich: #2e2715;
-    --rot: #ff7084;
-    --rot-weich: #34181e;
-    --gruen: #3fd39a;
-    --schatten: 0 1px 2px rgba(0, 0, 0, 0.3), 0 6px 20px rgba(0, 0, 0, 0.25);
-    color-scheme: dark;
-  }
+:root {
+  --akzent-weich: color-mix(in srgb, var(--akzent) 15%, transparent);
+  --akzent-rand: color-mix(in srgb, var(--akzent) 55%, transparent);
+  --akzent-dunkel: color-mix(in srgb, var(--akzent) 72%, #000);
+  --glow: 0 0 0 1px color-mix(in srgb, var(--akzent) 65%, transparent), 0 0 24px color-mix(in srgb, var(--akzent) 38%, transparent);
+  --glow-klein: 0 0 14px color-mix(in srgb, var(--akzent) 45%, transparent);
+  --radius: 14px;
+  --radius-klein: 9px;
+  --schrift: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --schrift-titel: "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", Consolas, ui-monospace, monospace;
+  --aqua: #35e0c8;
+  --rose: #ff6f9c;
+  --bernstein: #ffc15e;
+}
+
+:root[data-glow="aus"] {
+  --glow: 0 0 0 1px var(--akzent-rand);
+  --glow-klein: none;
 }
 
 * { box-sizing: border-box; }
@@ -51,12 +75,19 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: var(--grund);
   color: var(--text);
   font-family: var(--schrift);
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background:
+    radial-gradient(900px 420px at 50% -160px, color-mix(in srgb, var(--akzent) 20%, transparent), transparent 72%),
+    linear-gradient(var(--raster) 1px, transparent 1px) 0 0 / 28px 28px,
+    linear-gradient(90deg, var(--raster) 1px, transparent 1px) 0 0 / 28px 28px,
+    var(--grund);
 }
 
 button {
@@ -67,44 +98,60 @@ button {
   background: none;
 }
 
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
   outline: 2px solid var(--akzent);
   outline-offset: 2px;
 }
 
+::selection { background: color-mix(in srgb, var(--akzent) 40%, transparent); }
+
 code {
   font-family: var(--mono);
-  font-size: 0.9em;
+  font-size: 0.88em;
   background: var(--flaeche-2);
-  padding: 0.1em 0.35em;
-  border-radius: 5px;
+  border: 1px solid var(--linie);
+  padding: 0.08em 0.38em;
+  border-radius: 6px;
   word-break: break-word;
 }
 
 pre {
-  background: var(--flaeche-2);
+  background: var(--grund-2);
+  border: 1px solid var(--linie);
   border-radius: var(--radius-klein);
   padding: 10px 12px;
   overflow-x: auto;
   margin: 8px 0;
 }
 
-pre code { background: none; padding: 0; font-size: 12.5px; word-break: normal; }
+pre code { background: none; border: none; padding: 0; font-size: 12.5px; word-break: normal; }
 
-a { color: var(--akzent); }
+a { color: var(--akzent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
+/* Kleine Kugel im Kopf, eingefärbt mit der Akzentfarbe. */
 .mini-kugel {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   flex: none;
   background:
-    radial-gradient(circle at 32% 30%, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 45%),
-    radial-gradient(circle at 70% 75%, rgba(255, 111, 156, 0.8), rgba(255, 111, 156, 0) 55%),
-    linear-gradient(135deg, #6b5cff, #35e0c8);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 2px 8px rgba(107, 92, 255, 0.35);
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0) 44%),
+    radial-gradient(circle at 72% 78%, color-mix(in srgb, var(--akzent) 30%, #ff3da5), transparent 58%),
+    linear-gradient(135deg, color-mix(in srgb, var(--akzent) 85%, #fff), var(--akzent-dunkel));
+  box-shadow: var(--glow-klein), inset 0 0 0 1px rgba(255, 255, 255, 0.12);
 }
 
+/* Fensterkopf ohne Windows-Rahmen: ziehbar, die Fensterknöpfe zeichnet Windows
+   rechts darüber (titleBarOverlay). */
+.ziehbar { -webkit-app-region: drag; user-select: none; }
+.ziehbar button, .ziehbar input, .ziehbar select, .ziehbar a { -webkit-app-region: no-drag; }
+
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: var(--linie); border-radius: 10px; border: 3px solid var(--grund); }
+::-webkit-scrollbar-thumb { background: var(--linie-stark); border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+::-webkit-scrollbar-thumb:hover { background: var(--akzent-rand); background-clip: padding-box; border: 3px solid transparent; }
 ::-webkit-scrollbar-track { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}

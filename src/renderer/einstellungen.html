@@ -1,22 +1,23 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-theme="dunkel">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Julia</title>
   <link rel="stylesheet" href="basis.css">
   <link rel="stylesheet" href="einstellungen.css">
+  <script src="design.js"></script>
 </head>
 <body>
-  <div class="huelle">
-    <header class="einst-kopf">
-      <span class="mini-kugel gross"></span>
-      <div>
-        <h1 data-t="einst.titel"></h1>
-        <p class="version" id="version"></p>
-      </div>
-    </header>
+  <header class="einst-kopf ziehbar">
+    <span class="mini-kugel gross"></span>
+    <div>
+      <h1 data-t="einst.titel"></h1>
+      <p class="version" id="version"></p>
+    </div>
+  </header>
 
+  <div class="huelle">
     <section class="willkommen" id="willkommen" hidden>
       <h2 data-t="einst.einrichtung_titel"></h2>
       <p data-t="einst.einrichtung_text"></p>
@@ -64,6 +65,23 @@
           </select>
         </div>
       </div>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="design.titel"></h2>
+      <div class="feld">
+        <label data-t="design.modus"></label>
+        <div class="segment" id="modus">
+          <button data-wert="dunkel" data-t="design.dunkel"></button>
+          <button data-wert="hell" data-t="design.hell"></button>
+          <button data-wert="system" data-t="design.system"></button>
+        </div>
+      </div>
+      <div class="feld">
+        <label data-t="design.akzent"></label>
+        <div class="akzente" id="akzente"></div>
+      </div>
+      <label class="schalter"><input type="checkbox" data-k="design.glow"><span data-t="design.glow"></span></label>
     </section>
 
     <section class="gruppe">
@@ -177,7 +195,10 @@
       </div>
       <h3 data-t="einst.farben"></h3>
       <div class="farben" id="farben"></div>
-      <button class="zweit" id="standardfarben" data-t="einst.standardfarben"></button>
+      <div class="knopfreihe">
+        <button class="zweit" id="standardfarben" data-t="einst.standardfarben"></button>
+        <button class="zweit" id="blaseAkzent" data-t="design.blase_akzent"></button>
+      </div>
     </section>
 
     <section class="gruppe">
