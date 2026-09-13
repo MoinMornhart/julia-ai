@@ -72,7 +72,7 @@ async function aufnehmenFenster(fenster, datei, { mitRahmen = false } = {}) {
   fs.writeFileSync(datei, bild.toPNG());
 }
 
-async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb }) {
+async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken }) {
   fs.mkdirSync(ziel, { recursive: true });
   const sc = config.get('sprachcode');
   if (!config.get('nutzer.name')) config.set('nutzer.name', 'Philip');
@@ -89,6 +89,16 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
   chatFenster.hide();
+
+  if (overlayZeigen) {
+    const o = overlayZeigen({ passiv: false });
+    await geladen(o);
+    await warte(500);
+    o.webContents.send('demo', (GESPRAECH[sc] || GESPRAECH.de).slice(0, 4));
+    await warte(1200);
+    await aufnehmenFenster(o, path.join(ziel, `overlay-${sc}.png`));
+    overlayVerstecken();
+  }
 
   const einst = einstellungenOeffnen(false);
   await geladen(einst);

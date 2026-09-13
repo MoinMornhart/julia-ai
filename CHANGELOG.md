@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.5.0 – 2026-09-13
+- Julia hat jetzt ein Gaming-Overlay: kleines Chatfenster über dem Spiel per Hotkey, Freigaben direkt darin und auf Wunsch kurz eingeblendete Antworten auf Sprachbefehle
+
 ## 0.4.0 – 2026-09-13
 - Du kannst deiner KI jetzt einen eigenen Namen geben und deine Pronomen festlegen – der Name erscheint überall, im Chat, im Tray und im Gespräch
 

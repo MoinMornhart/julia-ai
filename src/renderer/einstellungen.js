@@ -238,19 +238,21 @@ function felderVerbinden() {
   });
 }
 
+// Monitorauswahl für Blase und Overlay.
 function monitoreFuellen() {
-  const sel = $('monitor');
-  const gewaehlt = cfg.blase.monitor;
-  sel.innerHTML = '';
-  const liste = cfg.monitore.map((m) => ({ i: m.index, text: `${m.index === 0 ? tx('monitor.0') : tx('monitor.n', { n: m.index + 1 })} · ${m.breite}×${m.hoehe}` }));
-  if (!liste.some((m) => m.i === gewaehlt)) liste.push({ i: gewaehlt, text: `${tx('monitor.n', { n: gewaehlt + 1 })} · –` });
-  for (const m of liste) {
-    const o = document.createElement('option');
-    o.value = String(m.i);
-    o.textContent = m.text;
-    sel.appendChild(o);
+  for (const [id, gewaehlt] of [['monitor', cfg.blase.monitor], ['overlayMonitor', cfg.overlay.monitor]]) {
+    const sel = $(id);
+    sel.innerHTML = '';
+    const liste = cfg.monitore.map((m) => ({ i: m.index, text: `${m.index === 0 ? tx('monitor.0') : tx('monitor.n', { n: m.index + 1 })} · ${m.breite}×${m.hoehe}` }));
+    if (!liste.some((m) => m.i === gewaehlt)) liste.push({ i: gewaehlt, text: `${tx('monitor.n', { n: gewaehlt + 1 })} · –` });
+    for (const m of liste) {
+      const o = document.createElement('option');
+      o.value = String(m.i);
+      o.textContent = m.text;
+      sel.appendChild(o);
+    }
+    sel.value = String(gewaehlt);
   }
-  sel.value = String(gewaehlt);
 }
 
 function ordnerZeigen() {

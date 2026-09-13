@@ -39,6 +39,13 @@ const STANDARD = {
   hotkey: {
     sprechen: 'Control+Alt+Space',
     chat: 'Control+Alt+J',
+    overlay: 'Control+Shift+Space', // leer = abgeschaltet
+  },
+  overlay: {
+    monitor: 0,
+    ecke: 'oben-rechts',
+    deckkraft: 0.94,
+    bei_antwort: 'aus', // 'aus' | 'passiv' – bei Sprachbefehlen die Antwort kurz einblenden
   },
   sprache: {
     vorlesen: 'bei-sprache', // 'bei-sprache' | 'immer' | 'nie'
@@ -186,6 +193,16 @@ function pruefen(schluessel, wert) {
       return wert;
     case 'design.akzent':
       return farbe(wert);
+    case 'hotkey.overlay':
+      return String(wert ?? '').trim();
+    case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
+    case 'overlay.deckkraft': return zahl(wert, 0.3, 1.0, 'Deckkraft');
+    case 'overlay.ecke':
+      if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);
+      return wert;
+    case 'overlay.bei_antwort':
+      if (!['aus', 'passiv'].includes(wert)) throw new Error('Overlay bei Antworten: "aus" oder "passiv".');
+      return wert;
     case 'handy.freigaben':
       if (!['handy', 'pc'].includes(wert)) throw new Error('Freigaben vom Handy: "handy" oder "pc".');
       return wert;

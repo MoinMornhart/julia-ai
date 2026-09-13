@@ -73,6 +73,24 @@ statt „Julia"), wählst ihre Form (Assistentin, Assistent oder neutral) und de
 Pronomen – er, sie, nur dein Name oder eigene. Der Name erscheint überall: im Chat, im Tray,
 in den Meldungen und im Gespräch.
 
+## Gaming-Overlay
+
+<p align="center">
+  <img src="docs/bilder/overlay-de.png" width="300" alt="Overlay über dem Spiel">
+</p>
+
+Mit `Strg+Umschalt+Leertaste` legt sich ein kleines, halbtransparentes Chatfenster über dein
+Spiel – im Fenstermodus oder randlosen Vollbild. Tippen, Enter, weiterspielen; `Esc` oder
+derselbe Hotkey blendet es aus. Freigaben erscheinen dann im Overlay, statt das große
+Fenster über das Spiel zu legen.
+
+Auf Wunsch blendet Julia ihre Antwort auf **Sprachbefehle** kurz passiv ein: Klicks gehen
+durch, das Spiel behält den Fokus, nach ein paar Sekunden verschwindet sie wieder.
+Monitor, Ecke, Deckkraft und Hotkey stellst du in den Einstellungen ein.
+
+> Bei *exklusivem* Vollbild zeigt Windows grundsätzlich keine Overlays – dann das Spiel auf
+> „Randloses Fenster" stellen.
+
 ## Die Blase
 
 Auf Wunsch liegt eine animierte Kugel auf deinem Nebenmonitor und zeigt, was Julia gerade tut.

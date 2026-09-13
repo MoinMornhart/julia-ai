@@ -263,6 +263,44 @@
     </section>
 
     <section class="gruppe">
+      <h2 data-t="einst.overlay"></h2>
+      <p class="hinweis" data-t="einst.overlay_hinweis"></p>
+      <div class="zwei">
+        <div class="feld">
+          <label for="hkOverlay" data-t="einst.hotkey_overlay"></label>
+          <input id="hkOverlay" data-k="hotkey.overlay" spellcheck="false" placeholder="Control+Shift+Space">
+        </div>
+        <div class="feld">
+          <label for="overlayAntwort" data-t="einst.overlay_bei_antwort"></label>
+          <select id="overlayAntwort" data-k="overlay.bei_antwort">
+            <option value="aus" data-t="einst.overlay_aus"></option>
+            <option value="passiv" data-t="einst.overlay_passiv"></option>
+          </select>
+        </div>
+      </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="overlayMonitor" data-t="einst.monitor"></label>
+          <select id="overlayMonitor" data-k="overlay.monitor" data-zahl></select>
+        </div>
+        <div class="feld">
+          <label for="overlayEcke" data-t="einst.ecke"></label>
+          <select id="overlayEcke" data-k="overlay.ecke">
+            <option value="oben-rechts" data-t="ecke.oben-rechts"></option>
+            <option value="oben-links" data-t="ecke.oben-links"></option>
+            <option value="unten-rechts" data-t="ecke.unten-rechts"></option>
+            <option value="unten-links" data-t="ecke.unten-links"></option>
+          </select>
+        </div>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_deckkraft"></label>
+        <input type="range" data-k="overlay.deckkraft" data-zahl data-live min="0.3" max="1" step="0.02">
+        <output></output>
+      </div>
+    </section>
+
+    <section class="gruppe">
       <h2 data-t="einst.system"></h2>
       <label class="schalter"><input type="checkbox" data-k="autostart"><span data-t="einst.autostart"></span></label>
       <label class="schalter"><input type="checkbox" data-k="update.pruefen"><span data-t="einst.update_pruefen"></span></label>

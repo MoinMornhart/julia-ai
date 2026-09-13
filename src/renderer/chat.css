@@ -4,6 +4,42 @@ body {
   overflow: hidden;
 }
 
+/* --- Gaming-Overlay: kompakt, halbtransparent, mit Leuchtrand --- */
+
+body.overlay {
+  background: transparent;
+  border-radius: 18px;
+  isolation: isolate;
+}
+body.overlay::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  border-radius: 18px;
+  background:
+    radial-gradient(420px 200px at 50% -60px, color-mix(in srgb, var(--akzent) 22%, transparent), transparent 70%),
+    color-mix(in srgb, var(--grund) 86%, transparent);
+  border: 1px solid var(--akzent-rand);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 0 40px color-mix(in srgb, var(--akzent) 10%, transparent);
+  z-index: -1;
+}
+body.overlay .kopf { height: 42px; padding: 0 6px 0 12px; background: transparent; backdrop-filter: none; }
+body.overlay .kopf::after { left: 14px; right: 14px; }
+body.overlay .name { font-size: 13px; }
+body.overlay .mini-kugel { width: 20px; height: 20px; }
+body.overlay .icon { width: 30px; height: 30px; }
+body.overlay .verlauf { padding: 10px 10px 6px; gap: 8px; font-size: 13px; }
+body.overlay .nachricht .blase { max-width: 92%; padding: 7px 11px; }
+body.overlay .nachricht.julia .blase { backdrop-filter: none; box-shadow: none; }
+body.overlay .leer { padding-bottom: 10px; }
+body.overlay .leer-kugel { width: 58px; height: 58px; margin-bottom: 12px; }
+body.overlay .eingabe { padding: 6px 8px 10px; }
+body.overlay .eingabe-feld { box-shadow: none; backdrop-filter: none; }
+/* Passiv: nur anzeigen, keine Eingabe – Klicks gehen ohnehin durch */
+body.overlay.passiv .eingabe,
+body.overlay.passiv .aktionen { display: none; }
+body.overlay.passiv::before { border-color: var(--linie-stark); }
+
 /* --- Kopf --- */
 
 .kopf {

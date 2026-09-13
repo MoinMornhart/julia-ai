@@ -47,6 +47,9 @@ let tray = null;
 let chatFenster = null;
 let orbFenster = null;
 let einstFenster = null;
+let overlayFenster = null;
+let overlayPassiv = false;
+let overlayTimer = null;
 let beendenLaeuft = false;
 let zustand = 'idle';
 let promptCache = null;
@@ -112,7 +115,7 @@ function laufzeitText() {
 // --- Zustand und Nachrichten an alle Fenster ---
 
 function anAlle(kanal, daten) {
-  for (const w of [chatFenster, orbFenster, einstFenster]) {
+  for (const w of [chatFenster, orbFenster, einstFenster, overlayFenster]) {
     if (w && !w.isDestroyed()) w.webContents.send(kanal, daten);
   }
 }
@@ -293,12 +296,95 @@ function blaseAktualisieren() {
   }
 }
 
+// --- Gaming-Overlay ---
+// Kleines, halbtransparentes Chatfenster über Spielen (Fenster- oder randloses
+// Vollbild; bei exklusivem Vollbild zeigt Windows keine Overlays).
+// Aktiv: bekommt Fokus zum Tippen. Passiv: Klicks gehen durch, das Spiel
+// behält den Fokus – für kurz eingeblendete Antworten auf Sprachbefehle.
+
+function overlayGrenzen() {
+  const o = config.get('overlay');
+  const ds = bildschirm.monitore();
+  const d = ds[o.monitor] || ds[0];
+  const wa = d.workArea;
+  const breite = 380;
+  const hoehe = Math.min(560, wa.height - 48);
+  const rand = 24;
+  const x = o.ecke.endsWith('rechts') ? wa.x + wa.width - breite - rand : wa.x + rand;
+  const y = o.ecke.startsWith('unten') ? wa.y + wa.height - hoehe - rand : wa.y + rand;
+  return { x: Math.round(x), y: Math.round(y), width: breite, height: hoehe };
+}
+
+function overlayErstellen() {
+  overlayFenster = new BrowserWindow({
+    ...overlayGrenzen(),
+    transparent: true,
+    frame: false,
+    resizable: false,
+    alwaysOnTop: true,
+    skipTaskbar: true,
+    show: false,
+    hasShadow: false,
+    backgroundColor: '#00000000',
+    title: assistentName(),
+    icon: fensterBild(),
+    webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  overlayFenster.setAlwaysOnTop(true, 'screen-saver');
+  overlayFenster.setOpacity(config.get('overlay.deckkraft'));
+  overlayFenster.loadFile(path.join(RENDERER, 'chat.html'), { query: { overlay: '1' } });
+  overlayFenster.on('close', (e) => {
+    if (!beendenLaeuft) {
+      e.preventDefault();
+      overlayVerstecken();
+    }
+  });
+  return overlayFenster;
+}
+
+function overlayZeigen({ passiv = false } = {}) {
+  if (!overlayFenster || overlayFenster.isDestroyed()) overlayErstellen();
+  clearTimeout(overlayTimer);
+  overlayPassiv = passiv;
+  const o = overlayFenster;
+  o.setIgnoreMouseEvents(passiv);
+  o.setFocusable(!passiv);
+  const zeigen = () => {
+    o.webContents.send('overlay:modus', passiv ? 'passiv' : 'aktiv');
+    if (passiv) o.showInactive();
+    else { o.show(); o.focus(); }
+  };
+  if (o.webContents.isLoading()) o.webContents.once('did-finish-load', zeigen);
+  else zeigen();
+  return o;
+}
+
+function overlayVerstecken() {
+  clearTimeout(overlayTimer);
+  if (overlayFenster && !overlayFenster.isDestroyed()) overlayFenster.hide();
+}
+
+function overlaySichtbar() {
+  return !!overlayFenster && !overlayFenster.isDestroyed() && overlayFenster.isVisible();
+}
+
+function overlayUmschalten() {
+  if (overlaySichtbar() && !overlayPassiv) overlayVerstecken();
+  else overlayZeigen({ passiv: false });
+}
+
+function overlaySpaeterVerstecken(ms = 12000) {
+  clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(() => { if (overlayPassiv) overlayVerstecken(); }, ms);
+}
+
 // --- Tray, Hotkeys, Autostart ---
 
 function trayMenue() {
   const menue = Menu.buildFromTemplate([
     { label: t('tray.chat'), click: chatZeigen },
     { label: `${t('tray.sprechen')}   (${config.get('hotkey.sprechen')})`, click: sprachUmschalten },
+    { label: `${t('tray.overlay')}   (${config.get('hotkey.overlay') || '–'})`, click: overlayUmschalten },
     { type: 'separator' },
     { label: t('tray.blase'), type: 'checkbox', checked: config.get('blase.an'), click: (m) => config.set('blase.an', m.checked) },
     { label: t('tray.neu'), click: () => { agent.neu(); anAlle('chat:geleert'); } },
@@ -316,6 +402,7 @@ function trayMenue() {
 function hotkeysRegistrieren() {
   globalShortcut.unregisterAll();
   const paare = [[config.get('hotkey.sprechen'), sprachUmschalten], [config.get('hotkey.chat'), chatUmschalten]];
+  if (config.get('hotkey.overlay')) paare.push([config.get('hotkey.overlay'), overlayUmschalten]);
   for (const [taste, aktion] of paare) {
     let ok = false;
     try { ok = globalShortcut.register(taste, aktion); } catch { ok = false; }
@@ -376,7 +463,13 @@ async function sprachUmschalten() {
     anAlle('sprache:hoert', false);
     if (zustand === 'listening') zustandSetzen('idle');
   }
-  if (text) await nachrichtSenden(text, true);
+  if (text) {
+    // Beim Spielen: Antwort passiv einblenden, ohne dem Spiel den Fokus zu nehmen.
+    const hud = config.get('overlay.bei_antwort') === 'passiv' && !(overlaySichtbar() && !overlayPassiv);
+    if (hud) overlayZeigen({ passiv: true });
+    await nachrichtSenden(text, true);
+    if (hud) overlaySpaeterVerstecken();
+  }
 }
 
 // --- Updates ---
@@ -565,7 +658,10 @@ function agentVerdrahten() {
   agent.on('freigabe', (d) => {
     // Kam der Auftrag vom Handy, fragt Julia dort (oder sagt dort, dass der PC fragt).
     const vomHandy = d.kanal === 'mobile' && handy && handy.gekoppelt;
-    if (!vomHandy || config.get('handy.freigaben') === 'pc') {
+    if (overlaySichtbar()) {
+      // Ist das Overlay offen (z. B. beim Spielen), dort fragen statt das große Fenster aufzureißen.
+      overlayZeigen({ passiv: false });
+    } else if (!vomHandy || config.get('handy.freigaben') === 'pc') {
       chatZeigen();
       if (chatFenster) chatFenster.flashFrame(true);
     }
@@ -643,6 +739,10 @@ async function start() {
   config.on('aenderung', (k) => {
     if (k.startsWith('blase')) blaseAktualisieren();
     if (k.startsWith('design')) designAnwenden();
+    if (k.startsWith('overlay') && overlayFenster && !overlayFenster.isDestroyed()) {
+      overlayFenster.setBounds(overlayGrenzen());
+      overlayFenster.setOpacity(config.get('overlay.deckkraft'));
+    }
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k === 'autostart') autostartSetzen();
@@ -665,7 +765,7 @@ async function start() {
   if (VORFUEHRUNG) {
     await require('./vorfuehrung').aufnehmen({
       ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen,
-      orb: () => orbFenster,
+      orb: () => orbFenster, overlayZeigen, overlayVerstecken,
     });
     beendenLaeuft = true;
     app.exit(0);

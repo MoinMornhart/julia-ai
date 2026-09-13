@@ -75,6 +75,23 @@ button matches the orb to the accent colour. Everything applies instantly, no re
 name, or custom. The name shows up everywhere: in the chat, the tray, notifications and the
 conversation.
 
+## Gaming overlay
+
+<p align="center">
+  <img src="docs/bilder/overlay-en.png" width="300" alt="Overlay over the game">
+</p>
+
+`Ctrl+Shift+Space` puts a small, translucent chat window over your game – in windowed or
+borderless fullscreen. Type, Enter, keep playing; `Esc` or the same hotkey hides it.
+Approvals then appear in the overlay instead of throwing the big window over your game.
+
+If you like, Julia briefly shows her answer to **voice commands** passively: clicks pass
+through, the game keeps focus, and it disappears after a few seconds. Monitor, corner,
+opacity and hotkey are in the settings.
+
+> With *exclusive* fullscreen, Windows never shows overlays – switch the game to
+> "borderless window".
+
 ## The orb
 
 If you want, an animated sphere sits on your secondary monitor and shows what Julia is doing.

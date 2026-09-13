@@ -4,6 +4,9 @@
 // Nachrichten laufen immer über den Hauptprozess, der sie zurückspiegelt.
 
 const $ = (id) => document.getElementById(id);
+// Dieselbe Seite dient als Gaming-Overlay (chat.html?overlay=1).
+const imOverlay = new URLSearchParams(location.search).get('overlay') === '1';
+if (imOverlay) document.body.classList.add('overlay');
 let T = {};
 let beschaeftigt = false;
 let hoert = false;
@@ -19,7 +22,13 @@ const ICON = {
   mikro: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0"/><path d="M12 17v5"/></svg>',
   senden: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>',
   stopp: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>',
+  zu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
 };
+
+function overlayModus(modus) {
+  document.body.classList.toggle('passiv', modus === 'passiv');
+  if (modus !== 'passiv') $('text').focus();
+}
 
 function tx(k, werte) {
   let s = T[k] ?? k;
@@ -228,6 +237,7 @@ function texteAnwenden(daten) {
   $('text').placeholder = tx('chat.platzhalter');
   $('btnNeu').title = tx('chat.neu');
   $('btnEinst').title = tx('chat.einstellungen');
+  $('btnZu').title = tx('chat.schliessen');
   $('btnMikro').title = `${tx('chat.mikro')} (${hk})`;
   $('leerText').textContent = tx('chat.leer', { hotkey: hk });
   knopfSenden();
@@ -265,6 +275,11 @@ async function init() {
   $('btnNeu').innerHTML = ICON.neu;
   $('btnEinst').innerHTML = ICON.einst;
   $('btnMikro').innerHTML = ICON.mikro;
+  if (imOverlay) {
+    $('btnZu').hidden = false;
+    $('btnZu').innerHTML = ICON.zu;
+    $('btnZu').onclick = () => julia.schliessen();
+  }
 
   const st = await julia.status();
   hotkey = st.hotkey;
@@ -326,3 +341,4 @@ async function init() {
 // bis Texte und Status geladen sind.
 const bereit = init();
 julia.on('demo', (eintraege) => bereit.then(() => demo(eintraege)));
+julia.on('overlay:modus', (modus) => bereit.then(() => overlayModus(modus)));

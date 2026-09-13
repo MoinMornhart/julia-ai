@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'handy:status',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'handy:status', 'overlay:modus',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
