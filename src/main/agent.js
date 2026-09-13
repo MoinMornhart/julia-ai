@@ -266,7 +266,7 @@ class Agent extends EventEmitter {
         return ergebnis(text);
       }
       const e = aufruf.input || {};
-      const stufe = ampel.nachFremdemInhalt(w.einstufen(e, this.ctx), this.fremdKontakt, w.nachAussen ? w.nachAussen(e) : false);
+      const stufe = ampel.nachFremdemInhalt(w.einstufen(e, this.ctx), this.fremdKontakt, w.nachAussen ? w.nachAussen(e) : false, !!w.dauerhaft);
       // Freigaben zeigen immer die vollständigen Parameter, nie eine gekürzte Fassung.
       const beschreibung = stufe.beschreibung || `${aufruf.name} ${JSON.stringify(e)}`;
 

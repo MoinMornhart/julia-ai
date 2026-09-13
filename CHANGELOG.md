@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.9.2 – 2026-09-14
+- Julia merkt sich nach fremden Inhalten nichts mehr ohne dein Ja – so kann keine Mail ihr Gedächtnis vergiften
+
 ## 0.9.1 – 2026-09-14
 - Julia schützt jetzt gegen Datenabfluss: Nach fremden Inhalten fragt sie auch vor Links und Netzwerk-Befehlen, heruntergeladene Programme startet sie nie, und Updates laufen ohne Installationsskripte
 

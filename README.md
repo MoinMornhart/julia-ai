@@ -58,7 +58,7 @@ Was die Software selbst durchsetzt:
 - Julias eigene Dateien (Konfiguration, API-Schlüssel, Gedächtnis) sind nie ohne Rückfrage beschreibbar.
 - Jede GELB-Aktion landet im Protokoll, überschriebene Dateien werden vorher gesichert. Das Protokoll ist eine Prüfsummen-Kette: Wird mittendrin etwas geändert oder gelöscht, meldet Julia das beim Start.
 - **Kostenbremse:** Julia rechnet die API-Kosten mit und stoppt, sobald das Tageslimit erreicht ist (Standard 10 US-$) – auch mitten in einem Auftrag. Bei 80 % kommt eine Warnung. So erzeugt weder eine Endlosschleife noch ein manipulierter Auftrag eine Rechnung.
-- **Schutz gegen Datenabfluss:** Sobald fremde Inhalte im Gespräch sind (Mails, Dateien, Webseiten, Bildschirm), fragt Julia auch vor dem Öffnen von Links und vor Netzwerk-Befehlen wie `ping` oder `nslookup` – über solche Wege ließen sich sonst Daten hinausschmuggeln. Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden, entfernt sie vorher.
+- **Schutz gegen Datenabfluss:** Sobald fremde Inhalte im Gespräch sind (Mails, Dateien, Webseiten, Bildschirm), fragt Julia auch vor dem Öffnen von Links und vor Netzwerk-Befehlen wie `ping` oder `nslookup` – über solche Wege ließen sich sonst Daten hinausschmuggeln. Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden, entfernt sie vorher. Auch dauerhaft merken darf sie sich dann nur mit deinem Ja – so kann keine Mail ihr Gedächtnis vergiften.
 - Aus dem Internet heruntergeladene Programme startet Julia nie (Mark-of-the-Web), und Updates spielen Pakete ohne deren Installationsskripte ein.
 - Eine Freigabe gilt für genau eine Aktion. Im Modus **zupackend** („zieh das durch") legt Julia den ganzen Auftrag einmal vor, danach laufen nur die dort genannten Kategorien ohne Einzelfrage.
 

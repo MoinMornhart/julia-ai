@@ -475,7 +475,10 @@ const WERKZEUGE = [
     name: 'gedaechtnis_schreiben',
     description: 'Etwas Dauerhaftes merken oder einen Eintrag ersetzen. Nie Zugangsdaten.',
     input_schema: { type: 'object', properties: { schluessel: { type: 'string', description: 'Kurzer, sprechender Name, z. B. "commits_sprache".' }, inhalt: { type: 'string' } }, required: ['schluessel', 'inhalt'] },
-    einstufen: gruen,
+    dauerhaft: true,
+    einstufen(e) {
+      return { ...gruen(), beschreibung: `Dauerhaft merken: ${e.schluessel} = ${e.inhalt}` };
+    },
     async ausfuehren(e, ctx) {
       ctx.gedaechtnis.schreiben(e.schluessel, e.inhalt);
       ctx.kontextGeaendert();

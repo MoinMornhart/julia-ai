@@ -27,6 +27,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.8.0 | „Hey <Name>" als Aktivierungswort – standardmäßig aus, nur lokal, pausiert beim eigenen Sprechen |
 | ✅ 0.9.0 | Passwortfelder, Passwortmanager, Messenger und private Browserfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt |
 | ✅ 0.9.1 | Schutz gegen Datenabfluss nach fremden Inhalten, unsichtbare Zeichen entfernt, heruntergeladene Programme ROT, Updates ohne Installationsskripte |
+| ✅ 0.9.2 | Gedächtnis mit Herkunft: nach fremden Inhalten nur mit deinem Ja |
 
 ## Als Nächstes
 
@@ -97,7 +98,7 @@ Veröffentlichungen zur Sicherheit von KI-Agenten.
 | ✅ | Keine externen Bilder im Chat, strenge CSP – EchoLeak zog Daten über automatisch geladene Bilder ab | [EchoLeak](https://arxiv.org/abs/2509.10540) |
 | ✅ | Electron-Berechtigungen standardmäßig abgelehnt, `openExternal` nur für sichere Protokolle | [Electron-Checkliste](https://www.electronjs.org/docs/latest/tutorial/security) |
 | 📋 | Julias eigene Fenster per `WDA_EXCLUDEFROMCAPTURE` aus Screenshots, Streams und OBS heraushalten; wichtige Freigaben mit Windows Hello bestätigen | [SetWindowDisplayAffinity](https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowdisplayaffinity) |
-| 📋 | Gedächtnis mit Herkunft: Was während fremder Inhalte gemerkt werden soll, erst nach Bestätigung | [Studie](https://arxiv.org/pdf/2506.17318) |
+| ✅ 0.9.2 | Gedächtnis mit Herkunft: Was während fremder Inhalte gemerkt werden soll, erst nach Bestätigung | [Studie](https://arxiv.org/pdf/2506.17318) |
 | 📋 | Plan zuerst: Die Werkzeugfolge steht nach der Anfrage fest, fremde Inhalte können sie nicht erweitern (vereinfachtes CaMeL) | [CaMeL](https://simonwillison.net/2025/Apr/11/camel/) |
 | 📋 | Signierte Tags mit fest hinterlegtem Schlüssel, keine Downgrades außer beim Rückweg | [CVE-2024-39698](https://github.com/advisories/GHSA-9jxc-qjr9-vjxq) |
 | 📋 | Für MCP: nur lokale Server, Version fest, Tool-Beschreibungen hashen (Schutz gegen nachträglich getauschte Tools), Präfix pro Server | [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) |
