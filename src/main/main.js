@@ -4,14 +4,17 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
-  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell,
+  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session,
 } = require('electron');
+const sicherheit = require('./sicherheit');
 
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
 const DATEN = process.env.JULIA_DATEN || path.join(app.getPath('appData'), 'Julia');
 app.setPath('userData', path.join(DATEN, 'electron'));
 app.setAppUserModelId('Julia');
+// Jede Seite läuft in der Chromium-Sandbox, auch wenn ein Fenster es vergäße.
+app.enableSandbox();
 
 const { Konfiguration } = require('./config');
 const { Gedaechtnis } = require('./gedaechtnis');
@@ -162,10 +165,6 @@ function chatFensterErstellen() {
       chatFenster.hide();
     }
   });
-  chatFenster.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https?:\/\//.test(url)) shell.openExternal(url);
-    return { action: 'deny' };
-  });
 }
 
 function chatZeigen() {
@@ -194,10 +193,6 @@ function einstellungenOeffnen(einrichtung = false) {
     title: t('einst.titel'),
   }));
   einstFenster.loadFile(path.join(RENDERER, 'einstellungen.html'), { query: { einrichtung: einrichtung ? '1' : '0' } });
-  einstFenster.webContents.setWindowOpenHandler(({ url }) => {
-    if (/^https:\/\//.test(url)) shell.openExternal(url);
-    return { action: 'deny' };
-  });
   einstFenster.once('ready-to-show', () => einstFenster.show());
   einstFenster.on('closed', () => { einstFenster = null; });
   return einstFenster;
@@ -375,22 +370,25 @@ async function updatesBeimStart() {
 // --- IPC ---
 
 function ipcEinrichten() {
-  ipcMain.handle('texte', () => texteFuerRenderer());
-  ipcMain.handle('config:lesen', () => oeffentlicheConfig());
-  ipcMain.handle('config:setzen', (_e, schluessel, wert) => {
+  const ipc = sicherheit.ipcAbsichern(ipcMain, RENDERER, (kanal, url) => {
+    protokoll.eintragen({ werkzeug: 'ipc', stufe: 'ROT', ergebnis: 'abgelehnt', grund: `Nachricht auf ${kanal} von fremder Seite ${url}` });
+  });
+  ipc.handle('texte', () => texteFuerRenderer());
+  ipc.handle('config:lesen', () => oeffentlicheConfig());
+  ipc.handle('config:setzen', (_e, schluessel, wert) => {
     if (String(schluessel).startsWith('api.')) return { fehler: 'Nicht erlaubt.' };
     try { return { wert: config.set(schluessel, wert) }; } catch (e) { return { fehler: e.message }; }
   });
-  ipcMain.handle('schluessel:setzen', (_e, s) => {
+  ipc.handle('schluessel:setzen', (_e, s) => {
     try { schluesselSetzen(s); return { ok: true }; } catch (e) { return { fehler: e.message }; }
   });
-  ipcMain.handle('ordner:waehlen', async () => {
+  ipc.handle('ordner:waehlen', async () => {
     const r = await dialog.showOpenDialog(einstFenster || undefined, { properties: ['openDirectory'] });
     return r.canceled ? null : r.filePaths[0];
   });
-  ipcMain.handle('stimmen', () => sprache.stimmen());
-  ipcMain.handle('konten:status', () => konten.status());
-  ipcMain.handle('konten:google:verbinden', async (_e, daten) => {
+  ipc.handle('stimmen', () => sprache.stimmen());
+  ipc.handle('konten:status', () => konten.status());
+  ipc.handle('konten:google:verbinden', async (_e, daten) => {
     try {
       await konten.google.verbinden(daten || {});
       return { status: konten.status() };
@@ -400,7 +398,7 @@ function ipcEinrichten() {
       if (einstFenster && !einstFenster.isDestroyed()) einstFenster.focus();
     }
   });
-  ipcMain.handle('konten:google:trennen', async () => {
+  ipc.handle('konten:google:trennen', async () => {
     try {
       await konten.google.trennen();
       return { status: konten.status() };
@@ -408,32 +406,32 @@ function ipcEinrichten() {
       return { fehler: e.message, status: konten.status() };
     }
   });
-  ipcMain.handle('einrichtung:fertig', () => {
+  ipc.handle('einrichtung:fertig', () => {
     config.set('einrichtung_fertig', true);
     if (einstFenster) einstFenster.close();
     chatZeigen();
     return true;
   });
-  ipcMain.handle('chat:status', () => ({
+  ipc.handle('chat:status', () => ({
     beschaeftigt: agent.beschaeftigt,
     zustand,
     hoert,
     hotkey: config.get('hotkey.sprechen'),
   }));
-  ipcMain.handle('chat:senden', (_e, text) => {
+  ipc.handle('chat:senden', (_e, text) => {
     nachrichtSenden(text, false).catch((e) => anAlle('agent:fehler', { art: 'text', text: e.message }));
     return true;
   });
-  ipcMain.on('chat:abbrechen', () => {
+  ipc.on('chat:abbrechen', () => {
     agent.abbrechen();
     sprache.stumm();
     sprache.zuhoerenAbbrechen();
   });
-  ipcMain.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
-  ipcMain.on('sprache:umschalten', () => sprachUmschalten());
-  ipcMain.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
-  ipcMain.on('fenster:einstellungen', () => einstellungenOeffnen(false));
-  ipcMain.on('fenster:schliessen', (e) => {
+  ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
+  ipc.on('sprache:umschalten', () => sprachUmschalten());
+  ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
+  ipc.on('fenster:einstellungen', () => einstellungenOeffnen(false));
+  ipc.on('fenster:schliessen', (e) => {
     const w = BrowserWindow.fromWebContents(e.sender);
     if (w) w.close();
   });
@@ -509,6 +507,11 @@ async function start() {
   agentVerdrahten();
   ipcEinrichten();
 
+  // Keine Seite bekommt Kamera, Mikrofon, Standort, Benachrichtigungen o. Ä.
+  // Julia hört über den Hauptprozess zu, nicht über die Oberfläche.
+  session.defaultSession.setPermissionRequestHandler((_wc, _recht, antwort) => antwort(false));
+  session.defaultSession.setPermissionCheckHandler(() => false);
+
   config.on('aenderung', (k) => {
     if (k.startsWith('blase')) blaseAktualisieren();
     if (/^(nutzer\.name|arbeitsverzeichnisse|sprachcode)$/.test(k)) promptCache = null;
@@ -554,6 +557,9 @@ async function start() {
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
+  app.on('web-contents-created', (_e, wc) => {
+    sicherheit.fensterHaerten(wc, { rendererOrdner: RENDERER, oeffnen: (url) => shell.openExternal(url) });
+  });
   app.on('second-instance', () => { if (chatFenster) chatZeigen(); });
   app.on('window-all-closed', () => { /* Julia läuft im Tray weiter */ });
   app.on('before-quit', () => { beendenLaeuft = true; });
