@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+  <title>Julia</title>
+  <link rel="stylesheet" href="basis.css">
+  <link rel="stylesheet" href="einstellungen.css">
+</head>
+<body>
+  <div class="huelle">
+    <header class="einst-kopf">
+      <span class="mini-kugel gross"></span>
+      <div>
+        <h1 data-t="einst.titel"></h1>
+        <p class="version" id="version"></p>
+      </div>
+    </header>
+
+    <section class="willkommen" id="willkommen" hidden>
+      <h2 data-t="einst.einrichtung_titel"></h2>
+      <p data-t="einst.einrichtung_text"></p>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="einst.allgemein"></h2>
+      <div class="zwei">
+        <div class="feld">
+          <label for="name" data-t="einst.name"></label>
+          <input id="name" data-k="nutzer.name" type="text" autocomplete="off">
+        </div>
+        <div class="feld">
+          <label for="sprachcode" data-t="einst.sprachcode"></label>
+          <select id="sprachcode" data-k="sprachcode">
+            <option value="de">Deutsch</option>
+            <option value="en">English</option>
+          </select>
+        </div>
+      </div>
+      <div class="feld">
+        <label for="schluessel" data-t="einst.schluessel"></label>
+        <input id="schluessel" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+        <small id="schluesselHinweis"></small>
+      </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="modell" data-t="einst.modell"></label>
+          <input id="modell" data-k="modell" list="modelle" spellcheck="false">
+          <datalist id="modelle">
+            <option value="claude-opus-5">
+            <option value="claude-fable-5-1">
+            <option value="claude-sonnet-5">
+            <option value="claude-haiku-4-5">
+          </datalist>
+        </div>
+        <div class="feld">
+          <label for="aufwand" data-t="einst.aufwand"></label>
+          <select id="aufwand" data-k="aufwand">
+            <option value="low">low</option>
+            <option value="medium">medium</option>
+            <option value="high">high</option>
+            <option value="xhigh">xhigh</option>
+            <option value="max">max</option>
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="einst.ordner"></h2>
+      <p class="hinweis" data-t="einst.ordner_hinweis"></p>
+      <ul class="ordner" id="ordnerListe"></ul>
+      <button class="zweit" id="ordnerHinzu" data-t="einst.ordner_hinzu"></button>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="einst.sprache"></h2>
+      <div class="zwei">
+        <div class="feld">
+          <label for="hkSprechen" data-t="einst.hotkey_sprechen"></label>
+          <input id="hkSprechen" data-k="hotkey.sprechen" spellcheck="false">
+        </div>
+        <div class="feld">
+          <label for="hkChat" data-t="einst.hotkey_chat"></label>
+          <input id="hkChat" data-k="hotkey.chat" spellcheck="false">
+        </div>
+      </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="vorlesen" data-t="einst.vorlesen"></label>
+          <select id="vorlesen" data-k="sprache.vorlesen">
+            <option value="bei-sprache" data-t="einst.vorlesen_bei"></option>
+            <option value="immer" data-t="einst.vorlesen_immer"></option>
+            <option value="nie" data-t="einst.vorlesen_nie"></option>
+          </select>
+        </div>
+        <div class="feld">
+          <label for="stimme" data-t="einst.stimme"></label>
+          <select id="stimme" data-k="sprache.stimme"></select>
+        </div>
+      </div>
+      <div class="regler">
+        <label for="sprechtempo" data-t="einst.sprechtempo"></label>
+        <input type="range" id="sprechtempo" data-k="sprache.tempo" data-zahl min="-10" max="10" step="1">
+        <output></output>
+      </div>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="einst.blase"></h2>
+      <label class="schalter"><input type="checkbox" data-k="blase.an"><span data-t="einst.blase_an"></span></label>
+      <div class="zwei">
+        <div class="feld">
+          <label for="monitor" data-t="einst.monitor"></label>
+          <select id="monitor" data-k="blase.monitor" data-zahl></select>
+        </div>
+        <div class="feld">
+          <label for="ecke" data-t="einst.ecke"></label>
+          <select id="ecke" data-k="blase.ecke">
+            <option value="unten-rechts" data-t="ecke.unten-rechts"></option>
+            <option value="unten-links" data-t="ecke.unten-links"></option>
+            <option value="oben-rechts" data-t="ecke.oben-rechts"></option>
+            <option value="oben-links" data-t="ecke.oben-links"></option>
+          </select>
+        </div>
+      </div>
+      <div class="regler">
+        <label data-t="einst.groesse"></label>
+        <input type="range" data-k="blase.groesse" data-zahl data-live min="120" max="900" step="10">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.deckkraft"></label>
+        <input type="range" data-k="blase.deckkraft" data-zahl data-live min="0.1" max="1" step="0.05">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.tempo"></label>
+        <input type="range" data-k="blase.tempo" data-zahl data-live min="0" max="3" step="0.1">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.empfindlichkeit"></label>
+        <input type="range" data-k="blase.empfindlichkeit" data-zahl data-live min="0" max="3" step="0.1">
+        <output></output>
+      </div>
+      <h3 data-t="einst.farben"></h3>
+      <div class="farben" id="farben"></div>
+      <button class="zweit" id="standardfarben" data-t="einst.standardfarben"></button>
+    </section>
+
+    <section class="gruppe">
+      <h2 data-t="einst.system"></h2>
+      <label class="schalter"><input type="checkbox" data-k="autostart"><span data-t="einst.autostart"></span></label>
+      <label class="schalter"><input type="checkbox" data-k="update.pruefen"><span data-t="einst.update_pruefen"></span></label>
+      <label class="schalter"><input type="checkbox" data-k="update.automatisch"><span data-t="einst.update_auto"></span></label>
+      <div class="feld schmal">
+        <label for="kanal" data-t="einst.update_kanal"></label>
+        <select id="kanal" data-k="update.kanal">
+          <option value="stabil" data-t="einst.kanal_stabil"></option>
+          <option value="test" data-t="einst.kanal_test"></option>
+        </select>
+      </div>
+    </section>
+  </div>
+
+  <footer class="einst-fuss">
+    <span id="meldung"></span>
+    <button class="primaer" id="speichern"></button>
+  </footer>
+
+  <script src="einstellungen.js"></script>
+</body>
+</html>

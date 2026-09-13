@@ -7,8 +7,8 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
-    "start": "electron .",
-    "test": "node --test test/",
+    "start": "node scripts/start.js",
+    "test": "node --test",
     "release": "node scripts/release.js"
   },
   "dependencies": {

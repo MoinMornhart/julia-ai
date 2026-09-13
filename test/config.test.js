@@ -1,0 +1,84 @@
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { Konfiguration, STANDARD, pruefen } = require('../src/main/config');
+
+function tempOrdner() {
+  return fs.mkdtempSync(path.join(os.tmpdir(), 'julia-test-'));
+}
+
+test('Blase ist standardmäßig aus, mit den vorgegebenen Werten', () => {
+  assert.equal(STANDARD.blase.an, false);
+  assert.equal(STANDARD.blase.monitor, 1);
+  assert.equal(STANDARD.blase.groesse, 360);
+  assert.equal(STANDARD.blase.ecke, 'unten-rechts');
+  assert.deepEqual(STANDARD.blase.farben.idle, ['#6B5CFF', '#35E0C8']);
+  assert.equal(STANDARD.update.pruefen, true);
+  assert.equal(STANDARD.update.automatisch, false);
+  assert.equal(STANDARD.update.kanal, 'stabil');
+});
+
+test('Einstellungen werden gespeichert und beim nächsten Laden gelesen', () => {
+  const dir = tempOrdner();
+  const k = new Konfiguration(dir);
+  k.laden();
+  k.set('blase.an', true);
+  k.set('blase.farben.idle', '#00ff00, 123456, #abc');
+  const k2 = new Konfiguration(dir);
+  k2.laden();
+  assert.equal(k2.get('blase.an'), true);
+  assert.deepEqual(k2.get('blase.farben.idle'), ['#00FF00', '#123456', '#AABBCC']);
+});
+
+test('Änderungen melden sich per Ereignis', () => {
+  const k = new Konfiguration(tempOrdner());
+  k.laden();
+  let gemeldet = null;
+  k.on('aenderung', (s, w) => { gemeldet = [s, w]; });
+  k.set('blase.groesse', 400);
+  assert.deepEqual(gemeldet, ['blase.groesse', 400]);
+});
+
+test('Ungültige Werte werden mit deutscher Meldung abgelehnt', () => {
+  assert.throws(() => pruefen('blase.deckkraft', 1.5), /zwischen 0.1 und 1/);
+  assert.throws(() => pruefen('blase.ecke', 'mitte'), /Ecke/);
+  assert.throws(() => pruefen('blase.farben.idle', 'grün'), /Hex-Farbe/);
+  assert.throws(() => pruefen('blase.farben.schlafen', '#fff'), /Unbekannter Zustand/);
+  assert.throws(() => pruefen('gibtsnicht', 1), /Unbekannte Einstellung/);
+});
+
+test('Alte oder fremde Schlüssel in der Datei stören nicht', () => {
+  const dir = tempOrdner();
+  fs.writeFileSync(path.join(dir, 'config.json'), JSON.stringify({ blase: { groesse: 500, alt: 1 }, fremd: true }));
+  const k = new Konfiguration(dir);
+  k.laden();
+  assert.equal(k.get('blase.groesse'), 500);
+  assert.equal(k.get('blase.an'), false);
+  assert.equal(k.get('fremd'), undefined);
+});
+
+test('config.json mit BOM (Notepad, PowerShell) wird trotzdem gelesen', () => {
+  const dir = tempOrdner();
+  fs.writeFileSync(path.join(dir, 'config.json'), '﻿' + JSON.stringify({ sprachcode: 'en' }), 'utf8');
+  const k = new Konfiguration(dir);
+  let warnung = null;
+  k.on('warnung', (w) => { warnung = w; });
+  k.laden();
+  assert.equal(warnung, null);
+  assert.equal(k.get('sprachcode'), 'en');
+});
+
+test('Kaputte config.json wird gesichert statt überschrieben', () => {
+  const dir = tempOrdner();
+  fs.writeFileSync(path.join(dir, 'config.json'), '{ kaputt');
+  const k = new Konfiguration(dir);
+  let warnung = null;
+  k.on('warnung', (w) => { warnung = w; });
+  k.laden();
+  assert.ok(warnung);
+  assert.ok(fs.readdirSync(dir).some((f) => f.startsWith('config.json.kaputt-')));
+});

@@ -5,7 +5,9 @@ const path = require('path');
 
 // Abschnitt 11: Dauerhaftes merken, Zugangsdaten nie.
 
-const ZUGANGSDATEN = /\b(passw(or)?t|password|kennwort|pin|tan|api[-_ ]?(key|schl[üu]ssel)|token|secret|geheimnis|zugangsdaten|login)\b|sk-ant-|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
+// Kein \b: "wlan_passwort" soll auch erkannt werden, der Unterstrich zählt
+// dort als Wortzeichen.
+const ZUGANGSDATEN = /(?<![a-zäöüß])(passw(or)?t|password|kennwort|pin|tan|api[-_ ]?(key|schl[üu]ssel)|token|secret|geheimnis|zugangsdaten|login)(?![a-zäöüß])|sk-ant-|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----/i;
 
 class Gedaechtnis {
   constructor(ordner) {
@@ -13,11 +15,17 @@ class Gedaechtnis {
   }
 
   _laden() {
+    let text;
     try {
-      return JSON.parse(fs.readFileSync(this.datei, 'utf8'));
+      text = fs.readFileSync(this.datei, 'utf8').replace(/^﻿/, '');
     } catch {
       return { eintraege: {} };
     }
+    // Eine unlesbare Datei nicht still durch eine leere ersetzen – sonst wäre
+    // beim nächsten Schreiben alles Gemerkte weg.
+    const daten = JSON.parse(text);
+    if (!daten || typeof daten.eintraege !== 'object') throw new Error('gedaechtnis.json hat ein unerwartetes Format.');
+    return daten;
   }
 
   _speichern(daten) {
@@ -52,8 +60,16 @@ class Gedaechtnis {
     return true;
   }
 
+  // Wird bei jeder Anfrage gelesen; eine kaputte Datei darf Julia deshalb
+  // nicht lahmlegen. Schreiben bricht dagegen ab, damit nichts verloren geht.
   alsText() {
-    const e = Object.entries(this.alle());
+    let alle;
+    try {
+      alle = this.alle();
+    } catch (err) {
+      return `(gedaechtnis.json ist nicht lesbar: ${err.message} – bitte den Nutzer darauf hinweisen)`;
+    }
+    const e = Object.entries(alle);
     if (!e.length) return '(noch leer)';
     return e.map(([k, v]) => `- ${k}: ${v.inhalt}`).join('\n');
   }

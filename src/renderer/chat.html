@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:">
+  <title>Julia</title>
+  <link rel="stylesheet" href="basis.css">
+  <link rel="stylesheet" href="chat.css">
+</head>
+<body>
+  <header class="kopf">
+    <div class="marke">
+      <span class="mini-kugel" id="kugel"></span>
+      <div class="marke-text">
+        <span class="name">Julia</span>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+    <div class="aktionen">
+      <button class="icon" id="btnNeu"></button>
+      <button class="icon" id="btnEinst"></button>
+    </div>
+  </header>
+
+  <main id="verlauf" class="verlauf">
+    <div class="leer" id="leer">
+      <div class="leer-kugel"></div>
+      <p id="leerText"></p>
+    </div>
+  </main>
+
+  <footer class="eingabe">
+    <div class="eingabe-feld">
+      <textarea id="text" rows="1" spellcheck="true"></textarea>
+      <button class="rund mikro" id="btnMikro"></button>
+      <button class="rund senden" id="btnSenden"></button>
+    </div>
+  </footer>
+
+  <script src="chat.js"></script>
+</body>
+</html>

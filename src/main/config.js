@@ -12,6 +12,7 @@ const ECKEN = ['unten-rechts', 'unten-links', 'oben-rechts', 'oben-links'];
 
 const STANDARD = {
   einrichtung_fertig: false,
+  sprachcode: 'de', // 'de' | 'en' – Oberfläche und Julias Sprache
   nutzer: { name: '' },
   arbeitsverzeichnisse: [],
   api: { schluessel_verschluesselt: '' },
@@ -138,6 +139,9 @@ function pruefen(schluessel, wert) {
     case 'kanal':
       if (!['desktop', 'mobile', 'auto'].includes(wert)) throw new Error('Kanal ist desktop, mobile oder auto.');
       return wert;
+    case 'sprachcode':
+      if (!['de', 'en'].includes(wert)) throw new Error('Sprache ist "de" oder "en".');
+      return wert;
     case 'arbeitsverzeichnisse':
       if (!Array.isArray(wert)) throw new Error('Arbeitsverzeichnisse sind eine Liste von Ordnern.');
       return wert.map((p) => path.resolve(String(p)));
@@ -163,7 +167,9 @@ class Konfiguration extends EventEmitter {
     fs.mkdirSync(this.ordner, { recursive: true });
     if (fs.existsSync(this.datei)) {
       try {
-        this.daten = mischen(STANDARD, JSON.parse(fs.readFileSync(this.datei, 'utf8')));
+        // Notepad und PowerShell speichern gern mit BOM, daran scheitert JSON.parse.
+        const text = fs.readFileSync(this.datei, 'utf8').replace(/^﻿/, '');
+        this.daten = mischen(STANDARD, JSON.parse(text));
       } catch (e) {
         // Kaputte Datei nicht überschreiben, sondern daneben sichern.
         const kaputt = this.datei + '.kaputt-' + Date.now();
