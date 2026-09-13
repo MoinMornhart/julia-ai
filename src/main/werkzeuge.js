@@ -145,6 +145,11 @@ function formatGroesse(b) {
   return `${(b / 1024 ** 3).toFixed(2)} GB`;
 }
 
+function zeitText(ms, ctx) {
+  const en = ctx.config && ctx.config.get('sprachcode') === 'en';
+  return new Date(ms).toLocaleString(en ? 'en-GB' : 'de-DE', { weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
 const EINSTELLUNG_GRUEN = /^(blase\.|sprache\.)/;
 const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|nutzer\.name$|sprachcode$)/;
 
@@ -486,6 +491,44 @@ const WERKZEUGE = [
     async ausfuehren(e, ctx) {
       const wert = ctx.config.set(e.schluessel, e.wert);
       return `${e.schluessel} = ${JSON.stringify(wert)}`;
+    },
+  },
+  {
+    name: 'erinnerung_setzen',
+    description: 'Eine Erinnerung stellen, wenn der Nutzer darum bittet. zeitpunkt als 2026-09-14T15:00 (lokale Zeit) oder nur Uhrzeit "15:30" (heute bzw. morgen); für "in 20 Minuten" in_minuten nutzen. Zum Zeitpunkt erscheint nur der Text als Meldung – es wird nichts ausgeführt.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string', description: 'Woran erinnert werden soll, kurz, höchstens 300 Zeichen.' },
+        zeitpunkt: { type: 'string' },
+        in_minuten: { type: 'number' },
+      },
+      required: ['text'],
+    },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      const r = ctx.erinnerungen.hinzufuegen(e);
+      return `Erinnerung gestellt für ${zeitText(r.zeit, ctx)}: ${r.text} (id ${r.id})`;
+    },
+  },
+  {
+    name: 'erinnerungen_anzeigen',
+    description: 'Alle offenen Erinnerungen mit id, Zeitpunkt und Text.',
+    input_schema: { type: 'object', properties: {} },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      const l = ctx.erinnerungen.alle();
+      if (!l.length) return 'Keine offenen Erinnerungen.';
+      return l.map((x) => `- ${x.id}: ${zeitText(x.zeit, ctx)} – ${x.text}`).join('\n');
+    },
+  },
+  {
+    name: 'erinnerung_loeschen',
+    description: 'Eine offene Erinnerung löschen (id aus erinnerungen_anzeigen).',
+    input_schema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      return ctx.erinnerungen.loeschen(e.id) ? 'Gelöscht.' : `Keine Erinnerung mit id ${e.id}.`;
     },
   },
   {

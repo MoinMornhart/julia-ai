@@ -333,6 +333,7 @@ async function init() {
     }
   });
   julia.on('chat:geleert', leeren);
+  julia.on('erinnerung', ({ text }) => systemzeile(`⏰ ${text}`, 'erinnerung'));
 
   $('text').focus();
 }

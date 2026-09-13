@@ -33,6 +33,7 @@ what's going on and gets it done – from renaming 200 files to tracking down a 
 - **Installs cleanly** – checks whether it's already there, then `winget` or the vendor's site, then verifies the version.
 - **Researches** – web search and page fetch for anything that must be current.
 - **Remembers lasting things** – projects, ways of working, devices. Never credentials.
+- **Reminds you** – "Remind me at 3 pm about the call", "pizza out in 20 minutes". As a notification, in the chat, read aloud and on your phone. Missed reminders arrive at the next start.
 - **Speaks** English or German, via hotkey, offline through Windows speech.
 - **Updates herself** on request – tagged releases only, with automatic rollback.
 

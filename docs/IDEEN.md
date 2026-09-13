@@ -18,17 +18,17 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.1.1 | Härtung nach Electron-Sicherheitscheckliste: Sandbox, Navigation gesperrt, IPC-Absender geprüft, gefährliche Link-Protokolle blockiert, Berechtigungen abgelehnt, strenge CSP |
 | ✅ 0.2.0 | Gaming-Design: Dunkel mit Orange, Hell, wie Windows, sieben Akzentfarben plus eigene, Leuchteffekte, rahmenlose Fenster |
 | ✅ 0.3.0 | Handy über eigenen Telegram-Bot: Kopplung per Code, nur ein Konto, Freigaben per Knopf, `/stopp` |
+| ✅ 0.4.0 | Eigener Name für die KI, ihre Form und deine Pronomen – Namen gegen Prompt-Tricks geprüft |
+| ✅ 0.5.0 | Gaming-Overlay: kleines Chatfenster über dem Spiel, Freigaben darin, Antworten auf Sprachbefehle passiv eingeblendet |
+| ✅ 0.6.0 | Erinnerungen und Timer: Meldung, Chat, Vorlesen, Handy; verpasste werden nachgeliefert |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 🔨 | **Eigener Name und Pronomen** – die Assistentin heißt, wie du willst („Rainer"), dazu deine Pronomen und ihre Form (Assistentin/Assistent/neutral) | M | hoch | Name darf keine Anweisungen in den Prompt schmuggeln: Länge und Zeichen begrenzt |
-| 📋 | **Gaming-Overlay** – kleines, halbtransparentes Chatfenster über dem Spiel, per Hotkey ein/aus, optional durchklickbar | M | hoch | Overlay bekommt keine eigenen Rechte, nur Anzeige und Eingabe |
 | 📋 | **Webseite, Doku, Vorführmodus** – kleine Seite mit animierter Vorführung, Funktionsübersicht, Download-Anleitung | M | mittel | GitHub Pages braucht ein öffentliches Repo oder GitHub Pro |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |
-| 📋 | **Erinnerungen und Timer** – „Erinner mich um 15 Uhr an den Anruf" | S | hoch | Nur, was du ausdrücklich bestellst; keine eigenen Aktionen zum Zeitpunkt, nur die Erinnerung |
 | 📋 | **„Hey <Name>" als Aktivierungswort** – nur wenn eingeschaltet | M | hoch | Standard aus; nur das Schlüsselwort wird lokal erkannt, nichts wird gespeichert oder verschickt; sichtbare Anzeige, wenn das Mikrofon lauscht |
 
 ## Sicherheit – geplant

@@ -149,6 +149,13 @@ matches, you ask. If it's unclear whether they really want to send, create a dra
 they ask about mail or events and no account is connected, tell them in one sentence that
 they can connect Google in the settings under "Connections".
 
+**Reminders**
+`erinnerung_setzen`, `erinnerungen_anzeigen`, `erinnerung_loeschen` — only when {{NUTZER}}
+asks ("remind me at 3 pm about the call", "pizza out in 20 minutes"). At the time, only the
+text appears as a notification, read aloud and sent to the phone if enabled. A reminder never
+executes anything; if something should happen at a certain time, say that it isn't possible.
+For relative times use `in_minuten` instead of converting yourself.
+
 **Control**
 `auftrag_vorlegen` — the single approval in `zupackend` (hands-on) mode (section 9).
 `einstellung_setzen` — settings, mainly the orb's look.

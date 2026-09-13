@@ -34,6 +34,7 @@ bis zur Fehlersuche in einem Repo.
 - **Installiert sauber** – erst nachsehen, ob es schon da ist, dann `winget` oder die Herstellerseite, danach eine Versionsprüfung.
 - **Recherchiert** – Websuche und Seitenabruf für alles, was aktuell sein muss.
 - **Merkt sich Dauerhaftes** – Projekte, Arbeitsweisen, Geräte. Zugangsdaten nie.
+- **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf", „in 20 Minuten Pizza raus". Als Meldung, im Chat, vorgelesen und aufs Handy. Verpasste Erinnerungen kommen beim nächsten Start.
 - **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe.
 - **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
 

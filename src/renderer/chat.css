@@ -261,6 +261,15 @@ body[data-zustand="speaking"] .mini-kugel { animation: pulsieren 0.9s ease-in-ou
   padding: 2px 10px;
   max-width: 90%;
 }
+.systemzeile.erinnerung {
+  color: var(--text);
+  background: var(--akzent-weich);
+  border: 1px solid var(--akzent-rand);
+  border-radius: 9px;
+  padding: 6px 12px;
+  font-weight: 600;
+  box-shadow: var(--glow-klein);
+}
 .systemzeile.fehler {
   color: var(--rot);
   background: var(--rot-weich);

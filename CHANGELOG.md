@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.6.0 – 2026-09-13
+- Julia erinnert dich jetzt: Termine und Timer per Satz stellen, zur Zeit als Meldung, im Chat, vorgelesen und aufs Handy – verpasste kommen beim nächsten Start
+
 ## 0.5.0 – 2026-09-13
 - Julia hat jetzt ein Gaming-Overlay: kleines Chatfenster über dem Spiel per Hotkey, Freigaben direkt darin und auf Wunsch kurz eingeblendete Antworten auf Sprachbefehle
 

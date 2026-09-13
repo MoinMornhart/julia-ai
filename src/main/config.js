@@ -31,6 +31,10 @@ const STANDARD = {
   handy: {
     freigaben: 'handy', // 'handy' (Ja/Nein-Knöpfe am Handy) | 'pc' (nur am PC)
   },
+  erinnerung: {
+    vorlesen: true,
+    handy: true,
+  },
   design: {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
     akzent: '#FF7A1A',
@@ -131,6 +135,8 @@ function pruefen(schluessel, wert) {
     case 'autostart':
     case 'einrichtung_fertig':
     case 'design.glow':
+    case 'erinnerung.vorlesen':
+    case 'erinnerung.handy':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;

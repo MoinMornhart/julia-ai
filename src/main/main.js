@@ -24,6 +24,7 @@ const { Updater } = require('./updater');
 const { Sprache } = require('./sprache');
 const { Konten } = require('./konten');
 const { TelegramHandy } = require('./handy/telegram');
+const { Erinnerungen } = require('./erinnerungen');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -43,6 +44,7 @@ let updater;
 let sprache;
 let konten;
 let handy;
+let erinnerungen;
 let tray = null;
 let chatFenster = null;
 let orbFenster = null;
@@ -651,6 +653,30 @@ function handyVerdrahten() {
   if (!VORFUEHRUNG) handy.starten();
 }
 
+// --- Erinnerungen ---
+// Zum Zeitpunkt nur melden: Windows-Meldung, Chat, auf Wunsch vorlesen und aufs Handy.
+
+function erinnerungMelden(e) {
+  const zeit = new Date(e.zeit).toLocaleTimeString(config.get('sprachcode') === 'en' ? 'en-GB' : 'de-DE', { hour: '2-digit', minute: '2-digit' });
+  const text = e.verspaetet ? t('erinnerung.verspaetet', { text: e.text, zeit }) : e.text;
+  melden(t('erinnerung.titel'), text);
+  anAlle('erinnerung', { text });
+  if (config.get('erinnerung.handy') && handy && handy.gekoppelt) handy.senden(`⏰ ${text}`).catch(() => {});
+  if (config.get('erinnerung.vorlesen') && !sprache.hoertZu && !sprache.sprichtGerade && !agent.beschaeftigt) {
+    zustandSetzen('speaking');
+    sprache.sprechen(text, {
+      stimme: config.get('sprache.stimme'),
+      tempo: config.get('sprache.tempo'),
+      sprachcode: config.get('sprachcode'),
+    }).then(() => { if (zustand === 'speaking') zustandSetzen('idle'); });
+  }
+}
+
+function erinnerungenVerdrahten() {
+  erinnerungen.on('faellig', erinnerungMelden);
+  if (!VORFUEHRUNG) erinnerungen.starten();
+}
+
 function agentVerdrahten() {
   for (const ereignis of ['text', 'werkzeug', 'werkzeugFertig', 'freigabeErledigt', 'start', 'fehler', 'hinweis']) {
     agent.on(ereignis, (d) => anAlle(`agent:${ereignis}`, d));
@@ -692,6 +718,7 @@ async function start() {
 
   gedaechtnis = new Gedaechtnis(DATEN);
   protokoll = new Protokoll(DATEN);
+  erinnerungen = new Erinnerungen(DATEN);
   konten = new Konten({
     ordner: DATEN,
     krypto: {
@@ -712,6 +739,7 @@ async function start() {
     gedaechtnis,
     protokoll,
     konten,
+    erinnerungen,
     datenOrdner: DATEN,
     appOrdner: APP,
     arbeitsordner: () => config.get('arbeitsverzeichnisse')[0] || os.homedir(),
@@ -729,6 +757,7 @@ async function start() {
   ctx.updater = updater;
   agentVerdrahten();
   handyVerdrahten();
+  erinnerungenVerdrahten();
   ipcEinrichten();
 
   // Keine Seite bekommt Kamera, Mikrofon, Standort, Benachrichtigungen o. Ä.
@@ -797,6 +826,7 @@ if (!app.requestSingleInstanceLock()) {
     globalShortcut.unregisterAll();
     win.worker.beenden();
     if (handy) handy.stoppen();
+    if (erinnerungen) erinnerungen.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }
   });
   app.whenReady().then(start).catch((e) => {
