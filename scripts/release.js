@@ -4,8 +4,11 @@
 //   npm run release -- korrektur "Blase startet jetzt ausgeschaltet"
 //   npm run release -- funktion  "Julia kann jetzt Termine vorlesen"
 //   npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
-// Optionen: --kein-push, --kein-release, --trailer "Zeile" (mehrfach möglich,
-// landet unter der Commit-Nachricht)
+// Optionen: --kein-push, --kein-release, --ohne-tests, --ohne-audit,
+// --trailer "Zeile" (mehrfach möglich, landet unter der Commit-Nachricht)
+//
+// Vorher laufen die Tests und npm audit. Schlagen Tests fehl oder gibt es
+// bekannte Lücken ab Stufe "high", wird nichts veröffentlicht.
 //
 // Setzt die Version in package.json (und package-lock.json), schreibt die
 // Changelog-Zeile, committet mit "vX.Y.Z – <Zeile>" als Nachricht, setzt den
@@ -13,7 +16,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execFileSync } = require('child_process');
+const { execFileSync, execSync } = require('child_process');
 const version = require('../src/main/version');
 
 const WURZEL = path.join(__dirname, '..');
@@ -24,11 +27,13 @@ function git(...args) {
 
 function argumente(argv) {
   const pos = [];
-  const opt = { trailer: [], push: true, githubRelease: true, hinweis: '' };
+  const opt = { trailer: [], push: true, githubRelease: true, tests: true, audit: true, hinweis: '' };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--kein-push') opt.push = false;
     else if (a === '--kein-release') opt.githubRelease = false;
+    else if (a === '--ohne-tests') opt.tests = false;
+    else if (a === '--ohne-audit') opt.audit = false;
     else if (a === '--hinweis') opt.hinweis = argv[++i] || '';
     else if (a === '--trailer') opt.trailer.push(argv[++i] || '');
     else pos.push(a);
@@ -63,6 +68,8 @@ function main() {
     console.error('Bitte ohne Präfix-Kürzel wie "feat:" – ein Satz in Nutzersprache.');
     process.exit(1);
   }
+
+  vorabPruefen(a);
 
   const pkgDatei = path.join(WURZEL, 'package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgDatei, 'utf8'));
@@ -107,6 +114,27 @@ function main() {
     if (a.githubRelease) githubRelease(tag, a);
   } else if (a.push) {
     console.log('Kein Remote "origin", nicht gepusht.');
+  }
+}
+
+function vorabPruefen(a) {
+  if (a.tests) {
+    try {
+      execSync('npm test', { cwd: WURZEL, stdio: 'pipe' });
+      console.log('Tests grün.');
+    } catch (e) {
+      console.error(`Tests schlagen fehl – kein Release.\n${String(e.stdout || '').slice(-1500)}`);
+      process.exit(1);
+    }
+  }
+  if (a.audit) {
+    try {
+      execSync('npm audit --audit-level=high', { cwd: WURZEL, stdio: 'pipe' });
+      console.log('npm audit: keine Lücken ab Stufe "high".');
+    } catch (e) {
+      console.error(`npm audit meldet Lücken ab Stufe "high" oder ist nicht erreichbar – kein Release. Nur bewusst mit --ohne-audit überspringen.\n${String(e.stdout || '').slice(-1500)}`);
+      process.exit(1);
+    }
   }
 }
 

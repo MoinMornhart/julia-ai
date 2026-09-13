@@ -468,7 +468,11 @@ const WERKZEUGE = [
     einstufen: gruen,
     async ausfuehren(e, ctx) {
       const l = ctx.protokoll.letzte(Math.min(200, e.anzahl || 30));
-      return l.length ? JSON.stringify(l, null, 1) : 'Das Protokoll ist leer.';
+      const p = ctx.protokoll.pruefen();
+      const kette = p.ok
+        ? `Prüfkette intakt (${p.geprueft} geprüfte Einträge${p.ungeprueft ? `, ${p.ungeprueft} ältere ohne Prüfsumme` : ''}).`
+        : `⚠ Prüfkette verletzt in Zeile ${p.zeile}: ${p.grund}. Das dem Nutzer deutlich sagen.`;
+      return `${kette}\n${l.length ? JSON.stringify(l, null, 1) : 'Das Protokoll ist leer.'}`;
     },
   },
   {

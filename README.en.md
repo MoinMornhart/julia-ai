@@ -57,7 +57,7 @@ What the software enforces itself:
 - `tippen` (type) checks via UI Automation whether the focus is in a password field, and refuses terminals as well as card and IBAN numbers.
 - `klick`, `tippen` and `taste` only work with a fresh screenshot ("never click blind") and return a new one afterwards automatically.
 - Julia's own files (configuration, API key, memory) are never writable without asking.
-- Every YELLOW action is logged; overwritten files are backed up first.
+- Every YELLOW action is logged; overwritten files are backed up first. The log is a checksum chain: if something in the middle is changed or deleted, Julia reports it on start.
 - **Cost brake:** Julia tracks API costs and stops once the daily limit is reached (default 10 US$) – even in the middle of a task. At 80 % you get a warning. So neither an endless loop nor a manipulated task runs up a bill.
 - An approval covers exactly one action. In **hands-on** mode ("just push it through") Julia presents the whole task once, then only the categories named there run without individual questions.
 
@@ -228,9 +228,10 @@ npm run release -- funktion  "Julia now reads appointments aloud"
 npm run release -- bruch     "New settings file" --hinweis "Set hotkeys again"
 ```
 
-The release script sets the version, writes the changelog line, commits with
-`vX.Y.Z – <line>`, tags, pushes and creates a GitHub release. No tag, no update. The code base,
-identifiers and changelog are German.
+The release script first runs the tests and `npm audit` and stops if tests fail or known
+vulnerabilities of level "high" or above exist. Then it sets the version, writes the changelog
+line, commits with `vX.Y.Z – <line>`, tags, pushes and creates a GitHub release. No tag, no
+update. The code base, identifiers and changelog are German.
 
 Screenshots for this README are made in demo mode with a separate data folder:
 

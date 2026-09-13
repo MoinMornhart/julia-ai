@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.7.1 – 2026-09-13
+- Julias Protokoll ist jetzt eine Prüfsummen-Kette, und veröffentlicht wird nur noch mit grünen Tests und ohne bekannte Sicherheitslücken
+
 ## 0.7.0 – 2026-09-13
 - Julia hat jetzt eine Kostenbremse: Sie rechnet die API-Kosten mit, warnt bei 80 Prozent und stoppt beim Tageslimit, auch mitten in einem Auftrag
 

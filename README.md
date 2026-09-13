@@ -55,7 +55,7 @@ Was die Software selbst durchsetzt:
 - `tippen` prüft vorher über UI Automation, ob der Fokus in einem Passwortfeld liegt, und verweigert Terminals sowie Karten- und IBAN-Nummern.
 - `klick`, `tippen` und `taste` gehen nur mit einem frischen Screenshot („nie blind klicken") und liefern danach automatisch einen neuen.
 - Julias eigene Dateien (Konfiguration, API-Schlüssel, Gedächtnis) sind nie ohne Rückfrage beschreibbar.
-- Jede GELB-Aktion landet im Protokoll, überschriebene Dateien werden vorher gesichert.
+- Jede GELB-Aktion landet im Protokoll, überschriebene Dateien werden vorher gesichert. Das Protokoll ist eine Prüfsummen-Kette: Wird mittendrin etwas geändert oder gelöscht, meldet Julia das beim Start.
 - **Kostenbremse:** Julia rechnet die API-Kosten mit und stoppt, sobald das Tageslimit erreicht ist (Standard 10 US-$) – auch mitten in einem Auftrag. Bei 80 % kommt eine Warnung. So erzeugt weder eine Endlosschleife noch ein manipulierter Auftrag eine Rechnung.
 - Eine Freigabe gilt für genau eine Aktion. Im Modus **zupackend** („zieh das durch") legt Julia den ganzen Auftrag einmal vor, danach laufen nur die dort genannten Kategorien ohne Einzelfrage.
 
@@ -229,8 +229,10 @@ npm run release -- funktion  "Julia liest jetzt Termine vor"
 npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
 ```
 
-Das Release-Skript setzt die Version, schreibt die Changelog-Zeile, committet mit
-`vX.Y.Z – <Zeile>`, setzt den Tag, pusht und legt ein GitHub-Release an. Ohne Tag kein Update.
+Das Release-Skript lässt vorher die Tests und `npm audit` laufen und bricht ab, wenn Tests
+fehlschlagen oder Lücken ab Stufe „high" bekannt sind. Dann setzt es die Version, schreibt die
+Changelog-Zeile, committet mit `vX.Y.Z – <Zeile>`, setzt den Tag, pusht und legt ein
+GitHub-Release an. Ohne Tag kein Update.
 
 Screenshots für diese README entstehen im Vorführmodus mit einem getrennten Datenordner:
 

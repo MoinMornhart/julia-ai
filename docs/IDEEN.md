@@ -23,6 +23,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.6.0 | Erinnerungen und Timer: Meldung, Chat, Vorlesen, Handy; verpasste werden nachgeliefert |
 | ✅ – | Webseite mit Live-Vorführung, Ampel, Funktionen und Versionen ([site/index.html](../site/index.html)) |
 | ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
+| ✅ 0.7.1 | Protokoll als Prüfsummen-Kette; Release nur mit grünen Tests und ohne bekannte Lücken ab Stufe „high" |
 
 ## Als Nächstes
 
@@ -37,11 +38,9 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | | Maßnahme | Warum |
 |---|---|---|
 | 📋 | **Signierte Update-Tags** (`git verify-tag` mit SSH-Signatur, erlaubte Schlüssel im Repo) | Heute vertraut das Update dem GitHub-Konto. Mit Signatur spielt Julia nur Stände ein, die mit deinem Schlüssel signiert sind. Braucht einmalig einen Signierschlüssel von dir. |
-| 📋 | **Manipulationssicheres Protokoll** – jede Zeile enthält den Hash der vorigen | Nachträgliches Löschen oder Ändern fällt auf |
 | 📋 | **Handy-PIN für GELB** – optional eine PIN zusätzlich zum Ja-Knopf | Schutz, falls jemand dein entsperrtes Handy hat |
 | 📋 | **Electron Fuses und ASAR-Integrität**, sobald es einen Installer gibt | Verhindert, dass jemand das gebaute Programm verändert oder als Node startet |
 | 💡 | **Passwortfelder im Screenshot schwärzen** | Bildschirminhalte mit Passwortfeldern gehen gar nicht erst an die API |
-| 💡 | **Abhängigkeiten automatisch prüfen** (`npm audit` vor jedem Release im Release-Skript) | Bekannte Lücken fallen vor dem Veröffentlichen auf |
 
 ## Weitere Ideen
 

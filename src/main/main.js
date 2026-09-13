@@ -807,6 +807,9 @@ async function start() {
     return;
   }
 
+  const kette = protokoll.pruefen();
+  if (!kette.ok) melden(assistentName(), t('protokoll.verletzt', { zeile: kette.zeile }));
+
   const st = updater.startStatus();
   if (st && st.probe) setTimeout(() => updater.gesundMelden(), 5000);
   else if (st && st.phase === 'fertig') {
