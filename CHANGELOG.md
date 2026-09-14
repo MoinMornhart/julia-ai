@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.5 – 2026-09-14
+- Mit einem ausgewählten Mikrofon versteht Julia dich wieder – bisher hörte die Spracherkennung nach dem ersten Wimpernschlag auf zuzuhören
+
 ## 3.2.4 – 2026-09-14
 - Weniger Lag beim Spielen: Julia hängt sich nicht mehr in jede Mausbewegung ein, nur noch wenn die Maus über ihrer Blase oder dem Overlay ist, und die Minecraft-Spielfigur rechnet in kleineren Happen
 

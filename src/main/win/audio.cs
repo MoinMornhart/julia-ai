@@ -119,14 +119,22 @@ public class JuliaMikrofon : Stream {
     }
   }
 
+  // Immer so viel liefern, wie verlangt: Die Windows-Spracherkennung hält eine
+  // kürzere Antwort für das Ende des Datenstroms und hört dann nicht mehr zu.
   public override int Read(byte[] ziel, int versatz, int anzahl) {
-    if (rest == null || restPos >= rest.Length) {
-      rest = schlange.Take(); // wartet, bis wieder Ton da ist
-      restPos = 0;
+    int n = 0;
+    while (n < anzahl) {
+      if (rest == null || restPos >= rest.Length) {
+        byte[] b;
+        if (!schlange.TryTake(out b, 30000)) break; // 30 s gar kein Ton: Mikrofon hängt
+        rest = b;
+        restPos = 0;
+      }
+      int k = Math.Min(anzahl - n, rest.Length - restPos);
+      Buffer.BlockCopy(rest, restPos, ziel, versatz + n, k);
+      restPos += k;
+      n += k;
     }
-    int n = Math.Min(anzahl, rest.Length - restPos);
-    Buffer.BlockCopy(rest, restPos, ziel, versatz, n);
-    restPos += n;
     gelesen += n;
     return n;
   }
