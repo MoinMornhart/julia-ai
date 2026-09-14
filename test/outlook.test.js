@@ -187,3 +187,27 @@ test('Outlook: Microsoft-Fehlercodes werden verständlich erklärt', () => {
   assert.match(erklaeren('AADSTS50011: The redirect URI'), /localhost/);
   assert.match(erklaeren('AADSTS7000218: The request body must contain client_assertion'), /öffentlichen Clientflows/);
 });
+
+test('Outlook: mit eingebauter Anwendungs-ID reicht ein Klick, eine eigene ID geht vor', async () => {
+  const EIGEN = '9f8e7d6c-1234-4abc-9def-0123456789ab';
+  const ohneBrowser = (id) => {
+    let gefragt = null;
+    const o = new OutlookKonto({
+      tresor: new Tresor(tmp(), krypto),
+      oeffnen: (url) => { gefragt = new URL(url).searchParams.get('client_id'); throw new Error('Test: kein Browser'); },
+      abruf: async () => { throw new Error('nie'); },
+      eingebauteId: id,
+    });
+    return { o, gefragt: () => gefragt };
+  };
+  const mit = ohneBrowser(ID);
+  assert.equal(mit.o.status().eingebaut, true);
+  assert.equal(mit.o.status().clientId, '', 'eingebaute ID erscheint nicht als eigene');
+  await assert.rejects(mit.o.verbinden({}), /kein Browser/);
+  assert.equal(mit.gefragt(), ID);
+  await assert.rejects(mit.o.verbinden({ clientId: EIGEN }), /kein Browser/);
+  assert.equal(mit.gefragt(), EIGEN);
+  const ohne = ohneBrowser('');
+  assert.equal(ohne.o.status().eingebaut, false);
+  await assert.rejects(ohne.o.verbinden({}), /Trag eine Anwendungs-ID ein/);
+});

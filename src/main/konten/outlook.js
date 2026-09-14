@@ -6,6 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const mime = require('./mime');
 const { zeitpunkt, plusMinuten, naechsterTag, zeitGrenze, antwortSeite } = require('./google');
+const { EINGEBAUTE_ID } = require('./outlook-app');
 
 // Outlook bzw. Microsoft-Konto (Outlook.com, Hotmail, Microsoft 365): Mail,
 // Kalender und Kontakte über Microsoft Graph. Anmeldung wie bei Google per
@@ -82,11 +83,12 @@ function kurzform(m) {
 class OutlookKonto {
   // oeffnen: Funktion, die eine URL im Standardbrowser öffnet.
   // abruf: fetch-kompatibel (für Tests austauschbar).
-  constructor({ tresor, oeffnen, abruf = globalThis.fetch, zeitzone }) {
+  constructor({ tresor, oeffnen, abruf = globalThis.fetch, zeitzone, eingebauteId = EINGEBAUTE_ID }) {
     this.tresor = tresor;
     this.oeffnen = oeffnen;
     this.abruf = abruf;
     this.zeitzone = zeitzone || (() => Intl.DateTimeFormat().resolvedOptions().timeZone);
+    this.eingebauteId = String(eingebauteId || '').trim();
     this.zugang = null;
     this.anmeldungLaeuft = null;
   }
@@ -97,7 +99,9 @@ class OutlookKonto {
 
   status() {
     const d = this._daten();
-    return { verbunden: !!d.refresh_token, email: d.email || null, clientId: d.client_id || '', clientIdGesetzt: !!d.client_id };
+    // Die eingebaute ID zählt nicht als "eigene" – das Feld bleibt dann leer.
+    const eigene = d.client_id && d.client_id !== this.eingebauteId ? d.client_id : '';
+    return { verbunden: !!d.refresh_token, email: d.email || null, clientId: eigene, clientIdGesetzt: !!eigene, eingebaut: !!this.eingebauteId };
   }
 
   get verbunden() {
@@ -108,7 +112,9 @@ class OutlookKonto {
 
   async verbinden({ clientId } = {}) {
     if (this.anmeldungLaeuft) throw new OutlookFehler('Eine Anmeldung läuft schon. Bitte im Browser abschließen.');
-    const id = String(clientId || this._daten().client_id || '').trim();
+    // Eigene ID (eingetragen oder gespeichert) vor der eingebauten.
+    const id = String(clientId || this._daten().client_id || this.eingebauteId || '').trim();
+    if (!id) throw new OutlookFehler('Trag eine Anwendungs-ID ein – wie du sie bekommst, steht in der Anleitung.');
     if (!GUID.test(id)) throw new OutlookFehler('Die Anwendungs-ID sieht nicht richtig aus. Sie hat die Form 1a2b3c4d-1234-…, zu finden in der App-Registrierung unter „Übersicht“.');
 
     const verifier = base64url(crypto.randomBytes(48));

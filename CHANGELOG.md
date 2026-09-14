@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.7.2 – 2026-09-14
+- Outlook ist für die Ein-Klick-Anmeldung vorbereitet – mit eingebauter App-ID entfällt die eigene Registrierung, eine eigene ID bleibt möglich
+
 ## 2.7.1 – 2026-09-14
 - Julia nennt dich in Beispielen und Bildern jetzt Morni statt mit echtem Vornamen
 

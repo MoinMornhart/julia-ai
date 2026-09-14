@@ -487,6 +487,10 @@ async function speichern() {
 
 // --- Verbindungen ---
 
+// Mit eingebauter Outlook-ID bleibt das Feld für eine eigene ID versteckt,
+// bis man es ausdrücklich öffnet.
+let outlookEigene = false;
+
 function kontenZeigen(status) {
   kontenStand = status;
   const g = status.google;
@@ -503,6 +507,10 @@ function kontenZeigen(status) {
     $('outlookTrennen').hidden = !o.verbunden;
     $('outlookEinrichten').hidden = o.verbunden;
     if (o.clientId && !$('outlookClientId').value) $('outlookClientId').value = o.clientId;
+    const einfach = o.eingebaut && !o.clientIdGesetzt && !outlookEigene;
+    $('outlookText').textContent = tx(o.eingebaut ? 'konten.outlook_text_einfach' : 'konten.outlook_text');
+    $('outlookIdFeld').hidden = einfach;
+    $('outlookEigeneId').hidden = !einfach;
   }
 }
 
@@ -539,6 +547,12 @@ function kontenVerbinden() {
     knopf.disabled = false;
     kontenZeigen(r.status);
     kontoMeldung(r.fehler || '', !!r.fehler, 'outlookMeldung');
+  };
+  $('outlookEigeneId').onclick = (e) => {
+    e.preventDefault();
+    outlookEigene = true;
+    if (kontenStand) kontenZeigen(kontenStand);
+    $('outlookClientId').focus();
   };
   $('outlookTrennen').onclick = async () => {
     const r = await julia.outlookTrennen();
