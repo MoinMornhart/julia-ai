@@ -50,7 +50,11 @@ const UNTERTITEL = 120;
 // Die Kugel sitzt oben im Fenster; darunter ist Platz für die Untertitel.
 function kugelSeite() {
   const mitText = blase && blase.untertitel !== false;
-  return Math.max(40, Math.min(window.innerWidth, window.innerHeight - (mitText ? UNTERTITEL : 0)));
+  if (!mitText) return Math.max(40, Math.min(window.innerWidth, window.innerHeight));
+  // Feste Größe aus den Einstellungen: Bei langen Antworten wächst nur das
+  // Fenster nach unten, die Kugel bleibt, wie sie ist.
+  const soll = Math.round((blase.groesse || 360) / (window.devicePixelRatio || 1));
+  return Math.max(40, Math.min(window.innerWidth, soll, window.innerHeight - UNTERTITEL));
 }
 
 function groesseAnpassen() {

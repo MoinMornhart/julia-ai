@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.2.1 – 2026-09-14
+- Die Blase bleibt bei langen Antworten so groß, wie du sie eingestellt hast – nur der Text darunter wächst
+
 ## 2.2.0 – 2026-09-14
 - Einmal in den Einstellungen allem zustimmen – danach fragt Julia bei gelben Aktionen nicht mehr nach; Gesperrtes bleibt gesperrt, und nach fremden Inhalten fragt sie weiter, bevor etwas nach außen geht
 
