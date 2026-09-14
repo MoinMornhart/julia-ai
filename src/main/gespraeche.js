@@ -129,6 +129,42 @@ class Gespraeche {
     try { fs.unlinkSync(this._datei(id)); return true; } catch { return false; }
   }
 
+  // --- Für den Geräte-Abgleich ---
+
+  // Nur Dateien mit Änderungszeit, ohne zu entschlüsseln.
+  dateiListe() {
+    return this._alleDateien().map((d) => ({ id: d.id, zeit: d.zeit }));
+  }
+
+  dateiZeit(id) {
+    try { return fs.statSync(this._datei(id)).mtimeMs; } catch { return null; }
+  }
+
+  // Ein Gespräch von einem gekoppelten Gerät übernehmen. Die Sitzung von
+  // Claude Code gehört zum anderen Gerät und bleibt dort.
+  uebernehmen(g) {
+    if (!g || !Array.isArray(g.anzeige) || !Array.isArray(g.verlauf)) return false;
+    const ziel = this._datei(g.id);
+    const geaendert = Number(g.geaendert) || Date.now();
+    const sauber = {
+      id: g.id,
+      titel: String(g.titel || '').slice(0, 200),
+      erstellt: Number(g.erstellt) || geaendert,
+      geaendert,
+      anbieter: String(g.anbieter || ''),
+      modell: String(g.modell || ''),
+      sitzung: null,
+      anzeige: g.anzeige,
+      verlauf: ohneBilder(g.verlauf),
+    };
+    fs.mkdirSync(this.ordner, { recursive: true });
+    fs.writeFileSync(`${ziel}.tmp`, this.krypto.verschluesseln(JSON.stringify(sauber)), 'utf8');
+    fs.renameSync(`${ziel}.tmp`, ziel);
+    fs.utimesSync(ziel, new Date(geaendert), new Date(geaendert)); // im Verlauf an seinem Platz
+    this._aufraeumen();
+    return true;
+  }
+
   alleLoeschen() {
     for (const d of this._alleDateien()) { try { fs.unlinkSync(d.pfad); } catch { /* egal */ } }
   }

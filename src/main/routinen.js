@@ -104,6 +104,24 @@ class Routinen {
     return r;
   }
 
+  // Vom gekoppelten Gerät übernehmen. Gleiche Routinen – etwa die Beispiele,
+  // die jedes Gerät beim ersten Start selbst anlegt – nicht doppelt.
+  uebernehmen(r) {
+    if (!/^[a-f0-9]{12}$/.test(String(r && r.id))) return false;
+    const neu = { id: r.id, ...pruefen(r) };
+    const d = this._laden();
+    const i = d.routinen.findIndex((x) => x.id === r.id);
+    if (i >= 0) {
+      d.routinen[i] = neu;
+    } else {
+      const doppelt = (x) => x.name === neu.name && x.symbol === neu.symbol && JSON.stringify(x.schritte) === JSON.stringify(neu.schritte);
+      if (d.routinen.length >= MAX_ROUTINEN || d.routinen.some(doppelt)) return false;
+      d.routinen.push(neu);
+    }
+    this._speichern(d);
+    return true;
+  }
+
   loeschen(id) {
     const d = this._laden();
     const vorher = d.routinen.length;

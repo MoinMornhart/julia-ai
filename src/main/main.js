@@ -9,6 +9,7 @@ const {
 } = require('electron');
 const sicherheit = require('./sicherheit');
 const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
+const { Sync } = require('./sync');
 
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
@@ -71,6 +72,7 @@ let routinen = null;
 let clips = null;
 let minecraft = null;
 let mcSpeicher = null;
+let sync = null;
 let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
@@ -965,6 +967,20 @@ function ipcEinrichten() {
     }
   });
   ipc.handle('handy:trennen', () => { handy.trennen(); return handy.status(); });
+  ipc.handle('sync:status', () => sync.status());
+  ipc.handle('sync:code', () => {
+    try { return { ...sync.codeAnbieten(), status: sync.status() }; } catch (e) { return { fehler: syncFehler(e), status: sync.status() }; }
+  });
+  ipc.handle('sync:beitreten', async (_e, d) => {
+    try {
+      const r = await sync.beitreten({ code: d && d.code, adresse: d && d.adresse });
+      return { name: r.name, status: sync.status() };
+    } catch (e) {
+      return { fehler: syncFehler(e), status: sync.status() };
+    }
+  });
+  ipc.handle('sync:entfernen', (_e, id) => { sync.entfernen(String(id || '')); return sync.status(); });
+  ipc.handle('sync:jetzt', async () => { await sync.abgleichen().catch(() => {}); return sync.status(); });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1314,6 +1330,35 @@ function handyAnwenden() {
   else handy.stoppen();
 }
 
+// --- Geräte-Abgleich (PC zu PC) ---
+
+function syncEinrichten() {
+  sync = new Sync({
+    tresor: konten.tresor,
+    datenOrdner: DATEN,
+    module: { gespraeche, gedaechtnis, routinen, erinnerungen },
+    protokoll: (e) => protokoll.eintragen({ werkzeug: 'sync', ...e }),
+  });
+  sync.on('status', () => anAlle('sync:status', sync.status()));
+  sync.on('geaendert', (was) => {
+    if (was.includes('gespraeche')) anAlle('verlauf:geaendert');
+    if (was.includes('routinen')) anAlle('routinen:geaendert');
+  });
+  syncAnwenden();
+}
+
+function syncAnwenden() {
+  if (!sync || VORFUEHRUNG) return;
+  if (config.get('sync.an')) sync.starten(config.get('sync.port')).catch(() => { /* Fehler steht im Status */ });
+  else sync.stoppen();
+}
+
+function syncFehler(e) {
+  const k = `sync.fehler_${e.message}`;
+  const text = t(k);
+  return text && text !== k ? text : e.message;
+}
+
 // --- Erinnerungen ---
 // Zum Zeitpunkt nur melden: Windows-Meldung, Chat und auf Wunsch vorlesen.
 
@@ -1499,6 +1544,7 @@ async function start() {
   agentVerdrahten();
   erinnerungenVerdrahten();
   handyEinrichten();
+  syncEinrichten();
   weckwort = new Weckwort({ dll: audio.dll });
   weckwortVerdrahten();
   ipcEinrichten();
@@ -1520,6 +1566,7 @@ async function start() {
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k.startsWith('handy.')) handyAnwenden();
+    if (k.startsWith('sync.')) syncAnwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }
     if (k === 'autostart') autostartSetzen();
@@ -1582,6 +1629,7 @@ if (!app.requestSingleInstanceLock()) {
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
     if (handy) handy.stoppen();
+    if (sync) sync.stoppen();
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();
     if (weckwort) weckwort.stoppen();

@@ -67,6 +67,7 @@ function texteAnwenden(daten) {
   $('handyUnterwegsAnleitung').href = ANLEITUNG_UNTERWEGS[daten.sprachcode] || ANLEITUNG_UNTERWEGS.de;
   if (kontenStand) kontenZeigen(kontenStand);
   if (handyStand) handyZeigen(handyStand);
+  if (syncStand) syncZeigen(syncStand);
   if (cfg) designZeigen();
 }
 
@@ -139,6 +140,93 @@ function handyVerbinden() {
     handyMeldung('');
   };
   julia.on('handy:status', handyZeigen);
+}
+
+// --- Geräte-Abgleich ---
+
+let syncStand = null;
+
+function syncFehlerText(code) {
+  const k = `sync.fehler_${code}`;
+  const t = tx(k);
+  return t !== k ? t : tx('sync.problem', { fehler: code });
+}
+
+function syncZeigen(s) {
+  syncStand = s;
+  $('kontoSync').classList.toggle('verbunden', s.laeuft && s.geraete.length > 0);
+  let status = tx('sync.aus');
+  if (s.fehler === 'port_belegt') status = tx('sync.fehler_port', { port: cfg ? cfg.sync.port : '' });
+  else if (s.fehler) status = s.fehler;
+  else if (s.laeuft) status = tx('sync.bereit', { geraet: s.name, n: s.geraete.length });
+  $('syncStatus').textContent = status;
+  $('syncBereich').hidden = !s.laeuft;
+  $('syncAdressen').textContent = s.adressen.length ? tx('sync.adressen', { adressen: s.adressen.join(', ') }) : '';
+  const liste = $('syncGeraete');
+  liste.innerHTML = '';
+  if (!s.geraete.length) {
+    const li = document.createElement('li');
+    li.className = 'leer';
+    li.textContent = tx('sync.keine');
+    liste.appendChild(li);
+  }
+  for (const g of s.geraete) {
+    const li = document.createElement('li');
+    const text = document.createElement('div');
+    const name = document.createElement('strong');
+    name.textContent = g.name;
+    const zeile = document.createElement('small');
+    const uhr = g.zuletzt ? new Date(g.zuletzt).toLocaleTimeString(document.documentElement.lang || 'de', { hour: '2-digit', minute: '2-digit' }) : '';
+    zeile.textContent = g.fehler ? syncFehlerText(g.fehler) : g.zuletzt ? tx('sync.zuletzt', { zeit: uhr }) : tx('sync.nie');
+    text.append(name, zeile);
+    const weg = document.createElement('button');
+    weg.className = 'zweit';
+    weg.textContent = tx('sync.entfernen');
+    weg.onclick = async () => syncZeigen(await julia.syncEntfernen(g.id));
+    li.append(text, weg);
+    liste.appendChild(li);
+  }
+  $('syncCodeBox').hidden = !s.code;
+  $('syncCode').textContent = s.code ? s.code.code : '';
+}
+
+function syncMeldung(text, fehler = false) {
+  const m = $('syncMeldung');
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function syncVerbinden() {
+  $('syncCodeZeigen').onclick = async () => {
+    syncMeldung('');
+    $('syncEingabeBox').hidden = true;
+    const r = await julia.syncCode();
+    syncZeigen(r.status);
+    if (r.fehler) syncMeldung(r.fehler, true);
+  };
+  $('syncCodeEingeben').onclick = () => {
+    syncMeldung('');
+    $('syncEingabeBox').hidden = !$('syncEingabeBox').hidden;
+    if (!$('syncEingabeBox').hidden) $('syncCodeFeld').focus();
+  };
+  $('syncVerbinden').onclick = async () => {
+    const knopf = $('syncVerbinden');
+    knopf.disabled = true;
+    syncMeldung(tx('sync.sucht'));
+    const r = await julia.syncBeitreten({ code: $('syncCodeFeld').value, adresse: $('syncAdresseFeld').value });
+    knopf.disabled = false;
+    syncZeigen(r.status);
+    if (r.fehler) { syncMeldung(r.fehler, true); return; }
+    $('syncCodeFeld').value = '';
+    $('syncAdresseFeld').value = '';
+    $('syncEingabeBox').hidden = true;
+    syncMeldung(tx('sync.gekoppelt', { geraet: r.name }));
+  };
+  $('syncJetzt').onclick = async () => {
+    syncMeldung('');
+    syncZeigen(await julia.syncJetzt());
+  };
+  julia.on('sync:status', syncZeigen);
 }
 
 // --- Design ---
@@ -598,6 +686,8 @@ async function init() {
   kontenZeigen(await julia.kontenStatus());
   handyVerbinden();
   handyZeigen(await julia.handyStatus());
+  syncVerbinden();
+  syncZeigen(await julia.syncStatus());
   designVerbinden();
   designZeigen();
   kostenZeigen(await julia.kostenHeute());

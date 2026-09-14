@@ -215,6 +215,52 @@
           </div>
         </div>
       </div>
+
+      <div class="konto" id="kontoSync">
+        <div class="konto-kopf">
+          <span class="konto-logo" aria-hidden="true">⇄</span>
+          <div class="konto-name">
+            <strong data-t="sync.titel"></strong>
+            <small id="syncStatus"></small>
+          </div>
+        </div>
+        <div class="konto-einrichten">
+          <p class="hinweis" data-t="sync.text"></p>
+          <label class="schalter"><input type="checkbox" id="syncAn" data-k="sync.an"><span data-t="sync.an"></span></label>
+          <div id="syncBereich" hidden>
+            <p class="hinweis" data-t="handy.firewall"></p>
+            <ul class="sync-geraete" id="syncGeraete"></ul>
+            <div class="sync-knoepfe">
+              <button class="primaer klein" id="syncCodeZeigen" data-t="sync.code_zeigen"></button>
+              <button class="zweit" id="syncCodeEingeben" data-t="sync.code_eingeben"></button>
+              <button class="zweit" id="syncJetzt" data-t="sync.jetzt"></button>
+            </div>
+            <div class="sync-code" id="syncCodeBox" hidden>
+              <p class="hinweis" data-t="sync.code_hinweis"></p>
+              <strong id="syncCode"></strong>
+            </div>
+            <div id="syncEingabeBox" hidden>
+              <div class="zwei">
+                <div class="feld">
+                  <label for="syncCodeFeld" data-t="sync.code"></label>
+                  <input id="syncCodeFeld" maxlength="20" spellcheck="false" autocomplete="off" placeholder="XXXX-XXXX-XXXX">
+                </div>
+                <div class="feld">
+                  <label for="syncAdresseFeld" data-t="sync.adresse"></label>
+                  <input id="syncAdresseFeld" maxlength="60" spellcheck="false" autocomplete="off" placeholder="192.168.1.20">
+                </div>
+              </div>
+              <button class="primaer klein" id="syncVerbinden" data-t="sync.verbinden"></button>
+            </div>
+            <small class="konto-meldung" id="syncMeldung"></small>
+            <small class="hinweis" id="syncAdressen"></small>
+          </div>
+          <div class="feld schmal">
+            <label for="syncPort" data-t="sync.port"></label>
+            <input id="syncPort" data-k="sync.port" data-zahl inputmode="numeric" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="gruppe">

@@ -51,6 +51,17 @@ class Gedaechtnis {
     this._speichern(daten);
   }
 
+  // Vom gekoppelten Gerät – mit derselben Sperre für Zugangsdaten.
+  uebernehmen(schluessel, eintrag) {
+    const k = String(schluessel || '').trim();
+    const v = String((eintrag && eintrag.inhalt) || '').trim();
+    if (!k || !v || k.length > 200 || v.length > 5000 || ZUGANGSDATEN.test(k) || ZUGANGSDATEN.test(v)) return false;
+    const daten = this._laden();
+    daten.eintraege[k] = { inhalt: v, geaendert: String((eintrag && eintrag.geaendert) || new Date().toISOString()).slice(0, 10) };
+    this._speichern(daten);
+    return true;
+  }
+
   loeschen(schluessel) {
     const daten = this._laden();
     const k = String(schluessel || '').trim();

@@ -269,6 +269,19 @@ installierst du Tailscale auf PC und Handy oder nutzt das VPN deiner FritzBox:
 - **Ampel unverändert:** Freigaben kommen als Ja/Nein-Karte aufs Handy, ROT bleibt ROT, Stopp bricht sofort ab.
 - Standardmäßig **aus**. Fragt Windows nach der Firewall, erlaube nur „Private Netzwerke".
 
+### Mehrere PCs
+
+Hast du Julia auf mehreren PCs, gleichen sie **Gespräche, Gedächtnis, Routinen und
+Erinnerungen** direkt untereinander ab – im Heimnetz oder über dein VPN, ohne Cloud.
+*Einstellungen → Verbindungen → Geräte abgleichen* auf beiden PCs einschalten, auf dem einen
+*Code anzeigen*, auf dem anderen *Code eingeben* – fertig. Julia findet den anderen PC im
+Heimnetz von selbst; über ein VPN trägst du zusätzlich seine Adresse ein.
+
+- **Nur deine PCs:** Der Code gilt fünf Minuten und nur einmal. Beide Seiten beweisen sich damit gegenseitig, dass niemand dazwischensitzt, und merken sich danach das Zertifikat der anderen. Jede Anfrage trägt einen eigenen Zufallsschlüssel.
+- **Verschlüsselt, ohne Cloud:** HTTPS direkt von PC zu PC; der Server antwortet nur Adressen aus dem Heimnetz oder VPN. Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
+- **Neueres gewinnt:** Geänderte Einträge wandern zum anderen PC, Gelöschtes wird auch dort gelöscht. Abgeglichen wird alle 30 Sekunden, sobald beide PCs laufen.
+- **Bleibt pro PC:** API-Schlüssel, Konten, Einstellungen und das Protokoll wandern nie mit. Auch über den Abgleich landen keine Zugangsdaten im Gedächtnis.
+
 ## Installation
 
 **Am einfachsten:** [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)

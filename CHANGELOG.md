@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.8.0 – 2026-09-14
+- Mehrere PCs, ein Stand: Gespräche, Gedächtnis, Routinen und Erinnerungen gleichen sich direkt von PC zu PC ab – einmal per Code gekoppelt, verschlüsselt und ohne Cloud
+
 ## 2.7.2 – 2026-09-14
 - Outlook ist für die Ein-Klick-Anmeldung vorbereitet – mit eingebauter App-ID entfällt die eigene Registrierung, eine eigene ID bleibt möglich
 

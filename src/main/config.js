@@ -115,6 +115,10 @@ const STANDARD = {
     botname: '', // leer = Name der KI
     konto: '', // Name des verbundenen Minecraft-Kontos (nur Anzeige; die Anmeldung liegt verschlüsselt extra)
   },
+  sync: {
+    an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
+    port: 8766,
+  },
 };
 
 function klon(x) {
@@ -184,6 +188,7 @@ function pruefen(schluessel, wert) {
     case 'weckwort.an':
     case 'freigabe.immer':
     case 'freigabe.fremd':
+    case 'sync.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
@@ -282,7 +287,8 @@ function pruefen(schluessel, wert) {
     case 'kosten.tageslimit_usd':
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
-    case 'handy.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'handy.port':
+    case 'sync.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
     case 'code.projekte': {
       if (!Array.isArray(wert)) throw new Error('Projekte sind eine Liste von Ordnern.');
       const liste = [...new Set(wert.map((p) => String(p || '').trim()).filter((p) => path.isAbsolute(p)).map((p) => path.resolve(p)))];

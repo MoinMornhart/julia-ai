@@ -268,6 +268,19 @@ install Tailscale on PC and phone or use your FritzBox VPN:
 - **Traffic light unchanged:** Approvals arrive on the phone as a yes/no card, RED stays RED, Stop cancels immediately.
 - **Off** by default. If Windows asks about the firewall, allow "Private networks" only.
 
+### Several PCs
+
+If you run Julia on several PCs, they sync **conversations, memory, routines and reminders**
+directly with each other – on your home network or through your VPN, without a cloud. Switch on
+*Settings → Connections → Sync devices* on both PCs, click *Show code* on one and *Enter code*
+on the other – done. Julia finds the other PC on your home network by itself; through a VPN you
+also enter its address.
+
+- **Only your PCs:** The code is valid for five minutes and only once. Both sides use it to prove to each other that nobody sits in between, then remember each other's certificate. Every request carries its own random key.
+- **Encrypted, no cloud:** HTTPS straight from PC to PC; the server only answers home-network or VPN addresses. After ten failed attempts an address is blocked for ten minutes.
+- **Newer wins:** Changed entries travel to the other PC, deleted ones are deleted there too. Syncing runs every 30 seconds whenever both PCs are on.
+- **Stays per PC:** API keys, accounts, settings and the log never travel. Credentials never end up in memory through syncing either.
+
 ## Installation
 
 **Easiest:** download [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)

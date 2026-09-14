@@ -218,7 +218,7 @@ function istFeind(e) {
 // Chat geht auf den eigenen Server – trotzdem keine Befehle (/op, /give …)
 // und keine Farb- oder Steuerzeichen.
 function chatText(text) {
-  const s = String(text ?? '').replace(/[ -§]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^\/+/, '').trim().slice(0, 250);
+  const s = String(text ?? '').replace(/[\u0000-\u001f\u007f§]/g, ' ').replace(/\s+/g, ' ').trim().replace(/^\/+/, '').trim().slice(0, 250);
   if (!s) throw new Error('Leere Chatnachricht.');
   return s;
 }
