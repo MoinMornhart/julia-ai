@@ -3,9 +3,9 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const crypto = require('crypto');
 const { spawn } = require('child_process');
 const { EventEmitter } = require('events');
+const { dateiLaden } = require('./laden');
 
 // Whisper (whisper.cpp) schreibt auf, was du sagst – lokal auf diesem PC, der
 // Ton verlässt ihn nie. Windows erkennt weiter, wann du anfängst und aufhörst
@@ -90,40 +90,21 @@ class Whisper extends EventEmitter {
     if (!m) throw new Error('Unbekanntes Whisper-Modell.');
     if (this.bereit(stufe)) return true;
     if (this.laden) return this.laden.versprechen;
-    const ziel = this.modellPfad(stufe);
-    const teil = `${ziel}.teil`;
     const abbruch = new AbortController();
     this.fehler = null;
     const laden = { stufe, geladen: 0, gesamt: m.groesse, abbruch };
     this.laden = laden;
     this.emit('status');
+    let zuletzt = 0;
+    const fortschritt = (n) => {
+      laden.geladen = n;
+      if (Date.now() - zuletzt > 250) { zuletzt = Date.now(); this.emit('status'); }
+    };
     laden.versprechen = (async () => {
       try {
-        fs.mkdirSync(this.ordner, { recursive: true });
-        const antwort = await this.holen(QUELLE + m.datei, { signal: abbruch.signal, headers: { 'User-Agent': 'Julia-AI' } });
-        if (!antwort.ok || !antwort.body) throw new Error(`Download fehlgeschlagen (${antwort.status}).`);
-        const hash = crypto.createHash('sha256');
-        const datei = fs.createWriteStream(teil);
-        let n = 0;
-        let zuletzt = 0;
-        try {
-          for await (const stueck of antwort.body) {
-            const b = Buffer.from(stueck);
-            n += b.length;
-            if (n > m.groesse) throw new Error('Das Modell ist größer als erwartet – ich breche ab.');
-            hash.update(b);
-            if (!datei.write(b)) await new Promise((ok) => datei.once('drain', ok));
-            laden.geladen = n;
-            if (Date.now() - zuletzt > 250) { zuletzt = Date.now(); this.emit('status'); }
-          }
-        } finally {
-          await new Promise((ok) => datei.end(ok));
-        }
-        if (n !== m.groesse || hash.digest('hex') !== m.sha256) throw new Error('Die Prüfsumme des Modells stimmt nicht – ich benutze es nicht.');
-        fs.renameSync(teil, ziel);
+        await dateiLaden({ holen: this.holen, url: QUELLE + m.datei, ziel: this.modellPfad(stufe), groesse: m.groesse, sha256: m.sha256, signal: abbruch.signal, fortschritt });
         return true;
       } catch (e) {
-        fs.rmSync(teil, { force: true });
         this.fehler = abbruch.signal.aborted ? null : e.message;
         throw e;
       } finally {

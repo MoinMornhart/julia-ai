@@ -69,6 +69,7 @@ function texteAnwenden(daten) {
   if (handyStand) handyZeigen(handyStand);
   if (syncStand) syncZeigen(syncStand);
   if (whisperStand) whisperZeigen(whisperStand);
+  if (piperStand) piperZeigen(piperStand);
   if (cfg) designZeigen();
 }
 
@@ -505,19 +506,68 @@ function anbieterVerbinden() {
   });
 }
 
+// Stimmen: oben die natürlichen (Piper, lokal), darunter die Windows-Stimmen.
 async function stimmenLaden() {
   const sel = $('stimme');
-  const stimmen = await julia.stimmen();
+  const [stimmen, p] = await Promise.all([julia.stimmen(), julia.piperStatus()]);
   sel.innerHTML = '';
   const aktuell = cfg.sprache.stimme;
-  if (!stimmen.some((s) => s.name === aktuell)) stimmen.unshift({ name: aktuell, kultur: '?' });
+  const gruppe = (label) => {
+    const g = document.createElement('optgroup');
+    g.label = label;
+    sel.appendChild(g);
+    return g;
+  };
+  const natuerlich = gruppe(tx('piper.gruppe'));
+  for (const s of p.stimmen) {
+    const o = document.createElement('option');
+    o.value = `piper:${s.id}`;
+    o.textContent = `${s.name} – ${tx(s.geschlecht === 'w' ? 'piper.weiblich' : 'piper.maennlich')}, ${s.sprache === 'de' ? 'Deutsch' : 'English'}`;
+    natuerlich.appendChild(o);
+  }
+  const windows = gruppe(tx('piper.gruppe_windows'));
+  if (!aktuell.startsWith('piper:') && !stimmen.some((s) => s.name === aktuell)) stimmen.unshift({ name: aktuell, kultur: '?' });
   for (const s of stimmen) {
     const o = document.createElement('option');
     o.value = s.name;
     o.textContent = `${s.name.replace(/^Microsoft /, '').replace(/ Desktop$/, '')} (${s.kultur})`;
-    sel.appendChild(o);
+    windows.appendChild(o);
   }
   sel.value = aktuell;
+  piperZeigen(p);
+}
+
+let piperStand = null;
+
+function piperZeigen(s) {
+  piperStand = s;
+  const wert = $('stimme').value || '';
+  $('piperZeile').hidden = !wert.startsWith('piper:');
+  if (!wert.startsWith('piper:')) return;
+  const st = s.stimmen.find((x) => `piper:${x.id}` === wert) || { mb: 0, bereit: false };
+  let text;
+  let knopf = '';
+  if (s.laedt) {
+    text = tx('piper.laedt', { prozent: Math.floor((s.laedt.geladen / s.laedt.gesamt) * 100), mb: Math.round(s.laedt.gesamt / 1e6) });
+    knopf = 'abbrechen';
+  } else if (st.bereit) text = tx('piper.bereit_status');
+  else {
+    text = s.fehler ? tx('piper.fehler_laden', { fehler: s.fehler }) : tx('piper.fehlt', { mb: st.mb });
+    knopf = 'laden';
+  }
+  $('piperStatus').textContent = text;
+  const b = $('piperLaden');
+  b.hidden = !knopf;
+  b.dataset.art = knopf;
+  b.textContent = knopf === 'abbrechen' ? tx('piper.abbrechen') : tx('piper.laden', { mb: st.mb });
+}
+
+function piperVerbinden() {
+  julia.on('piper:status', piperZeigen);
+  $('stimme').addEventListener('change', () => { if (piperStand) piperZeigen(piperStand); });
+  $('piperLaden').onclick = async () => {
+    piperZeigen($('piperLaden').dataset.art === 'abbrechen' ? await julia.piperAbbrechen() : await julia.piperLaden());
+  };
 }
 
 // Mikrofon und Lautsprecher: "Windows-Standard" oder ein bestimmtes Gerät.
@@ -814,6 +864,7 @@ async function init() {
   mikroTestVerbinden();
   whisperVerbinden();
   whisperZeigen(await julia.whisperStatus());
+  piperVerbinden();
   if (einrichtung) $('name').focus();
 }
 

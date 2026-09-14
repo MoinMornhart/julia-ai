@@ -112,6 +112,20 @@ while ($true) {
 }
 `;
 
+// Spielt eine fertige WAV-Datei ab (natürliche Stimme) – auf Wunsch auf einem
+// bestimmten Lautsprecher. "P" meldet den Start, damit die Blase mitgeht.
+const ABSPIELEN = `
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+$bytes = [System.IO.File]::ReadAllBytes($env:JULIA_DATEI)
+$nr = -1
+if ($env:JULIA_LAUTSPRECHER -and $env:JULIA_AUDIO_DLL) {
+  try { Add-Type -Path $env:JULIA_AUDIO_DLL; $nr = [JuliaAudioGeraete]::AusgangNr($env:JULIA_LAUTSPRECHER) } catch { $nr = -1 }
+}
+[Console]::Out.WriteLine('P'); [Console]::Out.Flush()
+if ($nr -ge 0) { [JuliaLautsprecher]::Abspielen($bytes, $nr) }
+else { $ms = New-Object System.IO.MemoryStream(,$bytes); $sp = New-Object System.Media.SoundPlayer($ms); $sp.PlaySync() }
+`;
+
 const STIMMEN = `
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 Add-Type -AssemblyName System.Speech
@@ -258,11 +272,14 @@ function fuerSprache(text, sprachcode = 'de') {
 class Sprache extends EventEmitter {
   // dll(): Pfad zur Audio-Hilfe (win/audio.cs) – nur nötig, wenn ein eigenes
   // Mikrofon oder ein eigener Lautsprecher gewählt ist.
-  constructor({ dll } = {}) {
+  // piper: natürliche Stimmen (Stimmen heißen dann "piper:<id>").
+  constructor({ dll, piper = null } = {}) {
     super();
     this.dll = dll || (async () => '');
+    this.piper = piper;
     this.hoeren = null;
     this.sprechenProc = null;
+    this.sprechNr = 0; // zählt bei jedem "Stopp" hoch
   }
 
   get hoertZu() { return !!this.hoeren; }
@@ -395,6 +412,10 @@ class Sprache extends EventEmitter {
     this.stumm();
     const sauber = fuerSprache(text, sprachcode);
     if (!sauber) return;
+    if (String(stimme || '').startsWith('piper:')) {
+      if (await this._mitPiper(sauber, stimme.slice(6), { tempo, sprachcode, lautsprecher })) return;
+      stimme = ''; // natürliche Stimme noch nicht da: solange die Windows-Stimme der Sprache
+    }
     const dllPfad = lautsprecher ? await this.dll().catch(() => '') : '';
     await new Promise((resolve) => {
       const p = powershell(SPRECHEN, {
@@ -425,12 +446,78 @@ class Sprache extends EventEmitter {
     });
   }
 
+  // Natürliche Stimme passend zur Sprache und fertig geladen? Sonst null.
+  _piperStimme(id, sprachcode) {
+    const s = this.piper && this.piper.stimmen[id];
+    if (!s || s.sprache !== (sprachcode === 'en' ? 'en' : 'de')) return null;
+    if (!this.piper.bereit(id)) { this.emit('piperFehlt', id); return null; }
+    return s;
+  }
+
+  // Piper erzeugt die Antwort als WAV, danach wird sie abgespielt. false heißt:
+  // ging nicht – dann spricht die Windows-Stimme.
+  async _mitPiper(text, id, { tempo, sprachcode, lautsprecher }) {
+    if (!this._piperStimme(id, sprachcode)) return false;
+    const nr = this.sprechNr;
+    const datei = tempDatei('.wav');
+    this.emit('lautsprecher', true);
+    try {
+      await this.piper.erzeugen(text, id, { tempo, ziel: datei, beiStart: (p) => { this.sprechenProc = p; } });
+      if (nr === this.sprechNr) await this._abspielen(datei, lautsprecher, nr);
+      return true;
+    } catch (e) {
+      if (nr !== this.sprechNr) return true; // "Stopp" hat Piper beendet
+      this.emit('piperFehler', e.message);
+      return false;
+    } finally {
+      if (nr === this.sprechNr) this.sprechenProc = null;
+      this.emit('pegel', 0);
+      this.emit('lautsprecher', false);
+      fs.rmSync(datei, { force: true });
+    }
+  }
+
+  // Spielt die WAV-Datei ab; die Blase folgt der echten Lautstärke.
+  async _abspielen(datei, lautsprecher, nr) {
+    let kurve = [];
+    try {
+      const w = wavLesen(fs.readFileSync(datei));
+      if (w.bits === 16 && w.kanaele === 1) kurve = huellkurve(w.pcm, w.rate);
+    } catch { /* ohne Kurve bleibt die Blase ruhig */ }
+    const dllPfad = lautsprecher ? await this.dll().catch(() => '') : '';
+    if (nr !== this.sprechNr) return;
+    await new Promise((resolve) => {
+      const p = powershell(ABSPIELEN, { JULIA_DATEI: datei, JULIA_LAUTSPRECHER: lautsprecher, JULIA_AUDIO_DLL: dllPfad });
+      this.sprechenProc = p;
+      let takt = null;
+      readline.createInterface({ input: p.stdout }).on('line', (z) => {
+        if (z !== 'P' || takt) return;
+        const start = Date.now();
+        takt = setInterval(() => {
+          const i = Math.floor((Date.now() - start) / SCHRITT_MS);
+          this.emit('pegel', i < kurve.length ? 0.08 + kurve[i] * 0.92 : 0);
+        }, 60);
+      });
+      p.on('close', () => { clearInterval(takt); resolve(); });
+    });
+  }
+
   // Text als Audio (48 kHz, mono, 16 Bit) – für den Minecraft-Voice-Chat.
   async alsAudio(text, { stimme, tempo = 0, sprachcode = 'de' } = {}) {
     const sauber = fuerSprache(text, sprachcode);
     if (!sauber) return Buffer.alloc(0);
     const datei = tempDatei('.wav');
     try {
+      const id = String(stimme || '').startsWith('piper:') ? stimme.slice(6) : '';
+      if (id && this._piperStimme(id, sprachcode)) {
+        try {
+          await this.piper.erzeugen(sauber, id, { tempo, ziel: datei });
+          const w = wavLesen(fs.readFileSync(datei));
+          if (w.kanaele === 1 && w.bits === 16) return umrechnen(w.pcm, w.rate, 48000);
+        } catch (e) {
+          this.emit('piperFehler', e.message);
+        }
+      }
       await ausfuehren(SPRECHEN_DATEI, {
         JULIA_TEXT: Buffer.from(sauber, 'utf8').toString('base64'),
         JULIA_STIMME: stimme || '',
@@ -472,6 +559,7 @@ class Sprache extends EventEmitter {
   }
 
   stumm() {
+    this.sprechNr += 1;
     if (this.sprechenProc) {
       this.sprechenProc.kill();
       this.sprechenProc = null;
@@ -493,4 +581,44 @@ class Sprache extends EventEmitter {
   }
 }
 
-module.exports = { Sprache, fuerSprache, wavBauen, wavLesen, herunter48auf16 };
+// 16-Bit-Mono-PCM auf eine andere Abtastrate umrechnen (linear) – Piper
+// spricht mit 16 oder 22 kHz, der Minecraft-Voice-Chat will 48 kHz.
+function umrechnen(pcm, von, nach) {
+  if (von === nach) return pcm;
+  const n = Math.floor(pcm.length / 2);
+  if (!n) return Buffer.alloc(0);
+  const m = Math.floor((n * nach) / von);
+  const aus = Buffer.alloc(m * 2);
+  for (let i = 0; i < m; i++) {
+    const pos = (i * von) / nach;
+    const a = Math.min(n - 1, Math.floor(pos));
+    const b = Math.min(n - 1, a + 1);
+    const f = pos - a;
+    const wert = pcm.readInt16LE(a * 2) * (1 - f) + pcm.readInt16LE(b * 2) * f;
+    aus.writeInt16LE(Math.max(-32768, Math.min(32767, Math.round(wert))), i * 2);
+  }
+  return aus;
+}
+
+// Lautstärke in Schritten von SCHRITT_MS, 0 bis 1 – damit die Blase beim
+// Sprechen der echten Stimme folgt.
+const SCHRITT_MS = 80;
+function huellkurve(pcm, rate, schrittMs = SCHRITT_MS) {
+  const proSchritt = Math.max(1, Math.round((rate * schrittMs) / 1000));
+  const n = Math.floor(pcm.length / 2);
+  const werte = [];
+  for (let i = 0; i < n; i += proSchritt) {
+    const ende = Math.min(n, i + proSchritt);
+    let summe = 0;
+    for (let j = i; j < ende; j++) {
+      const v = pcm.readInt16LE(j * 2) / 32768;
+      summe += v * v;
+    }
+    werte.push(Math.sqrt(summe / (ende - i)));
+  }
+  let max = 0.01;
+  for (const w of werte) if (w > max) max = w;
+  return werte.map((w) => Math.min(1, w / max));
+}
+
+module.exports = { Sprache, fuerSprache, wavBauen, wavLesen, herunter48auf16, umrechnen, huellkurve };

@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.5.0 – 2026-09-14
+- Natürliche Stimmen: Julia kann jetzt mit Thorsten oder Kerstin sprechen – neuronal, lokal auf deinem PC, auch im Minecraft-Voice-Chat; einfach in den Einstellungen auswählen
+
 ## 3.4.0 – 2026-09-14
 - Julia versteht dich jetzt richtig: Whisper schreibt auf, was du sagst – genau, auf Deutsch und lokal auf deinem PC; das Modell lädt sie einmal selbst
 

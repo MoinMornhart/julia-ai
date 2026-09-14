@@ -12,6 +12,7 @@ const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./mi
 const { Sync } = require('./sync');
 const mikrofonRecht = require('./mikrofon-recht');
 const { Whisper } = require('./whisper');
+const { Piper } = require('./piper');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
@@ -68,6 +69,7 @@ let agent;
 let updater;
 let sprache;
 let whisper = null;
+let piper = null;
 let konten;
 let erinnerungen;
 let weckwort;
@@ -664,6 +666,30 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
   }
 }
 
+// Natürliche Stimme (Piper): Wer sie auswählt, bekommt sie einmal geladen –
+// bis dahin spricht die Windows-Stimme. still: ohne Meldung (die Einstellungen
+// zeigen den Fortschritt selbst).
+let piperGemeldet = false;
+function piperNachladen(id, still = false) {
+  if (!piper || !piper.stimmen[id] || piper.laden || VORFUEHRUNG) return;
+  const stimme = piper.stimmen[id].name;
+  if (!still && !piperGemeldet) {
+    piperGemeldet = true;
+    melden(assistentName(), t('piper.laedt_hinweis', { stimme }));
+  }
+  piper.herunterladen(id)
+    .then(() => melden(assistentName(), t('piper.bereit', { stimme })))
+    .catch((e) => protokoll.eintragen({ werkzeug: 'sprache', stufe: 'INFO', ergebnis: `Stimme ${stimme} nicht geladen: ${e.message}` }));
+}
+
+let piperFehlerGemeldet = false;
+function piperFehlerMelden(fehler) {
+  protokoll.eintragen({ werkzeug: 'sprache', stufe: 'INFO', ergebnis: `Piper: ${fehler}` });
+  if (piperFehlerGemeldet) return;
+  piperFehlerGemeldet = true;
+  melden(assistentName(), t('piper.fehler', { fehler }));
+}
+
 // Whisper schreibt auf, sobald Programm und Modell da sind – sonst bleibt es
 // bei der Windows-Erkennung. Fehlt nur das Modell, lädt Julia es einmal nach.
 function spracherkennung() {
@@ -849,6 +875,13 @@ function ipcEinrichten() {
   ipc.handle('audio:geraete', async () => {
     try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
   });
+  ipc.handle('piper:status', () => piper.status());
+  ipc.handle('piper:laden', () => {
+    const s = String(config.get('sprache.stimme') || '');
+    if (s.startsWith('piper:')) piperNachladen(s.slice(6), true);
+    return piper.status();
+  });
+  ipc.handle('piper:abbrechen', () => { piper.abbrechen(); return piper.status(); });
   ipc.handle('whisper:status', () => whisperStatus());
   ipc.handle('whisper:laden', () => {
     const stufe = config.get('sprache.whisper_modell');
@@ -1748,7 +1781,11 @@ async function start() {
   minecraft.on('frage', (f) => minecraftFrage(f));
   minecraft.on('stimme', (d) => minecraftStimme(d.pcm));
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
-  sprache = new Sprache({ dll: audio.dll });
+  piper = new Piper({ ordner: path.join(DATEN, 'piper'), holen: (url, o) => net.fetch(url, o) });
+  piper.on('status', () => anAlle('piper:status', piper.status()));
+  sprache = new Sprache({ dll: audio.dll, piper });
+  sprache.on('piperFehlt', (id) => piperNachladen(id));
+  sprache.on('piperFehler', piperFehlerMelden);
   sprache.on('pegel', (p) => anAlle('pegel', p));
   sprache.on('schreibt', (an) => { if (an && zustand === 'listening') zustandSetzen('thinking'); });
   sprache.on('whisperFehler', whisperFehlerMelden);
@@ -1832,6 +1869,12 @@ async function start() {
     if ((k === 'sprache.mikrofon' || k === 'sprache.lautsprecher') && config.get(k)) audio.dll().catch(() => {});
     if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
     if (k === 'sprache.erkennung' || k === 'sprache.whisper_modell') anAlle('whisper:status', whisperStatus());
+    if (k === 'sprache.stimme') {
+      // Auswählen heißt: haben wollen – die natürliche Stimme gleich laden.
+      const s = String(config.get(k) || '');
+      if (s.startsWith('piper:') && !piper.bereit(s.slice(6))) piperNachladen(s.slice(6), true);
+      anAlle('piper:status', piper.status());
+    }
     if (k === 'assistent.name' && chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
     anAlle('config:geaendert', oeffentlicheConfig());
   });
