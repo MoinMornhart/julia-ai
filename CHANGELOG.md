@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.1.1 – 2026-09-14
+- Julia tritt Minecraft-Servern im installierten Programm wieder bei – der Fehler „Cannot find module … features.json“ ist behoben
+
 ## 3.1.0 – 2026-09-14
 - Das Gaming-Overlay erscheint von selbst, sobald du ein Spiel startest – passiv, dein Spiel behält den Fokus; eigene Spiele lassen sich ergänzen
 
