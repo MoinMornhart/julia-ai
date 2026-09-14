@@ -108,6 +108,13 @@ const STANDARD = {
     immer: false, // "Allem zustimmen": nur von Hand, nach einer Rückfrage
     fremd: false, // dazu auch nach Webseiten/Mails nicht fragen – eigene Warnung
   },
+  minecraft: {
+    adresse: '', // leer = localhost
+    port: 25565,
+    spieler: '', // dein Name im Spiel – auf ihn hört die Spielfigur
+    botname: '', // leer = Name der KI
+    konto: '', // Name des verbundenen Minecraft-Kontos (nur Anzeige; die Anmeldung liegt verschlüsselt extra)
+  },
 };
 
 function klon(x) {
@@ -211,6 +218,19 @@ function pruefen(schluessel, wert) {
       if (!s) throw new Error('Der Name darf nicht leer sein.');
       if (s.length > max) throw new Error(`Der Name darf höchstens ${max} Zeichen haben.`);
       if (!/^[\p{L}\p{N}][\p{L}\p{N} .'’-]*$/u.test(s)) throw new Error('Im Namen sind nur Buchstaben, Ziffern, Leerzeichen, Punkt, Apostroph und Bindestrich erlaubt.');
+      return s;
+    }
+    case 'minecraft.adresse': {
+      const s = String(wert ?? '').trim();
+      if (s.length > 253 || !/^[A-Za-z0-9.\-:[\]]*$/.test(s)) throw new Error('Das ist keine gültige Serveradresse.');
+      return s;
+    }
+    case 'minecraft.port': return Math.round(zahl(wert, 1, 65535, 'Port'));
+    case 'minecraft.spieler':
+    case 'minecraft.botname':
+    case 'minecraft.konto': {
+      const s = String(wert ?? '').trim();
+      if (s && !/^[A-Za-z0-9_]{3,16}$/.test(s)) throw new Error('Minecraft-Namen haben 3 bis 16 Zeichen: Buchstaben, Ziffern und Unterstrich.');
       return s;
     }
     case 'assistent.form':

@@ -1,7 +1,7 @@
 {
   "name": "julia-ai",
   "productName": "Julia",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
   "main": "src/main/main.js",
   "author": "MoinMornhart",
@@ -25,7 +25,9 @@
       "src/**/*",
       "prompt/**/*",
       "package.json",
-      "CHANGELOG.md"
+      "CHANGELOG.md",
+      "!**/node_modules/minecraft-data/minecraft-data/data/bedrock/**",
+      "!**/node_modules/minecraft-data/doc/**"
     ],
     "asarUnpack": [
       "src/main/win/worker.ps1"
@@ -75,6 +77,9 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
+    "mineflayer": "4.39.0",
+    "mineflayer-pathfinder": "2.4.5",
+    "prismarine-auth": "3.1.1",
     "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {

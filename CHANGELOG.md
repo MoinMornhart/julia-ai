@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.4.0 – 2026-09-14
+- Neuer Minecraft-Reiter: Julia spielt als eigene Figur mit dir – folgt, beschützt, baut ab, tritt im Duell an – einfach IP eintragen, auf Wunsch mit eigenem Minecraft-Konto
+
 ## 2.3.0 – 2026-09-14
 - Julia sieht und steuert deutlich schneller – kleinere Screenshots, kürzere Pausen, weniger Nachdenken zwischen Klicks, und mehrere Klicks und Eingaben laufen in einem Rutsch
 

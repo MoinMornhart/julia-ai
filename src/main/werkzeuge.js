@@ -743,6 +743,9 @@ WERKZEUGE.push({
   },
 });
 
+// Minecraft mitspielen (eigene Spielfigur auf dem Server des Nutzers).
+WERKZEUGE.push(...require('./minecraft').WERKZEUGE);
+
 // Für Anbieter ohne eigene Websuche. Nach außen gerichtet: Die Adresse selbst
 // kann Daten tragen, deshalb wird der Abruf nach fremden Inhalten GELB.
 const WEBSEITE = {

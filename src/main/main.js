@@ -8,6 +8,7 @@ const {
   app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net, clipboard, nativeImage,
 } = require('electron');
 const sicherheit = require('./sicherheit');
+const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
 
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
@@ -68,6 +69,8 @@ let handy = null;
 let gespraeche = null;
 let routinen = null;
 let clips = null;
+let minecraft = null;
+let mcSpeicher = null;
 let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
@@ -636,7 +639,7 @@ function ipcEinrichten() {
     return oeffentlicheConfig();
   });
   ipc.handle('config:setzen', (_e, schluessel, wert) => {
-    if (/^(api|freigabe)\./.test(String(schluessel))) return { fehler: 'Nicht erlaubt.' };
+    if (/^(api|freigabe)\.|^minecraft\.konto$/.test(String(schluessel))) return { fehler: 'Nicht erlaubt.' };
     try { return { wert: config.set(schluessel, wert) }; } catch (e) { return { fehler: e.message }; }
   });
   // "Allem zustimmen" (und "auch nach fremden Inhalten") lassen sich nur hier
@@ -852,6 +855,68 @@ function ipcEinrichten() {
     try { const neu = clips.umbenennen(p, name); anAlle('clips:geaendert'); return { ok: true, pfad: neu, url: pathToFileURL(neu).href }; } catch (e) { return { fehler: e.message }; }
   });
   ipc.handle('clips:windows', () => { shell.openExternal('ms-settings:gaming-gamedvr'); return true; });
+  ipc.handle('mc:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMinecraft() : mcStand()));
+  ipc.handle('mc:beitreten', async (_e, d) => {
+    try {
+      const { host, port } = adresseTeilen(d && d.adresse);
+      config.set('minecraft.adresse', host);
+      config.set('minecraft.port', port);
+      if (d && d.spieler !== undefined) config.set('minecraft.spieler', d.spieler);
+      // Selbst eingetragen: dann darf es auch ein Server im Internet sein.
+      await minecraft.verbinden({
+        adresse: host,
+        port,
+        besitzer: config.get('minecraft.spieler'),
+        botname: config.get('minecraft.botname'),
+        assistent: assistentName(),
+        oeffentlich: true,
+        konto: mcKonto(),
+      });
+      anAlle('mc:geaendert');
+      return { ok: true };
+    } catch (e) {
+      return { fehler: e.message };
+    }
+  });
+  ipc.handle('mc:verlassen', () => {
+    minecraft.trennen();
+    anAlle('mc:geaendert');
+    return { ok: true };
+  });
+  ipc.handle('mc:aufgabe', (_e, a) => {
+    try {
+      const text = minecraft.aufgabe(a || {});
+      if (a && a.aufgabe === 'kaempfen') try { minecraft.chat(text); } catch { /* egal */ }
+      return { text };
+    } catch (e) {
+      return { fehler: e.message };
+    }
+  });
+  ipc.handle('mc:chat', (_e, text) => {
+    try { return { text: minecraft.chat(text) }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('mc:konto:verbinden', async (e) => {
+    try {
+      const r = await kontoAnmelden({
+        cache: mcSpeicher,
+        beiCode: (c) => {
+          if (!e.sender.isDestroyed()) e.sender.send('mc:code', c);
+          mcLinkOeffnen(c);
+        },
+      });
+      config.set('minecraft.konto', r.name);
+      anAlle('mc:geaendert');
+      return { name: r.name };
+    } catch (err) {
+      return { fehler: err.message };
+    }
+  });
+  ipc.handle('mc:konto:abmelden', () => {
+    mcSpeicher.loeschen();
+    config.set('minecraft.konto', '');
+    anAlle('mc:geaendert');
+    return { ok: true };
+  });
   ipc.handle('routinen:liste', () => routinen.alle());
   ipc.handle('routinen:speichern', (_e, r) => {
     try {
@@ -1008,6 +1073,26 @@ function zugriffSpaeterWeg(ms = 2500) {
     for (const f of zugriffFenster) if (!f.isDestroyed()) f.webContents.send('zugriff', { art: null });
     zugriffTimer = setTimeout(() => { for (const f of zugriffFenster) if (!f.isDestroyed()) f.hide(); }, 350);
   }, ms);
+}
+
+// --- Minecraft ---
+
+// Das verbundene Konto, solange die Anmeldung noch gespeichert ist.
+function mcKonto() {
+  const name = config.get('minecraft.konto');
+  return name && mcSpeicher && mcSpeicher.vorhanden() ? { cache: mcSpeicher, name } : null;
+}
+
+function mcStand() {
+  const c = config.get('minecraft');
+  return { ...minecraft.status(), konto: mcKonto() ? c.konto : '', adresse: c.adresse, port: c.port, meinName: c.spieler };
+}
+
+// Den Code zeigt der Reiter; die Microsoft-Seite geht gleich im Browser auf.
+// Angemeldet wird dort, nicht in Julia.
+function mcLinkOeffnen(c) {
+  const basis = /^https:\/\/(www\.)?microsoft\.com\/link\b/i.test(c.adresse || '') ? c.adresse : 'https://www.microsoft.com/link';
+  shell.openExternal(`${basis}${basis.includes('?') ? '&' : '?'}otc=${encodeURIComponent(c.code)}`);
 }
 
 // --- Gaming-Clips ---
@@ -1334,6 +1419,10 @@ async function start() {
   routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
   clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
   code = new CodeProjekte({ config });
+  // Minecraft: die eigene Spielfigur. Die Microsoft-Anmeldung liegt verschlüsselt im Datenordner.
+  minecraft = new Minecraft();
+  mcSpeicher = kontoSpeicher({ datei: path.join(DATEN, 'minecraft-konto.bin'), krypto });
+  minecraft.on('ereignis', (e) => { melden(t('minecraft.titel'), e.text); anAlle('mc:geaendert'); });
   sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
@@ -1353,6 +1442,8 @@ async function start() {
     // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
     eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',
     clipJetzt: () => clipJetzt(),
+    minecraft,
+    minecraftKonto: () => mcKonto(),
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),
@@ -1455,6 +1546,7 @@ if (!app.requestSingleInstanceLock()) {
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
     if (handy) handy.stoppen();
+    if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();
     if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }

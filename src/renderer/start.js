@@ -26,6 +26,8 @@
     uhr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/></svg>',
     lupe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     'neu-laden': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6L20 8.5"/><path d="M20 3.5v5h-5"/></svg>',
+    wuerfel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8 20.5 7.4v9.2L12 21.2l-8.5-4.6V7.4Z"/><path d="m3.5 7.4 8.5 4.6 8.5-4.6M12 12v9.2"/></svg>',
+    schluessel: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4.5"/><path d="m11.2 11.8 8.8-8.8M16.5 6.5l2.5 2.5M14 9l2 2"/></svg>',
   };
 
   const VORSCHLAEGE = ['start.v1', 'start.v2', 'start.v3', 'start.v4'];
@@ -46,7 +48,7 @@
 
   // --- Ansichten ---
 
-  const BEREICHE = { start: 'ansichtStart', chat: 'ansichtChat', verlauf: 'ansichtVerlauf', routinen: 'ansichtRoutinen', clips: 'ansichtClips', code: 'ansichtCode' };
+  const BEREICHE = { start: 'ansichtStart', chat: 'ansichtChat', verlauf: 'ansichtVerlauf', routinen: 'ansichtRoutinen', clips: 'ansichtClips', code: 'ansichtCode', minecraft: 'ansichtMinecraft' };
   // Weitere Ansichten (Verlauf …) hängen sich hier ein: beim Öffnen aufgerufen.
   window.juliaAnsichtBeimOeffnen = {};
 

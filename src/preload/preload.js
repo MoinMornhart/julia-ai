@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'erinnerung', 'kosten',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -47,6 +47,15 @@ contextBridge.exposeInMainWorld('julia', {
   clipLoeschen: (p) => ipcRenderer.invoke('clips:loeschen', String(p)),
   clipUmbenennen: (p, name) => ipcRenderer.invoke('clips:umbenennen', String(p), String(name)),
   clipsWindows: () => ipcRenderer.invoke('clips:windows'),
+  mcStatus: () => ipcRenderer.invoke('mc:status'),
+  mcBeitreten: (d) => ipcRenderer.invoke('mc:beitreten', { adresse: String((d && d.adresse) || ''), spieler: String((d && d.spieler) || '') }),
+  mcVerlassen: () => ipcRenderer.invoke('mc:verlassen'),
+  mcAufgabe: (a) => ipcRenderer.invoke('mc:aufgabe', {
+    aufgabe: String((a && a.aufgabe) || ''), block: a && a.block ? String(a.block) : undefined, anzahl: a && a.anzahl ? Number(a.anzahl) : undefined,
+  }),
+  mcChat: (text) => ipcRenderer.invoke('mc:chat', String(text || '')),
+  mcKontoVerbinden: () => ipcRenderer.invoke('mc:konto:verbinden'),
+  mcKontoAbmelden: () => ipcRenderer.invoke('mc:konto:abmelden'),
   routinenListe: () => ipcRenderer.invoke('routinen:liste'),
   routineSpeichern: (r) => ipcRenderer.invoke('routinen:speichern', r),
   routineLoeschen: (id) => ipcRenderer.invoke('routinen:loeschen', String(id)),

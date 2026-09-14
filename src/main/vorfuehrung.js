@@ -133,6 +133,9 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.webContents.send('ansicht', 'code');
   await warte(3000);
   await aufnehmenFenster(chatFenster, path.join(ziel, `code-${sc}.png`), { mitRahmen: true });
+  chatFenster.webContents.send('ansicht', 'minecraft');
+  await warte(1500);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-${sc}.png`), { mitRahmen: true });
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
@@ -248,4 +251,25 @@ function beispielClips() {
   };
 }
 
-module.exports = { aufnehmen, GESPRAECH, beispielUeberblick, beispielClips };
+// Minecraft-Reiter mitten im Spiel – Beispielwerte, keine echte Verbindung.
+function beispielMinecraft() {
+  return {
+    verbunden: true,
+    server: '192.168.1.20:25565',
+    version: '1.21.11',
+    name: 'Julia',
+    leben: 18,
+    hunger: 17,
+    position: { x: -214, y: 71, z: 388 },
+    aufgabe: { art: 'beschuetzen', spieler: 'Moin' },
+    spieler: [{ name: 'Moin', abstand: 3 }, { name: 'Lea_07', abstand: 41 }],
+    feinde_nah: { zombie: 2, skeleton: 1 },
+    chat: ['Moin: !beschütze mich', 'Julia: Ich passe auf Moin auf.', 'Lea_07: nice, die Julia haut die Zombies weg'],
+    konto: 'Julia',
+    adresse: '192.168.1.20',
+    port: 25565,
+    meinName: 'Moin',
+  };
+}
+
+module.exports = { aufnehmen, GESPRAECH, beispielUeberblick, beispielClips, beispielMinecraft };

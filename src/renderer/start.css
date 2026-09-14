@@ -471,3 +471,37 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
   .held h1 { font-size: 22px; }
   .held-kugel { width: 52px; height: 52px; }
 }
+
+/* --- Minecraft --- */
+
+.mc-zustand { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--linie); background: var(--flaeche); font-size: 12px; font-weight: 650; color: var(--text-2); }
+.mc-zustand::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--text-3); }
+.mc-zustand.an { border-color: var(--akzent-rand); color: var(--text); }
+.mc-zustand.an::before { background: var(--akzent); box-shadow: 0 0 10px var(--akzent); }
+.mc-spalten { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; }
+.mc-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.mc-knoepfe [data-ico] svg { width: 14px; height: 14px; }
+.mc-werte { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; }
+.mc-werte div { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: var(--grund-2); border: 1px solid var(--linie); min-width: 0; }
+.mc-werte span { font-size: 10.5px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.mc-werte b { font-size: 13px; font-weight: 650; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.mc-text { margin: 0; }
+.mc-klein { margin: 0; font-size: 12px; color: var(--text-3); }
+.mc-code { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; border: 1px dashed var(--akzent-rand); background: var(--akzent-weich); font-size: 13px; }
+.mc-code strong { font-family: ui-monospace, Consolas, monospace; font-size: 20px; letter-spacing: 0.12em; color: var(--akzent); }
+.mc-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; }
+.mc-aufgabe { display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--linie); background: var(--grund-2); color: var(--text); text-align: left; transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s; }
+.mc-aufgabe:hover:not(:disabled) { border-color: var(--akzent-rand); box-shadow: var(--glow-klein); transform: translateY(-1px); }
+.mc-aufgabe b { font-size: 14px; }
+.mc-aufgabe small { font-size: 12px; color: var(--text-3); }
+.mc-aufgabe.stopp b { color: var(--rot); }
+.mc button:disabled { opacity: 0.45; cursor: default; transform: none; box-shadow: none; }
+.mc-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mc-zeile label { font-size: 12px; font-weight: 650; color: var(--text-2); }
+.mc-zeile input { padding: 8px 11px; border-radius: 10px; border: 1px solid var(--linie); background: var(--grund-2); color: var(--text); font: inherit; outline: none; }
+.mc-zeile input:focus { border-color: var(--akzent-rand); box-shadow: var(--glow); }
+#mcBlock { flex: 1 1 160px; }
+#mcAnzahl { width: 76px; }
+#mcChatText { flex: 1 1 240px; }
+.mc-zeilen { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+.mc-zeilen p { margin: 0; overflow-wrap: anywhere; }

@@ -207,6 +207,17 @@ say and what Julia answers, if you like.
 Monitor, corner, size, opacity, speed, sensitivity and any number of colours per state can be
 changed at runtime – in the settings or just by saying "make it greener".
 
+## Minecraft
+
+![Minecraft tab](docs/bilder/minecraft-de.png)
+
+Julia plays Minecraft (Java Edition) with you – as a character of her own on your server or in your world. In the **Minecraft** tab you only enter the address (IP or IP:port; with "Open to LAN" the port appears in the game chat) and click **Join**.
+
+- **Tasks:** follow, come here, protect (fights monsters near you), duel against you, mine blocks, stop. In the game you can also use the chat: `!folge`, `!komm`, `!beschütze mich`, `!duell`, `!stopp`.
+- **Real time:** fighting, following and dodging run 20 times per second right inside Julia – the AI only picks the task. The character equips weapon and armour itself and eats a golden apple when health is low.
+- **Account:** without an account it works on servers with `online-mode=false`. With **Connect account** you sign in Julia's own Java account: you enter a code at microsoft.com/link in your browser and sign in there yourself – Julia never sees a password, and the sign-in is stored encrypted on your PC. Julia needs a purchased account of her own; with yours you would keep kicking each other out.
+- **Limits:** on her own, Julia only joins servers on your PC or home network; you enter an internet server yourself. Big public networks like Hypixel are blocked – bots are banned there. Chat commands in the game only control the character, never anything on your PC.
+
 ## Connecting accounts
 
 <p align="center">

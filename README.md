@@ -208,6 +208,17 @@ Wunsch Untertitel: was du sagst und was Julia antwortet.
 Monitor, Ecke, Größe, Deckkraft, Tempo, Empfindlichkeit und beliebig viele Farben je Zustand
 lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz: „Mach sie grüner."
 
+## Minecraft
+
+![Minecraft-Reiter](docs/bilder/minecraft-de.png)
+
+Julia spielt Minecraft (Java Edition) mit dir – als eigene Spielfigur auf deinem Server oder in deiner Welt. Im Reiter **Minecraft** trägst du nur die Adresse ein (IP oder IP:Port, bei „Im LAN öffnen“ steht der Port im Spielchat) und klickst auf **Beitreten**.
+
+- **Aufgaben:** Folgen, Komm her, Beschützen (kämpft gegen Monster in deiner Nähe), Duell gegen dich, Blöcke abbauen, Stopp. Im Spiel geht das auch per Chat: `!folge`, `!komm`, `!beschütze mich`, `!duell`, `!stopp`.
+- **Echtzeit:** Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde direkt in Julia – die KI gibt nur die Aufgabe vor. Waffe und Rüstung legt die Figur selbst an, bei wenig Leben isst sie einen Goldapfel.
+- **Konto:** Ohne Konto geht es auf Servern mit `online-mode=false`. Mit **Konto verbinden** meldest du Julias eigenes Java-Konto an: Du gibst im Browser auf microsoft.com/link einen Code ein und meldest dich dort selbst an – Julia sieht kein Passwort, die Anmeldung liegt verschlüsselt auf deinem PC. Julia braucht ein eigenes gekauftes Konto; mit deinem würdet ihr euch gegenseitig rauswerfen.
+- **Grenzen:** Von sich aus tritt Julia nur Servern auf deinem PC oder im Heimnetz bei; einen Server im Internet trägst du selbst ein. Große öffentliche Netzwerke wie Hypixel sind gesperrt – dort sind Bots verboten. Im Spielchat steuern Befehle nur die Figur, nie etwas auf deinem PC.
+
 ## Konten verbinden
 
 <p align="center">

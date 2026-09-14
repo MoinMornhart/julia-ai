@@ -33,6 +33,7 @@
       <button class="nav-punkt" data-ansicht="routinen" id="navRoutinen"><span class="nav-ico" data-ico="blitz"></span><span class="nav-text" data-nav="nav.routinen"></span></button>
       <button class="nav-punkt" data-ansicht="clips" id="navClips"><span class="nav-ico" data-ico="film"></span><span class="nav-text" data-nav="nav.clips"></span></button>
       <button class="nav-punkt" data-ansicht="code" id="navCode"><span class="nav-ico" data-ico="code"></span><span class="nav-text" data-nav="nav.code"></span></button>
+      <button class="nav-punkt" data-ansicht="minecraft" id="navMinecraft"><span class="nav-ico" data-ico="wuerfel"></span><span class="nav-text" data-nav="nav.minecraft"></span></button>
       <div class="leiste-fuss">
         <div class="chip-modell" id="chipModell"><b id="chipAnbieter"></b><span id="chipName"></span></div>
         <button class="nav-punkt" id="navEinst"><span class="nav-ico" data-ico="einst"></span><span class="nav-text" data-nav="nav.einstellungen"></span></button>
@@ -211,6 +212,80 @@
         </div>
       </section>
 
+      <section class="ansicht rt mc" id="ansichtMinecraft" hidden>
+        <div class="rt-innen">
+          <header class="rt-kopf">
+            <div class="rt-kopf-text"><h1 data-nav="nav.minecraft"></h1><p data-nav="mc.hinweis"></p></div>
+            <span class="mc-zustand" id="mcZustand"></span>
+          </header>
+
+          <div class="mc-spalten">
+            <section class="kachel">
+              <header class="kachel-kopf"><span data-ico="wuerfel"></span><h2 data-nav="mc.server"></h2></header>
+              <div class="kachel-inhalt">
+                <div class="rt-feld">
+                  <label for="mcAdresse" data-nav="mc.adresse"></label>
+                  <input id="mcAdresse" maxlength="260" spellcheck="false" autocomplete="off">
+                </div>
+                <div class="rt-feld">
+                  <label for="mcSpieler" data-nav="mc.spieler"></label>
+                  <input id="mcSpieler" maxlength="16" spellcheck="false" autocomplete="off">
+                </div>
+                <div class="mc-knoepfe">
+                  <button class="knopf primaer" id="mcBeitreten"><span data-ico="play"></span><span data-nav="mc.beitreten"></span></button>
+                  <button class="knopf" id="mcVerlassen" data-nav="mc.verlassen" hidden></button>
+                </div>
+                <p class="rt-fehler" id="mcFehler" hidden></p>
+                <div class="mc-werte" id="mcWerte" hidden></div>
+              </div>
+            </section>
+
+            <section class="kachel">
+              <header class="kachel-kopf"><span data-ico="schluessel"></span><h2 data-nav="mc.konto"></h2></header>
+              <div class="kachel-inhalt">
+                <p class="mc-text" id="mcKontoText"></p>
+                <div class="mc-code" id="mcCode" hidden>
+                  <span data-nav="mc.code_text"></span>
+                  <strong id="mcCodeWert"></strong>
+                  <button class="knopf klein" id="mcCodeKopieren" data-nav="mc.code_kopieren"></button>
+                </div>
+                <div class="mc-knoepfe">
+                  <button class="knopf" id="mcKontoVerbinden" data-nav="mc.konto_verbinden"></button>
+                  <button class="knopf klein" id="mcKontoAbmelden" data-nav="mc.konto_abmelden" hidden></button>
+                </div>
+                <p class="mc-klein" data-nav="mc.konto_hinweis"></p>
+              </div>
+            </section>
+          </div>
+
+          <section class="kachel" id="mcAufgaben">
+            <header class="kachel-kopf"><span data-ico="blitz"></span><h2 data-nav="mc.aufgaben"></h2></header>
+            <div class="mc-raster">
+              <button class="mc-aufgabe" data-aufgabe="folgen"><b data-nav="mc.a_folgen"></b><small data-nav="mc.a_folgen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="kommen"><b data-nav="mc.a_kommen"></b><small data-nav="mc.a_kommen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="beschuetzen"><b data-nav="mc.a_beschuetzen"></b><small data-nav="mc.a_beschuetzen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="kaempfen"><b data-nav="mc.a_kaempfen"></b><small data-nav="mc.a_kaempfen_t"></small></button>
+              <button class="mc-aufgabe stopp" data-aufgabe="stopp"><b data-nav="mc.a_stopp"></b><small data-nav="mc.a_stopp_t"></small></button>
+            </div>
+            <form class="mc-zeile" id="mcAbbauen">
+              <label for="mcBlock" data-nav="mc.abbauen"></label>
+              <input id="mcBlock" maxlength="40" spellcheck="false" autocomplete="off">
+              <input id="mcAnzahl" type="number" min="1" max="64" value="16">
+              <button class="knopf klein" type="submit" data-nav="mc.abbauen_los"></button>
+            </form>
+          </section>
+
+          <section class="kachel">
+            <header class="kachel-kopf"><span data-ico="chat"></span><h2 data-nav="mc.chat"></h2></header>
+            <div class="mc-zeilen" id="mcZeilen"></div>
+            <form class="mc-zeile" id="mcSenden">
+              <input id="mcChatText" maxlength="250" spellcheck="true" autocomplete="off">
+              <button class="knopf klein" type="submit" data-nav="mc.senden"></button>
+            </form>
+          </section>
+        </div>
+      </section>
+
       <section class="ansicht chat-ansicht" id="ansichtChat">
         <main id="verlauf" class="verlauf">
           <div class="leer" id="leer">
@@ -240,5 +315,6 @@
   <script src="routinen.js"></script>
   <script src="clips.js"></script>
   <script src="code.js"></script>
+  <script src="mc.js"></script>
 </body>
 </html>
