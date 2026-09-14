@@ -11,6 +11,7 @@ const sicherheit = require('./sicherheit');
 const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
 const { Sync } = require('./sync');
 const mikrofonRecht = require('./mikrofon-recht');
+const { Whisper } = require('./whisper');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
@@ -66,6 +67,7 @@ let protokoll;
 let agent;
 let updater;
 let sprache;
+let whisper = null;
 let konten;
 let erinnerungen;
 let weckwort;
@@ -662,6 +664,43 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
   }
 }
 
+// Whisper schreibt auf, sobald Programm und Modell da sind – sonst bleibt es
+// bei der Windows-Erkennung. Fehlt nur das Modell, lädt Julia es einmal nach.
+function spracherkennung() {
+  if (!whisper || config.get('sprache.erkennung') !== 'whisper') return null;
+  const stufe = config.get('sprache.whisper_modell');
+  if (!whisper.bereit(stufe)) {
+    whisperNachladen(stufe);
+    return null;
+  }
+  return (wav) => whisper.erkennen(wav, { sprachcode: config.get('sprachcode'), stufe });
+}
+
+let whisperGemeldet = false;
+function whisperNachladen(stufe) {
+  if (!whisper || !whisper.programm || whisper.laden || VORFUEHRUNG) return;
+  if (!whisperGemeldet) {
+    whisperGemeldet = true;
+    melden(assistentName(), t('whisper.laedt_hinweis', { mb: whisper.status().modelle[stufe].mb }));
+  }
+  whisper.herunterladen(stufe)
+    .then(() => melden(assistentName(), t('whisper.bereit')))
+    .catch((e) => protokoll.eintragen({ werkzeug: 'sprache', stufe: 'INFO', ergebnis: `Whisper-Modell nicht geladen: ${e.message}` }));
+}
+
+function whisperStatus() {
+  const s = whisper ? whisper.status() : { programm: false, modelle: {}, laedt: null, fehler: null };
+  return { ...s, erkennung: config.get('sprache.erkennung'), stufe: config.get('sprache.whisper_modell') };
+}
+
+let whisperFehlerGemeldet = false;
+function whisperFehlerMelden(fehler) {
+  protokoll.eintragen({ werkzeug: 'sprache', stufe: 'INFO', ergebnis: `Whisper: ${fehler}` });
+  if (whisperFehlerGemeldet) return;
+  whisperFehlerGemeldet = true;
+  melden(assistentName(), t('whisper.fehler', { fehler }));
+}
+
 // Sperrt Windows das Mikrofon (Datenschutz), kommt nur Stille an – das einmal
 // klar sagen und die passende Windows-Einstellung öffnen.
 let mikroSperreGemeldet = false;
@@ -685,14 +724,14 @@ async function sprachUmschalten() {
   anAlle('sprache:hoert', true);
   let text = '';
   try {
-    text = await sprache.zuhoeren(config.get('sprachcode'), { mikrofon: config.get('sprache.mikrofon') });
+    text = await sprache.zuhoeren(config.get('sprachcode'), { mikrofon: config.get('sprache.mikrofon'), whisper: spracherkennung() });
   } catch (e) {
     chatZeigen();
     anAlle('agent:fehler', { art: 'text', text: e.message });
   } finally {
     hoert = false;
     anAlle('sprache:hoert', false);
-    if (zustand === 'listening') zustandSetzen('idle');
+    if (zustand === 'listening' || zustand === 'thinking') zustandSetzen('idle'); // thinking: Whisper schrieb gerade
   }
   if (!text) mikrofonSperrePruefen();
   if (text) {
@@ -810,6 +849,13 @@ function ipcEinrichten() {
   ipc.handle('audio:geraete', async () => {
     try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
   });
+  ipc.handle('whisper:status', () => whisperStatus());
+  ipc.handle('whisper:laden', () => {
+    const stufe = config.get('sprache.whisper_modell');
+    if (whisper) whisper.herunterladen(stufe).then(() => melden(assistentName(), t('whisper.bereit'))).catch(() => { /* Fehler steht im Status */ });
+    return whisperStatus();
+  });
+  ipc.handle('whisper:abbrechen', () => { if (whisper) whisper.abbrechen(); return whisperStatus(); });
   // Mikrofon-Test: je ein Durchgang mit dem gewählten Mikrofon und dem
   // Windows-Standard, dazu alles, was bei der Fehlersuche hilft.
   ipc.handle('sprache:mikrofontest', async (e) => {
@@ -828,13 +874,15 @@ function ipcEinrichten() {
       const laeufe = [];
       for (const [i, [art, mikrofon]] of arten.entries()) {
         if (!e.sender.isDestroyed()) e.sender.send('mikrotest', { art, n: i + 1, gesamt: arten.length, geraet: mikrofon });
-        laeufe.push({ art, geraet: mikrofon, ...(await sprache.mikrofonTesten(sprachcode, { mikrofon })) });
+        laeufe.push({ art, geraet: mikrofon, ...(await sprache.mikrofonTesten(sprachcode, { mikrofon, whisper: spracherkennung() })) });
       }
+      const w = whisperStatus();
+      const whisperInfo = { an: w.erkennung === 'whisper', bereit: !!(w.modelle[w.stufe] && w.modelle[w.stufe].bereit), modell: w.stufe };
       const info = {
         version: app.getVersion(), sitzung: process.env.SESSIONNAME || '', sprachcode, sperre, erkenner,
-        eingaenge: geraete.eingaenge || [], geraeteFehler: geraete.fehler || '', gewaehlt,
+        eingaenge: geraete.eingaenge || [], geraeteFehler: geraete.fehler || '', gewaehlt, whisper: whisperInfo,
       };
-      return { info, laeufe, diagnose: mikrofonRecht.diagnose({ sperre, erkenner, sprachcode, laeufe }) };
+      return { info, laeufe, diagnose: mikrofonRecht.diagnose({ sperre, erkenner, sprachcode, laeufe, whisper: whisperInfo }) };
     } catch (x) {
       return { fehler: x.message };
     } finally {
@@ -1470,7 +1518,7 @@ async function minecraftStimme(pcm) {
   mcStimmeLaeuft = true;
   try {
     const sc = config.get('sprachcode');
-    const text = await sprache.erkennenAus(pcm, sc);
+    const text = await sprache.erkennenAus(pcm, sc, { whisper: spracherkennung() });
     const name = assistentName();
     const eigene = config.get('weckwort.phrasen') || [];
     const frage = anredeEntfernen(text, eigene.length ? eigene : [...weckPhrasen(name, sc), name]);
@@ -1702,6 +1750,19 @@ async function start() {
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
   sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
+  sprache.on('schreibt', (an) => { if (an && zustand === 'listening') zustandSetzen('thinking'); });
+  sprache.on('whisperFehler', whisperFehlerMelden);
+  whisper = new Whisper({
+    ordner: path.join(DATEN, 'whisper'),
+    programmOrdner: app.isPackaged ? path.join(process.resourcesPath, 'whisper') : path.join(APP, 'vendor', 'whisper'),
+    holen: (url, o) => net.fetch(url, o),
+  });
+  whisper.on('status', () => anAlle('whisper:status', whisperStatus()));
+  // Wer "Hey Julia" nutzt, spricht viel – dann das Modell gleich nach dem Start laden.
+  setTimeout(() => {
+    const stufe = config.get('sprache.whisper_modell');
+    if (config.get('sprache.erkennung') === 'whisper' && config.get('weckwort.an') && !whisper.bereit(stufe)) whisperNachladen(stufe);
+  }, 20000);
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
   if (config.get('sprache.mikrofon') || config.get('sprache.lautsprecher')) audio.dll().catch(() => {});
 
@@ -1770,6 +1831,7 @@ async function start() {
     if (/^(weckwort\.|assistent\.name$|sprachcode$|sprache\.mikrofon$)/.test(k)) weckwortAktualisieren();
     if ((k === 'sprache.mikrofon' || k === 'sprache.lautsprecher') && config.get(k)) audio.dll().catch(() => {});
     if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
+    if (k === 'sprache.erkennung' || k === 'sprache.whisper_modell') anAlle('whisper:status', whisperStatus());
     if (k === 'assistent.name' && chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
     anAlle('config:geaendert', oeffentlicheConfig());
   });

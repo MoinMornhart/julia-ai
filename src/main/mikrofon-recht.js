@@ -45,10 +45,15 @@ async function pruefen(lesen = regLesen) {
 }
 
 // Auswertung des Mikrofon-Tests: Textschlüssel samt Werten, übersetzt wird in
-// den Einstellungen. laeufe: [{ art: 'gewaehlt'|'standard', geraet, pegel, text, fehler }]
-function diagnose({ sperre = null, erkenner = [], sprachcode = 'de', laeufe = [] } = {}) {
+// den Einstellungen. laeufe: [{ art: 'gewaehlt'|'standard', geraet, pegel, text, fehler, whisper }]
+// whisper: { an, bereit } – ohne Whisper versteht die alte Windows-Erkennung vieles falsch.
+function diagnose({ sperre = null, erkenner = [], sprachcode = 'de', laeufe = [], whisper = null } = {}) {
   const d = [];
   if (sperre) d.push({ k: 'mikrotest.d_sperre', p: { schalter: sperre } });
+  if (whisper && !whisper.an) d.push({ k: 'mikrotest.d_windows' });
+  else if (whisper && !whisper.bereit) d.push({ k: 'mikrotest.d_whisper_fehlt' });
+  const langsam = Math.max(0, ...laeufe.map((l) => (l.whisper && l.whisper.sekunden) || 0));
+  if (langsam > 8) d.push({ k: 'mikrotest.d_whisper_langsam', p: { sekunden: langsam } });
   const kultur = sprachcode === 'en' ? 'en' : 'de';
   const erkennerDa = erkenner.some((c) => String(c).toLowerCase().startsWith(kultur));
   if (!erkennerDa) d.push({ k: 'mikrotest.d_kein_erkenner', p: { sprache: kultur === 'en' ? 'English' : 'Deutsch' } });

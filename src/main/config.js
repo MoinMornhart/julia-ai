@@ -84,6 +84,8 @@ const STANDARD = {
     tempo: 0,               // -10 bis 10
     mikrofon: '',           // leer = Windows-Standard, sonst Gerätename
     lautsprecher: '',       // leer = Windows-Standard, sonst Gerätename
+    erkennung: 'whisper',   // 'whisper' (lokal, genau) | 'windows' (alt, ungenau)
+    whisper_modell: 'genau', // 'genau' (190 MB) | 'schnell' (60 MB)
   },
   blase: {
     an: false,
@@ -212,6 +214,12 @@ function pruefen(schluessel, wert) {
       return wert;
     case 'sprache.vorlesen':
       if (!['bei-sprache', 'immer', 'nie'].includes(wert)) throw new Error('Vorlesen ist "bei-sprache", "immer" oder "nie".');
+      return wert;
+    case 'sprache.erkennung':
+      if (!['whisper', 'windows'].includes(wert)) throw new Error('Die Spracherkennung ist "whisper" oder "windows".');
+      return wert;
+    case 'sprache.whisper_modell':
+      if (!['genau', 'schnell'].includes(wert)) throw new Error('Das Whisper-Modell ist "genau" oder "schnell".');
       return wert;
     case 'sprache.tempo': return Math.round(zahl(wert, -10, 10, 'Sprechtempo'));
     case 'sprache.stimme':

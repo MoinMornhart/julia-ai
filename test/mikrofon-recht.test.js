@@ -36,6 +36,16 @@ test('Mikrofon-Test: Auswertung nennt die passende Ursache', () => {
   assert.deepEqual(k(m.diagnose({ erkenner: de, laeufe: [{ art: 'standard', pegel: 0, text: '', fehler: 'KEIN_MIKROFON' }] })), ['mikrotest.d_kein_mikrofon'], 'kein interner Fehlercode für den Nutzer');
 });
 
+test('Mikrofon-Test: Hinweise zu Whisper', () => {
+  const k = (d) => d.map((x) => x.k);
+  const lauf = [{ art: 'standard', pegel: 40, text: 'Aloni spät ist es' }];
+  assert.deepEqual(k(m.diagnose({ erkenner: ['de-DE'], laeufe: lauf, whisper: { an: false, bereit: false } })), ['mikrotest.d_windows', 'mikrotest.d_ok']);
+  assert.deepEqual(k(m.diagnose({ erkenner: ['de-DE'], laeufe: lauf, whisper: { an: true, bereit: false } })), ['mikrotest.d_whisper_fehlt', 'mikrotest.d_ok']);
+  const langsam = [{ art: 'standard', pegel: 40, text: 'Hallo, wie spät ist es?', whisper: { sekunden: 11.2 } }];
+  assert.deepEqual(m.diagnose({ erkenner: ['de-DE'], laeufe: langsam, whisper: { an: true, bereit: true } })[0], { k: 'mikrotest.d_whisper_langsam', p: { sekunden: 11.2 } });
+  assert.deepEqual(k(m.diagnose({ erkenner: ['de-DE'], laeufe: [{ ...langsam[0], whisper: { sekunden: 1.4 } }], whisper: { an: true, bereit: true } })), ['mikrotest.d_ok']);
+});
+
 test('Mikrofon-Sperre: liest alle vier Schalter', async () => {
   const gefragt = [];
   const k = await m.pruefen(async (pfad, name) => {

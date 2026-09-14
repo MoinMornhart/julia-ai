@@ -305,6 +305,26 @@
           <select id="lautsprecher" data-k="sprache.lautsprecher"></select>
         </div>
       </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="erkennung" data-t="whisper.erkennung"></label>
+          <select id="erkennung" data-k="sprache.erkennung">
+            <option value="whisper" data-t="whisper.erkennung_whisper"></option>
+            <option value="windows" data-t="whisper.erkennung_windows"></option>
+          </select>
+        </div>
+        <div class="feld">
+          <label for="whisperModell" data-t="whisper.modell"></label>
+          <select id="whisperModell" data-k="sprache.whisper_modell">
+            <option value="genau" data-t="whisper.modell_genau"></option>
+            <option value="schnell" data-t="whisper.modell_schnell"></option>
+          </select>
+        </div>
+      </div>
+      <div class="whisper-zeile">
+        <small id="whisperStatus" aria-live="polite"></small>
+        <button class="zweit" id="whisperLaden" hidden></button>
+      </div>
       <div class="knopfreihe">
         <button class="zweit" id="stimmeTesten" data-t="einst.testen"></button>
         <button class="zweit" id="mikroTesten" data-t="mikrotest.knopf"></button>

@@ -26,6 +26,8 @@ const ERKENNEN = `
 $ErrorActionPreference = 'Stop'
 [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
 function Aus($s) { [Console]::Out.WriteLine($s); [Console]::Out.Flush() }
+# Für Whisper: genau den gesprochenen Ton als WAV-Datei ablegen.
+function Ton($r) { if ($env:JULIA_WAV -and $r -and $r.Audio) { $fs = [System.IO.File]::Create($env:JULIA_WAV); try { $r.Audio.WriteToWaveStream($fs) } finally { $fs.Close() }; Aus 'W' } }
 try {
   Add-Type -AssemblyName System.Speech
   $info = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers() | Where-Object { $_.Culture.Name -like ($env:JULIA_KULTUR + '*') } | Select-Object -First 1
@@ -51,6 +53,7 @@ try {
   $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.5)
   $null = Register-ObjectEvent -InputObject $rec -EventName AudioLevelUpdated -SourceIdentifier pegel
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
+  $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognitionRejected -SourceIdentifier abgelehnt
   $null = Register-ObjectEvent -InputObject $rec -EventName RecognizeCompleted -SourceIdentifier fertig
   $rec.RecognizeAsync([System.Speech.Recognition.RecognizeMode]::Single)
   $text = ''
@@ -60,9 +63,10 @@ try {
     if (-not $e) { break }
     Remove-Event -EventIdentifier $e.EventIdentifier
     switch ($e.SourceIdentifier) {
-      'pegel'   { Aus ('L ' + $e.SourceEventArgs.AudioLevel) }
-      'erkannt' { $text = $e.SourceEventArgs.Result.Text }
-      'fertig'  { $ende = $true }
+      'pegel'     { Aus ('L ' + $e.SourceEventArgs.AudioLevel) }
+      'erkannt'   { $text = $e.SourceEventArgs.Result.Text; Ton $e.SourceEventArgs.Result }
+      'abgelehnt' { Ton $e.SourceEventArgs.Result }
+      'fertig'    { $ende = $true }
     }
   }
   Aus ('T ' + $text)
@@ -266,12 +270,15 @@ class Sprache extends EventEmitter {
 
   // Nimmt einen Satz auf. Liefert den erkannten Text ('' bei Stille oder Abbruch).
   // Fehlt das gewählte Mikrofon, hört Julia über das Windows-Standardgerät.
-  async zuhoeren(sprachcode = 'de', { mikrofon = '' } = {}) {
+  // whisper(wav): schreibt den aufgenommenen Ton genauer auf; ohne bleibt es
+  // beim Text der Windows-Erkennung.
+  async zuhoeren(sprachcode = 'de', { mikrofon = '', whisper = null } = {}) {
     if (this.hoeren) return '';
     const kultur = sprachcode === 'en' ? 'en' : 'de';
     const dllPfad = mikrofon ? await this.dll().catch(() => '') : '';
+    const wav = whisper ? tempDatei('.wav') : '';
     return new Promise((resolve, reject) => {
-      const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur, JULIA_MIKRO: mikrofon, JULIA_AUDIO_DLL: dllPfad });
+      const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur, JULIA_MIKRO: mikrofon, JULIA_AUDIO_DLL: dllPfad, JULIA_WAV: wav });
       this.hoeren = p;
       this.emit('mikrofon', true);
       let text = '';
@@ -282,10 +289,11 @@ class Sprache extends EventEmitter {
         else if (z.startsWith('E ')) fehler = z.slice(2).trim();
         else if (z.startsWith('H ')) this.emit('hinweis', z.slice(2).trim());
       });
-      p.on('exit', () => {
+      p.on('close', async () => {
         this.hoeren = null;
         this.emit('pegel', 0);
         this.emit('mikrofon', false);
+        if (fehler && wav) fs.rmSync(wav, { force: true });
         if (fehler === 'KEIN_MIKROFON') {
           // Per Remotedesktop gibt es nur ein Mikrofon, wenn der Client es durchreicht.
           const rdp = /^RDP-/i.test(process.env.SESSIONNAME || '');
@@ -301,7 +309,7 @@ class Sprache extends EventEmitter {
             ? 'No English speech recognizer is installed. Add one under Windows Settings > Time & language > Speech.'
             : 'Für Deutsch ist keine Spracherkennung installiert. Unter Windows-Einstellungen > Zeit und Sprache > Spracherkennung nachrüsten.'));
         } else if (fehler) reject(new Error(fehler));
-        else resolve(text);
+        else resolve((await this._whisperText(wav, whisper)).text ?? text);
       });
     });
   }
@@ -313,15 +321,16 @@ class Sprache extends EventEmitter {
   // Mikrofon-Test in den Einstellungen: nimmt wie zuhoeren() einen Satz auf,
   // meldet aber zusätzlich den höchsten Pegel und alle Hinweise – so sieht
   // man, ob überhaupt Ton ankommt.
-  async mikrofonTesten(sprachcode = 'de', { mikrofon = '' } = {}) {
+  async mikrofonTesten(sprachcode = 'de', { mikrofon = '', whisper = null } = {}) {
     if (this.hoeren) throw new Error('beschaeftigt');
     const kultur = sprachcode === 'en' ? 'en' : 'de';
     let dllFehler = '';
     const dllPfad = mikrofon ? await this.dll().catch((e) => { dllFehler = e.message; return ''; }) : '';
+    const wav = whisper ? tempDatei('.wav') : '';
     const beginn = Date.now();
     return new Promise((resolve) => {
-      const r = { pegel: 0, text: '', fehler: dllFehler ? `Audio-Hilfe: ${dllFehler}` : '', hinweise: [], sekunden: 0 };
-      const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur, JULIA_MIKRO: mikrofon, JULIA_AUDIO_DLL: dllPfad });
+      const r = { pegel: 0, text: '', fehler: dllFehler ? `Audio-Hilfe: ${dllFehler}` : '', hinweise: [], sekunden: 0, windows: '', whisper: null };
+      const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur, JULIA_MIKRO: mikrofon, JULIA_AUDIO_DLL: dllPfad, JULIA_WAV: wav });
       this.hoeren = p;
       readline.createInterface({ input: p.stdout }).on('line', (z) => {
         if (z.startsWith('L ')) {
@@ -333,17 +342,42 @@ class Sprache extends EventEmitter {
         else if (z.startsWith('H ')) r.hinweise.push(z.slice(2).trim());
       });
       let fertig = false;
-      const ende = () => {
+      const ende = async () => {
         if (fertig) return;
         fertig = true;
         this.hoeren = null;
         this.emit('pegel', 0);
         r.sekunden = Math.round((Date.now() - beginn) / 100) / 10;
+        r.windows = r.text;
+        if (wav) {
+          const w = await this._whisperText(wav, whisper);
+          if (w.text !== null) r.text = w.text;
+          if (w.text !== null || w.fehler) r.whisper = { sekunden: w.sekunden, fehler: w.fehler || '' };
+        }
         resolve(r);
       };
       p.on('error', (e) => { r.fehler = r.fehler || e.message; ende(); });
       p.on('close', ende);
     });
+  }
+
+  // Whisper schreibt den abgelegten Ton auf. text: null heißt "nicht geklappt,
+  // nimm den Windows-Text". Die WAV-Datei wird in jedem Fall gelöscht.
+  async _whisperText(wav, whisper) {
+    const beginn = Date.now();
+    const dauer = () => Math.round((Date.now() - beginn) / 100) / 10;
+    try {
+      if (!wav || !whisper || !fs.existsSync(wav) || fs.statSync(wav).size <= 44) return { text: null };
+      this.emit('schreibt', true);
+      const t = await whisper(wav);
+      return { text: typeof t === 'string' ? t : null, sekunden: dauer() };
+    } catch (e) {
+      this.emit('whisperFehler', e.message);
+      return { text: null, fehler: e.message, sekunden: dauer() };
+    } finally {
+      this.emit('schreibt', false);
+      if (wav) fs.rmSync(wav, { force: true });
+    }
   }
 
   // Installierte Windows-Spracherkenner, z. B. ['de-DE', 'en-US'].
@@ -415,10 +449,18 @@ class Sprache extends EventEmitter {
 
   // Erkennt, was in einer Aufnahme (48 kHz, mono, 16 Bit) gesagt wurde –
   // etwa im Minecraft-Voice-Chat. Die Aufnahme liegt nur kurz als Temp-Datei.
-  async erkennenAus(pcm48k, sprachcode = 'de') {
+  async erkennenAus(pcm48k, sprachcode = 'de', { whisper = null } = {}) {
     const datei = tempDatei('.wav');
     fs.writeFileSync(datei, wavBauen(herunter48auf16(pcm48k), 16000));
     try {
+      if (whisper) {
+        try {
+          const t = await whisper(datei);
+          if (typeof t === 'string') return t;
+        } catch (e) {
+          this.emit('whisperFehler', e.message);
+        }
+      }
       const zeilen = await ausfuehren(ERKENNEN_DATEI, { JULIA_KULTUR: sprachcode === 'en' ? 'en' : 'de', JULIA_DATEI: datei });
       const t = zeilen.find((z) => z.startsWith('T '));
       const e = zeilen.find((z) => z.startsWith('E '));

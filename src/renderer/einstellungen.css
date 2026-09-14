@@ -134,6 +134,10 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .zweit:hover { border-color: var(--akzent); color: var(--akzent); }
 .knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* Whisper: Status und Download */
+.whisper-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 14px; }
+.whisper-zeile small { color: var(--text-2); flex: 1; min-width: 200px; }
+
 /* Mikrofon-Test */
 .mikrotest { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--akzent-rand); background: var(--akzent-weich); }
 .mikrotest-status { margin: 0; font-weight: 600; }

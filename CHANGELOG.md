@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.4.0 – 2026-09-14
+- Julia versteht dich jetzt richtig: Whisper schreibt auf, was du sagst – genau, auf Deutsch und lokal auf deinem PC; das Modell lädt sie einmal selbst
+
 ## 3.3.0 – 2026-09-14
 - Mikrofon-Test in den Einstellungen: Julia misst, ob Ton ankommt und was sie versteht, nennt die Ursache und gibt dir einen Bericht zum Kopieren
 

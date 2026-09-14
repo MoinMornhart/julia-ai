@@ -68,6 +68,7 @@ function texteAnwenden(daten) {
   if (kontenStand) kontenZeigen(kontenStand);
   if (handyStand) handyZeigen(handyStand);
   if (syncStand) syncZeigen(syncStand);
+  if (whisperStand) whisperZeigen(whisperStand);
   if (cfg) designZeigen();
 }
 
@@ -649,12 +650,48 @@ function kontenVerbinden() {
   };
 }
 
+// Whisper: genaue Spracherkennung auf diesem PC – Status und einmaliger Download.
+let whisperStand = null;
+
+function whisperZeigen(s) {
+  whisperStand = s;
+  const an = s.erkennung === 'whisper';
+  $('whisperModell').disabled = !an;
+  const m = s.modelle[s.stufe] || { bereit: false, mb: 0 };
+  let text;
+  let knopf = '';
+  if (!an) text = tx('whisper.aus');
+  else if (!s.programm) text = tx('whisper.kein_programm');
+  else if (s.laedt) {
+    text = tx('whisper.laedt', { prozent: Math.floor((s.laedt.geladen / s.laedt.gesamt) * 100), mb: Math.round(s.laedt.gesamt / 1e6) });
+    knopf = 'abbrechen';
+  } else if (m.bereit) text = tx('whisper.bereit_status');
+  else {
+    text = s.fehler ? tx('whisper.fehler_laden', { fehler: s.fehler }) : tx('whisper.fehlt', { mb: m.mb });
+    knopf = 'laden';
+  }
+  $('whisperStatus').textContent = text;
+  const b = $('whisperLaden');
+  b.hidden = !knopf;
+  b.dataset.art = knopf;
+  b.textContent = knopf === 'abbrechen' ? tx('whisper.abbrechen') : tx('whisper.laden', { mb: m.mb });
+}
+
+function whisperVerbinden() {
+  julia.on('whisper:status', whisperZeigen);
+  $('whisperLaden').onclick = async () => {
+    whisperZeigen($('whisperLaden').dataset.art === 'abbrechen' ? await julia.whisperAbbrechen() : await julia.whisperLaden());
+  };
+}
+
 // Mikrofon-Test: zeigt, ob Ton ankommt und was verstanden wird – mit einem
 // Bericht zum Kopieren für die Fehlersuche.
 function mikroBericht(r) {
   const i = r.info;
+  const w = i.whisper || {};
   const zeilen = [
     `Julia ${i.version} · Sitzung: ${i.sitzung || '–'} · Sprache: ${i.sprachcode}`,
+    `Erkennung: ${w.an ? `Whisper (${w.modell}, ${w.bereit ? 'bereit' : 'Modell fehlt'})` : 'Windows'}`,
     `Spracherkennung: ${i.erkenner.length ? i.erkenner.join(', ') : 'keine'}`,
     `Windows-Sperre: ${i.sperre || 'keine'}`,
     `Mikrofone: ${i.eingaenge.length ? i.eingaenge.join(' | ') : 'keine gefunden'}${i.geraeteFehler ? ` (${i.geraeteFehler})` : ''}`,
@@ -662,7 +699,8 @@ function mikroBericht(r) {
   ];
   r.laeufe.forEach((l, n) => {
     const name = l.art === 'gewaehlt' ? `„${l.geraet}“` : 'Windows-Standard';
-    const extra = `${l.hinweise.length ? `, Hinweise: ${l.hinweise.join(', ')}` : ''}${l.fehler ? `, Fehler: ${l.fehler}` : ''}`;
+    const wh = l.whisper ? `, Whisper ${l.whisper.sekunden} s${l.whisper.fehler ? ` (Fehler: ${l.whisper.fehler})` : ''}, Windows verstand: „${l.windows}“` : '';
+    const extra = `${wh}${l.hinweise.length ? `, Hinweise: ${l.hinweise.join(', ')}` : ''}${l.fehler ? `, Fehler: ${l.fehler}` : ''}`;
     zeilen.push(`${n + 1}) ${name}: Pegel ${Math.round(l.pegel)} %, verstanden: „${l.text}“, ${l.sekunden} s${extra}`);
   });
   return zeilen.join('\n');
@@ -774,6 +812,8 @@ async function init() {
     $('stimmeTesten').disabled = false;
   };
   mikroTestVerbinden();
+  whisperVerbinden();
+  whisperZeigen(await julia.whisperStatus());
   if (einrichtung) $('name').focus();
 }
 
