@@ -13,6 +13,7 @@ const { Sync } = require('./sync');
 const mikrofonRecht = require('./mikrofon-recht');
 const { Whisper } = require('./whisper');
 const { Piper } = require('./piper');
+const { McpVerwaltung, eintragPruefen: mcpEintragPruefen } = require('./mcp');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
@@ -70,6 +71,7 @@ let updater;
 let sprache;
 let whisper = null;
 let piper = null;
+let mcp = null;
 let konten;
 let erinnerungen;
 let weckwort;
@@ -909,6 +911,29 @@ function ipcEinrichten() {
   ipc.handle('audio:geraete', async () => {
     try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
   });
+  // MCP-Server verwalten. Tokens gehen direkt in den Tresor, nie in die config.json.
+  ipc.handle('mcp:status', () => mcp.status());
+  ipc.handle('mcp:hinzufuegen', (_e, d) => {
+    try {
+      const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });
+      if (d && d.umgebung) mcp.umgebungSetzen(eintrag.id, String(d.umgebung));
+      config.set('mcp.server', [...config.get('mcp.server'), eintrag]);
+      protokoll.eintragen({ werkzeug: 'mcp', stufe: 'INFO', ergebnis: `MCP-Server „${eintrag.name}“ hinzugefügt` });
+      return { ok: true, status: mcp.status() };
+    } catch (e) {
+      return { fehler: e.message, status: mcp.status() };
+    }
+  });
+  ipc.handle('mcp:entfernen', (_e, id) => {
+    config.set('mcp.server', config.get('mcp.server').filter((s) => s.id !== id));
+    mcp.umgebungSetzen(String(id), null);
+    return mcp.status();
+  });
+  ipc.handle('mcp:schalten', (_e, id, an) => {
+    config.set('mcp.server', config.get('mcp.server').map((s) => (s.id === id ? { ...s, an: !!an } : s)));
+    return mcp.status();
+  });
+  ipc.handle('mcp:neu', async (_e, id) => { await mcp.neuStarten(String(id)); return mcp.status(); });
   ipc.handle('piper:status', () => piper.status());
   ipc.handle('piper:laden', () => {
     const s = String(config.get('sprache.stimme') || '');
@@ -1845,8 +1870,13 @@ async function start() {
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
   if (config.get('sprache.mikrofon') || config.get('sprache.lautsprecher')) audio.dll().catch(() => {});
 
+  // MCP-Server: ihre Werkzeuge kommen zu Julias eigenen dazu.
+  mcp = new McpVerwaltung({ config, tresor: konten.tresor, version: app.getVersion() });
+  mcp.on('status', () => anAlle('mcp:status', mcp.status()));
+  if (!VORFUEHRUNG) mcp.anwenden();
   const ctx = {
     config,
+    mcp,
     gedaechtnis,
     protokoll,
     konten,
@@ -1905,6 +1935,7 @@ async function start() {
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k.startsWith('handy.')) handyAnwenden();
     if (k.startsWith('sync.')) syncAnwenden();
+    if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }
     if (k === 'autostart') autostartSetzen();
@@ -1978,6 +2009,7 @@ if (!app.requestSingleInstanceLock()) {
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
     if (handy) handy.stoppen();
+    if (mcp) mcp.stoppenAlle();
     if (sync) sync.stoppen();
     clearInterval(spielTimer);
     if (minecraft) minecraft.trennen();

@@ -70,6 +70,7 @@ function texteAnwenden(daten) {
   if (syncStand) syncZeigen(syncStand);
   if (whisperStand) whisperZeigen(whisperStand);
   if (piperStand) piperZeigen(piperStand);
+  if (mcpStand) mcpZeigen(mcpStand);
   if (cfg) designZeigen();
 }
 
@@ -700,6 +701,95 @@ function kontenVerbinden() {
   };
 }
 
+// MCP-Server: anschließen, ein- und ausschalten, Status und Werkzeuge sehen.
+let mcpStand = null;
+
+function mcpKnopf(text, klick, klasse = 'zweit') {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = klasse;
+  b.textContent = text;
+  b.onclick = klick;
+  return b;
+}
+
+function mcpZeigen(liste) {
+  mcpStand = liste;
+  const bereit = liste.filter((s) => s.zustand === 'bereit');
+  $('mcpStatus').textContent = liste.length
+    ? tx('mcp.status', { n: bereit.length, gesamt: liste.length, w: bereit.reduce((a, s) => a + s.werkzeuge, 0) })
+    : tx('mcp.keiner');
+  const ul = $('mcpListe');
+  ul.replaceChildren();
+  for (const s of liste) {
+    const li = document.createElement('li');
+    const kopf = document.createElement('div');
+    kopf.className = 'mcp-kopf';
+    const name = document.createElement('b');
+    name.textContent = s.name;
+    const zustand = document.createElement('small');
+    zustand.className = `mcp-zustand ${s.zustand}`;
+    zustand.textContent = s.zustand === 'bereit' ? tx('mcp.bereit', { n: s.werkzeuge })
+      : s.zustand === 'fehler' ? tx('mcp.fehler', { fehler: s.fehler || '?' }) : tx(`mcp.z_${s.zustand}`);
+    kopf.append(name, zustand);
+    const was = document.createElement('small');
+    was.className = 'mcp-was';
+    was.textContent = s.art === 'http' ? s.url : s.befehl;
+    const knoepfe = document.createElement('div');
+    knoepfe.className = 'mcp-knoepfe';
+    const schalter = document.createElement('label');
+    schalter.className = 'schalter';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = s.an;
+    cb.onchange = async () => mcpZeigen(await julia.mcpSchalten(s.id, cb.checked));
+    const an = document.createElement('span');
+    an.textContent = tx('mcp.an');
+    schalter.append(cb, an);
+    knoepfe.append(
+      schalter,
+      mcpKnopf(tx('mcp.neu_starten'), async () => mcpZeigen(await julia.mcpNeu(s.id))),
+      mcpKnopf(tx('mcp.entfernen'), async () => {
+        if (!confirm(tx('mcp.entfernen_frage', { server: s.name }))) return;
+        mcpZeigen(await julia.mcpEntfernen(s.id));
+      }),
+    );
+    li.append(kopf, was, knoepfe);
+    if (s.zustand === 'bereit' && s.namen.length) {
+      const w = document.createElement('small');
+      w.className = 'mcp-werkzeuge';
+      w.textContent = s.namen.join(' · ');
+      li.append(w);
+    }
+    ul.append(li);
+  }
+}
+
+function mcpVerbinden() {
+  julia.on('mcp:status', mcpZeigen);
+  $('mcpArt').onchange = () => {
+    const netz = $('mcpArt').value === 'http';
+    $('mcpBefehlFeld').hidden = netz;
+    $('mcpUrlFeld').hidden = !netz;
+    $('mcpUmgebungLabel').textContent = tx(netz ? 'mcp.kopfzeilen' : 'mcp.umgebung');
+    $('mcpUmgebung').placeholder = netz ? 'Authorization=Bearer …' : 'GITHUB_PERSONAL_ACCESS_TOKEN=…';
+  };
+  $('mcpHinzufuegen').onclick = async () => {
+    const m = $('mcpMeldung');
+    m.textContent = '';
+    m.classList.remove('fehler');
+    const r = await julia.mcpHinzufuegen({
+      name: $('mcpName').value, art: $('mcpArt').value, befehl: $('mcpBefehl').value, url: $('mcpUrl').value,
+      umgebung: $('mcpUmgebung').value, vertraut: $('mcpVertraut').checked,
+    });
+    mcpZeigen(r.status);
+    if (r.fehler) { m.textContent = r.fehler; m.classList.add('fehler'); return; }
+    for (const id of ['mcpName', 'mcpBefehl', 'mcpUrl', 'mcpUmgebung']) $(id).value = '';
+    $('mcpVertraut').checked = false;
+    m.textContent = tx('mcp.hinzugefuegt');
+  };
+}
+
 // Whisper: genaue Spracherkennung auf diesem PC – Status und einmaliger Download.
 let whisperStand = null;
 
@@ -865,6 +955,8 @@ async function init() {
   whisperVerbinden();
   whisperZeigen(await julia.whisperStatus());
   piperVerbinden();
+  mcpVerbinden();
+  mcpZeigen(await julia.mcpStatus());
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   if (einrichtung) $('name').focus();

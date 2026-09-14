@@ -26,6 +26,7 @@ const KATEGORIEN = [
   'gedaechtnis',    // dauerhaft merken, nachdem fremde Inhalte im Gespräch waren
   'kalender',       // Termine im eigenen Kalender anlegen
   'shell',          // sonstige Shell-Befehle, die nicht nur lesen
+  'mcp',            // Werkzeuge angeschlossener MCP-Server
 ];
 
 const ROT_MUSTER = [

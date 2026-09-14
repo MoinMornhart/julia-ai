@@ -134,6 +134,20 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .zweit:hover { border-color: var(--akzent); color: var(--akzent); }
 .knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* MCP-Server */
+.mcp-liste { list-style: none; margin: 0 0 10px; padding: 0; display: grid; gap: 8px; }
+.mcp-liste:empty { display: none; }
+.mcp-liste li { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--linie); }
+.mcp-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.mcp-zustand { font-size: 12px; color: var(--text-2); }
+.mcp-zustand.bereit { color: var(--gruen, #3ecf8e); }
+.mcp-zustand.fehler { color: var(--rot); }
+.mcp-was, .mcp-werkzeuge { font-family: var(--mono); font-size: 12px; color: var(--text-2); overflow-wrap: anywhere; }
+.mcp-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.mcp-neu summary { cursor: pointer; font-weight: 600; }
+.mcp-neu[open] { display: grid; gap: 10px; }
+.mcp-neu[open] summary { margin-bottom: 2px; }
+
 /* Whisper und natürliche Stimmen: Status und Download */
 .lade-zeile { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: -4px 0 14px; }
 .lade-zeile small { color: var(--text-2); flex: 1; min-width: 200px; }

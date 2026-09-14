@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'sync:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'sync:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status', 'mcp:status',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -70,6 +70,17 @@ contextBridge.exposeInMainWorld('julia', {
   },
   mcTrennungWeg: () => ipcRenderer.invoke('mc:trennungweg'),
   overlayVorschau: () => ipcRenderer.invoke('overlay:vorschau'),
+  mcpStatus: () => ipcRenderer.invoke('mcp:status'),
+  mcpHinzufuegen: (d) => {
+    const x = d || {};
+    const s = (v, max) => String(v || '').slice(0, max);
+    return ipcRenderer.invoke('mcp:hinzufuegen', {
+      name: s(x.name, 60), art: x.art === 'http' ? 'http' : 'stdio', befehl: s(x.befehl, 1000), url: s(x.url, 500), umgebung: s(x.umgebung, 8000), vertraut: x.vertraut === true,
+    });
+  },
+  mcpEntfernen: (id) => ipcRenderer.invoke('mcp:entfernen', String(id || '')),
+  mcpSchalten: (id, an) => ipcRenderer.invoke('mcp:schalten', String(id || ''), !!an),
+  mcpNeu: (id) => ipcRenderer.invoke('mcp:neu', String(id || '')),
   mcChat: (text) => ipcRenderer.invoke('mc:chat', String(text || '')),
   mcKontoVerbinden: () => ipcRenderer.invoke('mc:konto:verbinden'),
   mcKontoAbmelden: () => ipcRenderer.invoke('mc:konto:abmelden'),

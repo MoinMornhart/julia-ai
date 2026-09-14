@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.8.0 – 2026-09-14
+- MCP-Server anschließen: Julia nutzt jetzt auch Werkzeuge von MCP-Servern – etwa für GitHub, Notion oder Ordner; jeder Aufruf fragt vorher, Tokens liegen verschlüsselt
+
 ## 3.7.1 – 2026-09-14
 - Julia antwortet per Sprache viel schneller: Whisper schreibt etwa fünfmal flotter auf, sie wartet kürzer auf das Satzende und spricht schon den ersten Satz, während der Rest noch entsteht
 

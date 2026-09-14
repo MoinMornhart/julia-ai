@@ -133,6 +133,9 @@ const STANDARD = {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
     port: 8766,
   },
+  mcp: {
+    server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
+  },
 };
 
 function klon(x) {
@@ -355,6 +358,14 @@ function pruefen(schluessel, wert) {
     case 'overlay.ecke':
       if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);
       return wert;
+    case 'mcp.server': {
+      if (!Array.isArray(wert)) throw new Error('MCP-Server sind eine Liste.');
+      if (wert.length > 20) throw new Error('Höchstens 20 MCP-Server.');
+      const { eintragPruefen } = require('./mcp'); // erst hier – kein Kreis beim Laden
+      const liste = wert.map(eintragPruefen);
+      if (new Set(liste.map((s) => s.id)).size !== liste.length) throw new Error('Doppelte MCP-Server.');
+      return liste;
+    }
     case 'overlay.spiele': {
       const roh = Array.isArray(wert) ? wert : String(wert ?? '').split(/[\n,;]/);
       const liste = [...new Set(roh.map((p) => String(p).trim().replace(/\.exe$/i, '')).filter(Boolean))];

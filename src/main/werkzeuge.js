@@ -763,11 +763,12 @@ const WEBSEITE = {
   },
 };
 
-// Grundwerkzeuge plus die Werkzeuge verbundener Konten.
+// Grundwerkzeuge plus die Werkzeuge verbundener Konten und MCP-Server.
 function alle(ctx) {
   const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
   const web = ctx && ctx.eigenesWeb && ctx.eigenesWeb() ? [WEBSEITE] : [];
-  return [...WERKZEUGE, ...web, ...extra];
+  const mcp = ctx && ctx.mcp ? ctx.mcp.werkzeuge() : [];
+  return [...WERKZEUGE, ...web, ...extra, ...mcp];
 }
 
 function definitionen(ctx) {

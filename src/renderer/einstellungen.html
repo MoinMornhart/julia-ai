@@ -261,6 +261,52 @@
           </div>
         </div>
       </div>
+
+      <div class="konto" id="kontoMcp">
+        <div class="konto-kopf">
+          <span class="konto-logo" aria-hidden="true">⧉</span>
+          <div class="konto-name">
+            <strong data-t="mcp.titel"></strong>
+            <small id="mcpStatus"></small>
+          </div>
+        </div>
+        <div class="konto-einrichten">
+          <p class="hinweis" data-t="mcp.text"></p>
+          <ul class="mcp-liste" id="mcpListe"></ul>
+          <details class="mcp-neu">
+            <summary data-t="mcp.hinzufuegen"></summary>
+            <div class="zwei">
+              <div class="feld">
+                <label for="mcpName" data-t="mcp.name"></label>
+                <input id="mcpName" maxlength="40" spellcheck="false" autocomplete="off" placeholder="GitHub">
+              </div>
+              <div class="feld">
+                <label for="mcpArt" data-t="mcp.art"></label>
+                <select id="mcpArt">
+                  <option value="stdio" data-t="mcp.art_stdio"></option>
+                  <option value="http" data-t="mcp.art_http"></option>
+                </select>
+              </div>
+            </div>
+            <div class="feld" id="mcpBefehlFeld">
+              <label for="mcpBefehl" data-t="mcp.befehl"></label>
+              <input id="mcpBefehl" maxlength="1000" spellcheck="false" autocomplete="off" placeholder="npx -y @modelcontextprotocol/server-filesystem C:\Users\du\Dokumente">
+            </div>
+            <div class="feld" id="mcpUrlFeld" hidden>
+              <label for="mcpUrl" data-t="mcp.url"></label>
+              <input id="mcpUrl" maxlength="500" spellcheck="false" autocomplete="off" placeholder="https://mcp.example.com/mcp">
+            </div>
+            <div class="feld">
+              <label for="mcpUmgebung" id="mcpUmgebungLabel" data-t="mcp.umgebung"></label>
+              <textarea id="mcpUmgebung" rows="2" spellcheck="false" autocomplete="off" placeholder="GITHUB_PERSONAL_ACCESS_TOKEN=…"></textarea>
+              <small data-t="mcp.umgebung_hinweis"></small>
+            </div>
+            <label class="schalter"><input type="checkbox" id="mcpVertraut"><span data-t="mcp.vertraut"></span></label>
+            <button class="primaer klein" id="mcpHinzufuegen" data-t="mcp.hinzufuegen_knopf"></button>
+            <small class="konto-meldung" id="mcpMeldung"></small>
+          </details>
+        </div>
+      </div>
     </section>
 
     <section class="gruppe">
