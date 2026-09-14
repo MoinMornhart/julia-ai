@@ -1217,6 +1217,7 @@ function ipcEinrichten() {
         konto: mcKonto(),
         stimme: config.get('minecraft.stimme') !== false,
         gruppe: mcGruppe(),
+        jeder: config.get('minecraft.jeder') === true,
       });
       anAlle('mc:geaendert');
       return { ok: true };
@@ -1948,6 +1949,8 @@ async function start() {
   minecraft.on('stimme', (d) => minecraftStimme(d.pcm));
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
   minecraft.on('geaendert', () => anAlle('mc:geaendert'));
+  // Im Spiel umgestellt („hör auf alle“): die Wahl merken.
+  minecraft.on('einstellung', (e) => { if (e && typeof e.jeder === 'boolean') config.set('minecraft.jeder', e.jeder); });
   piper = new Piper({ ordner: path.join(DATEN, 'piper'), holen: (url, o) => net.fetch(url, o) });
   piper.on('status', () => anAlle('piper:status', piper.status()));
   sprache = new Sprache({ dll: audio.dll, piper });
@@ -2038,6 +2041,7 @@ async function start() {
     if (k.startsWith('handy.')) handyAnwenden();
     if (k.startsWith('sync.')) syncAnwenden();
     if (k.startsWith('relay.')) relayAnwenden();
+    if (k === 'minecraft.jeder' && minecraft) minecraft.aufAlleHoeren(config.get('minecraft.jeder') === true);
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }

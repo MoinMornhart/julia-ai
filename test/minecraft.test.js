@@ -492,3 +492,49 @@ test('Minecraft: einsteigen sucht ein Fahrzeug, aussteigen nur wenn sie sitzt', 
   raus.bot = { entity: { position: fpos(0, 64, 0) }, vehicle: null, pathfinder: { setGoal() {} }, clearControlStates: () => {} };
   assert.match(raus.aufgabe({ aufgabe: 'aussteigen' }), /keinem Fahrzeug/);
 });
+
+test('Minecraft: Umschalten, auf wen sie hört', () => {
+  assert.equal(mc.hoerModus('!hör auf alle', ['Julia']), 'alle');
+  assert.equal(mc.hoerModus('Julia, hör nur auf mich', ['Julia']), 'nur');
+  assert.equal(mc.hoerModus('Julia hör auf jeden', ['Julia']), 'alle');
+  assert.equal(mc.hoerModus('!folge', ['Julia']), null);
+  assert.equal(mc.hoerModus('einfach nur text', ['Julia']), null);
+});
+
+test('Minecraft: reagiert nur auf den Besitzer – außer „auf alle“ ist an', () => {
+  const baueM = () => {
+    const m = new mc.Minecraft();
+    m.pf = { goals: {} };
+    const befehle = [];
+    m.bot = {
+      username: 'Julia', entity: { position: { x: 0, y: 64, z: 0 } },
+      pathfinder: { setGoal() {} }, clearControlStates() {}, chat() {},
+    };
+    m.besitzer = 'Moin';
+    m.assistent = 'Julia';
+    m.aufgabe = (b) => { befehle.push(b); return 'ok'; };
+    return { m, befehle };
+  };
+
+  // Fremder wird ignoriert, solange nur auf den Besitzer gehört wird.
+  const a = baueM();
+  a.m._chat('Fremder', 'Julia, folge mir');
+  assert.equal(a.befehle.length, 0);
+
+  // Mit „auf alle“ folgt sie auch Fremden – der Spieler wird eingesetzt.
+  const b = baueM();
+  b.m.jeder = true;
+  b.m._chat('Fremder', 'Julia, komm her');
+  assert.equal(b.befehle.length, 1);
+  assert.equal(b.befehle[0].spieler, 'Fremder');
+
+  // Nur der Besitzer darf umstellen; die Wahl wird als Ereignis gemeldet.
+  const c = baueM();
+  const ereignisse = [];
+  c.m.on('einstellung', (e) => ereignisse.push(e));
+  c.m._chat('Fremder', 'Julia, hör auf alle');
+  assert.equal(c.m.jeder, false, 'ein Fremder darf das nicht');
+  c.m._chat('Moin', 'Julia, hör auf alle');
+  assert.equal(c.m.jeder, true);
+  assert.deepEqual(ereignisse.at(-1), { jeder: true });
+});

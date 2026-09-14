@@ -276,6 +276,7 @@
     if (!c) return;
     if (c.weckwort) $('mcStimme').checked = !!c.weckwort.an;
     if (c.minecraft) $('mcVoice').checked = c.minecraft.stimme !== false;
+    if (c.minecraft) $('mcJeder').checked = c.minecraft.jeder === true;
   }
   async function stimmeZeigen() {
     try { schalterSetzen(await julia.config()); } catch { /* Fenster wird geschlossen */ }
@@ -287,6 +288,11 @@
   // Simple Voice Chat: gilt ab dem nächsten Beitreten.
   $('mcVoice').onchange = async () => {
     const r = await julia.setzen('minecraft.stimme', $('mcVoice').checked);
+    if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
+  };
+  // Auf alle Spieler reagieren – gilt sofort, auch im laufenden Spiel.
+  $('mcJeder').onchange = async () => {
+    const r = await julia.setzen('minecraft.jeder', $('mcJeder').checked);
     if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
   };
   julia.on('config:geaendert', schalterSetzen);

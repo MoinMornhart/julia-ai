@@ -129,6 +129,7 @@ const STANDARD = {
     konto: '', // Name des verbundenen Minecraft-Kontos (nur Anzeige; die Anmeldung liegt verschlüsselt extra)
     stimme: true, // Simple Voice Chat nutzen, wenn der Server ihn hat
     gruppe: '', // dieser Voice-Chat-Gruppe von selbst beitreten (Passwort verschlüsselt im Tresor)
+    jeder: false, // auf alle Spieler im Chat reagieren statt nur auf den eingetragenen
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -213,6 +214,7 @@ function pruefen(schluessel, wert) {
     case 'sync.an':
     case 'relay.an':
     case 'minecraft.stimme':
+    case 'minecraft.jeder':
     case 'overlay.automatisch':
     case 'overlay.kompakt':
     case 'overlay.immer':

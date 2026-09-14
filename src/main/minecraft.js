@@ -438,6 +438,23 @@ function frageLesen(text, namen = []) {
   return rest.length >= 2 ? rest : null;
 }
 
+// „Hör auf alle“ / „hör nur auf mich“ – gibt 'alle', 'nur' oder null zurück.
+function hoerModus(text, namen = []) {
+  const roh = String(text || '').trim();
+  const klein = roh.toLowerCase();
+  let ab = -1;
+  if (klein.startsWith('!')) ab = 1;
+  else {
+    const n = namen.filter(Boolean).map((x) => String(x).toLowerCase()).find((x) => klein.startsWith(x));
+    if (n) ab = n.length;
+  }
+  if (ab < 0) return null;
+  const s = roh.slice(ab).replace(/^[\s,:!]+/, '').replace(/[.!?]+$/, '').trim().toLowerCase();
+  if (/^(h(ö|oe)r(e)? (auf )?(alle|jeden)|(auf )?alle h(ö|oe)ren|reagier(e)? auf alle|listen to (everyone|all))$/.test(s)) return 'alle';
+  if (/^(h(ö|oe)r(e)? nur (auf )?mich|nur (auf )?mich( h(ö|oe)ren)?|listen (only )?to me( only)?)$/.test(s)) return 'nur';
+  return null;
+}
+
 // Antworten für den Spielchat: ohne Formatierung, in Stücken bis 240
 // Zeichen, höchstens drei Nachrichten – der Rest wird mit … gekürzt.
 function chatTeile(text, max = 3) {
@@ -530,6 +547,7 @@ class Minecraft extends EventEmitter {
     this.pause = 5;
     this.jagt = null;
     this.isst = false;
+    this.jeder = false; // auf alle Spieler hören statt nur auf den Besitzer
   }
 
   get verbunden() {
@@ -537,11 +555,12 @@ class Minecraft extends EventEmitter {
   }
 
   // gruppe: { name, passwort } – dieser Voice-Chat-Gruppe von selbst beitreten.
-  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null } = {}) {
+  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null, jeder = false } = {}) {
     clearTimeout(this.wiederTimer);
     this._botWeg();
-    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe };
+    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe, jeder };
     this.autoGruppe = gruppe;
+    this.jeder = !!jeder;
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
     const ziel = await zielFinden(adresse, p, { aufloesen: this.aufloesen, srv: this.srv, oeffentlich });
@@ -829,6 +848,7 @@ class Minecraft extends EventEmitter {
       hunger: Math.round(bot.food),
       essbar: this._essbar(),
       faehrt: bot.vehicle ? (bot.vehicle.name || 'Fahrzeug') : null,
+      jeder: this.jeder,
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       spielmodus: bot.game && bot.game.gameMode,
       aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block || a.item, geschafft: a.geschafft, ziel: a.anzahl, ort: a.ort } : null,
@@ -862,13 +882,27 @@ class Minecraft extends EventEmitter {
     this.bot.clearControlStates();
   }
 
+  // Auf alle Spieler hören oder nur auf den Besitzer (auch zur Laufzeit).
+  aufAlleHoeren(an) {
+    this.jeder = !!an;
+  }
+
   _chat(von, text) {
     if (!this.bot || von === this.bot.username) return;
     this.chatVerlauf.push({ von, text: String(text).slice(0, 200) });
     if (this.chatVerlauf.length > 30) this.chatVerlauf.shift();
-    // Ist ein Spielername eingetragen, hört die Figur nur auf diesen.
-    if (this.besitzer && String(von).toLowerCase() !== this.besitzer.toLowerCase()) return;
     const namen = [this.bot.username, this.assistent];
+    const istBesitzer = !this.besitzer || String(von).toLowerCase() === this.besitzer.toLowerCase();
+    // Umstellen, auf wen Julia hört, darf nur der Besitzer.
+    const modus = hoerModus(text, namen);
+    if (modus && istBesitzer) {
+      this.jeder = modus === 'alle';
+      this.emit('einstellung', { jeder: this.jeder });
+      try { this.chat(this.jeder ? 'Ich höre jetzt auf alle Spieler.' : 'Ich höre nur noch auf dich.'); } catch { /* getrennt */ }
+      return;
+    }
+    // Sonst: nur der Besitzer – außer du hast „auf alle hören“ eingeschaltet.
+    if (!this.jeder && !istBesitzer) return;
     const b = befehlLesen(text, namen);
     if (b) {
       try {
@@ -878,10 +912,10 @@ class Minecraft extends EventEmitter {
       }
       return;
     }
-    // Sonst eine Frage an Julia – nur von deinem eingetragenen Namen und
-    // höchstens alle vier Sekunden (Kosten, Spam).
+    // Sonst eine Frage an Julia – höchstens alle vier Sekunden (Kosten, Spam).
+    // Ohne eingetragenen Besitzer nur, wenn „auf alle hören“ an ist.
     const frage = frageLesen(text, namen);
-    if (!frage || !this.besitzer) return;
+    if (!frage || (!this.besitzer && !this.jeder)) return;
     if (Date.now() - (this.letzteFrage || 0) < 4000) return;
     this.letzteFrage = Date.now();
     this.emit('frage', { von, text: frage });
@@ -1690,6 +1724,7 @@ const WERKZEUGE = [
         konto: ctx.minecraftKonto ? ctx.minecraftKonto() : null,
         stimme: z.c.stimme !== false,
         gruppe: ctx.minecraftGruppe ? ctx.minecraftGruppe() : null,
+        jeder: z.c.jeder === true,
       });
       return `Verbunden als ${s.name} (Minecraft ${s.version}). Im Spiel nennt „!hilfe“ alle Befehle.\n${fremd('dem Minecraft-Server', JSON.stringify(s))}`;
     },
@@ -1778,6 +1813,6 @@ module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, chatTeile,
+  istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile,
   itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };
