@@ -5,12 +5,55 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
   <title>Julia – Blase</title>
   <style>
-    html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; }
-    canvas { display: block; width: 100vw; height: 100vh; }
+    html, body { margin: 0; height: 100%; background: transparent; overflow: hidden; user-select: none; }
+    body { font-family: "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif; }
+    canvas { position: absolute; top: 0; left: 50%; transform: translateX(-50%); display: block; }
+    body.greifbar canvas { cursor: grab; }
+    body.zieht canvas { cursor: grabbing; }
+
+    /* Untertitel: was du sagst, darunter die Antwort. */
+    #untertitel {
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      bottom: 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+    #untertitel.weg { opacity: 0; }
+    .zeile {
+      max-width: 100%;
+      padding: 5px 12px;
+      border-radius: 12px;
+      background: rgba(10, 10, 16, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f2f2f7;
+      font-size: 13px;
+      line-height: 1.38;
+      text-align: center;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      overflow-wrap: anywhere;
+    }
+    .zeile:empty { display: none; }
+    .zeile.du { -webkit-line-clamp: 2; color: #d8d8e6; font-size: 12.5px; }
+    .zeile.du::before { content: "🎙 "; }
+    .zeile.antwort { -webkit-line-clamp: 3; border-color: rgba(255, 255, 255, 0.2); }
+    .zeile.hinweis { color: #ffc15e; border-color: rgba(255, 181, 71, 0.45); }
   </style>
 </head>
 <body>
   <canvas id="leinwand"></canvas>
+  <div id="untertitel" class="weg">
+    <div class="zeile du" id="du"></div>
+    <div class="zeile antwort" id="antwort"></div>
+  </div>
   <script src="blase.js"></script>
 </body>
 </html>

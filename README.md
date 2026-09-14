@@ -166,7 +166,9 @@ Monitor, Ecke, Deckkraft und Hotkey stellst du in den Einstellungen ein.
 ## Die Blase
 
 Auf Wunsch liegt eine animierte Kugel auf deinem Nebenmonitor und zeigt, was Julia gerade tut.
-Sie ist **standardmäßig aus** und lässt Klicks durch sich hindurch.
+Sie ist **standardmäßig aus** und lässt Klicks durch sich hindurch – nur die Kugel selbst greifst
+du mit der Maus und ziehst sie überallhin; Doppelklick öffnet den Chat. Darunter zeigt sie auf
+Wunsch Untertitel: was du sagst und was Julia antwortet.
 
 <p align="center">
   <img src="docs/bilder/blase-idle.png" width="150" alt="wartet">
@@ -175,6 +177,9 @@ Sie ist **standardmäßig aus** und lässt Klicks durch sich hindurch.
   <img src="docs/bilder/blase-speaking.png" width="150" alt="spricht">
 </p>
 <p align="center"><sub>wartet · hört zu · denkt · spricht</sub></p>
+<p align="center">
+  <img src="docs/bilder/blase-untertitel.png" width="300" alt="Blase mit Untertiteln: Frage und Antwort">
+</p>
 
 Monitor, Ecke, Größe, Deckkraft, Tempo, Empfindlichkeit und beliebig viele Farben je Zustand
 lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz: „Mach sie grüner."

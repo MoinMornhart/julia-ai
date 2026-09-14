@@ -310,7 +310,35 @@ function einstellungenOeffnen(einrichtung = false) {
   return einstFenster;
 }
 
-// Die Blase: nur sichtbar, wenn blase.an gesetzt ist. Klicks gehen durch sie hindurch.
+// Die Blase: nur sichtbar, wenn blase.an gesetzt ist. Klicks gehen durch sie
+// hindurch – nur auf der Kugel selbst greift die Maus: ziehen verschiebt sie,
+// Doppelklick öffnet den Chat. Darunter auf Wunsch Untertitel.
+const UNTERTITEL_HOEHE = 120;
+
+function blaseGrenzen() {
+  const b = config.get('blase');
+  const ds = bildschirm.monitore();
+  const d = ds[b.monitor] || ds[ds.length - 1];
+  const wa = d.workArea;
+  const s = Math.round(b.groesse / d.scaleFactor);
+  const breite = b.untertitel ? Math.max(s, 340) : s;
+  const hoehe = s + (b.untertitel ? UNTERTITEL_HOEHE : 0);
+  const rand = 24;
+  let x = b.ecke.endsWith('rechts') ? wa.x + wa.width - breite - rand : wa.x + rand;
+  let y = b.ecke.startsWith('unten') ? wa.y + wa.height - hoehe - rand : wa.y + rand;
+  // Selbst verschoben? Dann dorthin – solange die Stelle noch auf einem Bildschirm liegt.
+  const p = b.position;
+  if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) {
+    const mitte = { x: p.x + breite / 2, y: p.y + s / 2 };
+    const sichtbar = screen.getAllDisplays().some((m) => {
+      const w = m.workArea;
+      return mitte.x >= w.x && mitte.x <= w.x + w.width && mitte.y >= w.y && mitte.y <= w.y + w.height;
+    });
+    if (sichtbar) { x = p.x; y = p.y; }
+  }
+  return { x: Math.round(x), y: Math.round(y), width: breite, height: hoehe };
+}
+
 function blaseAktualisieren() {
   const b = config.get('blase');
   if (!b.an) {
@@ -318,14 +346,7 @@ function blaseAktualisieren() {
     orbFenster = null;
     return;
   }
-  const ds = bildschirm.monitore();
-  const d = ds[b.monitor] || ds[ds.length - 1];
-  const wa = d.workArea;
-  const s = Math.round(b.groesse / d.scaleFactor);
-  const rand = 24;
-  const x = b.ecke.endsWith('rechts') ? wa.x + wa.width - s - rand : wa.x + rand;
-  const y = b.ecke.startsWith('unten') ? wa.y + wa.height - s - rand : wa.y + rand;
-  const grenzen = { x: Math.round(x), y: Math.round(y), width: s, height: s };
+  const grenzen = blaseGrenzen();
 
   if (!orbFenster || orbFenster.isDestroyed()) {
     orbFenster = new BrowserWindow({
@@ -333,7 +354,7 @@ function blaseAktualisieren() {
       transparent: true,
       frame: false,
       resizable: false,
-      movable: false,
+      movable: true,
       minimizable: false,
       maximizable: false,
       alwaysOnTop: true,
@@ -344,7 +365,9 @@ function blaseAktualisieren() {
       backgroundColor: '#00000000',
       webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: false },
     });
-    orbFenster.setIgnoreMouseEvents(true);
+    // Durchklickbar, aber Mausbewegungen kommen an – so merkt die Seite, wann
+    // der Zeiger über der Kugel ist, und schaltet nur dort die Maus ein.
+    orbFenster.setIgnoreMouseEvents(true, { forward: true });
     orbFenster.setAlwaysOnTop(true, 'screen-saver');
     orbFenster.loadFile(path.join(RENDERER, 'blase.html'));
     orbFenster.once('ready-to-show', () => {
@@ -673,6 +696,21 @@ function ipcEinrichten() {
     nachrichtSenden(text, false, { pfade: liste }).catch((e) => anAlle('agent:fehler', { art: 'text', text: e.message }));
     return true;
   });
+  // Blase: Maus nur über der Kugel, verschieben, ablegen, Doppelklick.
+  const blaseDa = () => orbFenster && !orbFenster.isDestroyed();
+  ipc.on('blase:maus', (_e, ueber) => { if (blaseDa()) orbFenster.setIgnoreMouseEvents(!ueber, { forward: true }); });
+  ipc.on('blase:ziehen', (_e, dx, dy) => {
+    if (!blaseDa()) return;
+    const [x, y] = orbFenster.getPosition();
+    const d = (v) => Math.max(-3000, Math.min(3000, Math.round(Number(v) || 0)));
+    orbFenster.setPosition(x + d(dx), y + d(dy));
+  });
+  ipc.on('blase:abgelegt', () => {
+    if (!blaseDa()) return;
+    const [x, y] = orbFenster.getPosition();
+    config.set('blase.position', { x, y });
+  });
+  ipc.on('blase:doppelklick', () => chatZeigen('chat'));
   ipc.handle('zwischenablage:schreiben', (_e, text) => {
     clipboard.writeText(String(text || '').slice(0, 200000));
     return true;
@@ -1114,6 +1152,8 @@ async function start() {
   session.defaultSession.setPermissionCheckHandler(() => false);
 
   config.on('aenderung', (k) => {
+    // Neue Ecke oder neuer Monitor gewählt: die selbst gezogene Position gilt nicht mehr.
+    if ((k === 'blase.ecke' || k === 'blase.monitor') && config.get('blase.position')) config.set('blase.position', null);
     if (k.startsWith('blase')) blaseAktualisieren();
     if (k.startsWith('design')) designAnwenden();
     if (k.startsWith('overlay') && overlayFenster && !overlayFenster.isDestroyed()) {

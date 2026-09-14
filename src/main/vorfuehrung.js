@@ -152,6 +152,7 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
 
   if (sc === 'de') {
     config.set('blase.monitor', 0);
+    config.set('blase.untertitel', false);
     config.set('blase.an', true);
     await warte(600);
     const o = orb();
@@ -161,6 +162,14 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
       await warte(1600);
       await aufnehmenFenster(o, path.join(ziel, `blase-${z}.png`));
     }
+    // Einmal mit Untertiteln: was gesagt wurde und die Antwort darunter.
+    config.set('blase.untertitel', true);
+    await warte(900);
+    o.webContents.send('agent:nutzer', { text: 'Wie voll ist die Platte?', perSprache: true });
+    o.webContents.send('agent:text', 'C: ist zu 82 % voll, 171 GB frei. Der größte Brocken ist Downloads mit 64 GB.');
+    zustandSetzen('speaking');
+    await warte(1600);
+    await aufnehmenFenster(o, path.join(ziel, 'blase-untertitel.png'));
     config.set('blase.an', false);
   }
 }

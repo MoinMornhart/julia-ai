@@ -45,10 +45,113 @@ function zielFarben() {
   return KLECKSE.map((_, i) => hex(liste[i % liste.length]));
 }
 
+const UNTERTITEL = 120;
+
+// Die Kugel sitzt oben im Fenster; darunter ist Platz für die Untertitel.
+function kugelSeite() {
+  const mitText = blase && blase.untertitel !== false;
+  return Math.max(40, Math.min(window.innerWidth, window.innerHeight - (mitText ? UNTERTITEL : 0)));
+}
+
 function groesseAnpassen() {
   const dpr = window.devicePixelRatio || 1;
-  leinwand.width = Math.round(window.innerWidth * dpr);
-  leinwand.height = Math.round(window.innerHeight * dpr);
+  const s = kugelSeite();
+  leinwand.style.width = `${s}px`;
+  leinwand.style.height = `${s}px`;
+  leinwand.width = Math.round(s * dpr);
+  leinwand.height = Math.round(s * dpr);
+  document.getElementById('untertitel').hidden = !(blase && blase.untertitel !== false);
+}
+
+// --- Maus: nur die Kugel selbst ist greifbar ---
+
+let ueber = false;
+let ziehen = null;
+
+function aufKugel(e) {
+  const s = kugelSeite();
+  const cx = window.innerWidth / 2;
+  const cy = s / 2;
+  return Math.hypot(e.clientX - cx, e.clientY - cy) <= s * 0.42;
+}
+
+window.addEventListener('mousemove', (e) => {
+  if (ziehen) {
+    const dx = e.screenX - ziehen.x;
+    const dy = e.screenY - ziehen.y;
+    if (dx || dy) {
+      julia.blaseZiehen(dx, dy);
+      ziehen.x = e.screenX;
+      ziehen.y = e.screenY;
+    }
+    return;
+  }
+  const drin = aufKugel(e);
+  if (drin !== ueber) {
+    ueber = drin;
+    julia.blaseMaus(drin);
+    document.body.classList.toggle('greifbar', drin);
+  }
+});
+window.addEventListener('mousedown', (e) => {
+  if (!ueber || e.button !== 0) return;
+  ziehen = { x: e.screenX, y: e.screenY };
+  document.body.classList.add('zieht');
+});
+window.addEventListener('mouseup', () => {
+  if (!ziehen) return;
+  ziehen = null;
+  document.body.classList.remove('zieht');
+  julia.blaseAbgelegt();
+});
+window.addEventListener('dblclick', () => { if (ueber) julia.blaseDoppelklick(); });
+document.addEventListener('mouseleave', () => {
+  if (ziehen || !ueber) return;
+  ueber = false;
+  julia.blaseMaus(false);
+  document.body.classList.remove('greifbar');
+});
+
+// --- Untertitel: was du sagst und was geantwortet wird ---
+
+let T = {};
+let antwortRoh = '';
+let wegTimer = null;
+const schlicht = (s) => String(s || '').replace(/```[\s\S]*?```/g, ' ').replace(/[*`#>_~]+/g, '').replace(/\s+/g, ' ').trim();
+
+function zeigen() {
+  clearTimeout(wegTimer);
+  document.getElementById('untertitel').classList.remove('weg');
+}
+
+function spaeterAusblenden(ms = 9000) {
+  clearTimeout(wegTimer);
+  wegTimer = setTimeout(() => document.getElementById('untertitel').classList.add('weg'), ms);
+}
+
+function du(text) {
+  document.getElementById('du').textContent = text;
+  zeigen();
+}
+
+function antwort(text, hinweis = false) {
+  const el = document.getElementById('antwort');
+  const s = schlicht(text);
+  el.textContent = s.length > 240 ? `…${s.slice(-240)}` : s;
+  el.classList.toggle('hinweis', hinweis);
+  zeigen();
+}
+
+function untertitelVerdrahten() {
+  julia.texte().then((d) => { T = d.texte; });
+  julia.on('texte:geaendert', (d) => { T = d.texte; });
+  julia.on('sprache:hoert', (an) => {
+    if (an) { du(T['blase.hoert'] || '…'); antwort(''); antwortRoh = ''; } else spaeterAusblenden(6000);
+  });
+  julia.on('agent:nutzer', ({ text }) => { du(text); antwortRoh = ''; antwort(''); });
+  julia.on('agent:text', (d) => { antwortRoh += String(d || ''); antwort(antwortRoh); });
+  julia.on('agent:freigabe', () => antwort(T['blase.freigabe'] || '⚠', true));
+  julia.on('agent:fertig', () => spaeterAusblenden());
 }
 
 function kreis(x, y, r) {
@@ -134,13 +237,14 @@ function zeichnen(jetzt) {
 
 function uebernehmen(c) {
   blase = c.blase;
-  document.body.style.opacity = String(blase.deckkraft);
+  leinwand.style.opacity = String(blase.deckkraft);
+  groesseAnpassen();
 }
 
 async function init() {
-  groesseAnpassen();
   window.addEventListener('resize', groesseAnpassen);
   uebernehmen(await julia.config());
+  untertitelVerdrahten();
   farben = zielFarben();
   julia.on('config:geaendert', uebernehmen);
   julia.on('zustand', (z) => { if (z in TEMPO) zustand = z; });

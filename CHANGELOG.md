@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.7.0 – 2026-09-14
+- Die Blase zeigt jetzt Untertitel – was du sagst und was geantwortet wird – und du ziehst sie mit der Maus überallhin
+
 ## 1.6.0 – 2026-09-14
 - Dateien einfach in den Chat ziehen, und markierten Text aus jedem Programm mit Strg+Alt+T übersetzen, zusammenfassen oder umformulieren
 

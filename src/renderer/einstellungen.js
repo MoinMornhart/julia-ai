@@ -511,6 +511,10 @@ async function init() {
     const r = await setzen('arbeitsverzeichnisse', [...cfg.arbeitsverzeichnisse, p]);
     if (!r.fehler) { cfg.arbeitsverzeichnisse = r.wert; ordnerZeigen(); }
   };
+  $('blasePosition').onclick = async (e) => {
+    e.preventDefault();
+    await setzen('blase.position', null);
+  };
   $('standardfarben').onclick = async () => {
     const r = await setzen('blase.farben', STANDARDFARBEN);
     if (!r.fehler) { cfg.blase.farben = r.wert; farbenZeigen(); }

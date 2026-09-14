@@ -43,6 +43,10 @@ contextBridge.exposeInMainWorld('julia', {
   // Pfad einer hineingezogenen Datei (Electron gibt ihn der Seite nicht direkt).
   dateiPfad: (datei) => { try { return webUtils.getPathForFile(datei) || ''; } catch { return ''; } },
   kopieren: (text) => ipcRenderer.invoke('zwischenablage:schreiben', String(text || '')),
+  blaseMaus: (ueber) => ipcRenderer.send('blase:maus', !!ueber),
+  blaseZiehen: (dx, dy) => ipcRenderer.send('blase:ziehen', Number(dx) || 0, Number(dy) || 0),
+  blaseAbgelegt: () => ipcRenderer.send('blase:abgelegt'),
+  blaseDoppelklick: () => ipcRenderer.send('blase:doppelklick'),
   auswahlAktion: (aktion, frage) => ipcRenderer.invoke('auswahl:aktion', String(aktion), String(frage || '')),
   abbrechen: () => ipcRenderer.send('chat:abbrechen'),
   neu: () => ipcRenderer.send('chat:neu'),

@@ -85,6 +85,8 @@ const STANDARD = {
     },
     tempo: 1.0,
     empfindlichkeit: 1.0,
+    untertitel: true, // unter der Blase: was du sagst und die Antwort
+    position: null, // { x, y } nach dem Verschieben mit der Maus, sonst Ecke
   },
   update: {
     pruefen: true,
@@ -156,6 +158,7 @@ function pruefen(schluessel, wert) {
     case 'erinnerung.vorlesen':
     case 'handy.an':
     case 'verlauf.speichern':
+    case 'blase.untertitel':
     case 'weckwort.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
@@ -228,6 +231,10 @@ function pruefen(schluessel, wert) {
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'handy.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'blase.position':
+      if (wert == null) return null;
+      if (!istObjekt(wert)) throw new Error('Position ist { x, y } oder null.');
+      return { x: Math.round(zahl(wert.x, -100000, 100000, 'x')), y: Math.round(zahl(wert.y, -100000, 100000, 'y')) };
     case 'overlay.deckkraft': return zahl(wert, 0.3, 1.0, 'Deckkraft');
     case 'overlay.ecke':
       if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);

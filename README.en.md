@@ -165,7 +165,9 @@ opacity and hotkey are in the settings.
 ## The orb
 
 If you want, an animated sphere sits on your secondary monitor and shows what Julia is doing.
-It is **off by default** and lets clicks pass through.
+It is **off by default** and lets clicks pass through – only the sphere itself can be grabbed and
+dragged anywhere with the mouse; double-click opens the chat. Below it, captions show what you
+say and what Julia answers, if you like.
 
 <p align="center">
   <img src="docs/bilder/blase-idle.png" width="150" alt="idle">
@@ -174,6 +176,9 @@ It is **off by default** and lets clicks pass through.
   <img src="docs/bilder/blase-speaking.png" width="150" alt="speaking">
 </p>
 <p align="center"><sub>idle · listening · thinking · speaking</sub></p>
+<p align="center">
+  <img src="docs/bilder/blase-untertitel.png" width="300" alt="Orb with captions: question and answer">
+</p>
 
 Monitor, corner, size, opacity, speed, sensitivity and any number of colours per state can be
 changed at runtime – in the settings or just by saying "make it greener".
