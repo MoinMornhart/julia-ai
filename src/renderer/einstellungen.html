@@ -154,6 +154,39 @@
           <small class="konto-meldung" id="googleMeldung"></small>
         </div>
       </div>
+
+      <div class="konto" id="kontoHandy">
+        <div class="konto-kopf">
+          <span class="konto-logo handy" aria-hidden="true">📱</span>
+          <div class="konto-name">
+            <strong data-t="handy.titel"></strong>
+            <small id="handyStatus"></small>
+          </div>
+          <button class="zweit" id="handyTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div class="konto-einrichten">
+          <p class="hinweis" data-t="handy.text"></p>
+          <label class="schalter"><input type="checkbox" id="handyAn" data-k="handy.an"><span data-t="handy.an"></span></label>
+          <div id="handyBereich" hidden>
+            <p class="hinweis" data-t="handy.firewall"></p>
+            <button class="primaer klein" id="handyKoppeln" data-t="handy.koppeln"></button>
+            <small class="konto-meldung" id="handyMeldung"></small>
+            <div class="kopplung" id="handyKopplung" hidden>
+              <canvas id="handyQr" width="240" height="240"></canvas>
+              <div class="kopplung-text">
+                <p class="hinweis" data-t="handy.qr_text"></p>
+                <code id="handyAdresse"></code>
+                <p class="hinweis" data-t="handy.warnung"></p>
+                <code id="handyFinger"></code>
+              </div>
+            </div>
+          </div>
+          <div class="feld schmal">
+            <label for="handyPort" data-t="handy.port"></label>
+            <input id="handyPort" data-k="handy.port" data-zahl inputmode="numeric" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+      </div>
     </section>
 
     <section class="gruppe">

@@ -30,12 +30,12 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.9.2 | Gedächtnis mit Herkunft: nach fremden Inhalten nur mit deinem Ja |
 | ✅ 0.9.3 | Telegram-Anbindung ausgebaut |
 | ✅ 1.0.0 | Installer (Julia-AI-Setup.exe) und öffentliche Webseite mit Prüfsumme; Updates der installierten Fassung aus den Releases, geprüft per SHA-512; Electron Fuses (kein RunAsNode, keine NODE_OPTIONS, nur geprüftes ASAR) |
+| ✅ 1.1.0 | Handy im WLAN: Web-App im Handy-Browser, HTTPS mit eigenem Zertifikat, Kopplung per QR-Einmal-Code, nur ein Gerät (PC kennt nur den Hash des Schlüssels), nur Heimnetz, Schutz gegen DNS-Rebinding, Sperre nach Fehlversuchen, Freigaben per Knopf |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 🔨 | **Handy im WLAN** – Julia als Web-App im Handy-Browser, gekoppelt per QR-Code, verschlüsselt, nur im Heimnetz | L | hoch | Nur das gekoppelte Gerät, Schlüssel im Tresor, Ampel unverändert, ROT bleibt ROT |
 | 📋 | **Signierter Installer** – Code-Signing-Zertifikat, damit SmartScreen nicht mehr warnt | S | mittel | Braucht ein Zertifikat auf deinen Namen |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |

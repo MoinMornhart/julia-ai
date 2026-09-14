@@ -38,6 +38,10 @@ function git(...args) {
   return execFileSync('git', args, { cwd: ORDNER, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
 }
 
+function gitOhneFehler(...args) {
+  try { return git(...args); } catch { return ''; }
+}
+
 function trailerLesen(argv) {
   const t = [];
   for (let i = 0; i < argv.length; i++) if (argv[i] === '--trailer') t.push(argv[++i] || '');
@@ -64,6 +68,15 @@ function main() {
   } else {
     git('fetch', '-q', 'origin');
     try { git('reset', '-q', '--hard', 'origin/main'); } catch { /* leeres Repo */ }
+  }
+
+  // Im öffentlichen Repo nie die echte E-Mail: Commits laufen unter der
+  // noreply-Adresse von GitHub.
+  if (!gitOhneFehler('config', 'user.email')) {
+    const id = execFileSync('gh', ['api', 'user', '--jq', '.id'], { encoding: 'utf8' }).trim();
+    const login = execFileSync('gh', ['api', 'user', '--jq', '.login'], { encoding: 'utf8' }).trim();
+    git('config', 'user.name', login);
+    git('config', 'user.email', `${id}+${login}@users.noreply.github.com`);
   }
 
   const seite = fs.readFileSync(path.join(WURZEL, 'site', 'index.html'), 'utf8')

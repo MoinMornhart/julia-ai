@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B0A12">
+<meta name="referrer" content="no-referrer">
+<title>Julia</title>
+<link rel="stylesheet" href="/app.css">
+<script src="/app.js" defer></script>
+</head>
+<body>
+<header class="kopf">
+  <span class="kugel" aria-hidden="true"></span>
+  <div class="titel">
+    <strong id="name">Julia</strong>
+    <small id="status"></small>
+  </div>
+  <button id="neu" class="rund" type="button" hidden>
+    <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg>
+  </button>
+</header>
+
+<main id="verlauf" aria-live="polite"></main>
+
+<p id="hinweis" class="hinweis" hidden></p>
+
+<form id="eingabe" class="eingabe" hidden>
+  <label for="text" class="unsichtbar" id="textLabel">Nachricht</label>
+  <textarea id="text" rows="1" maxlength="4000" autocomplete="off"></textarea>
+  <button id="senden" type="submit" class="senden"></button>
+</form>
+
+<section id="koppeln" class="koppeln" hidden>
+  <span class="kugel gross" aria-hidden="true"></span>
+  <p id="koppelnText"></p>
+</section>
+</body>
+</html>

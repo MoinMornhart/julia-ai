@@ -138,6 +138,22 @@ Verbindungen → Mit Google verbinden*.
 Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
 („Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.
 
+### Vom Handy aus
+
+Im selben WLAN schreibst du Julia vom Handy aus – im Browser, ohne App, ohne Cloud und ohne
+Portfreigabe im Router. *Einstellungen → Verbindungen → Handy im WLAN erlauben*, dann
+*Handy koppeln* und den QR-Code mit der Handy-Kamera scannen.
+
+<p align="center">
+  <img src="docs/bilder/handy-de.png" width="280" alt="Julia auf dem Handy mit Freigabekarte">
+</p>
+
+- **Verschlüsselt:** HTTPS mit einem Zertifikat, das Julia selbst erzeugt. Beim ersten Öffnen warnt der Browser; vergleiche den Fingerabdruck aus den Einstellungen und fahre dann fort.
+- **Nur dein Handy:** Der QR-Code enthält einen Einmal-Code, fünf Minuten gültig. Danach weist sich das Handy mit einem Zufallsschlüssel aus, von dem der PC nur den Hash kennt. Ein neu gekoppeltes Handy ersetzt das alte, *Trennen* macht den Schlüssel wertlos.
+- **Nur Heimnetz:** Der Server antwortet nur privaten Adressen und nur Aufrufen über eine IP-Adresse (Schutz gegen DNS-Rebinding). Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
+- **Ampel unverändert:** Freigaben kommen als Ja/Nein-Karte aufs Handy, ROT bleibt ROT, Stopp bricht sofort ab.
+- Standardmäßig **aus**. Fragt Windows nach der Firewall, erlaube nur „Private Netzwerke".
+
 ## Installation
 
 **Am einfachsten:** [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)

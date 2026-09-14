@@ -56,6 +56,7 @@ function texteAnwenden(daten) {
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   if (kontenStand) kontenZeigen(kontenStand);
+  if (handyStand) handyZeigen(handyStand);
   if (cfg) designZeigen();
 }
 
@@ -65,6 +66,67 @@ function kostenZeigen(k) {
   const betrag = Number(k && k.usd) || 0;
   const zahl = betrag.toLocaleString(document.documentElement.lang === 'en' ? 'en-GB' : 'de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $('kostenHeute').textContent = tx('einst.kosten_heute', { usd: zahl, anfragen: (k && k.anfragen) || 0 });
+}
+
+// --- Handy im WLAN ---
+
+let handyStand = null;
+let qrTimer = null;
+
+function handyZeigen(s) {
+  handyStand = s;
+  $('kontoHandy').classList.toggle('verbunden', s.laeuft && s.gekoppelt);
+  let status = tx('handy.aus');
+  if (s.fehler === 'port_belegt') status = tx('handy.fehler_port', { port: cfg ? cfg.handy.port : '' });
+  else if (s.fehler) status = s.fehler;
+  else if (s.laeuft && s.gekoppelt) status = tx('handy.gekoppelt', { geraet: s.geraet || '?' });
+  else if (s.laeuft) status = tx('handy.bereit');
+  $('handyStatus').textContent = status;
+  $('handyBereich').hidden = !s.laeuft;
+  $('handyTrennen').hidden = !s.gekoppelt;
+  $('handyKoppeln').textContent = tx(s.gekoppelt ? 'handy.neu_koppeln' : 'handy.koppeln');
+  // Nach dem Koppeln (oder wenn der Code abgelaufen ist) verschwindet der QR-Code.
+  if (!s.koppelnBis || s.koppelnBis < Date.now()) $('handyKopplung').hidden = true;
+  $('handyFinger').textContent = s.fingerabdruck || '';
+}
+
+function handyMeldung(text, fehler = false) {
+  const m = $('handyMeldung');
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function qrMalen(zeilen) {
+  const c = $('handyQr');
+  const n = zeilen.length;
+  const zelle = Math.floor(c.width / (n + 8));
+  const versatz = Math.floor((c.width - zelle * n) / 2);
+  const g = c.getContext('2d');
+  g.fillStyle = '#FFFFFF';
+  g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#000000';
+  zeilen.forEach((z, r) => {
+    for (let i = 0; i < n; i++) if (z[i] === '1') g.fillRect(versatz + i * zelle, versatz + r * zelle, zelle, zelle);
+  });
+}
+
+function handyVerbinden() {
+  $('handyKoppeln').onclick = async () => {
+    handyMeldung('');
+    const r = await julia.handyKoppeln();
+    handyZeigen(r.status);
+    if (r.fehler) { handyMeldung(r.fehler, true); return; }
+    qrMalen(r.qr);
+    $('handyAdresse').textContent = r.url.split('#')[0];
+    $('handyKopplung').hidden = false;
+    clearTimeout(qrTimer);
+    qrTimer = setTimeout(() => { $('handyKopplung').hidden = true; }, Math.max(0, r.bis - Date.now()));
+  };
+  $('handyTrennen').onclick = async () => {
+    handyZeigen(await julia.handyTrennen());
+    handyMeldung('');
+  };
+  julia.on('handy:status', handyZeigen);
 }
 
 // --- Design ---
@@ -384,6 +446,8 @@ async function init() {
   $('speichern').onclick = speichern;
   kontenVerbinden();
   kontenZeigen(await julia.kontenStatus());
+  handyVerbinden();
+  handyZeigen(await julia.handyStatus());
   designVerbinden();
   designZeigen();
   kostenZeigen(await julia.kostenHeute());

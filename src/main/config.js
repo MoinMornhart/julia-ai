@@ -31,6 +31,10 @@ const STANDARD = {
   erinnerung: {
     vorlesen: true,
   },
+  handy: {
+    an: false, // Handy im WLAN – standardmäßig aus
+    port: 8765,
+  },
   kosten: {
     tageslimit_usd: 10, // 0 = keine Bremse
   },
@@ -139,6 +143,7 @@ function pruefen(schluessel, wert) {
     case 'einrichtung_fertig':
     case 'design.glow':
     case 'erinnerung.vorlesen':
+    case 'handy.an':
     case 'weckwort.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
@@ -209,6 +214,7 @@ function pruefen(schluessel, wert) {
     case 'kosten.tageslimit_usd':
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
+    case 'handy.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
     case 'overlay.deckkraft': return zahl(wert, 0.3, 1.0, 'Deckkraft');
     case 'overlay.ecke':
       if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);

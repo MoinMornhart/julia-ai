@@ -8,7 +8,7 @@ const { jsonLesen } = require('../hilfen');
 // Felder liegen nur verschlüsselt auf der Platte (Windows DPAPI über
 // Electrons safeStorage). Julia selbst sieht diese Werte nie im Gespräch.
 
-const GEHEIM = new Set(['client_secret', 'refresh_token', 'passwort', 'token']);
+const GEHEIM = new Set(['client_secret', 'refresh_token', 'passwort', 'token', 'privat_schluessel']);
 
 class Tresor {
   // krypto: { verschluesseln(text) -> base64, entschluesseln(base64) -> text }

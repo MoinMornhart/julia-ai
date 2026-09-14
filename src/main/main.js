@@ -29,6 +29,7 @@ const { Konten } = require('./konten');
 const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
+const { HandyServer, qrMatrix } = require('./handy/server');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -50,6 +51,7 @@ let konten;
 let erinnerungen;
 let weckwort;
 let weckwortZuletzt = 0;
+let handy = null;
 let tray = null;
 let chatFenster = null;
 let orbFenster = null;
@@ -125,6 +127,7 @@ function anAlle(kanal, daten) {
   for (const w of [chatFenster, orbFenster, einstFenster, overlayFenster]) {
     if (w && !w.isDestroyed()) w.webContents.send(kanal, daten);
   }
+  if (handy) handyWeiterleiten(kanal, daten);
 }
 
 function zustandSetzen(z) {
@@ -576,6 +579,16 @@ function ipcEinrichten() {
     sprache.stumm();
     sprache.zuhoerenAbbrechen();
   });
+  ipc.handle('handy:status', () => handy.status());
+  ipc.handle('handy:koppeln', () => {
+    try {
+      const k = handy.koppelnStarten();
+      return { ...k, qr: qrMatrix(k.url), status: handy.status() };
+    } catch (e) {
+      return { fehler: e.message === 'kein_netz' ? t('handy.kein_netz') : e.message, status: handy.status() };
+    }
+  });
+  ipc.handle('handy:trennen', () => { handy.trennen(); return handy.status(); });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -587,6 +600,90 @@ function ipcEinrichten() {
 }
 
 // --- Start ---
+
+// --- Handy im WLAN ---
+// Das Handy sieht dasselbe Gespräch wie der Chat am PC. Alles, was an die
+// Fenster geht, landet auch im Gesprächsstand des Handy-Servers.
+
+const HINWEIS_TEXT = {
+  abgebrochen: 'chat.abgebrochen',
+  beschaeftigt: 'chat.beschaeftigt',
+  verweigert: 'hinweis.verweigert',
+  max_tokens: 'hinweis.max_tokens',
+  zu_viele_runden: 'hinweis.zu_viele_runden',
+  kosten_warnung: 'hinweis.kosten_warnung',
+};
+
+function handyWeiterleiten(kanal, d) {
+  switch (kanal) {
+    case 'agent:nutzer': handy.ereignis('nutzer', d); break;
+    case 'agent:start': handy.ereignis('start'); break;
+    case 'agent:text': handy.ereignis('text', { text: d }); break;
+    case 'agent:werkzeug': handy.ereignis('werkzeug', d); break;
+    case 'agent:werkzeugFertig': handy.ereignis('werkzeugFertig', d); break;
+    case 'agent:freigabe': handy.ereignis('freigabe', d); break;
+    case 'agent:freigabeErledigt': handy.ereignis('freigabeErledigt', d); break;
+    case 'agent:fertig': handy.ereignis('fertig'); break;
+    case 'agent:fehler': handy.ereignis('system', { text: d.art === 'kein_schluessel' ? t('chat.kein_schluessel') : d.text, fehler: true }); break;
+    case 'agent:hinweis': if (HINWEIS_TEXT[d.art]) handy.ereignis('system', { text: t(HINWEIS_TEXT[d.art]) }); break;
+    case 'zustand': handy.ereignis('zustand', { zustand: d }); break;
+    case 'chat:geleert': handy.ereignis('geleert'); break;
+    case 'erinnerung': handy.ereignis('system', { text: `⏰ ${d.text}` }); break;
+    default: break;
+  }
+}
+
+function handyTexte() {
+  const sc = config.get('sprachcode');
+  const name = assistentName();
+  const texte = {};
+  for (const [k, v] of Object.entries({ ...TEXTE.de, ...TEXTE[sc] })) {
+    if (k.startsWith('mobil.')) texte[k] = v.split('{name}').join(name);
+  }
+  return { sprachcode: sc, name, akzent: config.get('design.akzent'), texte };
+}
+
+// Ein Auftrag vom gekoppelten Handy – wie vom Chat, nur mit Kanal "mobile".
+async function handyNachricht(text) {
+  if (agent.beschaeftigt) return { fehler: 'beschaeftigt' };
+  sprache.stumm();
+  protokoll.eintragen({ werkzeug: 'handy', stufe: 'INFO', eingabe: { text: text.slice(0, 300) }, ergebnis: 'Auftrag vom Handy' });
+  anAlle('agent:nutzer', { text, perSprache: false, handy: true });
+  agent.senden(text, { kanal: 'mobile' }).catch((e) => {
+    if (e.message === 'BESCHAEFTIGT') anAlle('agent:hinweis', { art: 'beschaeftigt' });
+    else anAlle('agent:fehler', { art: 'text', text: e.message });
+  });
+  return { ok: true };
+}
+
+function handyEinrichten() {
+  handy = new HandyServer({
+    tresor: konten.tresor,
+    texte: handyTexte,
+    beiNachricht: handyNachricht,
+    protokoll: (e) => protokoll.eintragen({ werkzeug: 'handy', ...e }),
+  });
+  handy.on('freigabe', ({ id, ja }) => {
+    protokoll.eintragen({ werkzeug: 'handy', stufe: 'INFO', eingabe: { id }, ergebnis: ja ? 'Freigabe am Handy erteilt' : 'Freigabe am Handy abgelehnt' });
+    agent.freigabeBeantworten(id, ja);
+  });
+  handy.on('stopp', () => {
+    agent.abbrechen();
+    sprache.stumm();
+  });
+  handy.on('neu', () => {
+    agent.neu();
+    anAlle('chat:geleert');
+  });
+  handy.on('status', () => anAlle('handy:status', handy.status()));
+  handyAnwenden();
+}
+
+function handyAnwenden() {
+  if (!handy || VORFUEHRUNG) return;
+  if (config.get('handy.an')) handy.starten(config.get('handy.port')).catch(() => { /* Fehler steht im Status */ });
+  else handy.stoppen();
+}
 
 // --- Erinnerungen ---
 // Zum Zeitpunkt nur melden: Windows-Meldung, Chat und auf Wunsch vorlesen.
@@ -725,6 +822,7 @@ async function start() {
   ctx.updater = updater;
   agentVerdrahten();
   erinnerungenVerdrahten();
+  handyEinrichten();
   weckwort = new Weckwort();
   weckwortVerdrahten();
   ipcEinrichten();
@@ -743,6 +841,7 @@ async function start() {
     }
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
+    if (k.startsWith('handy.')) handyAnwenden();
     if (k === 'autostart') autostartSetzen();
     if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name' || k === 'weckwort.an') trayMenue();
     if (/^(weckwort\.|assistent\.name$|sprachcode$)/.test(k)) weckwortAktualisieren();
@@ -799,6 +898,7 @@ if (!app.requestSingleInstanceLock()) {
     globalShortcut.unregisterAll();
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
+    if (handy) handy.stoppen();
     if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }
   });

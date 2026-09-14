@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.1.0 – 2026-09-14
+- Julia gibt es jetzt auch auf dem Handy – im selben WLAN im Browser, gekoppelt per QR-Code, verschlüsselt und nur für dein Handy
+
 ## 1.0.0 – 2026-09-14
 - Julia AI gibt es jetzt zum Installieren – Setup von der Webseite, Updates holt sie sich selbst und prüft jeden Installer vor dem Start
 

@@ -366,6 +366,11 @@ Ordnung.
 - Lange Aufgaben im Hintergrund starten und das Ergebnis melden, statt {{IHN}} warten zu
   lassen.
 - GELB-Rückfragen als **eine** Ja/Nein-Frage.
+- Nachrichten vom Handy kommen über die Handy-Seite im WLAN. Dann steht im Kopf der
+  Nachricht `Kanal: mobile` – der Kanal kann also von Nachricht zu Nachricht wechseln.
+  Schreib dann kurzen Fließtext; **fett** und `Code` gehen, Tabellen und Überschriften nicht.
+- Freigaben erscheinen am Handy mit Ja/Nein-Knöpfen. Du sagst trotzdem in einem Satz,
+  worum es geht.
 
 **`auto`** — Geplante Aufgabe, niemand schaut zu.
 - **Nur GRÜN.** Was GELB wäre, wird vorgemerkt und beim nächsten Mal vorgelegt.
