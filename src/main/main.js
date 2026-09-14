@@ -384,6 +384,8 @@ function blaseAktualisieren() {
   } else {
     // Zweimal setzen: Beim Wechsel auf einen Monitor mit anderer Skalierung
     // stimmt die Größe erst im zweiten Anlauf.
+    orbFenster.juliaText = UNTERTITEL_HOEHE;
+    orbFenster.juliaHoch = 0;
     orbFenster.setBounds(grenzen);
     orbFenster.setBounds(grenzen);
   }
@@ -724,6 +726,7 @@ function ipcEinrichten() {
     if (!blaseDa()) return;
     const [x, y] = orbFenster.getPosition();
     const d = (v) => Math.max(-3000, Math.min(3000, Math.round(Number(v) || 0)));
+    orbFenster.juliaHoch = 0; // selbst verschoben: das ist jetzt der Platz der Blase
     orbFenster.setPosition(x + d(dx), y + d(dy));
   });
   ipc.on('blase:abgelegt', () => {
@@ -732,6 +735,34 @@ function ipcEinrichten() {
     config.set('blase.position', { x, y });
   });
   ipc.on('blase:doppelklick', () => chatZeigen('chat'));
+  ipc.on('zugriff:maus', (e, ueber) => {
+    const f = BrowserWindow.fromWebContents(e.sender);
+    if (f && zugriffFenster.includes(f)) f.setIgnoreMouseEvents(!ueber, { forward: true });
+  });
+  ipc.on('zugriff:stopp', () => {
+    agent.abbrechen();
+    sprache.stumm();
+    zugriffSpaeterWeg(0);
+  });
+  // Untertitel brauchen mehr Platz: Fenster nach unten wachsen lassen – bis zum
+  // Bildschirmrand, danach scrollt der Text. Die Kugel bleibt, wo sie ist.
+  ipc.on('blase:hoehe', (_e, h) => {
+    if (!blaseDa() || !config.get('blase.untertitel')) return;
+    const g = orbFenster.getBounds();
+    const kugel = g.height - (orbFenster.juliaText || UNTERTITEL_HOEHE);
+    const wa = screen.getDisplayMatching(g).workArea;
+    const text = Math.max(UNTERTITEL_HOEHE, Math.min(Math.round(Number(h) || 0), 900));
+    // Unten kein Platz mehr? Dann rückt die Blase so weit hoch, wie nötig –
+    // und wieder zurück, sobald der Text weg ist.
+    const basisY = g.y + (orbFenster.juliaHoch || 0);
+    const unten = wa.y + wa.height;
+    const y = Math.max(wa.y, Math.min(basisY, unten - (kugel + text)));
+    const hoehe = Math.min(kugel + text, unten - y);
+    if (hoehe === g.height && y === g.y) return;
+    orbFenster.juliaText = hoehe - kugel;
+    orbFenster.juliaHoch = basisY - y;
+    orbFenster.setBounds({ x: g.x, y, width: g.width, height: hoehe });
+  });
   ipc.handle('zwischenablage:schreiben', (_e, text) => {
     clipboard.writeText(String(text || '').slice(0, 200000));
     return true;
@@ -901,6 +932,66 @@ function gespraechSpeichern() {
   } catch (e) {
     protokoll.eintragen({ werkzeug: 'verlauf', stufe: 'INFO', ergebnis: 'nicht gespeichert', grund: e.message });
   }
+}
+
+// --- Bildschirmzugriff sichtbar machen ---
+// Solange Julia einen Screenshot macht oder Maus und Tastatur steuert, steht
+// oben in der Mitte jedes Bildschirms ein Hinweis in der Akzentfarbe – mit
+// Stopp-Knopf. Das Fenster ist vor Bildschirmaufnahmen geschützt und taucht
+// deshalb in Julias eigenen Screenshots nicht auf.
+
+const ZUGRIFF = { screenshot: 'sieht', klick: 'steuert', tippen: 'steuert', taste: 'steuert', scrollen: 'steuert' };
+let zugriffFenster = [];
+let zugriffSignatur = '';
+let zugriffTimer = null;
+let zugriffAn = false;
+
+function zugriffFensterBauen() {
+  const displays = screen.getAllDisplays();
+  const signatur = JSON.stringify(displays.map((d) => d.workArea));
+  if (signatur === zugriffSignatur && zugriffFenster.every((f) => !f.isDestroyed())) return;
+  for (const f of zugriffFenster) if (!f.isDestroyed()) f.destroy();
+  zugriffSignatur = signatur;
+  zugriffFenster = displays.map((d) => {
+    const breite = 480;
+    const hoehe = 60;
+    const f = new BrowserWindow({
+      x: Math.round(d.workArea.x + (d.workArea.width - breite) / 2), y: d.workArea.y + 6, width: breite, height: hoehe,
+      frame: false, transparent: true, resizable: false, movable: false, focusable: false, skipTaskbar: true, alwaysOnTop: true,
+      show: false, hasShadow: false, backgroundColor: '#00000000', title: assistentName(),
+      webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true },
+    });
+    f.setIgnoreMouseEvents(true, { forward: true });
+    f.setAlwaysOnTop(true, 'screen-saver');
+    f.setContentProtection(true);
+    f.loadFile(path.join(RENDERER, 'zugriff.html'));
+    return f;
+  });
+}
+
+function zugriffZeigen(art) {
+  clearTimeout(zugriffTimer);
+  zugriffAn = true;
+  zugriffFensterBauen();
+  for (const f of zugriffFenster) {
+    const senden = () => {
+      if (f.isDestroyed()) return;
+      f.webContents.send('zugriff', { art });
+      f.showInactive();
+    };
+    if (f.webContents.isLoading()) f.webContents.once('did-finish-load', senden);
+    else senden();
+  }
+}
+
+function zugriffSpaeterWeg(ms = 2500) {
+  if (!zugriffAn) return;
+  clearTimeout(zugriffTimer);
+  zugriffTimer = setTimeout(() => {
+    zugriffAn = false;
+    for (const f of zugriffFenster) if (!f.isDestroyed()) f.webContents.send('zugriff', { art: null });
+    zugriffTimer = setTimeout(() => { for (const f of zugriffFenster) if (!f.isDestroyed()) f.hide(); }, 350);
+  }, ms);
 }
 
 // --- Gaming-Clips ---
@@ -1186,6 +1277,10 @@ function agentVerdrahten() {
   });
   agent.on('zustand', (z) => zustandSetzen(z));
   agent.on('kosten', (k) => anAlle('kosten', k));
+  // Hinweis oben am Bildschirm, solange Julia hinsieht oder steuert.
+  agent.on('werkzeug', ({ name }) => { if (ZUGRIFF[name]) zugriffZeigen(ZUGRIFF[name]); });
+  agent.on('werkzeugFertig', () => zugriffSpaeterWeg());
+  agent.on('fertig', () => zugriffSpaeterWeg(800));
 }
 
 function erststartSprache() {
@@ -1306,6 +1401,8 @@ async function start() {
   if (VORFUEHRUNG) {
     await require('./vorfuehrung').aufnehmen({
       ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen, gespraeche, appOrdner: APP,
+      zugriffDemo: (art) => { zugriffZeigen(art); return zugriffFenster[0]; },
+      zugriffEnde: () => zugriffSpaeterWeg(0),
       orb: () => orbFenster, overlayZeigen, overlayVerstecken,
     });
     beendenLaeuft = true;

@@ -100,7 +100,7 @@ function beispielGespraeche(gespraeche, sc) {
   }
 }
 
-async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken, gespraeche, appOrdner }) {
+async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken, gespraeche, appOrdner, zugriffDemo, zugriffEnde }) {
   fs.mkdirSync(ziel, { recursive: true });
   const sc = config.get('sprachcode');
   if (gespraeche && !gespraeche.liste().length) beispielGespraeche(gespraeche, sc);
@@ -138,6 +138,15 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
   chatFenster.hide();
 
+  // Hinweis oben am Bildschirm, wenn Julia hinsieht.
+  if (zugriffDemo) {
+    const f = zugriffDemo('sieht');
+    await geladen(f);
+    await warte(900);
+    await aufnehmenFenster(f, path.join(ziel, `zugriff-${sc}.png`));
+    zugriffEnde();
+  }
+
   if (overlayZeigen) {
     const o = overlayZeigen({ passiv: false });
     await geladen(o);
@@ -173,8 +182,8 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
     // Einmal mit Untertiteln: was gesagt wurde und die Antwort darunter.
     config.set('blase.untertitel', true);
     await warte(900);
-    o.webContents.send('agent:nutzer', { text: 'Wie voll ist die Platte?', perSprache: true });
-    o.webContents.send('agent:text', 'C: ist zu 82 % voll, 171 GB frei. Der größte Brocken ist Downloads mit 64 GB.');
+    o.webContents.send('agent:nutzer', { text: 'Schau nach, wie es meinem PC geht: Was frisst gerade Arbeitsspeicher und CPU, und ist irgendwo die Platte knapp?', perSprache: true });
+    o.webContents.send('agent:text', 'Arbeitsspeicher: 18,6 von 32 GB belegt, am meisten braucht Chrome mit 4,1 GB, danach Discord mit 1,2 GB. Die CPU ist bei 12 %, nichts auffällig. Platte C: ist zu 82 % voll, 171 GB frei – der größte Brocken ist Downloads mit 64 GB. Soll ich dort aufräumen?');
     zustandSetzen('speaking');
     await warte(1600);
     await aufnehmenFenster(o, path.join(ziel, 'blase-untertitel.png'));

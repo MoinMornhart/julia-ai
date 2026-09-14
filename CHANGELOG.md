@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.1.0 – 2026-09-14
+- Oben in der Mitte siehst du jetzt immer, wenn Julia auf deinen Bildschirm schaut oder Maus und Tastatur steuert – in der Farbe des Overlays und mit Stopp-Knopf; unter der Blase steht außerdem der ganze Text
+
 ## 2.0.0 – 2026-09-14
 - Eigener Code-Reiter – deine Projekte mit Git-Stand, farbigen Diffs und Knöpfen, mit denen Julia prüft, testet oder Fehler behebt
 

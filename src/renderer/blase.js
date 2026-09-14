@@ -60,7 +60,11 @@ function groesseAnpassen() {
   leinwand.style.height = `${s}px`;
   leinwand.width = Math.round(s * dpr);
   leinwand.height = Math.round(s * dpr);
-  document.getElementById('untertitel').hidden = !(blase && blase.untertitel !== false);
+  const u = document.getElementById('untertitel');
+  u.hidden = !(blase && blase.untertitel !== false);
+  u.style.top = `${s}px`;
+  u.style.maxHeight = `${Math.max(0, window.innerHeight - s - 4)}px`; // passt es nicht ganz, lässt es sich scrollen
+  hoeheMelden(); // z. B. nach dem Verschieben: Platz für den Text wiederherstellen
 }
 
 // --- Maus: nur die Kugel selbst ist greifbar ---
@@ -117,16 +121,35 @@ document.addEventListener('mouseleave', () => {
 let T = {};
 let antwortRoh = '';
 let wegTimer = null;
-const schlicht = (s) => String(s || '').replace(/```[\s\S]*?```/g, ' ').replace(/[*`#>_~]+/g, '').replace(/\s+/g, ' ').trim();
+const schlicht = (s) => String(s || '').replace(/```[\s\S]*?```/g, ' ').replace(/[*`#>_~]+/g, '').replace(/[ \t]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
+
+// Das Fenster so hoch machen, dass der ganze Text passt (der Hauptprozess
+// begrenzt auf den Bildschirmrand). Einmal pro Bild, nicht bei jedem Textstück.
+let hoeheGeplant = false;
+function hoeheMelden() {
+  if (hoeheGeplant) return;
+  hoeheGeplant = true;
+  requestAnimationFrame(() => {
+    hoeheGeplant = false;
+    const u = document.getElementById('untertitel');
+    const weg = u.hidden || u.classList.contains('weg') || !u.textContent.trim();
+    julia.blaseHoehe(weg ? 0 : Math.ceil(u.scrollHeight) + 6);
+    u.scrollTop = u.scrollHeight; // das Neueste bleibt sichtbar
+  });
+}
 
 function zeigen() {
   clearTimeout(wegTimer);
   document.getElementById('untertitel').classList.remove('weg');
+  hoeheMelden();
 }
 
 function spaeterAusblenden(ms = 9000) {
   clearTimeout(wegTimer);
-  wegTimer = setTimeout(() => document.getElementById('untertitel').classList.add('weg'), ms);
+  wegTimer = setTimeout(() => {
+    document.getElementById('untertitel').classList.add('weg');
+    setTimeout(hoeheMelden, 650); // nach dem Ausblenden wieder klein
+  }, ms);
 }
 
 function du(text) {
@@ -136,8 +159,7 @@ function du(text) {
 
 function antwort(text, hinweis = false) {
   const el = document.getElementById('antwort');
-  const s = schlicht(text);
-  el.textContent = s.length > 240 ? `…${s.slice(-240)}` : s;
+  el.textContent = schlicht(text);
   el.classList.toggle('hinweis', hinweis);
   zeigen();
 }

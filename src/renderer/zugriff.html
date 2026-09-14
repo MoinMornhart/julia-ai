@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="de" data-theme="dunkel">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Julia – Bildschirmzugriff</title>
+  <link rel="stylesheet" href="basis.css">
+  <script src="design.js"></script>
+  <style>
+    html, body { background: transparent !important; overflow: hidden; }
+    body { display: flex; justify-content: center; align-items: flex-start; padding-top: 4px; }
+    .pille {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 6px 6px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--akzent-rand);
+      background:
+        radial-gradient(200px 60px at 20% 0%, color-mix(in srgb, var(--akzent) 26%, transparent), transparent 70%),
+        color-mix(in srgb, var(--grund) 90%, transparent);
+      box-shadow: var(--glow-klein), 0 6px 20px rgba(0, 0, 0, 0.45);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 650;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+    body.an .pille { opacity: 1; transform: none; }
+    .punkt { width: 9px; height: 9px; border-radius: 50%; background: var(--akzent); box-shadow: 0 0 10px var(--akzent); animation: blinken 1s ease-in-out infinite; }
+    @keyframes blinken { 50% { opacity: 0.3; } }
+    @media (prefers-reduced-motion: reduce) { .punkt { animation: none; } .pille { transition: none; } }
+    .ico { display: grid; place-items: center; color: var(--akzent); }
+    .ico svg { width: 17px; height: 17px; }
+    .stopp {
+      padding: 4px 11px;
+      border-radius: 999px;
+      background: var(--akzent);
+      color: var(--akzent-text);
+      font-size: 12px;
+      font-weight: 700;
+      transition: filter 0.15s;
+    }
+    .stopp:hover { filter: brightness(1.12); }
+  </style>
+</head>
+<body>
+  <div class="pille" id="pille">
+    <span class="punkt"></span>
+    <span class="ico" id="ico"></span>
+    <span id="text"></span>
+    <button class="stopp" id="stopp" type="button"></button>
+  </div>
+  <script src="zugriff.js"></script>
+</body>
+</html>

@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'erinnerung', 'kosten',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'erinnerung', 'kosten',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -62,6 +62,9 @@ contextBridge.exposeInMainWorld('julia', {
   blaseZiehen: (dx, dy) => ipcRenderer.send('blase:ziehen', Number(dx) || 0, Number(dy) || 0),
   blaseAbgelegt: () => ipcRenderer.send('blase:abgelegt'),
   blaseDoppelklick: () => ipcRenderer.send('blase:doppelklick'),
+  blaseHoehe: (h) => ipcRenderer.send('blase:hoehe', Number(h) || 0),
+  zugriffMaus: (ueber) => ipcRenderer.send('zugriff:maus', !!ueber),
+  zugriffStopp: () => ipcRenderer.send('zugriff:stopp'),
   auswahlAktion: (aktion, frage) => ipcRenderer.invoke('auswahl:aktion', String(aktion), String(frage || '')),
   abbrechen: () => ipcRenderer.send('chat:abbrechen'),
   neu: () => ipcRenderer.send('chat:neu'),
