@@ -115,6 +115,12 @@ $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $s.GetInstalledVoices() | Where-Object { $_.Enabled } | ForEach-Object { [Console]::Out.WriteLine($_.VoiceInfo.Culture.Name + [char]9 + $_.VoiceInfo.Name) }
 `;
 
+const ERKENNER = `
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+Add-Type -AssemblyName System.Speech
+[System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers() | ForEach-Object { [Console]::Out.WriteLine($_.Culture.Name) }
+`;
+
 // Für den Minecraft-Voice-Chat: Sprache aus einer Aufnahme erkennen …
 const ERKENNEN_DATEI = `
 $ErrorActionPreference = 'Stop'
@@ -302,6 +308,53 @@ class Sprache extends EventEmitter {
 
   zuhoerenAbbrechen() {
     if (this.hoeren) this.hoeren.kill();
+  }
+
+  // Mikrofon-Test in den Einstellungen: nimmt wie zuhoeren() einen Satz auf,
+  // meldet aber zusätzlich den höchsten Pegel und alle Hinweise – so sieht
+  // man, ob überhaupt Ton ankommt.
+  async mikrofonTesten(sprachcode = 'de', { mikrofon = '' } = {}) {
+    if (this.hoeren) throw new Error('beschaeftigt');
+    const kultur = sprachcode === 'en' ? 'en' : 'de';
+    let dllFehler = '';
+    const dllPfad = mikrofon ? await this.dll().catch((e) => { dllFehler = e.message; return ''; }) : '';
+    const beginn = Date.now();
+    return new Promise((resolve) => {
+      const r = { pegel: 0, text: '', fehler: dllFehler ? `Audio-Hilfe: ${dllFehler}` : '', hinweise: [], sekunden: 0 };
+      const p = powershell(ERKENNEN, { JULIA_KULTUR: kultur, JULIA_MIKRO: mikrofon, JULIA_AUDIO_DLL: dllPfad });
+      this.hoeren = p;
+      readline.createInterface({ input: p.stdout }).on('line', (z) => {
+        if (z.startsWith('L ')) {
+          const n = Number(z.slice(2));
+          if (Number.isFinite(n)) r.pegel = Math.max(r.pegel, n);
+          this.emit('pegel', Math.min(1, (n || 0) / 100));
+        } else if (z.startsWith('T ')) r.text = z.slice(2).trim();
+        else if (z.startsWith('E ')) r.fehler = z.slice(2).trim();
+        else if (z.startsWith('H ')) r.hinweise.push(z.slice(2).trim());
+      });
+      let fertig = false;
+      const ende = () => {
+        if (fertig) return;
+        fertig = true;
+        this.hoeren = null;
+        this.emit('pegel', 0);
+        r.sekunden = Math.round((Date.now() - beginn) / 100) / 10;
+        resolve(r);
+      };
+      p.on('error', (e) => { r.fehler = r.fehler || e.message; ende(); });
+      p.on('close', ende);
+    });
+  }
+
+  // Installierte Windows-Spracherkenner, z. B. ['de-DE', 'en-US'].
+  erkenner() {
+    return new Promise((resolve) => {
+      const p = powershell(ERKENNER);
+      let aus = '';
+      p.stdout.on('data', (d) => { aus += d; });
+      p.on('error', () => resolve([]));
+      p.on('close', () => resolve(aus.split(/\r?\n/).map((s) => s.trim()).filter(Boolean)));
+    });
   }
 
   async sprechen(text, { stimme, tempo = 0, sprachcode = 'de', lautsprecher = '' } = {}) {

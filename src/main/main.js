@@ -665,6 +665,7 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
 // Sperrt Windows das Mikrofon (Datenschutz), kommt nur Stille an – das einmal
 // klar sagen und die passende Windows-Einstellung öffnen.
 let mikroSperreGemeldet = false;
+let mikroTestLaeuft = false;
 async function mikrofonSperrePruefen() {
   if (mikroSperreGemeldet || VORFUEHRUNG) return;
   const k = await mikrofonRecht.pruefen().catch(() => null);
@@ -808,6 +809,38 @@ function ipcEinrichten() {
   ipc.handle('stimmen', () => sprache.stimmen());
   ipc.handle('audio:geraete', async () => {
     try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
+  });
+  // Mikrofon-Test: je ein Durchgang mit dem gewählten Mikrofon und dem
+  // Windows-Standard, dazu alles, was bei der Fehlersuche hilft.
+  ipc.handle('sprache:mikrofontest', async (e) => {
+    if (agent.beschaeftigt || sprache.hoertZu || sprache.sprichtGerade || mikroTestLaeuft) return { fehler: 'beschaeftigt' };
+    mikroTestLaeuft = true;
+    if (weckwort) weckwort.stoppen();
+    try {
+      const gewaehlt = config.get('sprache.mikrofon') || '';
+      const sprachcode = config.get('sprachcode');
+      const [sperre, erkenner, geraete] = await Promise.all([
+        mikrofonRecht.pruefen().catch(() => null),
+        sprache.erkenner().catch(() => []),
+        audio.geraete().catch((x) => ({ eingaenge: [], fehler: x.message })),
+      ]);
+      const arten = gewaehlt ? [['gewaehlt', gewaehlt], ['standard', '']] : [['standard', '']];
+      const laeufe = [];
+      for (const [i, [art, mikrofon]] of arten.entries()) {
+        if (!e.sender.isDestroyed()) e.sender.send('mikrotest', { art, n: i + 1, gesamt: arten.length, geraet: mikrofon });
+        laeufe.push({ art, geraet: mikrofon, ...(await sprache.mikrofonTesten(sprachcode, { mikrofon })) });
+      }
+      const info = {
+        version: app.getVersion(), sitzung: process.env.SESSIONNAME || '', sprachcode, sperre, erkenner,
+        eingaenge: geraete.eingaenge || [], geraeteFehler: geraete.fehler || '', gewaehlt,
+      };
+      return { info, laeufe, diagnose: mikrofonRecht.diagnose({ sperre, erkenner, sprachcode, laeufe }) };
+    } catch (x) {
+      return { fehler: x.message };
+    } finally {
+      mikroTestLaeuft = false;
+      weckwortAktualisieren();
+    }
   });
   ipc.handle('sprache:testen', async () => {
     await sprache.sprechen(t('einst.test_satz'), {
@@ -1543,7 +1576,7 @@ function erinnerungMelden(e) {
 
 function weckwortAktualisieren() {
   if (!weckwort) return;
-  const an = config.get('weckwort.an') && !VORFUEHRUNG && !sprache.hoertZu && !sprache.sprichtGerade;
+  const an = config.get('weckwort.an') && !VORFUEHRUNG && !sprache.hoertZu && !sprache.sprichtGerade && !mikroTestLaeuft;
   if (an) {
     weckwort.starten({
       name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle'), mikrofon: config.get('sprache.mikrofon'),

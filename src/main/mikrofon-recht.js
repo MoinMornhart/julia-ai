@@ -44,4 +44,31 @@ async function pruefen(lesen = regLesen) {
   return sperreFinden(werte);
 }
 
-module.exports = { pruefen, sperreFinden, regWert, SCHALTER };
+// Auswertung des Mikrofon-Tests: Textschlüssel samt Werten, übersetzt wird in
+// den Einstellungen. laeufe: [{ art: 'gewaehlt'|'standard', geraet, pegel, text, fehler }]
+function diagnose({ sperre = null, erkenner = [], sprachcode = 'de', laeufe = [] } = {}) {
+  const d = [];
+  if (sperre) d.push({ k: 'mikrotest.d_sperre', p: { schalter: sperre } });
+  const kultur = sprachcode === 'en' ? 'en' : 'de';
+  const erkennerDa = erkenner.some((c) => String(c).toLowerCase().startsWith(kultur));
+  if (!erkennerDa) d.push({ k: 'mikrotest.d_kein_erkenner', p: { sprache: kultur === 'en' ? 'English' : 'Deutsch' } });
+  const gut = (l) => !!(l && !l.fehler && l.text);
+  const gewaehlt = laeufe.find((l) => l.art === 'gewaehlt');
+  const standard = laeufe.find((l) => l.art === 'standard');
+  if (laeufe.some(gut)) {
+    if (gewaehlt && !gut(gewaehlt) && gut(standard)) d.push({ k: 'mikrotest.d_standard_besser', p: { geraet: gewaehlt.geraet } });
+    else d.push({ k: 'mikrotest.d_ok', p: { text: (gut(gewaehlt) ? gewaehlt : standard).text } });
+    return d;
+  }
+  for (const l of laeufe) {
+    if (l.fehler && !['KEIN_ERKENNER', 'KEIN_MIKROFON'].includes(l.fehler)) d.push({ k: 'mikrotest.d_fehler', p: { fehler: l.fehler } });
+  }
+  if (laeufe.some((l) => l.fehler === 'KEIN_MIKROFON')) { d.push({ k: 'mikrotest.d_kein_mikrofon' }); return d; }
+  if (!erkennerDa) return d;
+  const pegel = Math.max(0, ...laeufe.map((l) => Number(l.pegel) || 0));
+  if (pegel < 1) d.push({ k: 'mikrotest.d_kein_ton' });
+  else d.push({ k: 'mikrotest.d_nicht_verstanden', p: { pegel: Math.round(pegel) } });
+  return d;
+}
+
+module.exports = { pruefen, sperreFinden, regWert, diagnose, SCHALTER };

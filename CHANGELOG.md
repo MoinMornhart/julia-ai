@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.3.0 – 2026-09-14
+- Mikrofon-Test in den Einstellungen: Julia misst, ob Ton ankommt und was sie versteht, nennt die Ursache und gibt dir einen Bericht zum Kopieren
+
 ## 3.2.6 – 2026-09-14
 - Sperrt Windows das Mikrofon in den Datenschutz-Einstellungen, sagt Julia dir das jetzt und öffnet gleich die richtige Einstellung
 

@@ -307,7 +307,14 @@
       </div>
       <div class="knopfreihe">
         <button class="zweit" id="stimmeTesten" data-t="einst.testen"></button>
+        <button class="zweit" id="mikroTesten" data-t="mikrotest.knopf"></button>
         <small id="audioHinweis"></small>
+      </div>
+      <div class="mikrotest" id="mikroTest" hidden>
+        <p class="mikrotest-status" id="mikroTestStatus" aria-live="polite"></p>
+        <ul class="mikrotest-diagnose" id="mikroDiagnose"></ul>
+        <pre class="mikrotest-bericht" id="mikroBericht"></pre>
+        <button class="zweit" id="mikroKopieren" data-t="mikrotest.kopieren" hidden></button>
       </div>
       <div class="regler">
         <label for="sprechtempo" data-t="einst.sprechtempo"></label>

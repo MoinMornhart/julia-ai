@@ -134,6 +134,15 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .zweit:hover { border-color: var(--akzent); color: var(--akzent); }
 .knopfreihe { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* Mikrofon-Test */
+.mikrotest { display: grid; gap: 8px; margin-top: 12px; padding: 12px; border-radius: 12px; border: 1px solid var(--akzent-rand); background: var(--akzent-weich); }
+.mikrotest-status { margin: 0; font-weight: 600; }
+.mikrotest-diagnose { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.mikrotest-diagnose:empty { display: none; }
+.mikrotest-bericht { margin: 0; padding: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.18); font-family: var(--mono); font-size: 12px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; user-select: text; max-height: 220px; overflow: auto; }
+.mikrotest-bericht:empty { display: none; }
+.mikrotest button { justify-self: start; }
+
 .farben { display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; }
 .farbe { display: grid; grid-template-columns: 90px auto 1fr; align-items: center; gap: 10px; }
 .farbe .zname { font-size: 12.5px; font-weight: 600; color: var(--text-2); }

@@ -649,6 +649,63 @@ function kontenVerbinden() {
   };
 }
 
+// Mikrofon-Test: zeigt, ob Ton ankommt und was verstanden wird – mit einem
+// Bericht zum Kopieren für die Fehlersuche.
+function mikroBericht(r) {
+  const i = r.info;
+  const zeilen = [
+    `Julia ${i.version} · Sitzung: ${i.sitzung || '–'} · Sprache: ${i.sprachcode}`,
+    `Spracherkennung: ${i.erkenner.length ? i.erkenner.join(', ') : 'keine'}`,
+    `Windows-Sperre: ${i.sperre || 'keine'}`,
+    `Mikrofone: ${i.eingaenge.length ? i.eingaenge.join(' | ') : 'keine gefunden'}${i.geraeteFehler ? ` (${i.geraeteFehler})` : ''}`,
+    `Ausgewählt: ${i.gewaehlt || 'Windows-Standard'}`,
+  ];
+  r.laeufe.forEach((l, n) => {
+    const name = l.art === 'gewaehlt' ? `„${l.geraet}“` : 'Windows-Standard';
+    const extra = `${l.hinweise.length ? `, Hinweise: ${l.hinweise.join(', ')}` : ''}${l.fehler ? `, Fehler: ${l.fehler}` : ''}`;
+    zeilen.push(`${n + 1}) ${name}: Pegel ${Math.round(l.pegel)} %, verstanden: „${l.text}“, ${l.sekunden} s${extra}`);
+  });
+  return zeilen.join('\n');
+}
+
+function mikroTestVerbinden() {
+  julia.on('mikrotest', (s) => {
+    $('mikroTestStatus').textContent = tx('mikrotest.sprich', { n: s.n, gesamt: s.gesamt, geraet: s.art === 'gewaehlt' ? s.geraet : tx('mikrotest.standard') });
+  });
+  $('mikroTesten').onclick = async () => {
+    const knopf = $('mikroTesten');
+    knopf.disabled = true;
+    $('mikroTest').hidden = false;
+    $('mikroDiagnose').replaceChildren();
+    $('mikroBericht').textContent = '';
+    $('mikroKopieren').hidden = true;
+    $('mikroTestStatus').textContent = tx('mikrotest.vorbereiten');
+    const r = await julia.mikrofonTest();
+    knopf.disabled = false;
+    if (r.fehler) {
+      $('mikroTestStatus').textContent = r.fehler === 'beschaeftigt' ? tx('mikrotest.beschaeftigt') : tx('mikrotest.fehler', { fehler: r.fehler });
+      return;
+    }
+    $('mikroTestStatus').textContent = tx('mikrotest.fertig');
+    for (const d of r.diagnose) {
+      const li = document.createElement('li');
+      li.textContent = tx(d.k, d.p || {});
+      $('mikroDiagnose').append(li);
+    }
+    $('mikroBericht').textContent = mikroBericht(r);
+    $('mikroKopieren').hidden = false;
+  };
+  $('mikroKopieren').onclick = async () => {
+    try {
+      await navigator.clipboard.writeText($('mikroBericht').textContent);
+      $('mikroKopieren').textContent = tx('mikrotest.kopiert');
+      setTimeout(() => { $('mikroKopieren').textContent = tx('mikrotest.kopieren'); }, 2000);
+    } catch {
+      window.getSelection().selectAllChildren($('mikroBericht')); // dann eben Strg+C
+    }
+  };
+}
+
 async function init() {
   cfg = await julia.config();
   texteAnwenden(await julia.texte());
@@ -716,6 +773,7 @@ async function init() {
     await julia.spracheTesten();
     $('stimmeTesten').disabled = false;
   };
+  mikroTestVerbinden();
   if (einrichtung) $('name').focus();
 }
 
