@@ -448,3 +448,47 @@ test('Minecraft: Bedrohungswahl nimmt den Creeper vor dem näheren Zombie', () =
   const feind = m._bedrohung(p);
   assert.equal(feind.name, 'creeper');
 });
+
+test('Minecraft: Ein- und Aussteigen als Befehl erkannt', () => {
+  const b = (t) => mc.befehlLesen(t, ['Julia']);
+  assert.deepEqual(b('!steig ein'), { aufgabe: 'einsteigen' });
+  assert.deepEqual(b('Julia, ins boot'), { aufgabe: 'einsteigen' });
+  assert.deepEqual(b('!reite'), { aufgabe: 'einsteigen' });
+  assert.deepEqual(b('!steig aus'), { aufgabe: 'aussteigen' });
+  assert.deepEqual(b('Julia, aussteigen'), { aufgabe: 'aussteigen' });
+});
+
+test('Minecraft: einsteigen sucht ein Fahrzeug, aussteigen nur wenn sie sitzt', async () => {
+  const m = new mc.Minecraft();
+  m.pf = { goals: { GoalNear: class { constructor(x, y, z, r) { Object.assign(this, { x, y, z, r }); } } } };
+  const p = fpos(0, 64, 0);
+  const boot = { id: 3, name: 'oak_boat', position: fpos(1, 64, 0) };
+  let gemountet = null;
+  m.bot = {
+    entity: { position: p }, vehicle: null,
+    nearestEntity: (fn) => (fn(boot) ? boot : null),
+    mount: (e) => { gemountet = e; },
+    dismount: () => { m.bot.vehicle = null; },
+    pathfinder: { setGoal() {}, goto: async () => {} },
+    clearControlStates: () => {},
+  };
+  assert.equal(m.aufgabe({ aufgabe: 'einsteigen' }), 'Ich steige ein.');
+  await new Promise((r) => setTimeout(r, 0));
+  assert.equal(gemountet, boot);
+
+  // Ohne Fahrzeug in der Nähe: klare Meldung.
+  const leer = new mc.Minecraft();
+  leer.pf = { goals: {} };
+  leer.bot = { entity: { position: fpos(0, 64, 0) }, vehicle: null, nearestEntity: () => null, pathfinder: { setGoal() {} }, clearControlStates: () => {} };
+  assert.throws(() => leer.aufgabe({ aufgabe: 'einsteigen' }), /Boot|Lore|Reittier/);
+
+  // Aussteigen nur, wenn sie wirklich in etwas sitzt.
+  const drin = new mc.Minecraft();
+  drin.pf = { goals: {} };
+  drin.bot = { entity: { position: fpos(0, 64, 0) }, vehicle: { name: 'oak_boat' }, dismount() { this.vehicle = null; }, pathfinder: { setGoal() {} }, clearControlStates: () => {} };
+  assert.equal(drin.aufgabe({ aufgabe: 'aussteigen' }), 'Ich steige aus.');
+  const raus = new mc.Minecraft();
+  raus.pf = { goals: {} };
+  raus.bot = { entity: { position: fpos(0, 64, 0) }, vehicle: null, pathfinder: { setGoal() {} }, clearControlStates: () => {} };
+  assert.match(raus.aufgabe({ aufgabe: 'aussteigen' }), /keinem Fahrzeug/);
+});

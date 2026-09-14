@@ -92,7 +92,7 @@ const TIERE = new Set(['cow', 'pig', 'chicken', 'sheep', 'rabbit', 'mooshroom'])
 const TIER_WOERTER = { kuh: 'cow', kuehe: 'cow', kühe: 'cow', schwein: 'pig', schweine: 'pig', huhn: 'chicken', huehner: 'chicken', hühner: 'chicken', schaf: 'sheep', schafe: 'sheep', hase: 'rabbit', hasen: 'rabbit', kaninchen: 'rabbit', pilzkuh: 'mooshroom' };
 // Das behält die Figur beim Einräumen: Waffen, Werkzeug, Rüstung, Essen, Fackeln.
 const BEHALTEN = /_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)$|^(shield|bow|crossbow|trident|arrow|torch)$/;
-const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf';
+const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf · !steig ein · !steig aus';
 // Brennstoff für den Ofen: Name (oder Endung) und wie viele Dinge eins schafft.
 const BRENNSTOFF = [['coal', 8], ['charcoal', 8], ['_planks', 1.5], ['_log', 1.5], ['stick', 0.5]];
 // Was die Figur beim Umsehen meldet.
@@ -340,6 +340,14 @@ function istFeind(e) {
   return !!e && e.type !== 'player' && e.isValid !== false && (e.type === 'hostile' || FEINDE.has(e.name));
 }
 
+// Reitbare Tiere (mit Sattel). Boote und Loren erkennt man am Namen.
+const REITTIERE = new Set(['horse', 'donkey', 'mule', 'skeleton_horse', 'zombie_horse', 'pig', 'strider', 'camel']);
+function istFahrzeug(e) {
+  if (!e || e.isValid === false || !e.name) return false;
+  const n = e.name;
+  return n === 'boat' || n === 'chest_boat' || n.endsWith('_boat') || n.endsWith('_chest_boat') || n.includes('minecart') || REITTIERE.has(n);
+}
+
 // Welchen Feind zuerst? Ein Creeper ist die größte Gefahr, danach zählt die Nähe.
 // Fernkämpfer (Skelett, Hexe) etwas vor gewöhnlichen Nahkämpfern.
 function bedrohWert(e, p) {
@@ -400,6 +408,8 @@ function befehlLesen(text, namen = []) {
   const gib = /^(?:gib|gebe|give)(?:\s+(?:mir|me))?\s+(.+)$/.exec(s);
   if (gib) { const m = mengeLesen(gib[1]); return { aufgabe: 'geben', item: m.sache, anzahl: m.anzahl }; }
   if (/^(ess|iss|essen|eat)( was| etwas)?$/.test(s)) return { aufgabe: 'essen' };
+  if (/^(steig(e)? (ein|auf)|einsteigen|aufsteigen|ins boot|boot|reit(e|en)?|fahr(e|en)?( los)?|mount|ride|board)$/.test(s)) return { aufgabe: 'einsteigen' };
+  if (/^(steig(e)? aus|aussteigen|absteigen|raus aus dem boot|dismount|unmount|get off)$/.test(s)) return { aufgabe: 'aussteigen' };
   const schm = /^(?:schmelz(?:e)?|brat(?:e)?|smelt|cook)\s+(.+)$/.exec(s);
   if (schm) { const m = mengeLesen(schm[1]); return { aufgabe: 'schmelzen', item: m.sache, anzahl: m.anzahl }; }
   const hin = /^(?:stell(?:e)?\s+(.+?)\s+hin|platzier(?:e)?\s+(.+)|place\s+(.+))$/.exec(s);
@@ -787,6 +797,10 @@ class Minecraft extends EventEmitter {
         if (!gegessen) throw new Error('Ich habe nichts zu essen dabei.');
         return `Ich esse ${essenName(gegessen)}.`;
       }
+      case 'einsteigen':
+        return this._einsteigen();
+      case 'aussteigen':
+        return this._aussteigen();
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
@@ -814,6 +828,7 @@ class Minecraft extends EventEmitter {
       leben: Math.round(bot.health),
       hunger: Math.round(bot.food),
       essbar: this._essbar(),
+      faehrt: bot.vehicle ? (bot.vehicle.name || 'Fahrzeug') : null,
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       spielmodus: bot.game && bot.game.gameMode,
       aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block || a.item, geschafft: a.geschafft, ziel: a.anzahl, ort: a.ort } : null,
@@ -1266,6 +1281,36 @@ class Minecraft extends EventEmitter {
     return `Ich laufe zu ${a.ort}.`;
   }
 
+  // In ein Boot, eine Lore oder auf ein reitbares Tier in der Nähe steigen.
+  _einsteigen() {
+    const bot = this.bot;
+    if (bot.vehicle) return 'Ich sitze schon in etwas.';
+    const p = bot.entity.position;
+    const e = bot.nearestEntity((x) => istFahrzeug(x) && x.position && x.position.distanceTo(p) < 16);
+    if (!e) throw new Error('Ich sehe kein Boot, keine Lore und kein Reittier in der Nähe.');
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'einsteigen', zielId: e.id };
+    this.auftrag = a;
+    (async () => {
+      try {
+        if (e.position.distanceTo(p) > 2) await bot.pathfinder.goto(new GoalNear(e.position.x, e.position.y, e.position.z, 1));
+        if (this.auftrag !== a) return;
+        bot.mount(e);
+        this._fertig(a, bot.vehicle ? 'Eingestiegen.' : 'Ich bin am Fahrzeug – steige ein.');
+      } catch {
+        this._fertig(a, 'Ich komme nicht ans Fahrzeug heran.');
+      }
+    })();
+    return 'Ich steige ein.';
+  }
+
+  _aussteigen() {
+    const bot = this.bot;
+    if (!bot.vehicle) return 'Ich sitze in keinem Fahrzeug.';
+    bot.dismount();
+    return 'Ich steige aus.';
+  }
+
   _geben(item, anzahl, name) {
     const bot = this.bot;
     const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
@@ -1655,7 +1700,7 @@ const WERKZEUGE = [
     input_schema: {
       type: 'object',
       properties: {
-        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'schmelzen', 'platzieren', 'ausruesten', 'essen', 'stopp'] },
+        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'schmelzen', 'platzieren', 'ausruesten', 'essen', 'einsteigen', 'aussteigen', 'stopp'] },
         spieler: { type: 'string' },
         block: { type: 'string' },
         item: { type: 'string', description: 'für geben und herstellen, z. B. brot, fackel, diamant, oak_planks' },

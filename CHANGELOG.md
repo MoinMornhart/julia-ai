@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.5.0 – 2026-09-14
+- Julia kann in Minecraft jetzt in ein Boot, eine Lore oder auf ein Reittier steigen und wieder aussteigen – per Befehl im Spielchat wie '!steig ein' und '!steig aus'
+
 ## 4.4.0 – 2026-09-14
 - Julia kämpft in Minecraft klüger: bei wenig Leben ohne Goldapfel zieht sie sich zurück, einen Creeper umarmt sie nicht mehr sondern hält Abstand und schlägt aus der Distanz zu, und sie nimmt sich zuerst die gefährlichste Bedrohung vor
 
