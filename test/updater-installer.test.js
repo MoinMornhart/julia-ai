@@ -53,7 +53,7 @@ function aufbau({ exe = Buffer.from('MZ – Installer'), summe, urlExe } = {}) {
     holen,
     starten: (datei, args) => { gestartet.push({ datei, args }); return { unref() {} }; },
   });
-  return { u, ordner, gestartet, geholt, istBeendet: () => beendet };
+  return { u, ordner, gestartet, geholt, istBeendet: () => beendet, releases, antworten };
 }
 
 test('Installierte Fassung findet das neueste stabile Release samt Versionshinweis', async () => {
@@ -74,6 +74,26 @@ test('Installer wird nur mit passender SHA-512-Summe gestartet', async () => {
   assert.equal(fs.readFileSync(gestartet[0].datei, 'utf8'), 'MZ – Installer');
   assert.equal(JSON.parse(fs.readFileSync(path.join(ordner, 'update-status.json'), 'utf8')).phase, 'installer');
   assert.equal(istBeendet(), true);
+});
+
+test('Beim Einspielen gilt die neueste Version, nicht ein alter Prüfstand', async () => {
+  const { u, gestartet, releases, antworten } = aufbau();
+  await u.pruefen();
+  const exe = Buffer.from('MZ – neuer');
+  const sha = crypto.createHash('sha512').update(exe).digest('base64');
+  const yml = `version: 1.1.0\npath: Julia-AI-Setup.exe\nsha512: ${sha}\n`;
+  releases.unshift({
+    tag_name: 'v1.1.0', body: 'neu', draft: false, prerelease: false,
+    assets: [
+      { name: 'latest.yml', size: yml.length, browser_download_url: `${DL}/v1.1.0/latest.yml` },
+      { name: 'Julia-AI-Setup.exe', size: exe.length, browser_download_url: `${DL}/v1.1.0/Julia-AI-Setup.exe` },
+    ],
+  });
+  antworten[`${DL}/v1.1.0/latest.yml`] = yml;
+  antworten[`${DL}/v1.1.0/Julia-AI-Setup.exe`] = exe;
+  await u._einspielen('v1.0.0');
+  assert.match(gestartet[0].datei, /Julia-AI-Setup-1\.1\.0\.exe$/);
+  assert.equal(fs.readFileSync(gestartet[0].datei, 'utf8'), 'MZ – neuer');
 });
 
 test('Falsche Prüfsumme: nichts wird gestartet', async () => {

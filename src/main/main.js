@@ -674,12 +674,19 @@ async function updatesManuell() {
   if (!sofort) melden(t('update.titel'), t('update.wartet'));
 }
 
-async function updatesBeimStart() {
+// Beim Start und danach alle zwei Stunden. Mitten im Spiel oder mit Julia auf
+// einem Minecraft-Server startet sie nicht neu – dann eben beim nächsten Mal.
+let updateGemeldet = null;
+async function updatesAutomatisch() {
   if (!config.get('update.pruefen')) return;
+  if (spielAktiv || (minecraft && minecraft.verbunden)) return;
   const r = await updater.pruefen();
   if (r.fehler || !r.neu) return;
   if (config.get('update.automatisch')) updater.nachAufgabeEinspielen(r.neu);
-  else melden(t('update.titel'), t('update.verfuegbar_hinweis', { version: r.neu }));
+  else if (updateGemeldet !== r.neu) {
+    updateGemeldet = r.neu;
+    melden(t('update.titel'), t('update.verfuegbar_hinweis', { version: r.neu }));
+  }
 }
 
 // --- IPC ---
@@ -1716,7 +1723,8 @@ async function start() {
   if (!config.get('einrichtung_fertig') || !bereit()) einstellungenOeffnen(true);
   else if (!process.argv.includes('--versteckt')) chatFenster.once('ready-to-show', () => chatZeigen(null));
 
-  setTimeout(() => updatesBeimStart().catch(() => {}), 15000);
+  setTimeout(() => updatesAutomatisch().catch(() => {}), 15000);
+  setInterval(() => updatesAutomatisch().catch(() => {}), 2 * 3600 * 1000);
 }
 
 if (!app.requestSingleInstanceLock()) {

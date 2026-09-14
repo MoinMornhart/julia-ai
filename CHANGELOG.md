@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.2 – 2026-09-14
+- Updates kommen zuverlässig an: Julia sieht alle zwei Stunden nach und spielt immer die neueste Version ein statt eines älteren Stands – nie mitten im Spiel
+
 ## 3.2.1 – 2026-09-14
 - Julia findet Minecraft-Server jetzt wie das Spiel selbst über den SRV-Eintrag und kommt durch Server-Schutz wie NeoProtect oder TCPShield –  nicht erreichbar und ECONNRESET sind behoben
 

@@ -82,7 +82,18 @@ class InstallerUpdater extends Updater {
   }
 
   async _einspielen(tag) {
-    const releases = this.releases || passendeReleases(await this._json(API), 'test');
+    // Unmittelbar vorher frisch nachsehen: Kam seit der Prüfung eine neuere
+    // Version dazu, wird gleich die eingespielt – nie ein alter Stand.
+    const kanal = this.config.get('update.kanal');
+    let releases = this.releases;
+    try {
+      releases = passendeReleases(await this._json(API), kanal);
+      this.releases = releases;
+    } catch (e) {
+      if (!releases) throw e;
+    }
+    const neuester = hoechsterTag(releases.map((r) => r.tag_name), kanal);
+    if (neuester && version.vergleichen(neuester, tag) > 0) tag = neuester;
     const release = releases.find((r) => r.tag_name === tag);
     if (!release) throw new Error(`Release ${tag} nicht gefunden.`);
 
