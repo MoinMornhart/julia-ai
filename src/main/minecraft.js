@@ -74,14 +74,37 @@ function adresseTeilen(roh, port) {
 // ein umgebogener DNS-Eintrag nicht nachträglich auf einen fremden Server zeigen.
 // oeffentlich: Die Adresse hat der Nutzer selbst eingetragen – dann darf es
 // auch ein Server im Internet sein, nur kein großes Netzwerk.
-async function adressePruefen(roh, aufloesen = (h) => dns.promises.lookup(h, { all: true }), { oeffentlich = false } = {}) {
+function hostPruefen(roh) {
   const host = String(roh || '').trim().replace(/^\[|\]$/g, '');
   if (!host || host.length > 253 || !/^[A-Za-z0-9.\-:]+$/.test(host)) throw new Error('Das ist keine gültige Serveradresse.');
   if (GROSSE_NETZWERKE.test(host)) throw new Error(GROSSES_NETZWERK);
+  return host;
+}
+
+async function adressePruefen(roh, aufloesen = (h) => dns.promises.lookup(h, { all: true }), { oeffentlich = false } = {}) {
+  const host = hostPruefen(roh);
   const ips = net.isIP(host) ? [host] : (await aufloesen(host)).map((x) => x.address);
   if (!ips.length) throw new Error(`${host} wurde nicht gefunden.`);
   if (!oeffentlich && !ips.every(intern)) throw new Error(FREMDER_SERVER);
   return ips[0];
+}
+
+// Wie das Spiel selbst: Ohne eigenen Port gilt der SRV-Eintrag
+// (_minecraft._tcp.NAME) – viele Server liegen nicht dort, wo die Webseite
+// liegt. Verbunden wird mit der geprüften IP; im Handshake steht aber der
+// Name, den du eingetragen hast, sonst lassen Proxys (BungeeCord, Velocity,
+// TCPShield) die Verbindung fallen.
+async function zielFinden(roh, port, { aufloesen, srv = (n) => dns.promises.resolveSrv(n), oeffentlich = false } = {}) {
+  const host = hostPruefen(roh);
+  let ziel = { name: host, port };
+  if (port === 25565 && !net.isIP(host) && host !== 'localhost' && host.includes('.')) {
+    try {
+      const s = (await srv(`_minecraft._tcp.${host}`)).sort((a, b) => a.priority - b.priority || b.weight - a.weight)[0];
+      if (s && s.name && s.port) ziel = { name: String(s.name).replace(/\.$/, ''), port: s.port };
+    } catch { /* kein SRV-Eintrag: direkt */ }
+  }
+  const ip = await adressePruefen(ziel.name, aufloesen, { oeffentlich });
+  return { host, ip, port: ziel.port };
 }
 
 // Speicher für die Microsoft-Anmeldung, im Format von prismarine-auth –
@@ -322,16 +345,20 @@ function rauswurfText(grund) {
 function fehlerText(e, server) {
   if (e && e.code === 'ECONNREFUSED') return `Unter ${server} läuft kein Minecraft-Server (Verbindung abgelehnt). Läuft der Server, und stimmt der Port?`;
   if (e && ['ETIMEDOUT', 'EHOSTUNREACH', 'ENETUNREACH'].includes(e.code)) return `${server} ist nicht erreichbar.`;
+  if (e && (e.code === 'ECONNRESET' || /closed before the server sent/i.test(e.message || ''))) {
+    return `${server} hat die Verbindung sofort getrennt – meist ein Schutz gegen Bots oder eine Minecraft-Version, die Julia noch nicht kennt.`;
+  }
   return `Verbindung fehlgeschlagen: ${e && e.message ? e.message : e}`;
 }
 
 // --- Die Spielfigur ---
 
 class Minecraft extends EventEmitter {
-  constructor({ laden, aufloesen } = {}) {
+  constructor({ laden, aufloesen, srv } = {}) {
     super();
     this.laden = laden || (() => ({ mineflayer: require('mineflayer'), pf: require('mineflayer-pathfinder') }));
     this.aufloesen = aufloesen;
+    this.srv = srv;
     this.bot = null;
     this.auftrag = null;
     this.chatVerlauf = [];
@@ -350,7 +377,8 @@ class Minecraft extends EventEmitter {
     this.trennen();
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
-    const ip = await adressePruefen(adresse, this.aufloesen, { oeffentlich });
+    const ziel = await zielFinden(adresse, p, { aufloesen: this.aufloesen, srv: this.srv, oeffentlich });
+    const ip = ziel.ip;
     const { mineflayer, pf } = this.laden();
     this.pf = pf;
     this.server = `${adresse}:${p}`;
@@ -366,7 +394,7 @@ class Minecraft extends EventEmitter {
       }
       : { auth: 'offline', username: botName(botname, assistent) };
     const bot = mineflayer.createBot({
-      host: ip, port: p, ...anmeldung, version: version || false, hideErrors: true, logErrors: false, checkTimeoutInterval: 30000,
+      host: ziel.host, port: p, connect: (c) => c.setSocket(net.connect(ziel.port, ip)), ...anmeldung, version: version || false, hideErrors: true, logErrors: false, checkTimeoutInterval: 30000,
     });
     this.bot = bot;
     bot.on('error', (e) => { this.letzterFehler = e && e.message; }); // ohne Zuhörer würde ein Fehler die App beenden
@@ -885,6 +913,6 @@ const WERKZEUGE = [
 module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
-  adresseTeilen, adressePruefen, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
+  adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, chatTeile,
 };

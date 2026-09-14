@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.1 – 2026-09-14
+- Julia findet Minecraft-Server jetzt wie das Spiel selbst über den SRV-Eintrag und kommt durch Server-Schutz wie NeoProtect oder TCPShield –  nicht erreichbar und ECONNRESET sind behoben
+
 ## 3.2.0 – 2026-09-14
 - Im Spiel kannst du jetzt ins Overlay klicken, darin scrollen und direkt tippen – ein Klick zurück ins Spiel macht es wieder durchlässig
 

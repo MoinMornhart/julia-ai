@@ -16,6 +16,36 @@ test('Minecraft: nur Server auf diesem PC oder im Heimnetz', async () => {
   await assert.rejects(mc.adressePruefen('a b'), /gültige/);
 });
 
+test('Minecraft: SRV-Eintrag wie im Spiel, Handshake mit dem eingetragenen Namen', async () => {
+  const srv = async (n) => {
+    assert.equal(n, '_minecraft._tcp.play.example.de');
+    return [{ name: 'b.proxy.example.', port: 25577, priority: 10, weight: 1 }, { name: 'a.proxy.example.', port: 25570, priority: 5, weight: 5 }];
+  };
+  const dns = async (h) => { assert.equal(h, 'a.proxy.example'); return [{ address: '5.9.1.1' }]; };
+  assert.deepEqual(await mc.zielFinden('play.example.de', 25565, { aufloesen: dns, srv, oeffentlich: true }), { host: 'play.example.de', ip: '5.9.1.1', port: 25570 });
+
+  let gefragt = false;
+  const eigenerPort = await mc.zielFinden('play.example.de', 25570, { aufloesen: dnsFake(['5.9.1.2']), srv: async () => { gefragt = true; return []; }, oeffentlich: true });
+  assert.deepEqual(eigenerPort, { host: 'play.example.de', ip: '5.9.1.2', port: 25570 });
+  assert.equal(gefragt, false);
+
+  const keinSrv = async () => { throw Object.assign(new Error('x'), { code: 'ENOTFOUND' }); };
+  assert.deepEqual(await mc.zielFinden('mc.example.de', 25565, { aufloesen: dnsFake(['5.9.1.3']), srv: keinSrv, oeffentlich: true }), { host: 'mc.example.de', ip: '5.9.1.3', port: 25565 });
+
+  // Ein SRV-Eintrag hebelt die Regeln nicht aus.
+  const aufHypixel = async () => [{ name: 'mc.hypixel.net', port: 25565, priority: 0, weight: 0 }];
+  await assert.rejects(mc.zielFinden('tarn.example.de', 25565, { aufloesen: dnsFake(['1.2.3.4']), srv: aufHypixel, oeffentlich: true }), /Bots/);
+  const insInternet = async () => [{ name: 'x.example.de', port: 25565, priority: 0, weight: 0 }];
+  await assert.rejects(mc.zielFinden('heim.example.de', 25565, { aufloesen: dnsFake(['5.9.1.1']), srv: insInternet }), /Heimnetz/);
+
+  let opts;
+  const m = new mc.Minecraft({ aufloesen: dns, srv, laden: () => ({ mineflayer: { createBot: (o) => { opts = o; throw new Error('halt'); } }, pf: {} }) });
+  await assert.rejects(m.verbinden({ adresse: 'play.example.de', oeffentlich: true }), /halt/);
+  assert.equal(opts.host, 'play.example.de');
+  assert.equal(opts.port, 25565);
+  assert.equal(typeof opts.connect, 'function');
+});
+
 test('Minecraft: Adresse mit Port', () => {
   assert.deepEqual(mc.adresseTeilen('192.168.1.20:25566'), { host: '192.168.1.20', port: 25566 });
   assert.deepEqual(mc.adresseTeilen('localhost', 25570), { host: 'localhost', port: 25570 });
