@@ -538,3 +538,27 @@ test('Minecraft: reagiert nur auf den Besitzer – außer „auf alle“ ist an'
   assert.equal(c.m.jeder, true);
   assert.deepEqual(ereignisse.at(-1), { jeder: true });
 });
+
+test('Minecraft: der Name darf irgendwo in der Nachricht stehen', () => {
+  const b = (t) => mc.befehlLesen(t, ['Julia']);
+  assert.deepEqual(b('Julia, folge mir'), { aufgabe: 'folgen' });
+  assert.deepEqual(b('folge mir julia'), { aufgabe: 'folgen' });
+  assert.deepEqual(b('komm her julia'), { aufgabe: 'kommen' });
+  assert.deepEqual(b('!folge'), { aufgabe: 'folgen' });
+  // Ohne Namen und ohne "!": kein Befehl.
+  assert.equal(b('folge mir'), null);
+  // Der Name als Teil eines anderen Wortes zählt nicht.
+  assert.equal(b('julian folgt dir'), null);
+
+  const f = (t) => mc.frageLesen(t, ['Julia']);
+  assert.equal(f('weißt du julia wo diamanten sind'), 'weißt du wo diamanten sind');
+  assert.equal(f('nur so ein satz'), null);
+
+  assert.equal(mc.hoerModus('kannst du bitte auf alle hören julia'), null, 'ohne Anrede-Erkennung greift der Umschalter nicht');
+  assert.equal(mc.hoerModus('julia hör auf alle', ['Julia']), 'alle');
+
+  // anrede entfernt den Namen und säubert die Ränder.
+  assert.deepEqual(mc.anrede('Julia, komm her', ['Julia']), { ok: true, rest: 'komm her' });
+  assert.deepEqual(mc.anrede('komm her, Julia', ['Julia']), { ok: true, rest: 'komm her' });
+  assert.equal(mc.anrede('nichts hier', ['Julia']).ok, false);
+});

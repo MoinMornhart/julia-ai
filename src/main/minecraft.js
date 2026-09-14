@@ -376,18 +376,30 @@ function botName(wunsch, assistent) {
 }
 
 // Befehle im Spielchat: "!folge" oder mit Namen vorne ("Julia, komm her").
+// Ist Julia angesprochen? Entweder beginnt die Nachricht mit „!“, oder der Name
+// kommt irgendwo als eigenes Wort vor. Zurück kommt der Rest ohne den Namen,
+// damit „Julia, folge“ genauso funktioniert wie „folge mir Julia“.
+function anrede(text, namen = []) {
+  const roh = String(text || '').trim();
+  // Ränder säubern, aber ein „?“ am Ende bleibt – das braucht die Frage.
+  const saeubern = (s) => s.replace(/\s+/g, ' ').replace(/^[\s,:!]+/, '').replace(/[\s,:]+$/, '').trim();
+  if (roh.startsWith('!')) return { ok: true, rest: saeubern(roh.slice(1)) };
+  for (const name of namen.filter(Boolean).map(String)) {
+    const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const m = new RegExp(`(^|[^\\p{L}\\p{N}_])${esc}([^\\p{L}\\p{N}_]|$)`, 'iu').exec(roh);
+    if (m) {
+      const start = m.index + m[1].length;
+      return { ok: true, rest: saeubern(roh.slice(0, start) + roh.slice(start + name.length)) };
+    }
+  }
+  return { ok: false, rest: '' };
+}
+
 // Sie steuern nur die Spielfigur, nie etwas auf dem PC.
 function befehlLesen(text, namen = []) {
-  const roh = String(text || '').trim();
-  const klein = roh.toLowerCase();
-  let ab = -1;
-  if (klein.startsWith('!')) ab = 1;
-  else {
-    const n = namen.filter(Boolean).map((x) => String(x).toLowerCase()).find((x) => klein.startsWith(x));
-    if (n) ab = n.length;
-  }
-  if (ab < 0) return null;
-  const rest = roh.slice(ab).replace(/^[\s,:!]+/, '').replace(/[.!?]+$/, '').trim();
+  const a = anrede(text, namen);
+  if (!a.ok) return null;
+  const rest = a.rest.replace(/[.!?]+$/, '');
   const s = rest.toLowerCase();
   if (/^(stopp?|halt|warte|hör auf|hoer auf)$/.test(s)) return { aufgabe: 'stopp' };
   if (/^(folg(e|en)?|folge mir|komm mit|follow( me)?)$/.test(s)) return { aufgabe: 'folgen' };
@@ -421,35 +433,20 @@ function befehlLesen(text, namen = []) {
   return null;
 }
 
-// Eine Frage an Julia im Spielchat: mit "!" oder ihrem Namen vorne
-// ("Julia, wo finde ich Diamanten?"). Liefert den Text ohne Anrede.
+// Eine Frage an Julia im Spielchat: mit "!" oder ihrem Namen irgendwo in der
+// Nachricht ("Julia, wo finde ich Diamanten?"). Liefert den Text ohne Anrede.
 function frageLesen(text, namen = []) {
-  const roh = String(text || '').trim();
-  const klein = roh.toLowerCase();
-  let ab = -1;
-  if (klein.startsWith('!')) ab = 1;
-  else {
-    const n = namen.filter(Boolean).map((x) => String(x).toLowerCase())
-      .find((x) => klein.startsWith(x) && !/[\p{L}\p{N}_]/u.test(klein[x.length] || ''));
-    if (n) ab = n.length;
-  }
-  if (ab < 0) return null;
-  const rest = roh.slice(ab).replace(/^[\s,:!]+/, '').trim().slice(0, 250);
+  const a = anrede(text, namen);
+  if (!a.ok) return null;
+  const rest = a.rest.slice(0, 250);
   return rest.length >= 2 ? rest : null;
 }
 
 // „Hör auf alle“ / „hör nur auf mich“ – gibt 'alle', 'nur' oder null zurück.
 function hoerModus(text, namen = []) {
-  const roh = String(text || '').trim();
-  const klein = roh.toLowerCase();
-  let ab = -1;
-  if (klein.startsWith('!')) ab = 1;
-  else {
-    const n = namen.filter(Boolean).map((x) => String(x).toLowerCase()).find((x) => klein.startsWith(x));
-    if (n) ab = n.length;
-  }
-  if (ab < 0) return null;
-  const s = roh.slice(ab).replace(/^[\s,:!]+/, '').replace(/[.!?]+$/, '').trim().toLowerCase();
+  const a = anrede(text, namen);
+  if (!a.ok) return null;
+  const s = a.rest.replace(/[.!?]+$/, '').toLowerCase();
   if (/^(h(ö|oe)r(e)? (auf )?(alle|jeden)|(auf )?alle h(ö|oe)ren|reagier(e)? auf alle|listen to (everyone|all))$/.test(s)) return 'alle';
   if (/^(h(ö|oe)r(e)? nur (auf )?mich|nur (auf )?mich( h(ö|oe)ren)?|listen (only )?to me( only)?)$/.test(s)) return 'nur';
   return null;
@@ -1813,6 +1810,6 @@ module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile,
+  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile,
   itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };

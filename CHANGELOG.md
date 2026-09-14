@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.7.0 – 2026-09-14
+- Im Minecraft-Chat reicht es jetzt, wenn Julias Name irgendwo in der Nachricht steht – nicht mehr nur am Anfang; '!' geht weiter wie bisher
+
 ## 4.6.0 – 2026-09-14
 - Du kannst Julia sagen, dass sie in Minecraft auf alle Spieler reagiert, nicht nur auf deinen Namen – per Schalter im Panel oder im Spiel mit 'Julia, hör auf alle' bzw. 'hör nur auf mich'; gehandelt wird weiterhin nur im Spiel
 
