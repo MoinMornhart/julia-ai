@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
-  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net,
+  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net, clipboard, nativeImage,
 } = require('electron');
 const sicherheit = require('./sicherheit');
 
@@ -32,6 +32,8 @@ const { Weckwort } = require('./weckwort');
 const { HandyServer, qrMatrix } = require('./handy/server');
 const { Gespraeche } = require('./gespraeche');
 const routinenModul = require('./routinen');
+const { anhaengeLesen } = require('./anhaenge');
+const { fremd } = require('./hilfen');
 const anzeige = require('./anzeige');
 const anbieterListe = require('./anbieter/liste');
 const { claudeFinden } = require('./anbieter/claude-code');
@@ -466,6 +468,7 @@ function hotkeysRegistrieren() {
   globalShortcut.unregisterAll();
   const paare = [[config.get('hotkey.sprechen'), sprachUmschalten], [config.get('hotkey.chat'), chatUmschalten]];
   if (config.get('hotkey.overlay')) paare.push([config.get('hotkey.overlay'), overlayUmschalten]);
+  if (config.get('hotkey.auswahl')) paare.push([config.get('hotkey.auswahl'), () => { auswahlHolen().catch(() => {}); }]);
   for (const [taste, aktion] of paare) {
     let ok = false;
     try { ok = globalShortcut.register(taste, aktion); } catch { ok = false; }
@@ -483,14 +486,32 @@ function autostartSetzen() {
 
 // --- Gespräch und Sprache ---
 
-async function nachrichtSenden(text, perSprache) {
-  const sauber = String(text || '').trim();
-  if (!sauber) return;
+// Bilder für Anhänge: verkleinert und neu kodiert – dabei fallen Metadaten
+// wie GPS-Koordinaten weg.
+async function bildLesen(pfad) {
+  let bild = nativeImage.createFromPath(pfad);
+  if (bild.isEmpty()) throw new Error('Bild nicht lesbar');
+  const { width, height } = bild.getSize();
+  const faktor = Math.min(1, 1600 / Math.max(width, height));
+  if (faktor < 1) bild = bild.resize({ width: Math.round(width * faktor), height: Math.round(height * faktor), quality: 'best' });
+  const g = bild.getSize();
+  return { jpeg: bild.toJPEG(85).toString('base64'), breite: g.width, hoehe: g.height };
+}
+
+// pfade: angehängte Dateien; bloecke: fertige Inhalte (markierter Text);
+// anzeige: was im Chat als deine Nachricht steht, wenn es vom Auftrag abweicht.
+async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anzeige = null, anzeigeAnhaenge = [] } = {}) {
+  let sauber = String(text || '').trim();
+  if (!sauber && !pfade.length) return;
+  if (!sauber) sauber = t('chat.nur_dateien');
   sprache.stumm();
-  anAlle('agent:nutzer', { text: sauber, perSprache });
+  const a = pfade.length
+    ? await anhaengeLesen(pfade, { anbieterArt: anbieterListe.anbieterVon(config).art, bildLesen, sc: config.get('sprachcode') })
+    : { bloecke: [], namen: [] };
+  anAlle('agent:nutzer', { text: anzeige || sauber, perSprache, anhaenge: [...anzeigeAnhaenge, ...a.namen] });
   let antwort = null;
   try {
-    antwort = await agent.senden(sauber, { perSprache });
+    antwort = await agent.senden(sauber, { perSprache, anhaenge: [...a.bloecke, ...bloecke] });
   } catch (e) {
     if (e.message === 'BESCHAEFTIGT') anAlle('agent:hinweis', { art: 'beschaeftigt' });
     else anAlle('agent:fehler', { art: 'text', text: e.message });
@@ -647,10 +668,16 @@ function ipcEinrichten() {
     hoert,
     hotkey: config.get('hotkey.sprechen'),
   }));
-  ipc.handle('chat:senden', (_e, text) => {
-    nachrichtSenden(text, false).catch((e) => anAlle('agent:fehler', { art: 'text', text: e.message }));
+  ipc.handle('chat:senden', (_e, text, pfade) => {
+    const liste = Array.isArray(pfade) ? pfade.filter((p) => typeof p === 'string').slice(0, 10) : [];
+    nachrichtSenden(text, false, { pfade: liste }).catch((e) => anAlle('agent:fehler', { art: 'text', text: e.message }));
     return true;
   });
+  ipc.handle('zwischenablage:schreiben', (_e, text) => {
+    clipboard.writeText(String(text || '').slice(0, 200000));
+    return true;
+  });
+  ipc.handle('auswahl:aktion', (_e, aktion, frage) => auswahlAktion(aktion, frage));
   ipc.on('chat:abbrechen', () => {
     agent.abbrechen();
     sprache.stumm();
@@ -763,6 +790,87 @@ function gespraechSpeichern() {
   } catch (e) {
     protokoll.eintragen({ werkzeug: 'verlauf', stufe: 'INFO', ergebnis: 'nicht gespeichert', grund: e.message });
   }
+}
+
+// --- Markierter Text ---
+// Hotkey: Strg+C an das Vordergrundfenster, Text aus der Zwischenablage holen,
+// Zwischenablage wiederherstellen, kleines Menü am Mauszeiger zeigen.
+
+let auswahlFenster = null;
+let auswahlText = '';
+const kurzWarten = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function auswahlHolen() {
+  const vorher = { text: clipboard.readText(), html: clipboard.readHTML(), bild: clipboard.readImage() };
+  const marke = `julia-auswahl-${Date.now()}`;
+  clipboard.writeText(marke);
+  try { await win.kopierenNachHotkey(); } catch { /* dann eben ohne */ }
+  let text = '';
+  for (let i = 0; i < 15; i++) {
+    await kurzWarten(60);
+    const jetzt = clipboard.readText();
+    if (jetzt !== marke) { text = jetzt; break; }
+  }
+  // Deine Zwischenablage kommt zurück, wie sie war.
+  clipboard.clear();
+  const zurueck = {};
+  if (vorher.text) zurueck.text = vorher.text;
+  if (vorher.html) zurueck.html = vorher.html;
+  if (!vorher.bild.isEmpty()) zurueck.image = vorher.bild;
+  if (Object.keys(zurueck).length) clipboard.write(zurueck);
+
+  text = String(text || '').trim();
+  if (!text) { melden(assistentName(), t('aw.nichts')); return; }
+  auswahlText = text.slice(0, 20000);
+  auswahlZeigen();
+}
+
+function auswahlZeigen() {
+  const p = screen.getCursorScreenPoint();
+  const wa = screen.getDisplayNearestPoint(p).workArea;
+  const breite = 360;
+  const hoehe = 292;
+  const x = Math.min(Math.max(wa.x + 8, p.x + 14), wa.x + wa.width - breite - 8);
+  const y = Math.min(Math.max(wa.y + 8, p.y + 14), wa.y + wa.height - hoehe - 8);
+  if (auswahlFenster && !auswahlFenster.isDestroyed()) auswahlFenster.destroy();
+  const f = new BrowserWindow({
+    x, y, width: breite, height: hoehe,
+    frame: false, transparent: true, resizable: false, alwaysOnTop: true, skipTaskbar: true, show: false,
+    backgroundColor: '#00000000', title: assistentName(), icon: fensterBild(),
+    webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true },
+  });
+  auswahlFenster = f;
+  f.setAlwaysOnTop(true, 'screen-saver');
+  f.loadFile(path.join(RENDERER, 'auswahl.html'));
+  f.once('ready-to-show', () => {
+    f.show();
+    f.focus();
+    f.webContents.send('auswahl:text', auswahlText);
+  });
+  f.on('blur', () => { if (!f.isDestroyed()) f.close(); });
+  f.on('closed', () => { if (auswahlFenster === f) auswahlFenster = null; });
+}
+
+const AUSWAHL_AKTIONEN = ['uebersetzen', 'zusammenfassen', 'umformulieren', 'erklaeren', 'korrigieren', 'antworten', 'frage'];
+
+function auswahlAktion(aktion, frage) {
+  if (!AUSWAHL_AKTIONEN.includes(aktion) || !auswahlText) return false;
+  const anweisung = aktion === 'frage' ? String(frage || '').trim().slice(0, 2000) : t(`aw.f_${aktion}`);
+  if (!anweisung) return false;
+  const text = auswahlText;
+  auswahlText = '';
+  if (auswahlFenster && !auswahlFenster.isDestroyed()) auswahlFenster.close();
+  chatZeigen('chat');
+  const en = config.get('sprachcode') === 'en';
+  // Markierter Text ist fremder Inhalt – nie ein Auftrag.
+  const block = { type: 'text', text: fremd(en ? 'the marked text' : 'der markierten Stelle', text) };
+  const schnipsel = text.replace(/\s+/g, ' ').slice(0, 48) + (text.length > 48 ? '…' : '');
+  nachrichtSenden(anweisung, false, {
+    bloecke: [block],
+    anzeige: aktion === 'frage' ? `✂ ${anweisung}` : t('aw.nutzer', { aktion: t(`aw.a_${aktion}`) }),
+    anzeigeAnhaenge: [{ name: schnipsel, art: 'auswahl' }],
+  }).catch((e) => anAlle('agent:fehler', { art: 'text', text: e.message }));
+  return true;
 }
 
 // Routine starten: Im Chat steht nur "▶ Name", Julia bekommt den ganzen

@@ -1,6 +1,6 @@
 'use strict';
 
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 // Die einzige Brücke zwischen Oberfläche und Hauptprozess. Die Fenster sehen
 // nur diese Funktionen, kein Node und kein Dateisystem.
@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'erinnerung', 'kosten',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'erinnerung', 'kosten',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -39,7 +39,11 @@ contextBridge.exposeInMainWorld('julia', {
   handyTrennen: () => ipcRenderer.invoke('handy:trennen'),
   einrichtungFertig: () => ipcRenderer.invoke('einrichtung:fertig'),
   status: () => ipcRenderer.invoke('chat:status'),
-  senden: (text) => ipcRenderer.invoke('chat:senden', text),
+  senden: (text, pfade) => ipcRenderer.invoke('chat:senden', text, Array.isArray(pfade) ? pfade : []),
+  // Pfad einer hineingezogenen Datei (Electron gibt ihn der Seite nicht direkt).
+  dateiPfad: (datei) => { try { return webUtils.getPathForFile(datei) || ''; } catch { return ''; } },
+  kopieren: (text) => ipcRenderer.invoke('zwischenablage:schreiben', String(text || '')),
+  auswahlAktion: (aktion, frage) => ipcRenderer.invoke('auswahl:aktion', String(aktion), String(frage || '')),
   abbrechen: () => ipcRenderer.send('chat:abbrechen'),
   neu: () => ipcRenderer.send('chat:neu'),
   sprechen: () => ipcRenderer.send('sprache:umschalten'),

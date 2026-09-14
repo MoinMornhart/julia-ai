@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.6.0 – 2026-09-14
+- Dateien einfach in den Chat ziehen, und markierten Text aus jedem Programm mit Strg+Alt+T übersetzen, zusammenfassen oder umformulieren
+
 ## 1.5.0 – 2026-09-14
 - Routinen auf Knopfdruck – eigene Abläufe wie Feierabend, Fokus oder Zocken, einmal freigeben und Julia arbeitet sie ab
 

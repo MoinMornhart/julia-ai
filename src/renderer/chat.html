@@ -152,12 +152,16 @@
         </main>
 
         <footer class="eingabe">
+          <div class="anhang-leiste" id="anhangLeiste" hidden></div>
           <div class="eingabe-feld">
+            <button class="rund mikro" id="btnAnhang" type="button"></button>
             <textarea id="text" rows="1" spellcheck="true"></textarea>
             <button class="rund mikro" id="btnMikro"></button>
             <button class="rund senden" id="btnSenden"></button>
           </div>
+          <input type="file" id="dateiWahl" multiple hidden>
         </footer>
+        <div class="ablegen" id="ablegen" hidden><div><span id="ablegenIcon"></span><p id="ablegenText"></p></div></div>
       </section>
     </div>
   </div>

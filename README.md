@@ -70,6 +70,15 @@ auch als Schnellaktionen auf der Startseite.
   <img src="docs/bilder/routinen-de.png" width="760" alt="Routinen: Feierabend, Fokus, Zocken">
 </p>
 
+**Dateien und markierter Text:** Zieh Dateien in den Chat oder hänge sie mit der Büroklammer an
+– Texte, Bilder und (mit Claude) PDFs. Bilder werden verkleinert und neu kodiert, dabei fallen
+Metadaten wie GPS-Koordinaten weg. In jedem Programm markierst du Text und drückst
+`Strg+Alt+T`: Ein kleines Menü am Mauszeiger bietet Übersetzen, Zusammenfassen, Umformulieren,
+Erklären, Fehler korrigieren, Antwort entwerfen oder eine eigene Frage. Deine Zwischenablage stellt
+Julia danach wieder her. Angehängte Dateien und markierter Text gelten als fremde Inhalte – was
+darin steht, ist nie ein Auftrag, und der Schutz gegen Datenabfluss greift. Jede Antwort hat
+einen Kopieren-Knopf.
+
 ## KI-Anbieter
 
 Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:

@@ -78,6 +78,22 @@ public static class JuliaWin {
     Send(l);
   }
 
+  [DllImport("user32.dll")] static extern short GetAsyncKeyState(int vk);
+
+  // Hotkey "markierter Text": erst warten, bis Alt, Umschalt und die
+  // Windows-Taste losgelassen sind (höchstens 1,5 s) – sonst käme Strg+Alt+C an.
+  public static void KopierenNachHotkey() {
+    int[] tasten = { 0x12, 0x10, 0x5B, 0x5C };
+    var ende = DateTime.Now.AddMilliseconds(1500);
+    while (DateTime.Now < ende) {
+      bool gedrueckt = false;
+      foreach (var t in tasten) if ((GetAsyncKeyState(t) & 0x8000) != 0) gedrueckt = true;
+      if (!gedrueckt) break;
+      Thread.Sleep(20);
+    }
+    Kombination(new ushort[] { 0x11, 0x43 });
+  }
+
   public static void Klick(int x, int y, string taste, bool doppelt) {
     SetCursorPos(x, y);
     Thread.Sleep(40);

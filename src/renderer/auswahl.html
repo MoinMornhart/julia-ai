@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="de" data-theme="dunkel">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Julia</title>
+  <link rel="stylesheet" href="basis.css">
+  <link rel="stylesheet" href="auswahl.css">
+  <script src="design.js"></script>
+</head>
+<body>
+  <div class="aw">
+    <header class="aw-kopf">
+      <span class="mini-kugel"></span>
+      <strong id="awTitel"></strong>
+      <button class="aw-zu" id="awZu" type="button" aria-label="×">×</button>
+    </header>
+    <blockquote class="aw-text" id="awText"></blockquote>
+    <div class="aw-aktionen" id="awAktionen"></div>
+    <form class="aw-frage" id="awForm">
+      <input id="awFrage" autocomplete="off" spellcheck="true">
+      <button type="submit" class="aw-senden" id="awSenden">↵</button>
+    </form>
+  </div>
+  <script src="auswahl.js"></script>
+</body>
+</html>

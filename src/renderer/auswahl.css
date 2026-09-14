@@ -1,0 +1,69 @@
+/* Kleines Menü am Mauszeiger für markierten Text. */
+
+body { background: transparent; }
+.aw {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 12px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--akzent-rand);
+  background:
+    radial-gradient(360px 160px at 50% -60px, color-mix(in srgb, var(--akzent) 22%, transparent), transparent 70%),
+    var(--flaeche-fest);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+}
+.aw-kopf { display: flex; align-items: center; gap: 9px; -webkit-app-region: drag; }
+.aw-kopf .mini-kugel { width: 18px; height: 18px; }
+.aw-kopf strong { flex: 1; font-size: 11px; font-weight: 750; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-2); }
+.aw-zu { -webkit-app-region: no-drag; width: 26px; height: 26px; border-radius: 8px; font-size: 18px; line-height: 1; color: var(--text-3); }
+.aw-zu:hover { background: var(--flaeche-2); color: var(--text); }
+.aw-text {
+  margin: 0;
+  max-height: 74px;
+  overflow: hidden;
+  padding: 8px 11px;
+  border-left: 2px solid var(--akzent);
+  border-radius: 6px;
+  background: var(--grund-2);
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+.aw-aktionen { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.aw-aktion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--linie);
+  background: var(--flaeche-2);
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  transition: border-color 0.12s, background 0.12s;
+}
+.aw-aktion:hover, .aw-aktion:focus-visible { border-color: var(--akzent-rand); background: var(--akzent-weich); outline: none; }
+.aw-aktion kbd { margin-left: auto; font: 10.5px var(--mono); color: var(--text-3); }
+.aw-frage { display: flex; gap: 6px; }
+.aw-frage input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  background: var(--grund-2);
+  border: 1px solid var(--linie-stark);
+  border-radius: 10px;
+  padding: 8px 10px;
+  outline: none;
+}
+.aw-frage input:focus { border-color: var(--akzent-rand); box-shadow: var(--glow); }
+.aw-senden { width: 36px; border-radius: 10px; background: var(--akzent); color: var(--akzent-text); font-weight: 700; }

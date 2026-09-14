@@ -35,7 +35,7 @@
   function eintragHtml(e) {
     switch (e.typ) {
       case 'nutzer':
-        return `<div class="nachricht nutzer"><div class="blase">${esc(e.text).replace(/\n/g, '<br>')}</div>${e.handy ? `<div class="meta">📱 ${esc(tx('chat.handy'))}</div>` : ''}</div>`;
+        return `<div class="nachricht nutzer"><div class="blase">${esc(e.text).replace(/\n/g, '<br>')}</div>${anhangChips(e.anhaenge)}${e.handy ? `<div class="meta">📱 ${esc(tx('chat.handy'))}</div>` : ''}</div>`;
       case 'julia':
         return `<div class="nachricht julia"><div class="blase">${md(e.text)}</div></div>`;
       case 'werkzeug':

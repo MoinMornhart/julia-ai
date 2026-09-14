@@ -12,7 +12,12 @@ function anwenden(v, art, d = {}, max = MAX) {
   switch (art) {
     case 'nutzer':
       schliessen();
-      v.push({ typ: 'nutzer', text: String(d.text || ''), handy: !!d.handy });
+      v.push({
+        typ: 'nutzer',
+        text: String(d.text || ''),
+        handy: !!d.handy,
+        ...(Array.isArray(d.anhaenge) && d.anhaenge.length ? { anhaenge: d.anhaenge.slice(0, 10).map((a) => ({ name: String(a.name || ''), art: String(a.art || '') })) } : {}),
+      });
       break;
     case 'text': {
       const l = offen();

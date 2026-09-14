@@ -255,6 +255,12 @@ async function taste(kombination) {
   await worker.ausfuehren(mitArgs({ vks }, '[JuliaWin]::Kombination([uint16[]]@($a.vks))'));
 }
 
+// Für den Hotkey "markierter Text": warten, bis Alt, Umschalt und Windows-Taste
+// losgelassen sind (sonst käme Strg+Alt+C an), dann Strg+C an das Vordergrundfenster.
+async function kopierenNachHotkey() {
+  await worker.ausfuehren('[JuliaWin]::KopierenNachHotkey()', 5000);
+}
+
 async function fokussieren(id) {
   return worker.ausfuehren(mitArgs({ id }, '[JuliaWin]::Fokus([int64]$a.id)'));
 }
@@ -267,5 +273,5 @@ $true`), 30000);
 
 module.exports = {
   worker, aufwaermen, fensterAuflisten, vordergrund, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
-  klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen,
+  klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen, kopierenNachHotkey,
 };

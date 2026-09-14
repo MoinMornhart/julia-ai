@@ -58,6 +58,7 @@ const STANDARD = {
     sprechen: 'Control+Alt+Space',
     chat: 'Control+Alt+J',
     overlay: 'Control+Shift+Space', // leer = abgeschaltet
+    auswahl: 'Control+Alt+T', // markierten Text übernehmen; leer = abgeschaltet
   },
   overlay: {
     monitor: 0,
@@ -219,6 +220,7 @@ function pruefen(schluessel, wert) {
     case 'design.akzent':
       return farbe(wert);
     case 'hotkey.overlay':
+    case 'hotkey.auswahl':
       return String(wert ?? '').trim();
     case 'weckwort.schwelle':
       return Math.round(zahl(wert, 0.5, 0.95, 'Erkennungsschwelle') * 100) / 100;

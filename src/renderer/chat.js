@@ -23,7 +23,36 @@ const ICON = {
   senden: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></svg>',
   stopp: '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2.5"/></svg>',
   zu: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+  klammer: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m20.5 11.5-8.2 8.2a5.3 5.3 0 0 1-7.5-7.5l8.6-8.6a3.5 3.5 0 0 1 5 5l-8.6 8.6a1.8 1.8 0 0 1-2.5-2.5l7.9-7.9"/></svg>',
+  kopieren: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+  haken: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>',
 };
+
+const ANHANG_ICON = { text: '📄', bild: '🖼', pdf: '📑', auswahl: '✂', fehlt: '⚠' };
+let anhaenge = []; // { name, pfad }
+
+function anhangChips(liste) {
+  if (!liste || !liste.length) return '';
+  return `<div class="anhaenge">${liste.map((a) => `<span class="anhang-chip${a.art === 'fehlt' ? ' fehlt' : ''}"${a.grund ? ` title="${esc(a.grund)}"` : ''}>${ANHANG_ICON[a.art] || '📄'} ${esc(a.name)}${a.grund ? ` – ${esc(a.grund)}` : ''}</span>`).join('')}</div>`;
+}
+
+function anhaengeMalen() {
+  const l = $('anhangLeiste');
+  l.hidden = !anhaenge.length;
+  l.innerHTML = anhaenge.map((a, i) => `<span class="anhang-chip">📎 ${esc(a.name)}<button type="button" data-i="${i}" aria-label="×">×</button></span>`).join('');
+  l.querySelectorAll('button').forEach((b) => { b.onclick = () => { anhaenge.splice(Number(b.dataset.i), 1); anhaengeMalen(); }; });
+}
+
+function dateienHinzu(dateien) {
+  for (const d of dateien) {
+    const pfad = julia.dateiPfad(d);
+    if (!pfad || anhaenge.some((a) => a.pfad === pfad)) continue;
+    if (anhaenge.length >= 5) break;
+    anhaenge.push({ name: d.name, pfad });
+  }
+  anhaengeMalen();
+  $('text').focus();
+}
 
 function overlayModus(modus) {
   document.body.classList.toggle('passiv', modus === 'passiv');
@@ -117,19 +146,38 @@ function element(klasse, html) {
   return d;
 }
 
-function nutzerNachricht(text, perSprache, vomHandy) {
+function nutzerNachricht(text, perSprache, vomHandy, liste) {
   antwortEl = null;
   const meta = vomHandy ? `📱 ${esc(tx('chat.handy'))}` : perSprache ? `🎙 ${esc(tx('chat.sprache'))}` : '';
   anhaengen(element('nachricht nutzer',
-    `<div class="blase">${esc(text).replace(/\n/g, '<br>')}</div>${meta ? `<div class="meta">${meta}</div>` : ''}`));
+    `<div class="blase">${esc(text).replace(/\n/g, '<br>')}</div>${anhangChips(liste)}${meta ? `<div class="meta">${meta}</div>` : ''}`));
+}
+
+// Kopierknopf an jeder Antwort – über den Hauptprozess, die Seite selbst darf
+// nicht in die Zwischenablage schreiben.
+function kopierKnopf(nachricht) {
+  const b = document.createElement('button');
+  b.className = 'kopier-knopf';
+  b.type = 'button';
+  b.title = tx('chat.kopieren');
+  b.innerHTML = ICON.kopieren;
+  b.onclick = async () => {
+    await julia.kopieren(nachricht.juliaRoh || '');
+    b.innerHTML = ICON.haken;
+    b.classList.add('ok');
+    setTimeout(() => { b.innerHTML = ICON.kopieren; b.classList.remove('ok'); }, 1400);
+  };
+  nachricht.appendChild(b);
 }
 
 function juliaText(delta, ganz = false) {
   if (!antwortEl) {
     antwortEl = anhaengen(element('nachricht julia', '<div class="blase"></div>'));
+    if (!imOverlay) kopierKnopf(antwortEl);
     antwortRoh = '';
   }
   antwortRoh = ganz ? delta : antwortRoh + delta;
+  antwortEl.juliaRoh = antwortRoh;
   const unten = amEnde();
   antwortEl.firstChild.innerHTML = md(antwortRoh);
   if (unten) verlauf.scrollTop = verlauf.scrollHeight;
@@ -239,6 +287,8 @@ function texteAnwenden(daten) {
   $('btnEinst').title = tx('chat.einstellungen');
   $('btnZu').title = tx('chat.schliessen');
   $('btnMikro').title = `${tx('chat.mikro')} (${hk})`;
+  $('btnAnhang').title = tx('chat.anhaengen');
+  $('ablegenText').textContent = tx('chat.ablegen');
   $('leerText').textContent = tx('chat.leer', { hotkey: hk });
   knopfSenden();
   zustandAnzeigen(document.body.dataset.zustand || 'idle');
@@ -253,11 +303,13 @@ function hoehe() {
 function absenden() {
   const t = $('text');
   const text = t.value.trim();
-  if (!text) return;
+  if (!text && !anhaenge.length) return;
   if (beschaeftigt) { systemzeile(tx('chat.beschaeftigt')); return; }
   t.value = '';
   hoehe();
-  julia.senden(text);
+  julia.senden(text, anhaenge.map((a) => a.pfad));
+  anhaenge = [];
+  anhaengeMalen();
 }
 
 // Ein gespeichertes Gespräch zum Weiterschreiben laden (aus dem Verlauf).
@@ -266,7 +318,7 @@ function gespraechLaden(eintraege) {
   let n = 0;
   for (const e of eintraege || []) {
     const id = `alt-${n++}`;
-    if (e.typ === 'nutzer') nutzerNachricht(e.text, false, e.handy);
+    if (e.typ === 'nutzer') nutzerNachricht(e.text, false, e.handy, e.anhaenge);
     else if (e.typ === 'julia') { antwortEl = null; juliaText(e.text, true); antwortEl = null; }
     else if (e.typ === 'werkzeug') { werkzeug({ id, name: e.name, eingabe: e.eingabe }); werkzeugFertig({ id, ok: e.stand === 'ok', rot: e.stand === 'rot' }); }
     else if (e.typ === 'freigabe') { freigabe({ ...e, id }); freigabeErledigt({ id, ja: !!e.ja }); }
@@ -322,7 +374,26 @@ async function init() {
     else julia.schliessen();
   });
 
-  julia.on('agent:nutzer', ({ text, perSprache, handy }) => nutzerNachricht(text, perSprache, handy));
+  julia.on('agent:nutzer', ({ text, perSprache, handy, anhaenge: liste }) => nutzerNachricht(text, perSprache, handy, liste));
+
+  // Dateien: Büroklammer oder einfach ins Fenster ziehen.
+  $('btnAnhang').innerHTML = ICON.klammer;
+  $('btnAnhang').onclick = () => $('dateiWahl').click();
+  $('dateiWahl').addEventListener('change', () => { dateienHinzu([...$('dateiWahl').files]); $('dateiWahl').value = ''; });
+  $('ablegenIcon').innerHTML = ICON.klammer;
+  let ziehTiefe = 0;
+  const hatDateien = (e) => [...(e.dataTransfer?.types || [])].includes('Files');
+  document.addEventListener('dragenter', (e) => { if (!hatDateien(e)) return; e.preventDefault(); ziehTiefe++; $('ablegen').hidden = false; });
+  document.addEventListener('dragover', (e) => { if (hatDateien(e)) e.preventDefault(); });
+  document.addEventListener('dragleave', () => { ziehTiefe = Math.max(0, ziehTiefe - 1); if (!ziehTiefe) $('ablegen').hidden = true; });
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    ziehTiefe = 0;
+    $('ablegen').hidden = true;
+    if (!e.dataTransfer || !e.dataTransfer.files.length) return;
+    if (window.juliaAnsicht) window.juliaAnsicht('chat');
+    dateienHinzu([...e.dataTransfer.files]);
+  });
   julia.on('agent:start', () => beschaeftigtSetzen(true));
   julia.on('agent:text', (d) => juliaText(d));
   julia.on('agent:werkzeug', werkzeug);

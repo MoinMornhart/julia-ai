@@ -75,6 +75,7 @@ Hell/Dunkel wählen, Google verbinden, das Handy im WLAN koppeln.
 | `Strg` + `Alt` + `Leertaste` | Sprechen: einmal drücken, reden, nochmal drücken |
 | `Strg` + `Alt` + `J` | Chatfenster öffnen oder schließen |
 | `Strg` + `Umschalt` + `Leertaste` | Kleines Overlay über einem Spiel |
+| `Strg` + `Alt` + `T` | Markierten Text übernehmen: übersetzen, zusammenfassen, umformulieren … |
 | `Esc` | Laufende Aufgabe abbrechen oder Fenster schließen |
 
 Alle Tasten lassen sich in den Einstellungen ändern. Auf Wunsch hört Julia auch auf
@@ -121,6 +122,10 @@ Anbietern liest Julia Seiten, deren Adresse bekannt ist)
 
 **Vom Handy aus** (im selben WLAN, nach dem Koppeln per QR-Code)
 > „Läuft der Download noch?“ · „Wie voll ist die Platte?“
+
+**Dateien und markierter Text** – Dateien in den Chat ziehen, oder in einem beliebigen Programm Text
+markieren und `Strg` + `Alt` + `T` drücken
+> „Fass das PDF zusammen.“ · „Übersetz das.“ · „Formulier die Mail freundlicher.“
 
 **Sich Dinge merken** – Projekte, Arbeitsweisen, Geräte. Passwörter nie.
 > „Merk dir: Commits schreibe ich auf Englisch.“ · „Vergiss das wieder.“

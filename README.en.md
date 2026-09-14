@@ -71,6 +71,14 @@ appear as quick actions on the home page.
   <img src="docs/bilder/routinen-en.png" width="760" alt="Routines: End of day, Focus, Gaming">
 </p>
 
+**Files and marked text:** Drag files into the chat or attach them with the paperclip – text,
+images and (with Claude) PDFs. Images are downscaled and re-encoded, which drops metadata such as
+GPS coordinates. In any program, mark text and press `Ctrl+Alt+T`: a small menu at the mouse
+pointer offers translate, summarise, rephrase, explain, fix mistakes, draft a reply or your own
+question. Julia restores your clipboard afterwards. Attached files and marked text count as
+foreign content – what they say is never an instruction, and the exfiltration guard kicks in.
+Every answer has a copy button.
+
 ## AI providers
 
 Julia runs with the provider of your choice – *Settings → General → AI provider*:

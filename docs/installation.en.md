@@ -76,6 +76,7 @@ light/dark, connect Google, pair your phone over Wi-Fi.
 | `Ctrl` + `Alt` + `Space` | Talk: press once, speak, press again |
 | `Ctrl` + `Alt` + `J` | Open or close the chat window |
 | `Ctrl` + `Shift` + `Space` | Small overlay on top of a game |
+| `Ctrl` + `Alt` + `T` | Take marked text: translate, summarise, rephrase … |
 | `Esc` | Cancel the current task or close the window |
 
 All keys can be changed in the settings. If you like, Julia also listens for **"Hey Julia"** (or
@@ -120,6 +121,10 @@ providers Julia reads pages whose address is known)
 
 **From your phone** (on the same Wi-Fi, after pairing by QR code)
 > "Is the download still running?" · "How full is the disk?"
+
+**Files and marked text** – drag files into the chat, or mark text in any program and press
+`Ctrl` + `Alt` + `T`
+> "Summarise the PDF." · "Translate this." · "Make this email friendlier."
 
 **Remember things** – projects, ways of working, devices. Never passwords.
 > "Remember: I write commits in English." · "Forget that again."

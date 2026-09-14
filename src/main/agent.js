@@ -126,7 +126,8 @@ class Agent extends EventEmitter {
 
   // Liefert den Text der letzten Antwort (für die Sprachausgabe) oder null.
   // kanal: 'desktop' (Chat oder Sprache am PC), 'mobile' (Handy) oder 'auto'.
-  async senden(text, { perSprache = false, kanal = 'desktop' } = {}) {
+  // anhaenge: fertige Inhaltsblöcke (Dateien, markierter Text) – fremde Inhalte.
+  async senden(text, { perSprache = false, kanal = 'desktop', anhaenge = [] } = {}) {
     if (this.beschaeftigt) throw new Error('BESCHAEFTIGT');
     this.beschaeftigt = true;
     this.aktiverKanal = kanal;
@@ -138,7 +139,11 @@ class Agent extends EventEmitter {
     if (perSprache) kopf.push(sc === 'en' ? 'by voice, answer will be read aloud' : 'per Sprache, Antwort wird vorgelesen');
     if (kanal !== 'desktop') kopf.push(sc === 'en' ? `channel: ${kanal}` : `Kanal: ${kanal}`);
     this.letzteNachricht = `[${kopf.join(' · ')}]\n${text}`;
-    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: this.letzteNachricht }] });
+    const extra = Array.isArray(anhaenge) ? anhaenge : [];
+    // Claude Code bekommt die Nachricht als reinen Text – Textanhänge kommen dazu.
+    this.letzteAnhaengeText = extra.filter((b) => b.type === 'text').map((b) => b.text).join('\n\n');
+    if (extra.length) this.fremdKontakt = true;
+    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: this.letzteNachricht }, ...extra] });
     let letzterText = null;
     try {
       letzterText = await this._schleife();
@@ -364,7 +369,7 @@ class Agent extends EventEmitter {
     }
     this.aboSitzung = null;
     const r = await this.abo.senden({
-      text: this.letzteNachricht,
+      text: this.letzteAnhaengeText ? `${this.letzteNachricht}\n\n${this.letzteAnhaengeText}` : this.letzteNachricht,
       system: this._systemText(a),
       modell: this.config.get('modell'),
       aufwand: this.config.get('aufwand'),
