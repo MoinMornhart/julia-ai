@@ -4,7 +4,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const { ueberblick, absender } = require('../src/main/ueberblick');
 
-const config = (werte = {}) => ({ get: (k) => ({ anbieter: 'anthropic', modell: 'claude-opus-5', 'nutzer.name': 'Philip', 'kosten.tageslimit_usd': 10, ...werte })[k] });
+const config = (werte = {}) => ({ get: (k) => ({ anbieter: 'anthropic', modell: 'claude-opus-5', 'nutzer.name': 'Morni', 'kosten.tageslimit_usd': 10, ...werte })[k] });
 const kosten = { heute: () => ({ usd: 0.42, anfragen: 3, tag: '2026-09-14' }) };
 const erinnerungen = { alle: () => [1, 2, 3, 4, 5, 6].map((i) => ({ id: String(i), text: `E${i}`, zeit: i, angelegt: 0 })) };
 
@@ -21,7 +21,7 @@ test('Ohne Google: Kacheln sagen "aus", der Rest ist da', async () => {
   assert.equal(u.pc.daten.ram_gesamt_gb, 16);
   assert.equal(u.erinnerungen.length, 5);
   assert.deepEqual(u.kosten, { usd: 0.42, anfragen: 3, tag: '2026-09-14', limit: 10, lokal: false });
-  assert.equal(u.nutzer, 'Philip');
+  assert.equal(u.nutzer, 'Morni');
   assert.equal(u.anbieter, 'Anthropic (Claude)');
 });
 

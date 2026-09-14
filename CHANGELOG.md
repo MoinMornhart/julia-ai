@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.7.1 – 2026-09-14
+- Julia nennt dich in Beispielen und Bildern jetzt Morni statt mit echtem Vornamen
+
 ## 2.7.0 – 2026-09-14
 - Julia vom Handy auch unterwegs erreichen – sicher über Tailscale oder das VPN deiner FritzBox, ohne offenen Port am Router
 

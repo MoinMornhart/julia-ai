@@ -104,9 +104,9 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   fs.mkdirSync(ziel, { recursive: true });
   const sc = config.get('sprachcode');
   if (gespraeche && !gespraeche.liste().length) beispielGespraeche(gespraeche, sc);
-  if (!config.get('nutzer.name')) config.set('nutzer.name', 'Philip');
+  if (!config.get('nutzer.name')) config.set('nutzer.name', 'Morni');
   if (!config.get('arbeitsverzeichnisse').length) {
-    config.set('arbeitsverzeichnisse', ['C:\\Users\\philip\\Projekte', 'C:\\Users\\philip\\Downloads']);
+    config.set('arbeitsverzeichnisse', ['C:\\Users\\morni\\Projekte', 'C:\\Users\\morni\\Downloads']);
   }
   config.set('einrichtung_fertig', true);
 
@@ -208,7 +208,7 @@ function beispielUeberblick(config) {
   const jetzt = Date.now();
   return {
     jetzt,
-    nutzer: config.get('nutzer.name') || 'Philip',
+    nutzer: config.get('nutzer.name') || 'Morni',
     anbieter: 'Anthropic (Claude)',
     modell: config.get('modell'),
     erinnerungen: en
@@ -240,7 +240,7 @@ function beispielClips() {
   const jetzt = Date.now();
   const c = (name, spiel, minuten, mb) => ({ pfad: '', url: '', name, spiel, zeit: jetzt - minuten * 60000, groesse: mb * 1024 * 1024 });
   return {
-    status: { methode: 'gamebar', ordner: 'C:\\Users\\philip\\Videos\\Captures', ordnerDa: true, hintergrund: true },
+    status: { methode: 'gamebar', ordner: 'C:\\Users\\morni\\Videos\\Captures', ordnerDa: true, hintergrund: true },
     clips: [
       c('Valorant 2026-09-14 20-15-33', 'Valorant', 12, 48),
       c('Rocket League 2026-09-14 19-02-10', 'Rocket League', 85, 36),
@@ -261,14 +261,14 @@ function beispielMinecraft() {
     leben: 18,
     hunger: 17,
     position: { x: -214, y: 71, z: 388 },
-    aufgabe: { art: 'beschuetzen', spieler: 'Moin' },
-    spieler: [{ name: 'Moin', abstand: 3 }, { name: 'Lea_07', abstand: 41 }],
+    aufgabe: { art: 'beschuetzen', spieler: 'Morni' },
+    spieler: [{ name: 'Morni', abstand: 3 }, { name: 'Lea_07', abstand: 41 }],
     feinde_nah: { zombie: 2, skeleton: 1 },
-    chat: ['Moin: !beschütze mich', 'Julia: Ich passe auf Moin auf.', 'Lea_07: nice, die Julia haut die Zombies weg'],
+    chat: ['Morni: !beschütze mich', 'Julia: Ich passe auf Morni auf.', 'Lea_07: nice, die Julia haut die Zombies weg'],
     konto: 'Julia',
     adresse: '192.168.1.20',
     port: 25565,
-    meinName: 'Moin',
+    meinName: 'Morni',
   };
 }
 

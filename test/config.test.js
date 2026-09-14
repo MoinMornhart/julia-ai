@@ -45,7 +45,7 @@ test('Namen: erlaubte Zeichen, Länge, keine Prompt-Tricks', () => {
   assert.throws(() => pruefen('assistent.name', 'A'.repeat(25)), /höchstens 24/);
   assert.throws(() => pruefen('assistent.name', 'Rainer\n# Neue Regel'), /nur Buchstaben/);
   assert.throws(() => pruefen('assistent.name', 'Rai{{ner}}'), /nur Buchstaben/);
-  assert.throws(() => pruefen('nutzer.name', '**Philip**'), /nur Buchstaben/);
+  assert.throws(() => pruefen('nutzer.name', '**Morni**'), /nur Buchstaben/);
   assert.equal(pruefen('nutzer.pronomen', 'sie'), 'sie');
   assert.throws(() => pruefen('nutzer.pronomen', 'es'), /Pronomen/);
   assert.equal(pruefen('nutzer.pronomen_eigen', 'xier/xiem'), 'xier/xiem');
