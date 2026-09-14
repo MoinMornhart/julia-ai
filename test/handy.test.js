@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const https = require('https');
 const crypto = require('crypto');
 const zertifikat = require('../src/main/handy/zertifikat');
-const { HandyServer, privateAdresse, hostErlaubt, geraetName, qrMatrix } = require('../src/main/handy/server');
+const { HandyServer, privateAdresse, hostErlaubt, geraetName, qrMatrix, lanAdressen, unterwegsAdressen } = require('../src/main/handy/server');
 
 function tresor() {
   const daten = {};
@@ -28,6 +28,7 @@ async function aufbau() {
     beiNachricht: async (text) => { nachrichten.push(text); return { ok: true }; },
     protokoll: (e) => protokoll.push(e),
     adressen: () => ['127.0.0.1'],
+    unterwegs: () => [],
   });
   await s.starten(0);
   return { s, nachrichten, protokoll };
@@ -86,8 +87,8 @@ test('Zertifikat: selbst signiert, nur Server, mit IP im Namen, unter 825 Tagen'
 });
 
 test('Nur Heimnetz und nur Aufrufe über eine IP-Adresse', () => {
-  for (const ip of ['192.168.1.5', '10.0.0.2', '172.20.1.1', '127.0.0.1', '::1', '::ffff:192.168.0.9', 'fe80::1', 'fd12::3']) assert.equal(privateAdresse(ip), true, ip);
-  for (const ip of ['8.8.8.8', '172.32.0.1', '100.64.0.1', '2001:db8::1', '', 'abc']) assert.equal(privateAdresse(ip), false, ip);
+  for (const ip of ['192.168.1.5', '10.0.0.2', '172.20.1.1', '127.0.0.1', '::1', '::ffff:192.168.0.9', 'fe80::1', 'fd12::3', '100.64.0.1', '100.101.102.103']) assert.equal(privateAdresse(ip), true, ip);
+  for (const ip of ['8.8.8.8', '172.32.0.1', '100.63.255.1', '100.128.0.1', '2001:db8::1', '', 'abc']) assert.equal(privateAdresse(ip), false, ip);
   for (const h of ['192.168.1.5:8765', '[fe80::1]:8765', 'localhost:8765', '10.0.0.2']) assert.equal(hostErlaubt(h), true, h);
   for (const h of ['angreifer.example', 'angreifer.example:8765', '192.168.1.5.nip.io', '', 'julia.local']) assert.equal(hostErlaubt(h), false, h);
 });
@@ -195,4 +196,40 @@ test('Gesprächsstand: lange Anfrage kommt zurück, sobald sich etwas tut; Freig
   } finally {
     s.stoppen();
   }
+});
+
+test('Handy: unterwegs über VPN – Heimnetz- und VPN-Adressen getrennt', () => {
+  const karten = {
+    WLAN: [{ family: 'IPv4', address: '192.168.178.20', internal: false }],
+    Tailscale: [{ family: 'IPv4', address: '100.101.102.103', internal: false }],
+    Loopback: [{ family: 'IPv4', address: '127.0.0.1', internal: true }],
+  };
+  assert.deepEqual(lanAdressen(karten), ['192.168.178.20']);
+  assert.deepEqual(unterwegsAdressen(karten), ['100.101.102.103']);
+  assert.deepEqual(unterwegsAdressen({ WLAN: karten.WLAN }), []);
+});
+
+test('Handy: mit VPN wird über die VPN-Adresse gekoppelt, sonst über das Heimnetz', () => {
+  const mit = new HandyServer({ tresor: tresor(), texte: () => ({}), beiNachricht: async () => ({ ok: true }), adressen: () => ['192.168.1.5'], unterwegs: () => ['100.100.1.1'] });
+  mit.server = {};
+  mit.port = 8765;
+  assert.match(mit.koppelnStarten().url, /^https:\/\/100\.100\.1\.1:8765\/#k=/);
+  assert.deepEqual(mit.status().unterwegs, ['100.100.1.1']);
+  const ohne = new HandyServer({ tresor: tresor(), texte: () => ({}), beiNachricht: async () => ({ ok: true }), adressen: () => ['192.168.1.5'], unterwegs: () => [] });
+  ohne.server = {};
+  ohne.port = 8765;
+  assert.match(ohne.koppelnStarten().url, /^https:\/\/192\.168\.1\.5:8765\/#k=/);
+});
+
+test('Handy: neue VPN-Adresse bekommt ein neues Zertifikat, sonst bleibt es', () => {
+  const t = tresor();
+  let vpn = [];
+  const s = new HandyServer({ tresor: t, texte: () => ({}), beiNachricht: async () => ({ ok: true }), adressen: () => ['192.168.1.5'], unterwegs: () => vpn });
+  const erst = s._zertifikat().cert;
+  assert.equal(s._zertifikat().cert, erst, 'ohne VPN unverändert');
+  vpn = ['100.100.1.1'];
+  const zweit = s._zertifikat().cert;
+  assert.notEqual(zweit, erst);
+  assert.equal(s._zertifikat().cert, zweit, 'danach wieder stabil');
+  assert.deepEqual(t.lesen('handy').zertifikat_adressen, ['192.168.1.5', '100.100.1.1']);
 });

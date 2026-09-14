@@ -253,9 +253,11 @@ Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen 
 
 ### Vom Handy aus
 
-Im selben WLAN schreibst du Julia vom Handy aus – im Browser, ohne App, ohne Cloud und ohne
-Portfreigabe im Router. *Einstellungen → Verbindungen → Handy im WLAN erlauben*, dann
-*Handy koppeln* und den QR-Code mit der Handy-Kamera scannen.
+Zu Hause im WLAN und unterwegs über dein VPN schreibst du Julia vom Handy aus – im Browser,
+ohne App, ohne Cloud und ohne Portfreigabe im Router. *Einstellungen → Verbindungen → Handy
+erlauben*, dann *Handy koppeln* und den QR-Code mit der Handy-Kamera scannen. Für unterwegs
+installierst du Tailscale auf PC und Handy oder nutzt das VPN deiner FritzBox:
+**[Anleitung für unterwegs](docs/unterwegs.md)**.
 
 <p align="center">
   <img src="docs/bilder/handy-de.png" width="280" alt="Julia auf dem Handy mit Freigabekarte">
@@ -263,7 +265,7 @@ Portfreigabe im Router. *Einstellungen → Verbindungen → Handy im WLAN erlaub
 
 - **Verschlüsselt:** HTTPS mit einem Zertifikat, das Julia selbst erzeugt. Beim ersten Öffnen warnt der Browser; vergleiche den Fingerabdruck aus den Einstellungen und fahre dann fort.
 - **Nur dein Handy:** Der QR-Code enthält einen Einmal-Code, fünf Minuten gültig. Danach weist sich das Handy mit einem Zufallsschlüssel aus, von dem der PC nur den Hash kennt. Ein neu gekoppeltes Handy ersetzt das alte, *Trennen* macht den Schlüssel wertlos.
-- **Nur Heimnetz:** Der Server antwortet nur privaten Adressen und nur Aufrufen über eine IP-Adresse (Schutz gegen DNS-Rebinding). Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
+- **Nur Heimnetz oder dein VPN:** Der Server antwortet nur privaten Adressen und VPN-Adressen (Tailscale), nie dem offenen Internet, und nur Aufrufen über eine IP-Adresse (Schutz gegen DNS-Rebinding). Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
 - **Ampel unverändert:** Freigaben kommen als Ja/Nein-Karte aufs Handy, ROT bleibt ROT, Stopp bricht sofort ab.
 - Standardmäßig **aus**. Fragt Windows nach der Firewall, erlaube nur „Private Netzwerke".
 

@@ -252,9 +252,11 @@ What an email says is never an instruction for Julia. Hidden instructions in mai
 
 ### From your phone
 
-On the same Wi-Fi you message Julia from your phone – in the browser, no app, no cloud and no
-port forwarding on the router. *Settings → Connections → Allow phone on Wi-Fi*, then *Pair
-phone* and scan the QR code with your phone camera.
+At home on Wi-Fi and on the road through your VPN you message Julia from your phone – in the
+browser, no app, no cloud and no port forwarding on the router. *Settings → Connections →
+Allow phone*, then *Pair phone* and scan the QR code with your phone camera. For the road,
+install Tailscale on PC and phone or use your FritzBox VPN:
+**[guide for the road](docs/unterwegs.en.md)**.
 
 <p align="center">
   <img src="docs/bilder/handy-en.png" width="280" alt="Julia on the phone with an approval card">
@@ -262,7 +264,7 @@ phone* and scan the QR code with your phone camera.
 
 - **Encrypted:** HTTPS with a certificate Julia creates herself. The first time, the browser warns; compare the fingerprint from the settings and then continue.
 - **Only your phone:** The QR code holds a one-time code, valid for five minutes. After that the phone identifies itself with a random key of which the PC only knows the hash. A newly paired phone replaces the old one, *Disconnect* makes the key worthless.
-- **Home network only:** The server only answers private addresses and only requests made to an IP address (protection against DNS rebinding). After ten failed attempts an address is blocked for ten minutes.
+- **Home network or your VPN only:** The server only answers private and VPN (Tailscale) addresses, never the open internet, and only requests made to an IP address (protection against DNS rebinding). After ten failed attempts an address is blocked for ten minutes.
 - **Traffic light unchanged:** Approvals arrive on the phone as a yes/no card, RED stays RED, Stop cancels immediately.
 - **Off** by default. If Windows asks about the firewall, allow "Private networks" only.
 

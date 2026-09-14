@@ -35,6 +35,10 @@ const ANLEITUNG_OUTLOOK = {
   de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/outlook-einrichten.md',
   en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/outlook-setup.en.md',
 };
+const ANLEITUNG_UNTERWEGS = {
+  de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/unterwegs.md',
+  en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/unterwegs.en.md',
+};
 
 function tx(k, werte) {
   let s = T[k] ?? k;
@@ -60,6 +64,7 @@ function texteAnwenden(daten) {
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   $('outlookAnleitung').href = ANLEITUNG_OUTLOOK[daten.sprachcode] || ANLEITUNG_OUTLOOK.de;
+  $('handyUnterwegsAnleitung').href = ANLEITUNG_UNTERWEGS[daten.sprachcode] || ANLEITUNG_UNTERWEGS.de;
   if (kontenStand) kontenZeigen(kontenStand);
   if (handyStand) handyZeigen(handyStand);
   if (cfg) designZeigen();
@@ -93,6 +98,8 @@ function handyZeigen(s) {
   // Nach dem Koppeln (oder wenn der Code abgelaufen ist) verschwindet der QR-Code.
   if (!s.koppelnBis || s.koppelnBis < Date.now()) $('handyKopplung').hidden = true;
   $('handyFinger').textContent = s.fingerabdruck || '';
+  const vpn = s.unterwegs || [];
+  $('handyUnterwegs').textContent = vpn.length ? tx('handy.unterwegs_an', { adresse: vpn[0] }) : tx('handy.unterwegs_aus');
 }
 
 function handyMeldung(text, fehler = false) {
