@@ -39,6 +39,10 @@ const ANLEITUNG_UNTERWEGS = {
   de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/unterwegs.md',
   en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/unterwegs.en.md',
 };
+const ANLEITUNG_RELAY = {
+  de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/proxmox.md',
+  en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/proxmox.en.md',
+};
 
 function tx(k, werte) {
   let s = T[k] ?? k;
@@ -65,9 +69,11 @@ function texteAnwenden(daten) {
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   $('outlookAnleitung').href = ANLEITUNG_OUTLOOK[daten.sprachcode] || ANLEITUNG_OUTLOOK.de;
   $('handyUnterwegsAnleitung').href = ANLEITUNG_UNTERWEGS[daten.sprachcode] || ANLEITUNG_UNTERWEGS.de;
+  $('relayAnleitung').href = ANLEITUNG_RELAY[daten.sprachcode] || ANLEITUNG_RELAY.de;
   if (kontenStand) kontenZeigen(kontenStand);
   if (handyStand) handyZeigen(handyStand);
   if (syncStand) syncZeigen(syncStand);
+  if (relayStand) relayZeigen(relayStand);
   if (whisperStand) whisperZeigen(whisperStand);
   if (piperStand) piperZeigen(piperStand);
   if (mcpStand) mcpZeigen(mcpStand);
@@ -230,6 +236,55 @@ function syncVerbinden() {
     syncZeigen(await julia.syncJetzt());
   };
   julia.on('sync:status', syncZeigen);
+}
+
+// --- Proxmox-Relay ---
+
+let relayStand = null;
+
+function relayZeigen(s) {
+  relayStand = s;
+  $('kontoRelay').classList.toggle('verbunden', s.zustand === 'verbunden');
+  const status = {
+    aus: 'relay.aus', keine_adresse: 'relay.keine_adresse', nicht_gekoppelt: 'relay.nicht_gekoppelt',
+    wartet: 'relay.wartet', verbindet: 'relay.verbindet', verbunden: 'relay.verbunden', getrennt: 'relay.getrennt', fehler: 'relay.fehler',
+  }[s.zustand] || 'relay.aus';
+  $('relayStatus').textContent = s.gekoppelt && s.zustand !== 'verbunden' && s.fehler
+    ? tx(`relay.fehler_${s.fehler}`)
+    : tx(status);
+  $('relayBereich').hidden = !s.an;
+  $('relayTrennen').hidden = !s.gekoppelt;
+  $('relayKoppeln').textContent = tx(s.gekoppelt ? 'relay.neu_koppeln' : 'relay.koppeln');
+  $('relayKoppeln').disabled = !s.adresse;
+  const codeOffen = s.code && s.zustand === 'wartet';
+  $('relayCodeBox').hidden = !codeOffen;
+  $('relayCode').textContent = codeOffen ? s.code : '';
+  if (s.zustand === 'verbunden' && s.code === null && $('relayMeldung').dataset.warten === '1') {
+    relayMeldung(tx('relay.jetzt_verbunden'));
+    $('relayMeldung').dataset.warten = '';
+  }
+}
+
+function relayMeldung(text, fehler = false) {
+  const m = $('relayMeldung');
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function relayVerbinden() {
+  $('relayKoppeln').onclick = async () => {
+    relayMeldung('');
+    const r = await julia.relayKoppeln();
+    relayZeigen(r.status);
+    if (r.fehler) { relayMeldung(r.fehler, true); return; }
+    $('relayMeldung').dataset.warten = '1';
+    relayMeldung(tx('relay.code_warten'));
+  };
+  $('relayTrennen').onclick = async () => {
+    relayZeigen(await julia.relayTrennen());
+    relayMeldung('');
+  };
+  julia.on('relay:status', relayZeigen);
 }
 
 // --- Design ---
@@ -923,6 +978,8 @@ async function init() {
   handyZeigen(await julia.handyStatus());
   syncVerbinden();
   syncZeigen(await julia.syncStatus());
+  relayVerbinden();
+  relayZeigen(await julia.relayStatus());
   designVerbinden();
   designZeigen();
   kostenZeigen(await julia.kostenHeute());

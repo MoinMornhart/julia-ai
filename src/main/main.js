@@ -40,6 +40,7 @@ const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
 const { HandyServer, qrMatrix } = require('./handy/server');
+const { RelayKlient } = require('./relay');
 const { Gespraeche } = require('./gespraeche');
 const routinenModul = require('./routinen');
 const { anhaengeLesen } = require('./anhaenge');
@@ -83,6 +84,7 @@ let clips = null;
 let minecraft = null;
 let mcSpeicher = null;
 let sync = null;
+let relay = null;
 let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
@@ -1335,6 +1337,11 @@ function ipcEinrichten() {
   });
   ipc.handle('sync:entfernen', (_e, id) => { sync.entfernen(String(id || '')); return sync.status(); });
   ipc.handle('sync:jetzt', async () => { await sync.abgleichen().catch(() => {}); return sync.status(); });
+  ipc.handle('relay:status', () => relay.status());
+  ipc.handle('relay:koppeln', () => {
+    try { return { ...relay.koppelnStarten(), status: relay.status() }; } catch (e) { return { fehler: t(`relay.fehler_${e.message}`), status: relay.status() }; }
+  });
+  ipc.handle('relay:trennen', () => { relay.trennen(); return relay.status(); });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1756,6 +1763,23 @@ function syncFehler(e) {
   return text && text !== k ? text : e.message;
 }
 
+// --- Proxmox-Relay (Zugriff von überall über den eigenen Server) ---
+
+function relayEinrichten() {
+  relay = new RelayKlient({
+    tresor: konten.tresor,
+    handy,
+    protokoll: (text) => protokoll.eintragen({ werkzeug: 'relay', stufe: 'INFO', ergebnis: text }),
+  });
+  relay.on('status', () => anAlle('relay:status', relay.status()));
+  relayAnwenden();
+}
+
+function relayAnwenden() {
+  if (!relay || VORFUEHRUNG) return;
+  relay.anwenden({ an: config.get('relay.an'), adresse: config.get('relay.adresse') });
+}
+
 // --- Erinnerungen ---
 // Zum Zeitpunkt nur melden: Windows-Meldung, Chat und auf Wunsch vorlesen.
 
@@ -1970,6 +1994,7 @@ async function start() {
   erinnerungenVerdrahten();
   handyEinrichten();
   syncEinrichten();
+  relayEinrichten();
   weckwort = new Weckwort({ dll: audio.dll });
   weckwortVerdrahten();
   ipcEinrichten();
@@ -1994,6 +2019,7 @@ async function start() {
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k.startsWith('handy.')) handyAnwenden();
     if (k.startsWith('sync.')) syncAnwenden();
+    if (k.startsWith('relay.')) relayAnwenden();
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }
@@ -2070,6 +2096,7 @@ if (!app.requestSingleInstanceLock()) {
     if (handy) handy.stoppen();
     if (mcp) mcp.stoppenAlle();
     if (sync) sync.stoppen();
+    if (relay) relay.anwenden({ an: false });
     clearInterval(spielTimer);
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();

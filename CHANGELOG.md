@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.0.0 – 2026-09-14
+- Julia von überall erreichen – über ein eigenes Proxmox-Relay: mit einem Befehl installiert, Anmeldung nur per Passkey, dein PC verbindet sich von selbst, am PC bleibt jeder Port zu
+
 ## 3.9.1 – 2026-09-14
 - Die Download-Seite auf GitHub zeigt jetzt die volle README mit Bildern, allen Funktionen und Anleitungen – nicht mehr nur ein paar Zeilen
 

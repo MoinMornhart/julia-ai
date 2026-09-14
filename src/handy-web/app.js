@@ -14,6 +14,7 @@
 
   let T = {};
   let schluessel = null;
+  let relay = false; // über dein Proxmox-Relay: angemeldet ist man dort per Passkey
   let seq = -1;
   let stand = null;
 
@@ -133,13 +134,14 @@
   }
 
   function getrennt() {
+    if (relay) { location.href = '/_relay/'; return; } // Anmeldung am Relay abgelaufen
     merken(null);
     schluessel = null;
     koppelnZeigen('mobil.getrennt');
   }
 
   async function schleife() {
-    while (schluessel) {
+    while (schluessel || relay) {
       const r = await api(`/api/stand?ab=${seq}&warten=1`);
       if (r.code === 401) { getrennt(); return; }
       if (r.code !== 200) {
@@ -190,7 +192,12 @@
 
   async function start() {
     const t = await api('/api/texte');
-    if (t.code === 200) texteUebernehmen(t.d);
+    if (t.code === 401 && t.d && t.d.fehler === 'anmelden') { location.href = '/_relay/'; return; }
+    if (t.code === 200) {
+      texteUebernehmen(t.d);
+      relay = !!t.d.relay;
+    }
+    if (relay) { loslegen(); return; }
 
     const m = /^#k=([A-Za-z0-9_-]{43})$/.exec(location.hash);
     if (m) {
@@ -208,7 +215,10 @@
       schluessel = lesen();
     }
     if (!schluessel) { koppelnZeigen('mobil.koppeln'); return; }
+    loslegen();
+  }
 
+  function loslegen() {
     $('koppeln').hidden = true;
     $('verlauf').hidden = false;
     $('eingabe').hidden = false;

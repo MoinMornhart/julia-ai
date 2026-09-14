@@ -347,6 +347,23 @@ then *Pair phone* and scan the QR code. For on the road:
 - **Traffic light unchanged:** Approvals arrive as yes/no cards on the phone, RED stays RED, stop cancels right away.
 </details>
 
+### From anywhere – through your Proxmox relay
+
+Instead of a VPN you can run your **own relay** on your Proxmox server: then you reach Julia from
+anywhere through a normal internet address, in your phone’s browser. Sign-in is **passkey only**
+(fingerprint, face or device PIN), your PC connects on its own – every port on your PC stays
+closed, only the small relay container is open.
+
+It installs with **one command** in the Proxmox shell, as easy as a community script:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/MoinMornhart/julia-ai-web/main/proxmox/julia-relay.sh)"
+```
+
+Then in Julia *Settings → Connections → Proxmox relay*: enter your domain, *Show code* and enter
+the code at the relay. The whole setup step by step:
+**[Proxmox relay guide](docs/proxmox.en.md)**.
+
 ### Several PCs
 
 If you run Julia on several PCs, they sync **conversations, memory, routines and reminders**

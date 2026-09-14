@@ -1,0 +1,18 @@
+{
+  "name": "julia-relay",
+  "version": "1.0.0",
+  "description": "Julia-Relay: Julia von unterwegs erreichen – Anmeldung nur per Passkey, der PC verbindet sich von sich aus.",
+  "main": "server.js",
+  "private": true,
+  "license": "MIT",
+  "author": "MoinMornhart",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "8.21.3"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

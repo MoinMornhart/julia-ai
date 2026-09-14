@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <title>Julia – unterwegs</title>
+  <link rel="stylesheet" href="/_relay/relay.css">
+</head>
+<body>
+  <main class="karte">
+    <header class="kopf">
+      <span class="kugel" aria-hidden="true"></span>
+      <div>
+        <h1>Julia</h1>
+        <p class="unter">Unterwegs-Zugang</p>
+      </div>
+    </header>
+
+    <section id="laden" class="teil">
+      <p class="leise">Einen Moment …</p>
+    </section>
+
+    <section id="anmelden" class="teil" hidden>
+      <p>Melde dich mit deinem Passkey an – per Fingerabdruck, Gesicht oder Geräte-PIN.</p>
+      <button class="haupt" id="anmeldenKnopf" type="button">Mit Passkey anmelden</button>
+    </section>
+
+    <section id="einrichten" class="teil" hidden>
+      <p>Leg deinen ersten Passkey an. Danach kommt nur noch rein, wer ihn hat – ein Passwort gibt es nicht.</p>
+      <label class="feld" for="passkeyName">Name für dieses Gerät
+        <input id="passkeyName" maxlength="40" autocomplete="off" placeholder="z. B. Mein Handy">
+      </label>
+      <button class="haupt" id="einrichtenKnopf" type="button">Passkey anlegen</button>
+    </section>
+
+    <section id="keinZugang" class="teil" hidden>
+      <p>Hier ist noch kein Passkey eingerichtet.</p>
+      <p class="leise">Öffne in der Konsole deines Proxmox-Servers den Julia-Relay-Container und gib <code>julia-relay-link</code> ein. Der Link, der dann erscheint, gilt 24 Stunden.</p>
+    </section>
+
+    <section id="bereich" class="teil" hidden>
+      <div class="pc" id="pcZeile"></div>
+      <a class="haupt" id="zuJulia" href="/">Zu Julia</a>
+
+      <details id="koppelnBox">
+        <summary>PC koppeln</summary>
+        <p class="leise">In Julia auf deinem PC: <b>Einstellungen → Handy → Proxmox-Relay → „Code anzeigen“</b>. Gib den Code hier ein.</p>
+        <form id="koppelnForm" class="reihe">
+          <input id="code" placeholder="XXXX-XXXX-XXXX" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" aria-label="Kopplungscode">
+          <button type="submit">Koppeln</button>
+        </form>
+      </details>
+
+      <details>
+        <summary>Passkeys</summary>
+        <ul class="liste" id="passkeys"></ul>
+        <button type="button" id="passkeyNeu">Weiteren Passkey anlegen</button>
+      </details>
+
+      <div class="unten">
+        <button type="button" class="leise" id="pcTrennen" hidden>PC trennen</button>
+        <button type="button" class="leise" id="abmelden">Abmelden</button>
+      </div>
+    </section>
+
+    <p class="meldung" id="meldung" role="status" aria-live="polite"></p>
+  </main>
+  <script src="/_relay/relay.js"></script>
+</body>
+</html>

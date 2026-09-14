@@ -18,7 +18,10 @@ const WURZEL = path.join(__dirname, '..');
 const WEB_REPO = 'MoinMornhart/julia-ai-web';
 const ORDNER = path.join(os.tmpdir(), 'julia-ai-web');
 
-const DOKUMENTE = ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md', 'outlook-einrichten.md', 'outlook-setup.en.md', 'unterwegs.md', 'unterwegs.en.md'];
+const DOKUMENTE = ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md', 'outlook-einrichten.md', 'outlook-setup.en.md', 'unterwegs.md', 'unterwegs.en.md', 'proxmox.md', 'proxmox.en.md'];
+// Das Relay ist öffentlich (das Install-Skript lädt es von hier); der übrige
+// Quellcode bleibt privat. Diese Dateien des Relays wandern nach proxmox/relay/.
+const RELAY_DATEIEN = ['server.js', 'webauthn.js', 'package.json', 'package-lock.json', 'public/index.html', 'public/relay.js', 'public/relay.css'];
 
 // Das Download-Repo zeigt dieselbe README wie das private Repo, samt Bildern –
 // nur ohne die Teile zwischen <!-- privat --> und <!-- /privat --> (Quellcode,
@@ -92,6 +95,14 @@ function main() {
   }
   fs.copyFileSync(path.join(WURZEL, 'CHANGELOG.md'), path.join(ORDNER, 'CHANGELOG.md'));
   fs.copyFileSync(path.join(WURZEL, 'LICENSE'), path.join(ORDNER, 'LICENSE'));
+
+  // Proxmox-Relay: Install-Skript und der Relay-Quellcode, den das Skript lädt.
+  fs.rmSync(path.join(ORDNER, 'proxmox'), { recursive: true, force: true });
+  fs.mkdirSync(path.join(ORDNER, 'proxmox', 'relay', 'public'), { recursive: true });
+  fs.copyFileSync(path.join(WURZEL, 'relay', 'julia-relay.sh'), path.join(ORDNER, 'proxmox', 'julia-relay.sh'));
+  for (const d of RELAY_DATEIEN) {
+    fs.copyFileSync(path.join(WURZEL, 'relay', d), path.join(ORDNER, 'proxmox', 'relay', d));
+  }
   fs.writeFileSync(path.join(ORDNER, '.nojekyll'), '', 'utf8');
 
   git('add', '-A');

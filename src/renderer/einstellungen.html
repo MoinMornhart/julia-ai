@@ -262,6 +262,34 @@
         </div>
       </div>
 
+      <div class="konto" id="kontoRelay">
+        <div class="konto-kopf">
+          <span class="konto-logo" aria-hidden="true">🌐</span>
+          <div class="konto-name">
+            <strong data-t="relay.titel"></strong>
+            <small id="relayStatus"></small>
+          </div>
+          <button class="zweit" id="relayTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div class="konto-einrichten">
+          <p class="hinweis" data-t="relay.text"></p>
+          <p class="hinweis"><a id="relayAnleitung" target="_blank" rel="noreferrer" data-t="relay.anleitung"></a></p>
+          <label class="schalter"><input type="checkbox" id="relayAn" data-k="relay.an"><span data-t="relay.an"></span></label>
+          <div id="relayBereich" hidden>
+            <div class="feld">
+              <label for="relayAdresse" data-t="relay.adresse"></label>
+              <input id="relayAdresse" data-k="relay.adresse" maxlength="253" spellcheck="false" autocomplete="off" placeholder="julia.meinname.duckdns.org">
+            </div>
+            <button class="primaer klein" id="relayKoppeln" data-t="relay.koppeln"></button>
+            <div class="sync-code" id="relayCodeBox" hidden>
+              <p class="hinweis" data-t="relay.code_hinweis"></p>
+              <strong id="relayCode"></strong>
+            </div>
+            <small class="konto-meldung" id="relayMeldung"></small>
+          </div>
+        </div>
+      </div>
+
       <div class="konto" id="kontoMcp">
         <div class="konto-kopf">
           <span class="konto-logo" aria-hidden="true">⧉</span>

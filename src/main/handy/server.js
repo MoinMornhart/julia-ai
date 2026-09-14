@@ -6,6 +6,7 @@ const net = require('net');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
+const { Readable } = require('stream');
 const { EventEmitter } = require('events');
 const qrcode = require('qrcode-generator');
 const zertifikat = require('./zertifikat');
@@ -335,15 +336,16 @@ class HandyServer extends EventEmitter {
   }
 
   _angemeldet(req) {
+    if (req.relay) return true; // am Relay nur mit Passkey – siehe tunnelAnfrage
     const m = /^Bearer ([A-Za-z0-9_-]{43})$/.exec(req.headers.authorization || '');
     return !!(m && this.geraetHash && gleich(hash(m[1]), Buffer.from(this.geraetHash, 'hex')));
   }
 
   async _anfrage(req, res) {
-    const ip = ipNormal(req.socket.remoteAddress);
-    if (!privateAdresse(ip)) { req.socket.destroy(); return; }
+    const ip = req.relay ? 'relay' : ipNormal(req.socket.remoteAddress);
+    if (!req.relay && !privateAdresse(ip)) { req.socket.destroy(); return; }
     for (const [k, v] of Object.entries(SICHERHEIT)) res.setHeader(k, v);
-    if (!hostErlaubt(req.headers.host)) { this._antwort(res, 421, { fehler: 'host' }); return; }
+    if (!req.relay && !hostErlaubt(req.headers.host)) { this._antwort(res, 421, { fehler: 'host' }); return; }
     const url = new URL(req.url, 'https://julia.invalid');
 
     const datei = req.method === 'GET' && this.dateien[url.pathname];
@@ -360,8 +362,12 @@ class HandyServer extends EventEmitter {
     if (this._gesperrt(ip)) { this._antwort(res, 429, { fehler: 'gesperrt' }); return; }
 
     const weg = `${req.method} ${url.pathname}`;
-    if (weg === 'GET /api/texte') { this._antwort(res, 200, this.texte()); return; }
-    if (weg === 'POST /api/koppeln') { await this._koppeln(req, res, ip); return; }
+    if (weg === 'GET /api/texte') { this._antwort(res, 200, req.relay ? { ...this.texte(), relay: true } : this.texte()); return; }
+    if (weg === 'POST /api/koppeln') {
+      if (req.relay) { this._antwort(res, 404, { fehler: 'nicht_gefunden' }); return; } // Koppeln nur im Heimnetz
+      await this._koppeln(req, res, ip);
+      return;
+    }
     if (!this._angemeldet(req)) {
       this._fehlschlag(ip);
       this._antwort(res, 401, { fehler: 'nicht_gekoppelt' });
@@ -401,6 +407,48 @@ class HandyServer extends EventEmitter {
     }
   }
 
+  // Anfragen, die dein Proxmox-Relay durchreicht. Dort kommt nur rein, wer sich
+  // mit deinem Passkey angemeldet hat, und das Relay reicht nur die Adressen
+  // dieser Seite weiter – deshalb gelten sie hier als gekoppelt. Neu koppeln
+  // geht über das Relay nicht. Die Ampel gilt unverändert.
+  tunnelAnfrage({ methode, pfad, kopf = {}, koerper = Buffer.alloc(0) }) {
+    this._dateienLaden();
+    const req = Readable.from(koerper.length ? [koerper] : []);
+    Object.assign(req, { method: String(methode), url: String(pfad), headers: { ...kopf }, socket: { remoteAddress: 'relay' }, relay: true });
+    return new Promise((resolve) => {
+      const kopfAus = {};
+      let fertig = false;
+      const res = new EventEmitter();
+      Object.assign(res, {
+        headersSent: false,
+        writableEnded: false,
+        statusCode: 200,
+        setHeader(k, v) { kopfAus[String(k).toLowerCase()] = v; },
+        writeHead(code, k = {}) {
+          this.statusCode = code;
+          for (const [a, b] of Object.entries(k)) kopfAus[a.toLowerCase()] = b;
+          this.headersSent = true;
+          return this;
+        },
+        end(body) {
+          if (fertig) return;
+          fertig = true;
+          this.writableEnded = true;
+          resolve({ code: this.statusCode, typ: String(kopfAus['content-type'] || ''), koerper: Buffer.isBuffer(body) ? body : Buffer.from(body || '') });
+          this.emit('close');
+        },
+        destroy() {
+          if (fertig) return;
+          fertig = true;
+          resolve({ code: 500, typ: 'application/json; charset=utf-8', koerper: Buffer.from('{"fehler":"intern"}') });
+        },
+      });
+      this._anfrage(req, res).catch((e) => {
+        if (!fertig) this._antwort(res, e.status || 500, { fehler: e.status ? e.message : 'intern' });
+      });
+    });
+  }
+
   async _koppeln(req, res, ip) {
     const d = await this._koerper(req);
     const code = String(d.code || '');
@@ -430,7 +478,7 @@ class HandyServer extends EventEmitter {
       if (!this._angemeldet(req)) { this._antwort(res, 401, { fehler: 'nicht_gekoppelt' }); return; }
       this._antwort(res, 200, { seq: this.seq, verlauf: this.verlauf, beschaeftigt: this.beschaeftigt, zustand: this.zustand, ...this.texte() });
     };
-    if (url.searchParams.get('warten') !== '1' || !Number.isFinite(ab) || ab < this.seq || !this.laeuft) { senden(); return; }
+    if (url.searchParams.get('warten') !== '1' || !Number.isFinite(ab) || ab < this.seq || (!this.laeuft && !req.relay)) { senden(); return; }
     const w = {
       fertig: () => {
         clearTimeout(w.timer);

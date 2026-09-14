@@ -358,6 +358,23 @@ erlauben*, dann *Handy koppeln* und den QR-Code scannen. Für unterwegs:
 - **Ampel unverändert:** Freigaben kommen als Ja/Nein-Karte aufs Handy, ROT bleibt ROT, Stopp bricht sofort ab.
 </details>
 
+### Von überall – über dein Proxmox-Relay
+
+Statt VPN geht auch ein **eigenes Relay** auf deinem Proxmox-Server: dann erreichst du Julia von
+überall über eine normale Internetadresse, am Handy im Browser. Anmeldung **nur per Passkey**
+(Fingerabdruck, Gesicht oder Geräte-PIN), dein PC verbindet sich von sich aus – am PC bleibt
+jeder Port zu, offen ist nur der kleine Relay-Container.
+
+Installiert wird es mit **einem Befehl** in der Proxmox-Shell, so einfach wie ein Community-Skript:
+
+```bash
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/MoinMornhart/julia-ai-web/main/proxmox/julia-relay.sh)"
+```
+
+Danach in Julia *Einstellungen → Verbindungen → Proxmox-Relay*: Domain eintragen, *Code
+anzeigen* und den Code am Relay eingeben. Die ganze Einrichtung Schritt für Schritt:
+**[Anleitung fürs Proxmox-Relay](docs/proxmox.md)**.
+
 ### Mehrere PCs
 
 Hast du Julia auf mehreren PCs, gleichen sie **Gespräche, Gedächtnis, Routinen und

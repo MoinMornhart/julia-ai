@@ -134,6 +134,10 @@ const STANDARD = {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
     port: 8766,
   },
+  relay: {
+    an: false, // Zugriff über ein eigenes Proxmox-Relay – standardmäßig aus
+    adresse: '', // eigene Domain, z. B. julia.meinname.duckdns.org
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -207,6 +211,7 @@ function pruefen(schluessel, wert) {
     case 'freigabe.immer':
     case 'freigabe.fremd':
     case 'sync.an':
+    case 'relay.an':
     case 'minecraft.stimme':
     case 'overlay.automatisch':
     case 'overlay.kompakt':
@@ -334,6 +339,7 @@ function pruefen(schluessel, wert) {
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'handy.port':
     case 'sync.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'relay.adresse': return require('./relay').adressePruefen(wert);
     case 'code.projekte': {
       if (!Array.isArray(wert)) throw new Error('Projekte sind eine Liste von Ordnern.');
       const liste = [...new Set(wert.map((p) => String(p || '').trim()).filter((p) => path.isAbsolute(p)).map((p) => path.resolve(p)))];
