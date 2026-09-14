@@ -114,6 +114,7 @@ const STANDARD = {
     spieler: '', // dein Name im Spiel – auf ihn hört die Spielfigur
     botname: '', // leer = Name der KI
     konto: '', // Name des verbundenen Minecraft-Kontos (nur Anzeige; die Anmeldung liegt verschlüsselt extra)
+    stimme: true, // Simple Voice Chat nutzen, wenn der Server ihn hat
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -189,6 +190,7 @@ function pruefen(schluessel, wert) {
     case 'freigabe.immer':
     case 'freigabe.fremd':
     case 'sync.an':
+    case 'minecraft.stimme':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;

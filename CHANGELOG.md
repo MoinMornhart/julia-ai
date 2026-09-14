@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.9.0 – 2026-09-14
+- Minecraft mit Stimme (Testversion): Julia hört im Simple Voice Chat zu, reagiert auf „Hey Julia …“ und antwortet mit Stimme im Spiel statt über deinen PC
+
 ## 2.8.0 – 2026-09-14
 - Mehrere PCs, ein Stand: Gespräche, Gedächtnis, Routinen und Erinnerungen gleichen sich direkt von PC zu PC ab – einmal per Code gekoppelt, verschlüsselt und ohne Cloud
 

@@ -7,6 +7,7 @@ const net = require('net');
 const path = require('path');
 const { GRUEN, ROT } = require('./ampel');
 const { intern } = require('./webseite');
+const { Stimme } = require('./minecraft-stimme');
 
 // Julia spielt Minecraft (Java Edition) mit – als eigene Spielfigur auf deinem
 // Server. Alles Schnelle (kämpfen, folgen, ausweichen) läuft hier lokal 20-mal
@@ -345,7 +346,7 @@ class Minecraft extends EventEmitter {
     return !!(this.bot && this.bot.entity);
   }
 
-  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null } = {}) {
+  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false } = {}) {
     this.trennen();
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
@@ -384,7 +385,38 @@ class Minecraft extends EventEmitter {
       throw e;
     }
     this._einrichten(bot);
+    if (stimme) this._stimmeStarten(bot, ip);
     return this.status();
+  }
+
+  // Simple Voice Chat: zuhören (nur dem Besitzer) und mit Stimme antworten.
+  _stimmeStarten(bot, ip) {
+    const s = new Stimme({
+      client: bot._client,
+      host: ip,
+      besitzerUuid: () => {
+        const k = Object.keys(bot.players).find((n) => n.toLowerCase() === String(this.besitzer || '').toLowerCase());
+        return k ? bot.players[k].uuid : null;
+      },
+    });
+    s.on('sprache', (d) => this.emit('stimme', d));
+    s.on('status', () => this.emit('stimmeStatus', s.status()));
+    this.stimme = s;
+    s.starten();
+  }
+
+  get stimmeAktiv() {
+    return !!(this.stimme && this.stimme.verbunden);
+  }
+
+  stimmeSprechen(pcm) {
+    if (!this.stimmeAktiv) return Promise.reject(new Error('Der Voice-Chat ist nicht verbunden.'));
+    return this.stimme.sprechen(pcm);
+  }
+
+  _stimmeStoppen() {
+    if (this.stimme) this.stimme.stoppen();
+    this.stimme = null;
   }
 
   _einrichten(bot) {
@@ -407,6 +439,7 @@ class Minecraft extends EventEmitter {
       if (this.bot !== bot) return; // selbst getrennt
       this.bot = null;
       this.auftrag = null;
+      this._stimmeStoppen();
       this._melden('getrennt', this.grund || `Verbindung zu ${this.server} beendet.`);
       this.grund = null;
     });
@@ -417,6 +450,7 @@ class Minecraft extends EventEmitter {
     this.bot = null;
     this.auftrag = null;
     this.jagt = null;
+    this._stimmeStoppen();
     if (bot) {
       try { bot.quit(); } catch { /* schon weg */ }
     }
@@ -500,6 +534,7 @@ class Minecraft extends EventEmitter {
       feinde_nah: feinde,
       inventar: Object.fromEntries(Object.entries(inventar).slice(0, 24)),
       chat: this.chatVerlauf.slice(-10).map((c) => `${c.von}: ${c.text}`),
+      stimme: this.stimme ? this.stimme.status() : { zustand: 'aus' },
     };
   }
 
@@ -787,6 +822,7 @@ const WERKZEUGE = [
         assistent: ctx.config.get('assistent.name'),
         oeffentlich: z.eingetragen,
         konto: ctx.minecraftKonto ? ctx.minecraftKonto() : null,
+        stimme: z.c.stimme !== false,
       });
       return `Verbunden als ${s.name} (Minecraft ${s.version}). Die Spielfigur hört im Spiel auf !folge, !komm, !beschütze mich, !duell und !stopp.\n${fremd('dem Minecraft-Server', JSON.stringify(s))}`;
     },

@@ -15,6 +15,8 @@
     $('mcFehler').hidden = !text;
   }
 
+  const voiceText = (v) => tx(`mc.vc_${(v && v.zustand) || 'aus'}`, { version: (v && v.version) || '' });
+
   function werteZeigen(s) {
     const box = $('mcWerte');
     box.hidden = !s.verbunden;
@@ -30,6 +32,7 @@
       ['mc.w_aufgabe', aufgabe],
       ['mc.w_spieler', spieler || '–'],
       ['mc.w_feinde', feinde || '–'],
+      ['mc.w_voice', voiceText(s.stimme)],
     ].map(([k, v]) => `<div><span>${esc(tx(k))}</span><b>${esc(v)}</b></div>`).join('');
   }
 
@@ -120,17 +123,24 @@
   $('mcCodeKopieren').onclick = () => julia.kopieren($('mcCodeWert').textContent);
 
   // "Hey Julia" beim Spielen – derselbe Schalter wie in den Einstellungen.
+  function schalterSetzen(c) {
+    if (!c) return;
+    if (c.weckwort) $('mcStimme').checked = !!c.weckwort.an;
+    if (c.minecraft) $('mcVoice').checked = c.minecraft.stimme !== false;
+  }
   async function stimmeZeigen() {
-    try {
-      const c = await julia.config();
-      $('mcStimme').checked = !!(c.weckwort && c.weckwort.an);
-    } catch { /* Fenster wird geschlossen */ }
+    try { schalterSetzen(await julia.config()); } catch { /* Fenster wird geschlossen */ }
   }
   $('mcStimme').onchange = async () => {
     const r = await julia.setzen('weckwort.an', $('mcStimme').checked);
     if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
   };
-  julia.on('config:geaendert', (c) => { if (c && c.weckwort) $('mcStimme').checked = !!c.weckwort.an; });
+  // Simple Voice Chat: gilt ab dem nächsten Beitreten.
+  $('mcVoice').onchange = async () => {
+    const r = await julia.setzen('minecraft.stimme', $('mcVoice').checked);
+    if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
+  };
+  julia.on('config:geaendert', schalterSetzen);
 
   julia.on('mc:code', (c) => {
     $('mcCodeWert').textContent = c && c.code ? c.code : '';

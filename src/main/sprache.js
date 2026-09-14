@@ -1,5 +1,9 @@
 'use strict';
 
+const os = require('os');
+const fs = require('fs');
+const path = require('path');
+const crypto = require('crypto');
 const { spawn } = require('child_process');
 const readline = require('readline');
 const { EventEmitter } = require('events');
@@ -111,6 +115,119 @@ $s = New-Object System.Speech.Synthesis.SpeechSynthesizer
 $s.GetInstalledVoices() | Where-Object { $_.Enabled } | ForEach-Object { [Console]::Out.WriteLine($_.VoiceInfo.Culture.Name + [char]9 + $_.VoiceInfo.Name) }
 `;
 
+// Für den Minecraft-Voice-Chat: Sprache aus einer Aufnahme erkennen …
+const ERKENNEN_DATEI = `
+$ErrorActionPreference = 'Stop'
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+try {
+  Add-Type -AssemblyName System.Speech
+  $info = [System.Speech.Recognition.SpeechRecognitionEngine]::InstalledRecognizers() | Where-Object { $_.Culture.Name -like ($env:JULIA_KULTUR + '*') } | Select-Object -First 1
+  if (-not $info) { [Console]::Out.WriteLine('E KEIN_ERKENNER'); exit 2 }
+  $rec = New-Object System.Speech.Recognition.SpeechRecognitionEngine($info)
+  $rec.LoadGrammar((New-Object System.Speech.Recognition.DictationGrammar))
+  $rec.SetInputToWaveFile($env:JULIA_DATEI)
+  $teile = New-Object System.Collections.Generic.List[string]
+  $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
+  $null = Register-ObjectEvent -InputObject $rec -EventName RecognizeCompleted -SourceIdentifier fertig
+  $rec.RecognizeAsync([System.Speech.Recognition.RecognizeMode]::Multiple)
+  $ende = $false
+  while (-not $ende) {
+    $e = Wait-Event -Timeout 30
+    if (-not $e) { break }
+    Remove-Event -EventIdentifier $e.EventIdentifier
+    if ($e.SourceIdentifier -eq 'erkannt') { $teile.Add($e.SourceEventArgs.Result.Text) } else { $ende = $true }
+  }
+  $rec.Dispose()
+  [Console]::Out.WriteLine('T ' + ($teile -join ' '))
+} catch {
+  [Console]::Out.WriteLine('E ' + $_.Exception.Message)
+}
+`;
+
+// … und Text als Aufnahme sprechen (48 kHz, mono, 16 Bit) statt über die Lautsprecher.
+const SPRECHEN_DATEI = `
+[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)
+Add-Type -AssemblyName System.Speech
+$text = [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($env:JULIA_TEXT))
+$s = New-Object System.Speech.Synthesis.SpeechSynthesizer
+$stimmen = $s.GetInstalledVoices() | Where-Object { $_.Enabled } | ForEach-Object { $_.VoiceInfo }
+$wahl = $stimmen | Where-Object { $_.Name -eq $env:JULIA_STIMME -and $_.Culture.Name -like ($env:JULIA_KULTUR + '*') } | Select-Object -First 1
+if (-not $wahl) { $wahl = $stimmen | Where-Object { $_.Culture.Name -like ($env:JULIA_KULTUR + '*') } | Select-Object -First 1 }
+if ($wahl) { $s.SelectVoice($wahl.Name) }
+$s.Rate = [int]$env:JULIA_TEMPO
+$format = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(48000, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)
+$s.SetOutputToWaveFile($env:JULIA_DATEI, $format)
+$s.Speak($text)
+$s.SetOutputToNull()
+$s.Dispose()
+[Console]::Out.WriteLine('OK')
+`;
+
+function tempDatei(endung) {
+  return path.join(os.tmpdir(), `julia-${crypto.randomBytes(6).toString('hex')}${endung}`);
+}
+
+// PowerShell-Skript laufen lassen, Ausgabezeilen einsammeln.
+function ausfuehren(skript, env, zeitMs = 60000) {
+  return new Promise((resolve) => {
+    const p = powershell(skript, env);
+    const zeilen = [];
+    readline.createInterface({ input: p.stdout }).on('line', (z) => zeilen.push(z));
+    const t = setTimeout(() => p.kill(), zeitMs);
+    p.on('exit', () => { clearTimeout(t); resolve(zeilen); });
+  });
+}
+
+// WAV mit 16-Bit-PCM, mono.
+function wavBauen(pcm, rate) {
+  const kopf = Buffer.alloc(44);
+  kopf.write('RIFF', 0, 'ascii');
+  kopf.writeUInt32LE(36 + pcm.length, 4);
+  kopf.write('WAVE', 8, 'ascii');
+  kopf.write('fmt ', 12, 'ascii');
+  kopf.writeUInt32LE(16, 16);
+  kopf.writeUInt16LE(1, 20);
+  kopf.writeUInt16LE(1, 22);
+  kopf.writeUInt32LE(rate, 24);
+  kopf.writeUInt32LE(rate * 2, 28);
+  kopf.writeUInt16LE(2, 32);
+  kopf.writeUInt16LE(16, 34);
+  kopf.write('data', 36, 'ascii');
+  kopf.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([kopf, pcm]);
+}
+
+function wavLesen(buf) {
+  if (buf.length < 12 || buf.toString('ascii', 0, 4) !== 'RIFF' || buf.toString('ascii', 8, 12) !== 'WAVE') throw new Error('Keine WAV-Datei.');
+  let o = 12;
+  let fmt = null;
+  while (o + 8 <= buf.length) {
+    const id = buf.toString('ascii', o, o + 4);
+    const n = buf.readUInt32LE(o + 4);
+    const inhalt = buf.subarray(o + 8, Math.min(buf.length, o + 8 + n));
+    if (id === 'fmt ') fmt = { kanaele: inhalt.readUInt16LE(2), rate: inhalt.readUInt32LE(4), bits: inhalt.readUInt16LE(14) };
+    if (id === 'data') {
+      if (!fmt) throw new Error('WAV ohne Format.');
+      return { ...fmt, pcm: Buffer.from(inhalt) };
+    }
+    o += 8 + n + (n % 2);
+  }
+  throw new Error('WAV ohne Daten.');
+}
+
+// 48 kHz → 16 kHz: je drei Werte mitteln (reicht für die Spracherkennung).
+function herunter48auf16(pcm) {
+  const n = Math.floor(pcm.length / 6);
+  const out = Buffer.alloc(n * 2);
+  for (let i = 0; i < n; i++) {
+    const a = pcm.readInt16LE(i * 6);
+    const b = pcm.readInt16LE(i * 6 + 2);
+    const c = pcm.readInt16LE(i * 6 + 4);
+    out.writeInt16LE(Math.round((a + b + c) / 3), i * 2);
+  }
+  return out;
+}
+
 // Aus Markdown wird vorlesbarer Text: Code und Tabellen fliegen raus.
 function fuerSprache(text, sprachcode = 'de') {
   const codeHinweis = sprachcode === 'en' ? ' (code is in the chat) ' : ' (Code steht im Chat) ';
@@ -215,6 +332,44 @@ class Sprache extends EventEmitter {
     });
   }
 
+  // Text als Audio (48 kHz, mono, 16 Bit) – für den Minecraft-Voice-Chat.
+  async alsAudio(text, { stimme, tempo = 0, sprachcode = 'de' } = {}) {
+    const sauber = fuerSprache(text, sprachcode);
+    if (!sauber) return Buffer.alloc(0);
+    const datei = tempDatei('.wav');
+    try {
+      await ausfuehren(SPRECHEN_DATEI, {
+        JULIA_TEXT: Buffer.from(sauber, 'utf8').toString('base64'),
+        JULIA_STIMME: stimme || '',
+        JULIA_TEMPO: String(tempo),
+        JULIA_KULTUR: sprachcode === 'en' ? 'en' : 'de',
+        JULIA_DATEI: datei,
+      });
+      const w = wavLesen(fs.readFileSync(datei));
+      return w.rate === 48000 && w.kanaele === 1 && w.bits === 16 ? w.pcm : Buffer.alloc(0);
+    } catch {
+      return Buffer.alloc(0);
+    } finally {
+      fs.rmSync(datei, { force: true });
+    }
+  }
+
+  // Erkennt, was in einer Aufnahme (48 kHz, mono, 16 Bit) gesagt wurde –
+  // etwa im Minecraft-Voice-Chat. Die Aufnahme liegt nur kurz als Temp-Datei.
+  async erkennenAus(pcm48k, sprachcode = 'de') {
+    const datei = tempDatei('.wav');
+    fs.writeFileSync(datei, wavBauen(herunter48auf16(pcm48k), 16000));
+    try {
+      const zeilen = await ausfuehren(ERKENNEN_DATEI, { JULIA_KULTUR: sprachcode === 'en' ? 'en' : 'de', JULIA_DATEI: datei });
+      const t = zeilen.find((z) => z.startsWith('T '));
+      const e = zeilen.find((z) => z.startsWith('E '));
+      if (!t && e) throw new Error(e.slice(2).trim());
+      return t ? t.slice(2).trim() : '';
+    } finally {
+      fs.rmSync(datei, { force: true });
+    }
+  }
+
   stumm() {
     if (this.sprechenProc) {
       this.sprechenProc.kill();
@@ -237,4 +392,4 @@ class Sprache extends EventEmitter {
   }
 }
 
-module.exports = { Sprache, fuerSprache };
+module.exports = { Sprache, fuerSprache, wavBauen, wavLesen, herunter48auf16 };

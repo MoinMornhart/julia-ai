@@ -10,6 +10,8 @@ const {
 const sicherheit = require('./sicherheit');
 const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
 const { Sync } = require('./sync');
+const { phrasen: weckPhrasen } = require('./weckwort');
+const { anredeEntfernen } = require('./minecraft-stimme');
 
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
@@ -890,6 +892,7 @@ function ipcEinrichten() {
         assistent: assistentName(),
         oeffentlich: true,
         konto: mcKonto(),
+        stimme: config.get('minecraft.stimme') !== false,
       });
       anAlle('mc:geaendert');
       return { ok: true };
@@ -1301,6 +1304,37 @@ async function minecraftFrage({ von, text }) {
   }
 }
 
+// Gesprochen im Minecraft-Voice-Chat (nur die Stimme deines Spielernamens):
+// erkennen, und nur mit Anrede ("Hey Julia, …") als Frage an Julia. Die
+// Antwort kommt dann nur im Voice-Chat – nicht über die PC-Lautsprecher.
+let mcStimmeLaeuft = false;
+async function minecraftStimme(pcm) {
+  if (mcStimmeLaeuft || agent.beschaeftigt) return;
+  mcStimmeLaeuft = true;
+  try {
+    const sc = config.get('sprachcode');
+    const text = await sprache.erkennenAus(pcm, sc);
+    const name = assistentName();
+    const frage = anredeEntfernen(text, [...weckPhrasen(name, sc), name]);
+    if (!frage) return;
+    const von = config.get('minecraft.spieler') || '?';
+    protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { von, text: frage.slice(0, 250) }, ergebnis: 'Frage im Minecraft-Voice-Chat' });
+    anAlle('agent:nutzer', { text: t('mc.im_voice', { von, text: frage }), perSprache: true });
+    const antwort = await agent.senden(`[${t('mc.auftrag_stimme', { von })}] ${frage}`, { kanal: 'minecraft', perSprache: true });
+    if (antwort) await minecraftSagen(antwort);
+  } catch (e) {
+    if (e.message !== 'BESCHAEFTIGT') anAlle('agent:fehler', { art: 'text', text: e.message });
+  } finally {
+    mcStimmeLaeuft = false;
+  }
+}
+
+async function minecraftSagen(text) {
+  if (!minecraft || !minecraft.stimmeAktiv) return;
+  const pcm = await sprache.alsAudio(text, { stimme: config.get('sprache.stimme'), tempo: config.get('sprache.tempo'), sprachcode: config.get('sprachcode') });
+  if (pcm.length) await minecraft.stimmeSprechen(pcm).catch(() => {});
+}
+
 function handyEinrichten() {
   handy = new HandyServer({
     tresor: konten.tresor,
@@ -1416,6 +1450,7 @@ function weckwortVerdrahten() {
     if (Date.now() - weckwortZuletzt < 3000) return;
     weckwortZuletzt = Date.now();
     if (agent.beschaeftigt || sprache.hoertZu || sprache.sprichtGerade) return;
+    if (minecraft && minecraft.stimmeAktiv) return; // im Voice-Chat hört Julia dort zu, nicht doppelt
     sprachUmschalten();
   });
   weckwort.on('fehler', (f) => {
@@ -1504,6 +1539,8 @@ async function start() {
   mcSpeicher = kontoSpeicher({ datei: path.join(DATEN, 'minecraft-konto.bin'), krypto });
   minecraft.on('ereignis', (e) => { melden(t('minecraft.titel'), e.text); anAlle('mc:geaendert'); });
   minecraft.on('frage', (f) => minecraftFrage(f));
+  minecraft.on('stimme', (d) => minecraftStimme(d.pcm));
+  minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
   sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
