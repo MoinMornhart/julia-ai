@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.6.1 – 2026-09-14
+- Julia AI steht jetzt unter der MIT-Lizenz – im Code und im öffentlichen Webseiten-Repo
+
 ## 2.6.0 – 2026-09-14
 - Outlook verbinden: Julia liest und schreibt Mails, sieht deinen Kalender und findet Kontakte – Outlook.com, Hotmail oder Microsoft 365, auch neben Google
 

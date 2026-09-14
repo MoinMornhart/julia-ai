@@ -380,3 +380,7 @@ $env:JULIA_DATEN = "$env:TEMP\julia-demo"; $env:JULIA_SCREENSHOTS = "docs\bilder
 - Julia is a program, not a person – and not a doctor, lawyer or financial adviser.
 - She needs an internet connection to the Anthropic API. Usage costs API credit.
 - The `mobile` and `auto` channels are defined in her behaviour; a mobile app and a scheduler don't exist yet.
+
+## License
+
+Julia AI is released under the [MIT License](LICENSE): you may use, modify and share it as long as the license and copyright notice stay included. No warranty.

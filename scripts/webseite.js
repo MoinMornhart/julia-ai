@@ -34,6 +34,8 @@ mit \`Get-FileHash .\\Julia-AI-Setup.exe\` gegen die SHA-256-Summe auf der Webse
 
 Personal AI for Windows – sees your screen and asks before it acts. This repository only
 holds the website, the guides and the installers.
+
+**Lizenz / License:** [MIT](LICENSE)
 `;
 
 function git(...args) {
@@ -91,6 +93,7 @@ function main() {
     fs.copyFileSync(path.join(WURZEL, 'docs', d), path.join(ORDNER, 'docs', d));
   }
   fs.writeFileSync(path.join(ORDNER, 'README.md'), README, 'utf8');
+  fs.copyFileSync(path.join(WURZEL, 'LICENSE'), path.join(ORDNER, 'LICENSE'));
   fs.writeFileSync(path.join(ORDNER, '.nojekyll'), '', 'utf8');
 
   git('add', '-A');
