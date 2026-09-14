@@ -41,6 +41,15 @@ const PLATZ = { helmet: 'head', chestplate: 'torso', leggings: 'legs', boots: 'f
 const PLATZ_SLOT = { head: 5, torso: 6, legs: 7, feet: 8 };
 const HEILEN = ['enchanted_golden_apple', 'golden_apple'];
 const ESSEN = ['golden_carrot', 'cooked_beef', 'cooked_porkchop', 'cooked_mutton', 'cooked_salmon', 'cooked_chicken', 'baked_potato', 'bread', 'cooked_cod', 'pumpkin_pie', 'apple', 'carrot', 'sweet_berries', 'melon_slice', 'cookie'];
+// Wie Julia die Nahrung im Chat und in Meldungen nennt.
+const ESSEN_NAMEN = {
+  golden_carrot: 'eine goldene Karotte', cooked_beef: 'ein Steak', cooked_porkchop: 'einen Schweinebraten',
+  cooked_mutton: 'einen Hammelbraten', cooked_salmon: 'gebratenen Lachs', cooked_chicken: 'ein Brathähnchen',
+  baked_potato: 'eine Ofenkartoffel', bread: 'Brot', cooked_cod: 'gebratenen Kabeljau', pumpkin_pie: 'Kürbiskuchen',
+  apple: 'einen Apfel', carrot: 'eine Karotte', sweet_berries: 'Süßbeeren', melon_slice: 'eine Melonenscheibe',
+  cookie: 'einen Keks', golden_apple: 'einen Goldapfel', enchanted_golden_apple: 'einen verzauberten Goldapfel',
+};
+const essenName = (n) => ESSEN_NAMEN[n] || n;
 const FEINDE = new Set([
   'zombie', 'husk', 'drowned', 'zombie_villager', 'skeleton', 'stray', 'bogged', 'wither_skeleton', 'creeper', 'spider', 'cave_spider',
   'witch', 'slime', 'magma_cube', 'phantom', 'pillager', 'vindicator', 'evoker', 'vex', 'ravager', 'blaze', 'ghast', 'piglin_brute',
@@ -762,10 +771,12 @@ class Minecraft extends EventEmitter {
         return this._platzieren(item || block);
       case 'ausruesten':
         return this._ausruestenMit(item || block);
-      case 'essen':
-        if (bot.food >= 20) return 'Ich bin satt.';
-        if (!this._essen([...ESSEN, ...HEILEN])) throw new Error('Ich habe nichts zu essen dabei.');
-        return 'Ich esse etwas.';
+      case 'essen': {
+        if (bot.food >= 20 && bot.health >= 20) return 'Ich bin satt.';
+        const gegessen = this._essen([...ESSEN, ...HEILEN]);
+        if (!gegessen) throw new Error('Ich habe nichts zu essen dabei.');
+        return `Ich esse ${essenName(gegessen)}.`;
+      }
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
@@ -792,6 +803,7 @@ class Minecraft extends EventEmitter {
       name: bot.username,
       leben: Math.round(bot.health),
       hunger: Math.round(bot.food),
+      essbar: this._essbar(),
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       spielmodus: bot.game && bot.game.gameMode,
       aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block || a.item, geschafft: a.geschafft, ziel: a.anzahl, ort: a.ort } : null,
@@ -865,8 +877,13 @@ class Minecraft extends EventEmitter {
     if (!bot || !bot.entity || this.isst) return;
     this._gefahrWache();
     const a = this.auftrag;
-    // Hunger nebenbei stillen, nur nicht mitten im Duell.
-    if (this.ticks % 100 === 0 && bot.food <= 14 && (!a || a.art !== 'kaempfen') && this._essen(ESSEN)) return;
+    const imDuell = a && a.art === 'kaempfen';
+    // Hunger von selbst stillen, sobald der Balken sinkt – nur nicht mitten im
+    // Duell (das regelt der Kampf). Ist das Leben knapp, hilft ein Goldapfel.
+    if (!imDuell && this.ticks % 40 === 0) {
+      if (bot.health <= 8) { const g = this._essen(HEILEN); if (g) { this._essenMelden(g); return; } }
+      if (bot.food <= 16) { const g = this._essen(ESSEN); if (g) { this._essenMelden(g); return; } }
+    }
     if (!a) return;
     const { GoalFollow } = this.pf.goals;
     if (a.art === 'folgen') {
@@ -918,7 +935,7 @@ class Minecraft extends EventEmitter {
     const blick = bot.lookAt(ziel.position.offset(0, (ziel.height || 1.8) * 0.85, 0), true);
     if (blick && blick.catch) blick.catch(() => {});
     // Leben knapp: erst einen Goldapfel, wenn einer da ist.
-    if (bot.health <= 8 && this._essen(HEILEN)) return;
+    if (bot.health <= 8) { const g = this._essen(HEILEN); if (g) { this._essenMelden(g); return; } }
     if (d > 3.4) {
       if (this.jagt !== ziel.id) {
         bot.clearControlStates();
@@ -996,11 +1013,14 @@ class Minecraft extends EventEmitter {
     }
   }
 
+  // Isst das erste vorhandene Nahrungsmittel aus der Liste und gibt seinen
+  // englischen Namen zurück – oder null, wenn nichts davon dabei ist.
   _essen(liste) {
     const bot = this.bot;
     const items = bot.inventory.items();
     const it = liste.map((n) => items.find((i) => i.name === n)).find(Boolean);
-    if (!it) return false;
+    if (!it) return null;
+    const gegessen = it.name;
     this.isst = true;
     bot.clearControlStates();
     (async () => {
@@ -1012,7 +1032,26 @@ class Minecraft extends EventEmitter {
         this._ausruesten();
       }
     })();
-    return true;
+    return gegessen;
+  }
+
+  // Was hat Julia zu essen dabei? Für den Status und die KI.
+  _essbar() {
+    if (!this.bot) return [];
+    const items = this.bot.inventory.items();
+    const out = [];
+    for (const n of [...HEILEN, ...ESSEN]) {
+      const it = items.find((i) => i.name === n);
+      if (it) out.push({ was: essenName(n), anzahl: it.count });
+    }
+    return out;
+  }
+
+  // Auto-Essen im Chat melden – aber nicht ständig.
+  _essenMelden(name) {
+    if (this.ticks - (this.letzteEssenMeldung || -1000) < 200) return;
+    this.letzteEssenMeldung = this.ticks;
+    this._melden('essen', `Ich esse ${essenName(name)}.`);
   }
 
   // Blickrichtung waagerecht als Vektor (yaw 0 zeigt nach -Z).

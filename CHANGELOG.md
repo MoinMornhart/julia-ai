@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.3.0 – 2026-09-14
+- Julia isst in Minecraft von selbst, sobald sie Hunger hat, greift bei wenig Leben zum Goldapfel und sagt, was sie isst – und sie weiß, welche Nahrung sie dabeihat
+
 ## 4.2.0 – 2026-09-14
 - Julia erkennt in Minecraft, was direkt vor ihr liegt – Blöcke, Wesen und Gefahren wie Lava oder ein Abgrund – und bremst von selbst, statt hineinzulaufen
 

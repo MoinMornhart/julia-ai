@@ -351,3 +351,43 @@ test('Minecraft: Gefahrenwache bremst selbstgesteuertes Vorlaufen', () => {
   assert.equal(zustand.sprint, false);
   assert.ok(meldungen.includes('gefahr'));
 });
+
+// Ein Fake-Bot mit gerade genug Innenleben fürs Essen (auch das Umrüsten danach).
+function essBot(inv) {
+  return {
+    entity: { position: { x: 0, y: 64, z: 0 } }, food: 10, health: 20, heldItem: null,
+    inventory: { items: () => inv, slots: {} }, pathfinder: { setGoal() {} },
+    clearControlStates: () => {}, equip: async () => {}, consume: async () => {},
+  };
+}
+const nachTick = () => new Promise((r) => setTimeout(r, 0));
+
+test('Minecraft: Auto-Essen nennt die Nahrung, meldet und listet Essbares', async () => {
+  const m = new mc.Minecraft();
+  const meldungen = [];
+  m.on('ereignis', (e) => meldungen.push(e));
+  m.bot = essBot([{ name: 'bread', count: 3 }, { name: 'golden_apple', count: 1 }, { name: 'dirt', count: 64 }]);
+
+  // _essen gibt den englischen Namen zurück und meldet mit deutschem Namen.
+  const gegessen = m._essen(['golden_carrot', 'cooked_beef', 'bread', 'apple']);
+  assert.equal(gegessen, 'bread');
+  m._essenMelden(gegessen);
+  assert.ok(meldungen.some((e) => e.art === 'essen' && /Brot/.test(e.text)));
+
+  // Essbar-Liste: Goldapfel zuerst (Heilen), dann normale Nahrung.
+  assert.deepEqual(m._essbar(), [{ was: 'einen Goldapfel', anzahl: 1 }, { was: 'Brot', anzahl: 3 }]);
+  await nachTick(); // das Umrüsten nach dem Essen zu Ende laufen lassen
+});
+
+test('Minecraft: der Ess-Befehl nennt, was gegessen wird, und sonst was fehlt', async () => {
+  const m = new mc.Minecraft();
+  m.pf = { goals: {} };
+  m.bot = essBot([{ name: 'cooked_beef', count: 2 }]);
+  assert.match(m.aufgabe({ aufgabe: 'essen' }), /Steak/);
+  await nachTick();
+
+  const leer = new mc.Minecraft();
+  leer.pf = { goals: {} };
+  leer.bot = essBot([]);
+  assert.throws(() => leer.aufgabe({ aufgabe: 'essen' }), /nichts zu essen/);
+});
