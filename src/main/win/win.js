@@ -16,7 +16,9 @@ class PsWorker {
   }
 
   _starten() {
-    const skript = path.join(__dirname, 'worker.ps1');
+    // In der installierten Fassung liegt das Skript entpackt neben app.asar,
+    // weil PowerShell nicht in das Archiv hineinsehen kann.
+    const skript = path.join(__dirname, 'worker.ps1').replace(`app.asar${path.sep}`, `app.asar.unpacked${path.sep}`);
     this.proc = spawn('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', skript], {
       windowsHide: true,
       stdio: ['pipe', 'pipe', 'pipe'],

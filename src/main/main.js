@@ -4,7 +4,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const {
-  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme,
+  app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net,
 } = require('electron');
 const sicherheit = require('./sicherheit');
 
@@ -12,7 +12,9 @@ const sicherheit = require('./sicherheit');
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
 const DATEN = process.env.JULIA_DATEN || path.join(app.getPath('appData'), 'Julia');
 app.setPath('userData', path.join(DATEN, 'electron'));
-app.setAppUserModelId('Julia');
+// Die installierte Fassung muss dieselbe ID wie ihre Verknüpfung tragen, sonst
+// zeigt Windows keine Meldungen an.
+app.setAppUserModelId(app.isPackaged ? 'io.github.moinmornhart.julia' : 'Julia');
 // Jede Seite läuft in der Chromium-Sandbox, auch wenn ein Fenster es vergäße.
 app.enableSandbox();
 
@@ -21,6 +23,7 @@ const { Gedaechtnis } = require('./gedaechtnis');
 const { Protokoll } = require('./protokoll');
 const { Agent } = require('./agent');
 const { Updater } = require('./updater');
+const { InstallerUpdater } = require('./updater-installer');
 const { Sprache } = require('./sprache');
 const { Konten } = require('./konten');
 const { Erinnerungen } = require('./erinnerungen');
@@ -420,7 +423,7 @@ function autostartSetzen() {
   app.setLoginItemSettings({
     openAtLogin: !!config.get('autostart'),
     path: process.execPath,
-    args: [APP, '--versteckt'],
+    args: app.isPackaged ? ['--versteckt'] : [APP, '--versteckt'],
   });
 }
 
@@ -708,7 +711,10 @@ async function start() {
     kontextGeaendert: () => {},
   };
   agent = new Agent({ config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText });
-  updater = new Updater({
+  // Aus Git gestartet: Updates über Tags. Installiert: über die Releases der Webseite.
+  const UpdaterArt = app.isPackaged ? InstallerUpdater : Updater;
+  updater = new UpdaterArt({
+    holen: (url, o) => net.fetch(url, o),
     appOrdner: APP,
     datenOrdner: DATEN,
     config,

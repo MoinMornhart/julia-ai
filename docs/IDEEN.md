@@ -29,13 +29,14 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.9.1 | Schutz gegen Datenabfluss nach fremden Inhalten, unsichtbare Zeichen entfernt, heruntergeladene Programme ROT, Updates ohne Installationsskripte |
 | ✅ 0.9.2 | Gedächtnis mit Herkunft: nach fremden Inhalten nur mit deinem Ja |
 | ✅ 0.9.3 | Telegram-Anbindung ausgebaut |
+| ✅ 1.0.0 | Installer (Julia-AI-Setup.exe) und öffentliche Webseite mit Prüfsumme; Updates der installierten Fassung aus den Releases, geprüft per SHA-512; Electron Fuses (kein RunAsNode, keine NODE_OPTIONS, nur geprüftes ASAR) |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
 | 🔨 | **Handy im WLAN** – Julia als Web-App im Handy-Browser, gekoppelt per QR-Code, verschlüsselt, nur im Heimnetz | L | hoch | Nur das gekoppelte Gerät, Schlüssel im Tresor, Ampel unverändert, ROT bleibt ROT |
-| 🔨 | **Installer** (Julia-Setup.exe) und Webseite online | M | hoch | Download nur aus dem offiziellen Release, Prüfsumme auf der Seite |
+| 📋 | **Signierter Installer** – Code-Signing-Zertifikat, damit SmartScreen nicht mehr warnt | S | mittel | Braucht ein Zertifikat auf deinen Namen |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |
 
@@ -44,7 +45,6 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | | Maßnahme | Warum |
 |---|---|---|
 | 📋 | **Signierte Update-Tags** (`git verify-tag` mit SSH-Signatur, erlaubte Schlüssel im Repo) | Heute vertraut das Update dem GitHub-Konto. Mit Signatur spielt Julia nur Stände ein, die mit deinem Schlüssel signiert sind. Braucht einmalig einen Signierschlüssel von dir. |
-| 📋 | **Electron Fuses und ASAR-Integrität**, sobald es einen Installer gibt | Verhindert, dass jemand das gebaute Programm verändert oder als Node startet |
 
 ## Weitere Ideen
 
@@ -102,7 +102,7 @@ Veröffentlichungen zur Sicherheit von KI-Agenten.
 | 📋 | Für MCP: nur lokale Server, Version fest, Tool-Beschreibungen hashen (Schutz gegen nachträglich getauschte Tools), Präfix pro Server | [Invariant Labs](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks) |
 | 📋 | „Alles widerrufen"-Knopf für alle Konten; DPAPI schützt nicht gegen Schadsoftware unter demselben Nutzer | [safeStorage](https://www.electronjs.org/docs/latest/api/safe-storage) |
 | 📋 | Injection-Tests mit vergifteten Mails, Webseiten und Einladungen | [promptfoo](https://www.promptfoo.dev/blog/lethal-trifecta-testing/) |
-| 📋 | Electron Fuses und ASAR-Integrität, sobald es einen Installer gibt | [Electron Fuses](https://www.electronjs.org/docs/latest/tutorial/fuses) |
+| ✅ 1.0.0 | Electron Fuses und ASAR-Integrität im Installer | [Electron Fuses](https://www.electronjs.org/docs/latest/tutorial/fuses) |
 
 ### Funktionen – Ideen
 

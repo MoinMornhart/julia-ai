@@ -28,8 +28,8 @@ const AKZENTE = [
 ];
 
 const ANLEITUNG = {
-  de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md',
-  en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-setup.en.md',
+  de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-einrichten.md',
+  en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-setup.en.md',
 };
 
 function tx(k, werte) {

@@ -4,7 +4,7 @@
 //   npm run release -- korrektur "Blase startet jetzt ausgeschaltet"
 //   npm run release -- funktion  "Julia kann jetzt Termine vorlesen"
 //   npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
-// Optionen: --kein-push, --kein-release, --ohne-tests, --ohne-audit,
+// Optionen: --kein-push, --kein-release, --ohne-tests, --ohne-audit, --ohne-installer,
 // --trailer "Zeile" (mehrfach möglich, landet unter der Commit-Nachricht),
 // --text-datei <pfad> (Changelog-Zeile aus einer UTF-8-Datei – Windows
 // PowerShell 5.1 verschluckt sonst typografische Anführungszeichen wie „ “)
@@ -15,6 +15,8 @@
 // Setzt die Version in package.json (und package-lock.json), schreibt die
 // Changelog-Zeile, committet mit "vX.Y.Z – <Zeile>" als Nachricht, setzt den
 // Tag, pusht beides und legt ein GitHub-Release an (über die gh-CLI).
+// Danach baut es den Installer, aktualisiert die Webseite im öffentlichen Repo
+// julia-ai-web und hängt Julia-AI-Setup.exe samt latest.yml an ein Release dort.
 
 const fs = require('fs');
 const path = require('path');
@@ -22,6 +24,7 @@ const { execFileSync, execSync } = require('child_process');
 const version = require('../src/main/version');
 
 const WURZEL = path.join(__dirname, '..');
+const WEB_REPO = 'MoinMornhart/julia-ai-web';
 
 function git(...args) {
   return execFileSync('git', args, { cwd: WURZEL, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -29,10 +32,11 @@ function git(...args) {
 
 function argumente(argv) {
   const pos = [];
-  const opt = { trailer: [], push: true, githubRelease: true, tests: true, audit: true, hinweis: '' };
+  const opt = { trailer: [], push: true, githubRelease: true, tests: true, audit: true, installer: true, hinweis: '' };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--kein-push') opt.push = false;
+    else if (a === '--ohne-installer') opt.installer = false;
     else if (a === '--kein-release') opt.githubRelease = false;
     else if (a === '--ohne-tests') opt.tests = false;
     else if (a === '--ohne-audit') opt.audit = false;
@@ -116,6 +120,7 @@ function main() {
     git('push', '-q', 'origin', tag);
     console.log('Gepusht.');
     if (a.githubRelease) githubRelease(tag, a);
+    if (a.githubRelease && a.installer) installerVeroeffentlichen(tag, a);
   } else if (a.push) {
     console.log('Kein Remote "origin", nicht gepusht.');
   }
@@ -149,6 +154,33 @@ function githubRelease(tag, a) {
     console.log('GitHub-Release angelegt.');
   } catch (e) {
     console.log(`GitHub-Release nicht angelegt (gh fehlt oder ist nicht angemeldet): ${String(e.stderr || e.message).trim().slice(0, 200)}`);
+  }
+}
+
+// Installer bauen, Webseite nachziehen, Setup und latest.yml ans öffentliche
+// Release hängen. Die installierte Julia holt ihre Updates genau von dort.
+function installerVeroeffentlichen(tag, a) {
+  const dist = path.join(WURZEL, 'dist');
+  try {
+    fs.rmSync(dist, { recursive: true, force: true });
+    execSync('npm run installer', { cwd: WURZEL, stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 });
+  } catch (e) {
+    console.log(`Installer nicht gebaut: ${String(e.stderr || e.stdout || e.message).trim().slice(-400)}`);
+    return;
+  }
+  const yml = fs.readFileSync(path.join(dist, 'latest.yml'), 'utf8');
+  if (!new RegExp(`^version: ${tag.slice(1).replace(/\./g, '\\.')}\\s*$`, 'm').test(yml)) {
+    console.log('latest.yml passt nicht zur Version – nichts veröffentlicht.');
+    return;
+  }
+  try {
+    execFileSync(process.execPath, [path.join(__dirname, 'webseite.js'), ...a.trailer.flatMap((t) => ['--trailer', t])], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+    console.log('Webseite aktualisiert.');
+    const dateien = ['Julia-AI-Setup.exe', 'Julia-AI-Setup.exe.blockmap', 'latest.yml'].map((d) => path.join(dist, d)).filter((d) => fs.existsSync(d));
+    execFileSync('gh', ['release', 'create', tag, '--repo', WEB_REPO, '--target', 'main', '--title', `${tag} – ${a.text}`.slice(0, 120), '--notes', a.text, ...dateien], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+    console.log(`Installer veröffentlicht: https://github.com/${WEB_REPO}/releases/tag/${tag}`);
+  } catch (e) {
+    console.log(`Installer oder Webseite nicht veröffentlicht: ${String(e.stderr || e.message).trim().slice(0, 300)}`);
   }
 }
 

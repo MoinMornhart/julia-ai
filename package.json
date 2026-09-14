@@ -1,21 +1,84 @@
 {
   "name": "julia-ai",
   "productName": "Julia",
-  "version": "0.9.3",
+  "version": "1.0.0",
   "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
   "main": "src/main/main.js",
+  "author": "MoinMornhart",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "start": "node scripts/start.js",
     "test": "node --test",
-    "release": "node scripts/release.js"
+    "release": "node scripts/release.js",
+    "installer": "electron-builder --win nsis --x64 --publish never",
+    "webseite": "node scripts/webseite.js"
+  },
+  "build": {
+    "appId": "io.github.moinmornhart.julia",
+    "productName": "Julia AI",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "prompt/**/*",
+      "package.json",
+      "CHANGELOG.md"
+    ],
+    "asarUnpack": [
+      "src/main/win/worker.ps1"
+    ],
+    "electronLanguages": [
+      "de",
+      "en-US"
+    ],
+    "npmRebuild": false,
+    "electronFuses": {
+      "runAsNode": false,
+      "enableCookieEncryption": true,
+      "enableNodeOptionsEnvironmentVariable": false,
+      "enableNodeCliInspectArguments": false,
+      "enableEmbeddedAsarIntegrityValidation": true,
+      "onlyLoadAppFromAsar": true
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.png",
+      "artifactName": "Julia-AI-Setup.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "shortcutName": "Julia AI",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "MoinMornhart",
+        "repo": "julia-ai-web",
+        "releaseType": "release"
+      }
+    ]
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0"
   },
   "devDependencies": {
-    "electron": "^44.3.0"
+    "electron": "^44.3.0",
+    "electron-builder": "^26.15.3"
   },
   "engines": {
     "node": ">=20"

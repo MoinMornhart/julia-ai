@@ -141,6 +141,15 @@ What an email says is never an instruction for Julia. Hidden instructions in mai
 
 ## Installation
 
+**Easiest:** download [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
+and double-click it – no admin rights, just for your user account. The website with the
+checksum: **https://moinmornhart.github.io/julia-ai-web/**. The installer isn't signed yet; if
+Windows says "Windows protected your PC", click "More info" and then "Run anyway". The installed
+Julia takes updates from the releases there and only runs an installer whose SHA-512 checksum
+matches.
+
+### From source
+
 **Requirements:** Windows 10 or 11, [Node.js](https://nodejs.org) 20 or newer,
 [Git](https://git-scm.com) and an API key from [Anthropic](https://console.anthropic.com).
 

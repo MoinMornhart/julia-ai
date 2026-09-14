@@ -140,6 +140,15 @@ Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen 
 
 ## Installation
 
+**Am einfachsten:** [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
+laden und doppelklicken – ohne Admin-Rechte, nur für dein Benutzerkonto. Die Webseite mit der
+Prüfsumme: **https://moinmornhart.github.io/julia-ai-web/**. Der Installer ist noch nicht
+signiert; meldet Windows „Der Computer wurde durch Windows geschützt", auf „Weitere
+Informationen" und dann „Trotzdem ausführen" klicken. Die installierte Julia holt Updates aus
+den Releases dort und startet einen Installer nur, wenn seine SHA-512-Summe stimmt.
+
+### Aus dem Quellcode
+
 **Voraussetzungen:** Windows 10 oder 11, [Node.js](https://nodejs.org) 20 oder neuer,
 [Git](https://git-scm.com) und ein API-Schlüssel von [Anthropic](https://console.anthropic.com).
 

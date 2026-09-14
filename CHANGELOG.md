@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.0.0 – 2026-09-14
+- Julia AI gibt es jetzt zum Installieren – Setup von der Webseite, Updates holt sie sich selbst und prüft jeden Installer vor dem Start
+
 ## 0.9.3 – 2026-09-14
 - Julia verbindet sich nicht mehr mit Telegram – das Handy kommt stattdessen über dein WLAN
 

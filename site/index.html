@@ -241,6 +241,13 @@
   .code pre { margin: 0; font: 13.5px/1.75 var(--mono); color: var(--text); }
   .code .kommentar { color: var(--text-3); }
   .code .prompt { color: var(--akzent-tinte); user-select: none; }
+  .download { display: grid; gap: 16px; background: var(--panel); border: 1px solid var(--linie); border-radius: 14px; padding: 24px; }
+  .knopf.gross { justify-content: center; font-size: 17px; padding: 14px 22px; }
+  .datei { display: grid; gap: 8px; margin: 0; }
+  .datei div { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: baseline; }
+  .datei dt { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .datei dd { margin: 0; font: 13px/1.5 var(--mono); color: var(--text); overflow-wrap: anywhere; }
+  .download .klein { font-size: 14px; color: var(--text-2); }
 
   /* --- Versionen: echte Reihenfolge, daher Zeitleiste --- */
   .versionen { list-style: none; margin: 0; padding: 0; display: grid; }
@@ -294,12 +301,12 @@
 <main class="rahmen" id="oben">
   <section class="einstieg">
     <div class="einstieg-text">
-      <p class="etikett" data-i18n="einstieg.etikett">Persönliche KI für Windows · v0.9.1</p>
+      <p class="etikett" data-i18n="einstieg.etikett">Persönliche KI für Windows · v__VERSION__</p>
       <h1><span data-i18n="einstieg.titel1">Sieht deinen Bildschirm.</span><span class="zweite" data-i18n="einstieg.titel2">Fragt, bevor sie handelt.</span></h1>
       <p class="lead" data-i18n="einstieg.lead">Julia läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt sie dir vorher vor.</p>
       <div class="knoepfe">
         <a class="knopf primaer" href="#installieren" data-i18n="einstieg.installieren">Installieren</a>
-        <a class="knopf" href="https://github.com/MoinMornhart/julia-ai" data-i18n="einstieg.github">Auf GitHub ansehen</a>
+        <a class="knopf" href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="einstieg.github">Versionshinweise</a>
       </div>
       <dl class="tasten">
         <div><dt data-i18n="taste.sprechen">Sprechen</dt><dd id="tasteSprechen"></dd></div>
@@ -376,15 +383,19 @@
     </header>
     <div class="installieren">
       <ol class="schritte" id="schritte"></ol>
-      <div class="code">
-<pre><span class="kommentar" data-i18n="inst.k1"># Herunterladen und auf die neueste Version</span>
-<span class="prompt">&gt; </span>git clone https://github.com/MoinMornhart/julia-ai.git
-<span class="prompt">&gt; </span>cd julia-ai
-<span class="prompt">&gt; </span>git checkout (git describe --tags --abbrev=0)
-
-<span class="kommentar" data-i18n="inst.k2"># Abhängigkeiten und Start</span>
-<span class="prompt">&gt; </span>npm install
-<span class="prompt">&gt; </span>npm start</pre>
+      <div class="download">
+        <p class="etikett" data-i18n="dl.system">Windows 10 und 11 · 64 Bit</p>
+        <a class="knopf primaer gross" id="downloadKnopf" href="https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe" data-i18n="dl.knopf">Julia AI herunterladen</a>
+        <dl class="datei">
+          <div><dt data-i18n="dl.datei">Datei</dt><dd>Julia-AI-Setup.exe · __GROESSE__</dd></div>
+          <div><dt>Version</dt><dd>__VERSION__</dd></div>
+          <div><dt>SHA-256</dt><dd>__SHA256__</dd></div>
+        </dl>
+        <div class="code">
+<pre><span class="kommentar" data-i18n="dl.pruefen"># Prüfsumme vergleichen (PowerShell)</span>
+<span class="prompt">&gt; </span>Get-FileHash .\Julia-AI-Setup.exe</pre>
+        </div>
+        <p class="klein"><span data-i18n="dl.alle_text">Ältere Versionen und Versionshinweise:</span> <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="dl.alle">alle Releases</a></p>
       </div>
     </div>
   </section>
@@ -393,7 +404,7 @@
     <header>
       <p class="etikett" data-i18n="ver.etikett">Versionen</p>
       <h2 data-i18n="ver.titel">Jede Funktion ein eigenes Release</h2>
-      <p class="zehner" data-i18n="ver.zehner">Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates gibt es nur auf getaggte Stände – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und mit automatischem Rückweg.</p>
+      <p class="zehner" data-i18n="ver.zehner">Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates holt sie sich nur aus den offiziellen Releases – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und nur, wenn die Prüfsumme stimmt.</p>
     </header>
     <ol class="versionen" id="versionenListe"></ol>
   </section>
@@ -401,9 +412,8 @@
 
 <footer>
   <div class="rahmen">
-    <a href="https://github.com/MoinMornhart/julia-ai#readme">README</a>
-    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
-    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/IDEEN.md" data-i18n="fuss.ideen">Ideen und Fahrplan</a>
+    <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="fuss.releases">Downloads</a>
+    <a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
     <span class="rechts" data-i18n="fuss.lokal">Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.</span>
   </div>
 </footer>
@@ -428,10 +438,10 @@
   const TEXTE = {
     de: {
       'nav.ampel': 'Ampel', 'nav.funktionen': 'Funktionen', 'nav.anpassen': 'Anpassen', 'nav.installieren': 'Installieren', 'nav.versionen': 'Versionen',
-      'einstieg.etikett': 'Persönliche KI für Windows · v0.9.1',
+      'einstieg.etikett': 'Persönliche KI für Windows · v__VERSION__',
       'einstieg.titel1': 'Sieht deinen Bildschirm.', 'einstieg.titel2': 'Fragt, bevor sie handelt.',
       'einstieg.lead': '{name} läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt {name} dir vorher vor.',
-      'einstieg.installieren': 'Installieren', 'einstieg.github': 'Auf GitHub ansehen',
+      'einstieg.installieren': 'Installieren', 'einstieg.github': 'Versionshinweise',
       'einstieg.beispiel': 'Beispielgespräch mit ausgedachten Mails – so läuft es in der App ab.',
       'taste.sprechen': 'Sprechen', 'taste.chat': 'Chat', 'taste.overlay': 'Overlay im Spiel',
       'tasten.strg': 'Strg', 'tasten.umschalt': 'Umschalt', 'tasten.leer': 'Leertaste',
@@ -448,19 +458,20 @@
       'anp.namefehler': 'Dieses Zeichen nimmt Julia im Namen nicht an – der Name landet im System-Prompt.',
       'anp.frage': 'Hey {name}, was steht heute noch an?',
       'anp.antwort': 'Um 15 Uhr der Anruf mit der Werkstatt, um 18:30 Training. Soll ich dich um 14:50 erinnern?',
-      'inst.etikett': 'Installieren', 'inst.titel': 'In fünf Minuten auf deinem PC',
-      'inst.k1': '# Herunterladen und auf die neueste Version', 'inst.k2': '# Abhängigkeiten und Start',
+      'inst.etikett': 'Installieren', 'inst.titel': 'In zwei Minuten auf deinem PC',
+      'dl.system': 'Windows 10 und 11 · 64 Bit', 'dl.knopf': 'Julia AI herunterladen', 'dl.datei': 'Datei',
+      'dl.pruefen': '# Prüfsumme vergleichen (PowerShell)', 'dl.alle_text': 'Ältere Versionen und Versionshinweise:', 'dl.alle': 'alle Releases',
       'ver.etikett': 'Versionen', 'ver.titel': 'Jede Funktion ein eigenes Release',
-      'ver.zehner': 'Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates gibt es nur auf getaggte Stände – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und mit automatischem Rückweg.',
-      'fuss.google': 'Google verbinden','fuss.ideen': 'Ideen und Fahrplan',
+      'ver.zehner': 'Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates holt sie sich nur aus den offiziellen Releases – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und nur, wenn die Prüfsumme stimmt.',
+      'fuss.releases': 'Downloads', 'fuss.google': 'Google verbinden',
       'fuss.lokal': 'Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.',
     },
     en: {
       'nav.ampel': 'Traffic light', 'nav.funktionen': 'Features', 'nav.anpassen': 'Customise', 'nav.installieren': 'Install', 'nav.versionen': 'Versions',
-      'einstieg.etikett': 'Personal AI for Windows · v0.9.1',
+      'einstieg.etikett': 'Personal AI for Windows · v__VERSION__',
       'einstieg.titel1': 'Sees your screen.', 'einstieg.titel2': 'Asks before acting.',
       'einstieg.lead': '{name} lives in the tray, answers a hotkey and handles whatever comes up on your PC – from renaming 200 files to an email to Anna. Anything that can’t be undone, {name} shows you first.',
-      'einstieg.installieren': 'Install', 'einstieg.github': 'View on GitHub',
+      'einstieg.installieren': 'Install', 'einstieg.github': 'Release notes',
       'einstieg.beispiel': 'Sample conversation with made-up emails – this is how it runs in the app.',
       'taste.sprechen': 'Talk', 'taste.chat': 'Chat', 'taste.overlay': 'In-game overlay',
       'tasten.strg': 'Ctrl', 'tasten.umschalt': 'Shift', 'tasten.leer': 'Space',
@@ -477,11 +488,12 @@
       'anp.namefehler': 'Julia doesn’t accept that character in a name – the name goes into the system prompt.',
       'anp.frage': 'Hey {name}, what’s left for today?',
       'anp.antwort': 'The call with the garage at 3 pm, training at 6:30. Want a reminder at 2:50?',
-      'inst.etikett': 'Install', 'inst.titel': 'On your PC in five minutes',
-      'inst.k1': '# Download and switch to the latest version', 'inst.k2': '# Dependencies and start',
+      'inst.etikett': 'Install', 'inst.titel': 'On your PC in two minutes',
+      'dl.system': 'Windows 10 and 11 · 64-bit', 'dl.knopf': 'Download Julia AI', 'dl.datei': 'File',
+      'dl.pruefen': '# Compare the checksum (PowerShell)', 'dl.alle_text': 'Older versions and release notes:', 'dl.alle': 'all releases',
       'ver.etikett': 'Versions', 'ver.titel': 'Every feature is its own release',
-      'ver.zehner': 'Julia counts in steps of ten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates only go to tagged releases – after your yes, once the current task is done, with automatic rollback.',
-      'fuss.google': 'Connect Google','fuss.ideen': 'Ideas and roadmap',
+      'ver.zehner': 'Julia counts in steps of ten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. She only takes updates from the official releases – after your yes, once the current task is done, and only if the checksum matches.',
+      'fuss.releases': 'Downloads', 'fuss.google': 'Connect Google',
       'fuss.lokal': 'Runs locally on your PC. No server of its own, no cloud storage.',
     },
   };
@@ -510,15 +522,18 @@
         ['Overlay', 'Kleines Chatfenster über dem Spiel, Freigaben direkt darin, Antworten passiv eingeblendet.', ['Strg+Umschalt+Leertaste']],
         ['Erinnerungen', '„In 20 Minuten Pizza raus" – als Meldung, im Chat und auf Wunsch vorgelesen.', ['erinnerung_setzen']],
         ['Gedächtnis', 'Merkt sich Projekte, Arbeitsweisen und Geräte. Zugangsdaten nie.', ['gedaechtnis_schreiben']],
-        ['Updates', 'Nur getaggte Versionen, erst nach der laufenden Aufgabe, mit Rückweg.', ['update_pruefen']],
+        ['Updates', 'Nur offizielle Releases, erst nach der laufenden Aufgabe, geprüft per Prüfsumme.', ['update_pruefen']],
       ],
       schritte: [
-        ['Voraussetzungen', 'Windows 10 oder 11, Node.js ab Version 20, Git und ein API-Schlüssel von Anthropic.'],
-        ['Herunterladen und starten', 'Die Befehle rechts in PowerShell ausführen.'],
+        ['Herunterladen', 'Julia-AI-Setup.exe hier laden – nur von dieser Seite oder aus den offiziellen Releases, nie von Download-Portalen. Du brauchst außerdem einen API-Schlüssel von Anthropic.'],
+        ['Installieren', 'Doppelklick, fertig – ohne Admin-Rechte, nur für dein Benutzerkonto. Der Installer ist noch nicht signiert: Meldet Windows „Der Computer wurde durch Windows geschützt", auf „Weitere Informationen" und dann „Trotzdem ausführen" klicken.'],
         ['Einmal einrichten', 'Beim ersten Start fragt Julia nach deinem Vornamen, dem Schlüssel und den Ordnern, in denen sie ohne Rückfrage schreiben darf.'],
         ['Optional verbinden', 'Google für Mails und Kalender – mit Schritt-für-Schritt-Anleitung.'],
       ],
       versionen: [
+        ['1.0.0', 'Julia AI zum Installieren: Setup von der Webseite, Updates aus den offiziellen Releases, geprüft per SHA-512.'],
+        ['0.9.3', 'Telegram-Anbindung ausgebaut – das Handy kommt über dein WLAN.'],
+        ['0.9.2', 'Gedächtnis mit Herkunft: Nach fremden Inhalten merkt sich Julia nichts ohne dein Ja.'],
         ['0.9.1', 'Schutz gegen Datenabfluss: Nach fremden Inhalten fragt Julia auch vor Links und Netzwerk-Befehlen; heruntergeladene Programme startet sie nie.'],
         ['0.9.0', 'Passwortfelder, Passwortmanager und private Browserfenster werden im Screenshot geschwärzt.'],
         ['0.8.0', '„Hey Julia“ als Aktivierungswort – mit deinem eigenen Namen, nur lokal, standardmäßig aus.'],
@@ -576,15 +591,18 @@
         ['Overlay', 'Small chat window over the game, approvals right inside, answers shown passively.', ['Ctrl+Shift+Space']],
         ['Reminders', '"Pizza out in 20 minutes" – as a notification, in the chat and read aloud if you like.', ['erinnerung_setzen']],
         ['Memory', 'Remembers projects, ways of working and devices. Never credentials.', ['gedaechtnis_schreiben']],
-        ['Updates', 'Tagged releases only, after the current task, with rollback.', ['update_pruefen']],
+        ['Updates', 'Official releases only, after the current task, checksum-verified.', ['update_pruefen']],
       ],
       schritte: [
-        ['Requirements', 'Windows 10 or 11, Node.js 20 or newer, Git and an API key from Anthropic.'],
-        ['Download and start', 'Run the commands on the right in PowerShell.'],
+        ['Download', 'Get Julia-AI-Setup.exe here – only from this page or the official releases, never from download portals. You also need an API key from Anthropic.'],
+        ['Install', 'Double-click, done – no admin rights, just for your user account. The installer isn’t signed yet: if Windows says "Windows protected your PC", click "More info" and then "Run anyway".'],
         ['Set up once', 'On first start Julia asks for your first name, the key and the folders where she may write without asking.'],
         ['Connect if you like', 'Google for mail and calendar – with a step-by-step guide.'],
       ],
       versionen: [
+        ['1.0.0', 'Julia AI as an installer: setup from the website, updates from the official releases, verified by SHA-512.'],
+        ['0.9.3', 'Telegram connection removed – the phone comes via your Wi-Fi.'],
+        ['0.9.2', 'Memory with provenance: after foreign content Julia remembers nothing without your yes.'],
         ['0.9.1', 'Exfiltration guard: after foreign content Julia also asks before links and network commands; downloaded programs never run.'],
         ['0.9.0', 'Password fields, password managers and private browser windows are blacked out in screenshots.'],
         ['0.8.0', '“Hey Julia” as a wake word – with your own name, local only, off by default.'],
