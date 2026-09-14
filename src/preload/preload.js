@@ -16,6 +16,7 @@ contextBridge.exposeInMainWorld('julia', {
   config: () => ipcRenderer.invoke('config:lesen'),
   setzen: (schluessel, wert) => ipcRenderer.invoke('config:setzen', schluessel, wert),
   alleFreigeben: (an) => ipcRenderer.invoke('freigabe:immer', !!an),
+  fremdFreigeben: (an) => ipcRenderer.invoke('freigabe:fremd', !!an),
   schluesselSetzen: (s) => ipcRenderer.invoke('schluessel:setzen', s),
   anbieterSetzen: (id) => ipcRenderer.invoke('anbieter:setzen', id),
   modelleLaden: () => ipcRenderer.invoke('anbieter:modelle'),

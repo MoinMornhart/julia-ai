@@ -213,8 +213,11 @@ function nachFremdemInhalt(stufe, fremdKontakt, nachAussen, dauerhaft = false) {
 // lassen. ROT bleibt davon unberührt gesperrt.
 const IMMER_FRAGEN = ['netz', 'gedaechtnis'];
 
-function ohneFrage(kategorie, allemZugestimmt) {
-  return allemZugestimmt === true && !IMMER_FRAGEN.includes(kategorie);
+// Wer auch diese Schutzfragen nicht will, schaltet zusätzlich "auch nach
+// fremden Inhalten" ein – mit eigener Warnung, nur von Hand.
+function ohneFrage(kategorie, allemZugestimmt, auchNachFremdem = false) {
+  if (allemZugestimmt !== true) return false;
+  return !IMMER_FRAGEN.includes(kategorie) || auchNachFremdem === true;
 }
 
 // Kartennummern (Luhn-geprüft) und IBANs tippt Julia nie ein.

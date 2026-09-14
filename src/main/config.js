@@ -106,6 +106,7 @@ const STANDARD = {
   },
   freigabe: {
     immer: false, // "Allem zustimmen": nur von Hand, nach einer Rückfrage
+    fremd: false, // dazu auch nach Webseiten/Mails nicht fragen – eigene Warnung
   },
 };
 
@@ -175,6 +176,7 @@ function pruefen(schluessel, wert) {
     case 'blase.untertitel':
     case 'weckwort.an':
     case 'freigabe.immer':
+    case 'freigabe.fremd':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;

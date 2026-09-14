@@ -120,3 +120,13 @@ test('Julia kann "Allem zustimmen" nicht selbst einschalten', () => {
     assert.equal(w.einstufen({ schluessel: 'freigabe.immer', wert }).stufe, a.ROT);
   }
 });
+
+test('Auch nach fremden Inhalten nicht fragen: nur zusammen mit "Allem zustimmen"', () => {
+  assert.equal(a.ohneFrage('netz', true, true), true);
+  assert.equal(a.ohneFrage('gedaechtnis', true, true), true);
+  assert.equal(a.ohneFrage('netz', false, true), false, 'allein wirkt der zweite Schalter nicht');
+  assert.equal(a.ohneFrage('netz', true, 'true'), false, 'nur ein echtes true');
+  const { WERKZEUGE } = require('../src/main/werkzeuge');
+  const w = WERKZEUGE.find((x) => x.name === 'einstellung_setzen');
+  assert.equal(w.einstufen({ schluessel: 'freigabe.fremd', wert: true }).stufe, a.ROT);
+});

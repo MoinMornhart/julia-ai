@@ -242,9 +242,10 @@ function felderFuellen() {
 
 function felderVerbinden() {
   document.querySelectorAll('[data-k]').forEach((el) => {
-    if (el.dataset.k === 'freigabe.immer') {
+    const freigabe = { 'freigabe.immer': julia.alleFreigeben, 'freigabe.fremd': julia.fremdFreigeben }[el.dataset.k];
+    if (freigabe) {
       // Einschalten nur über die Rückfrage im Hauptprozess.
-      el.addEventListener('change', async () => { el.checked = !!(await julia.alleFreigeben(el.checked)).wert; });
+      el.addEventListener('change', async () => { el.checked = !!(await freigabe(el.checked)).wert; });
       return;
     }
     if (el.type === 'range') {

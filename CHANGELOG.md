@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.2.2 – 2026-09-14
+- Neuer Schalter unter Freigaben: Julia fragt auf Wunsch auch nach Webseiten und Mails nicht mehr nach – mit eigener Warnung
+
 ## 2.2.1 – 2026-09-14
 - Die Blase bleibt bei langen Antworten so groß, wie du sie eingestellt hast – nur der Text darunter wächst
 

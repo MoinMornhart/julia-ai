@@ -639,19 +639,22 @@ function ipcEinrichten() {
     if (/^(api|freigabe)\./.test(String(schluessel))) return { fehler: 'Nicht erlaubt.' };
     try { return { wert: config.set(schluessel, wert) }; } catch (e) { return { fehler: e.message }; }
   });
-  // "Allem zustimmen" lässt sich nur hier einschalten – nach einem Ja im
-  // Windows-Dialog. Julia selbst kann es nicht (einstellung_setzen: ROT).
-  ipc.handle('freigabe:immer', async (_e, an) => {
+  // "Allem zustimmen" (und "auch nach fremden Inhalten") lassen sich nur hier
+  // einschalten – nach einem Ja im Windows-Dialog. Julia selbst kann es nicht
+  // (einstellung_setzen: ROT).
+  const freigabeSchalter = (schluessel, texte) => async (_e, an) => {
     if (an) {
       const opts = {
-        type: 'warning', buttons: [t('freigabe.ja'), t('freigabe.nein')], defaultId: 1, cancelId: 1, noLink: true,
-        title: t('freigabe.titel'), message: t('freigabe.frage'), detail: t('freigabe.details'),
+        type: 'warning', buttons: [t(`${texte}.ja`), t('freigabe.nein')], defaultId: 1, cancelId: 1, noLink: true,
+        title: t(`${texte}.titel`), message: t(`${texte}.frage`), detail: t(`${texte}.details`),
       };
       const r = einstFenster && !einstFenster.isDestroyed() ? await dialog.showMessageBox(einstFenster, opts) : await dialog.showMessageBox(opts);
-      if (r.response !== 0) return { wert: config.get('freigabe.immer') };
+      if (r.response !== 0) return { wert: config.get(schluessel) };
     }
-    return { wert: config.set('freigabe.immer', !!an) };
-  });
+    return { wert: config.set(schluessel, !!an) };
+  };
+  ipc.handle('freigabe:immer', freigabeSchalter('freigabe.immer', 'freigabe'));
+  ipc.handle('freigabe:fremd', freigabeSchalter('freigabe.fremd', 'freigabe_fremd'));
   ipc.handle('schluessel:setzen', (_e, s) => {
     try { schluesselSetzen(s); return { ok: true }; } catch (e) { return { fehler: e.message }; }
   });

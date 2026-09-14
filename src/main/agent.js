@@ -455,7 +455,7 @@ class Agent extends EventEmitter {
     if (this.auftrag && kategorie && this.auftrag.kategorien.includes(kategorie)) {
       return { erlaubt: true };
     }
-    if (ampel.ohneFrage(kategorie, this.config.get('freigabe.immer'))) return { erlaubt: true };
+    if (ampel.ohneFrage(kategorie, this.config.get('freigabe.immer'), this.config.get('freigabe.fremd'))) return { erlaubt: true };
     const antwort = await this._frage({ art: 'einzeln', werkzeug, beschreibung, grund, kategorie });
     return antwort.ja
       ? { erlaubt: true }
@@ -468,7 +468,7 @@ class Agent extends EventEmitter {
       return 'Kanal auto: Aufträge mit GELB-Schritten werden nicht freigegeben. Nur GRÜN arbeiten, den Rest vormerken.';
     }
     if (this.config.get('freigabe.immer') === true) {
-      this.auftrag = { kategorien: kat.filter((k) => ampel.ohneFrage(k, true)), gelaufen: [] };
+      this.auftrag = { kategorien: kat.filter((k) => ampel.ohneFrage(k, true, this.config.get('freigabe.fremd'))), gelaufen: [] };
       return 'Der Nutzer hat in den Einstellungen allem zugestimmt: freigegeben ohne Rückfrage. Nicht nochmal im Chat nachfragen, einfach machen. ROT bleibt gesperrt. Am Ende sagen, was alles gelaufen ist.';
     }
     const antwort = await this._frage({
