@@ -1529,7 +1529,7 @@ function weckwortVerdrahten() {
     fehlerGemeldet = true;
     let text = f;
     if (f === 'KEIN_ERKENNER') text = t('weckwort.fehler', { sprache: config.get('sprachcode') === 'en' ? 'English' : 'Deutsch' });
-    else if (f === 'KEIN_MIKROFON') text = t('weckwort.kein_mikrofon');
+    else if (f === 'KEIN_MIKROFON') text = t(/^RDP-/i.test(process.env.SESSIONNAME || '') ? 'weckwort.kein_mikrofon_rdp' : 'weckwort.kein_mikrofon');
     melden(assistentName(), text);
   });
   sprache.on('mikrofon', (an) => { if (an) weckwort.stoppen(); else weckwortAktualisieren(); });

@@ -281,9 +281,15 @@ class Sprache extends EventEmitter {
         this.emit('pegel', 0);
         this.emit('mikrofon', false);
         if (fehler === 'KEIN_MIKROFON') {
+          // Per Remotedesktop gibt es nur ein Mikrofon, wenn der Client es durchreicht.
+          const rdp = /^RDP-/i.test(process.env.SESSIONNAME || '');
           reject(new Error(kultur === 'en'
-            ? 'No microphone found. Please connect one or pick it as the default recording device in the Windows sound settings.'
-            : 'Kein Mikrofon gefunden. Bitte eines anschließen oder in den Windows-Soundeinstellungen als Standard-Aufnahmegerät wählen.'));
+            ? (rdp
+              ? 'No microphone: you are connected via Remote Desktop and your microphone is not passed through. In the Remote Desktop client, open Local Resources → Remote audio → Settings, choose "Record from this computer" and reconnect.'
+              : 'No microphone found. Please connect one or pick it as the default recording device in the Windows sound settings.')
+            : (rdp
+              ? 'Kein Mikrofon: Du bist per Remotedesktop verbunden, und dein Mikrofon wird nicht durchgereicht. Im Remotedesktop-Client unter „Lokale Ressourcen“ → „Remoteaudio“ → „Einstellungen“ die Option „Von diesem Computer aufzeichnen“ wählen und neu verbinden.'
+              : 'Kein Mikrofon gefunden. Bitte eines anschließen oder in den Windows-Soundeinstellungen als Standard-Aufnahmegerät wählen.')));
         } else if (fehler === 'KEIN_ERKENNER') {
           reject(new Error(kultur === 'en'
             ? 'No English speech recognizer is installed. Add one under Windows Settings > Time & language > Speech.'

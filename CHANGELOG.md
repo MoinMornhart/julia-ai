@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.3 – 2026-09-14
+- Per Remotedesktop sagt Julia jetzt klar, warum sie dich nicht hört und welchen Schalter du im Remotedesktop-Client einschalten musst, damit dein Mikrofon ankommt
+
 ## 3.2.2 – 2026-09-14
 - Updates kommen zuverlässig an: Julia sieht alle zwei Stunden nach und spielt immer die neueste Version ein statt eines älteren Stands – nie mitten im Spiel
 
