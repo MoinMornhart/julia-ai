@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.6 – 2026-09-14
+- Sperrt Windows das Mikrofon in den Datenschutz-Einstellungen, sagt Julia dir das jetzt und öffnet gleich die richtige Einstellung
+
 ## 3.2.5 – 2026-09-14
 - Mit einem ausgewählten Mikrofon versteht Julia dich wieder – bisher hörte die Spracherkennung nach dem ersten Wimpernschlag auf zuzuhören
 

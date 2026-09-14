@@ -10,6 +10,7 @@ const {
 const sicherheit = require('./sicherheit');
 const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
 const { Sync } = require('./sync');
+const mikrofonRecht = require('./mikrofon-recht');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
@@ -661,6 +662,19 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
   }
 }
 
+// Sperrt Windows das Mikrofon (Datenschutz), kommt nur Stille an – das einmal
+// klar sagen und die passende Windows-Einstellung öffnen.
+let mikroSperreGemeldet = false;
+async function mikrofonSperrePruefen() {
+  if (mikroSperreGemeldet || VORFUEHRUNG) return;
+  const k = await mikrofonRecht.pruefen().catch(() => null);
+  if (!k || mikroSperreGemeldet) return;
+  mikroSperreGemeldet = true;
+  protokoll.eintragen({ werkzeug: 'sprache', stufe: 'INFO', ergebnis: `Mikrofon von Windows gesperrt (${k})` });
+  melden(assistentName(), t(`mikro.gesperrt_${k}`));
+  if (k !== 'richtlinie') shell.openExternal('ms-settings:privacy-microphone').catch(() => {});
+}
+
 async function sprachUmschalten() {
   if (sprache.hoertZu) { sprache.zuhoerenAbbrechen(); return; }
   if (sprache.sprichtGerade) { sprache.stumm(); zustandSetzen('idle'); return; }
@@ -679,6 +693,7 @@ async function sprachUmschalten() {
     anAlle('sprache:hoert', false);
     if (zustand === 'listening') zustandSetzen('idle');
   }
+  if (!text) mikrofonSperrePruefen();
   if (text) {
     // Beim Spielen: Antwort passiv einblenden, ohne dem Spiel den Fokus zu nehmen.
     const hud = config.get('overlay.bei_antwort') === 'passiv' && !(overlaySichtbar() && !overlayPassiv);
@@ -1543,7 +1558,7 @@ function weckwortVerdrahten() {
   let mikroGemeldet = false;
   // Steigt die Erkennung unerwartet aus, läuft sie von selbst wieder an –
   // "Hey Julia" soll immer gehen, auch wenn nebenbei Netflix läuft.
-  weckwort.on('bereit', () => { neustarts = 0; });
+  weckwort.on('bereit', () => { neustarts = 0; mikrofonSperrePruefen(); });
   weckwort.on('beendet', () => {
     if (!config.get('weckwort.an') || VORFUEHRUNG) return;
     neustarts += 1;
