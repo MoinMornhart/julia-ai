@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.0.0 – 2026-09-14
+- Eigene Aktivierungswörter: Statt „Hey Julia“ legst du in den Einstellungen selbst fest, worauf Julia reagiert – am PC und im Minecraft-Voice-Chat
+
 ## 2.9.0 – 2026-09-14
 - Minecraft mit Stimme (Testversion): Julia hört im Simple Voice Chat zu, reagiert auf „Hey Julia …“ und antwortet mit Stimme im Spiel statt über deinen PC
 

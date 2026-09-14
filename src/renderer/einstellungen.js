@@ -335,7 +335,7 @@ function felderFuellen() {
   document.querySelectorAll('[data-k]').forEach((el) => {
     const w = holen(cfg, el.dataset.k);
     if (el.type === 'checkbox') el.checked = !!w;
-    else if (w != null) el.value = String(w);
+    else if (w != null) el.value = Array.isArray(w) ? w.join('\n') : String(w); // Listen: eins pro Zeile
     if (el.type === 'range') ausgabe(el);
   });
 }
@@ -701,7 +701,10 @@ async function init() {
       if (el === fokus) return;
       const w = holen(cfg, el.dataset.k);
       if (el.type === 'checkbox') el.checked = !!w;
-      else if (w != null && el.value !== String(w)) { el.value = String(w); if (el.type === 'range') ausgabe(el); }
+      else if (w != null) {
+        const text = Array.isArray(w) ? w.join('\n') : String(w);
+        if (el.value !== text) { el.value = text; if (el.type === 'range') ausgabe(el); }
+      }
     });
   });
   julia.on('texte:geaendert', texteAnwenden);

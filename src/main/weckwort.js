@@ -14,7 +14,10 @@ function kodiert(skript) {
   return Buffer.from(skript, 'utf16le').toString('base64');
 }
 
-function phrasen(name, sprachcode) {
+// Eigene Aktivierungswörter aus den Einstellungen ersetzen die üblichen.
+function phrasen(name, sprachcode, eigene = []) {
+  const liste = (Array.isArray(eigene) ? eigene : []).map((p) => String(p).trim()).filter(Boolean);
+  if (liste.length) return liste;
   const n = String(name || '').replace(/[^\p{L}\p{N} .'’-]/gu, '').replace(/\s+/g, ' ').trim() || 'Julia';
   return sprachcode === 'en' ? [`Hey ${n}`, `Hi ${n}`, `OK ${n}`] : [`Hey ${n}`, `Hallo ${n}`, `Okay ${n}`];
 }
@@ -84,8 +87,8 @@ class Weckwort extends EventEmitter {
     return !!this.proc;
   }
 
-  async starten({ name, sprachcode, schwelle, mikrofon = '' }) {
-    const woerter = phrasen(name, sprachcode);
+  async starten({ name, sprachcode, schwelle, mikrofon = '', eigene = [] }) {
+    const woerter = phrasen(name, sprachcode, eigene);
     const schluessel = JSON.stringify([woerter, sprachcode, schwelle, mikrofon]);
     if (this.proc && this.schluessel === schluessel) return;
     this.stoppen();

@@ -41,7 +41,7 @@ what's going on and gets it done – from renaming 200 files to tracking down a 
 - **Researches** – web search and page fetch for anything that must be current.
 - **Remembers lasting things** – projects, ways of working, devices. Never credentials.
 - **Reminds you** – "Remind me at 3 pm about the call", "pizza out in 20 minutes". As a notification, in the chat and read aloud if you like. Missed reminders arrive at the next start.
-- **Speaks** English or German, via hotkey, offline through Windows speech – through the microphone and speakers you pick in the settings. "Hey Julia" restarts by itself after a dropout.
+- **Speaks** English or German, via hotkey, offline through Windows speech – through the microphone and speakers you pick in the settings. "Hey Julia" restarts by itself after a dropout – and instead of "Hey Julia" you can set your own activation phrases, such as "Computer, listen".
 - **Updates herself** on request – tagged releases only, with automatic rollback.
 
 To use Julia in English, pick **English** under *Settings → General → Language*. The whole UI,

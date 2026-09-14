@@ -56,6 +56,7 @@ const STANDARD = {
   weckwort: {
     an: false, // Mikrofon bleibt offen – deshalb nur, wenn ausdrücklich eingeschaltet
     schwelle: 0.8,
+    phrasen: [], // eigene Aktivierungswörter; leer = "Hey/Hallo/Okay" + Name
   },
   design: {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
@@ -283,6 +284,22 @@ function pruefen(schluessel, wert) {
       if (!s) return '';
       if (!path.isAbsolute(s)) throw new Error('Bitte einen vollständigen Ordnerpfad angeben (z. B. D:\\Clips).');
       return path.resolve(s);
+    }
+    // Eigene Aktivierungswörter: eins pro Zeile, höchstens acht. Sie gehen an
+    // die Spracherkennung – deshalb nur Buchstaben, Ziffern und einfache Zeichen.
+    case 'weckwort.phrasen': {
+      const roh = Array.isArray(wert) ? wert : String(wert ?? '').split(/[\n;]/);
+      const liste = [];
+      for (const p of roh) {
+        const s = String(p).replace(/\s+/g, ' ').trim();
+        if (!s) continue;
+        if (s.length < 2 || s.length > 40 || !/^[\p{L}\p{N}][\p{L}\p{N} .,'’-]*$/u.test(s)) {
+          throw new Error(`„${s.slice(0, 40)}“ geht nicht als Aktivierungswort: 2 bis 40 Zeichen, nur Buchstaben, Ziffern, Leerzeichen, Punkt, Komma, Apostroph und Bindestrich.`);
+        }
+        if (!liste.some((x) => x.toLowerCase() === s.toLowerCase())) liste.push(s);
+      }
+      if (liste.length > 8) throw new Error('Höchstens acht Aktivierungswörter.');
+      return liste;
     }
     case 'weckwort.schwelle':
       return Math.round(zahl(wert, 0.5, 0.95, 'Erkennungsschwelle') * 100) / 100;

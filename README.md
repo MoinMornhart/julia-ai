@@ -42,7 +42,7 @@ bis zur Fehlersuche in einem Repo.
 - **Recherchiert** – Websuche und Seitenabruf für alles, was aktuell sein muss.
 - **Merkt sich Dauerhaftes** – Projekte, Arbeitsweisen, Geräte. Zugangsdaten nie.
 - **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf", „in 20 Minuten Pizza raus". Als Meldung, im Chat und auf Wunsch vorgelesen. Verpasste Erinnerungen kommen beim nächsten Start.
-- **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe – über das Mikrofon und die Lautsprecher, die du in den Einstellungen wählst. „Hey Julia“ läuft nach einem Aussetzer von selbst wieder an.
+- **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe – über das Mikrofon und die Lautsprecher, die du in den Einstellungen wählst. „Hey Julia“ läuft nach einem Aussetzer von selbst wieder an – und statt „Hey Julia“ kannst du eigene Aktivierungswörter festlegen, etwa „Computer, hör zu“.
 - **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
 
 ## Startseite und Verlauf

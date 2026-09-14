@@ -1315,7 +1315,8 @@ async function minecraftStimme(pcm) {
     const sc = config.get('sprachcode');
     const text = await sprache.erkennenAus(pcm, sc);
     const name = assistentName();
-    const frage = anredeEntfernen(text, [...weckPhrasen(name, sc), name]);
+    const eigene = config.get('weckwort.phrasen') || [];
+    const frage = anredeEntfernen(text, eigene.length ? eigene : [...weckPhrasen(name, sc), name]);
     if (!frage) return;
     const von = config.get('minecraft.spieler') || '?';
     protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { von, text: frage.slice(0, 250) }, ergebnis: 'Frage im Minecraft-Voice-Chat' });
@@ -1422,6 +1423,7 @@ function weckwortAktualisieren() {
   if (an) {
     weckwort.starten({
       name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle'), mikrofon: config.get('sprache.mikrofon'),
+      eigene: config.get('weckwort.phrasen'),
     }).catch(() => {});
   } else weckwort.stoppen();
 }
