@@ -90,6 +90,17 @@ Julia shows a button that takes you straight there.
   <img src="docs/bilder/clips-en.png" width="760" alt="Clip view with thumbnails">
 </p>
 
+**Code:** The Code tab holds your projects. On the right you see the branch, ahead/behind,
+changed files (click shows the diff in colour), recent commits and scripts found such as
+`npm test`. Buttons give Julia a job in the chat: *Explain project*, *Review changes*, *Run
+tests*, *Fix the bug*, *Suggest commit message*. The tab itself only reads; Julia changes things
+in the chat, where the traffic light applies – proposals come as a diff and nothing is written
+before your yes.
+
+<p align="center">
+  <img src="docs/bilder/code-en.png" width="760" alt="Code tab with changes and commits">
+</p>
+
 ## AI providers
 
 Julia runs with the provider of your choice – *Settings → General → AI provider*:

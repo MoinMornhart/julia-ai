@@ -172,7 +172,7 @@ function zeitText(ms, ctx) {
 
 const EINSTELLUNG_GRUEN = /^(blase\.|sprache\.)/;
 // Anbieter und Adresse bestimmen, wohin das Gespräch geht – nur mit Ja.
-const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|handy\.|clip\.)/;
+const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|handy\.|clip\.|code\.)/;
 
 const WERKZEUGE = [
   {

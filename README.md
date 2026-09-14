@@ -90,6 +90,17 @@ oder schiebst sie in den Papierkorb. Für die Game Bar muss in Windows *Spielen 
   <img src="docs/bilder/clips-de.png" width="760" alt="Clip-Ansicht mit Vorschaubildern">
 </p>
 
+**Code:** Im Code-Reiter liegen deine Projekte. Rechts siehst du Zweig, voraus/zurück, geänderte
+Dateien (Klick zeigt den Diff in Farbe), die letzten Commits und die gefundenen Skripte wie
+`npm test`. Knöpfe geben Julia einen Auftrag im Chat: *Projekt erklären*, *Änderungen prüfen*,
+*Tests laufen lassen*, *Fehler beheben*, *Commit-Text vorschlagen*. Der Reiter selbst liest nur;
+ändern tut Julia im Chat, und dort gilt die Ampel – Vorschläge kommen als Diff, geschrieben wird
+erst nach deinem Ja.
+
+<p align="center">
+  <img src="docs/bilder/code-de.png" width="760" alt="Code-Reiter mit Änderungen und Commits">
+</p>
+
 ## KI-Anbieter
 
 Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:

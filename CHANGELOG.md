@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.0.0 – 2026-09-14
+- Eigener Code-Reiter – deine Projekte mit Git-Stand, farbigen Diffs und Knöpfen, mit denen Julia prüft, testet oder Fehler behebt
+
 ## 1.9.0 – 2026-09-14
 - Mikrofon und Lautsprecher in den Einstellungen frei wählbar, mit Stimme testen – und Hey Julia startet nach Aussetzern von selbst wieder
 

@@ -42,6 +42,9 @@ const STANDARD = {
   verlauf: {
     speichern: true, // Gespräche verschlüsselt auf diesem PC behalten
   },
+  code: {
+    projekte: [], // Ordner für den Code-Reiter
+  },
   clip: {
     methode: 'gamebar', // 'gamebar' | 'nvidia' | 'amd' | 'eigen'
     taste: '', // nur für 'eigen'
@@ -254,6 +257,12 @@ function pruefen(schluessel, wert) {
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'handy.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'code.projekte': {
+      if (!Array.isArray(wert)) throw new Error('Projekte sind eine Liste von Ordnern.');
+      const liste = [...new Set(wert.map((p) => String(p || '').trim()).filter((p) => path.isAbsolute(p)).map((p) => path.resolve(p)))];
+      if (liste.length > 30) throw new Error('Höchstens 30 Projekte.');
+      return liste;
+    }
     case 'sprache.mikrofon':
     case 'sprache.lautsprecher': {
       const s = String(wert ?? '').trim();

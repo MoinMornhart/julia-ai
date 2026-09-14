@@ -3,6 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const { spawn } = require('child_process');
 const {
   app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net, clipboard, nativeImage,
 } = require('electron');
@@ -35,6 +36,7 @@ const routinenModul = require('./routinen');
 const { anhaengeLesen } = require('./anhaenge');
 const { Clips } = require('./clips');
 const audio = require('./audio');
+const { CodeProjekte } = require('./code');
 const { pathToFileURL } = require('url');
 const { fremd } = require('./hilfen');
 const anzeige = require('./anzeige');
@@ -66,6 +68,7 @@ let handy = null;
 let gespraeche = null;
 let routinen = null;
 let clips = null;
+let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
 let tray = null;
@@ -750,6 +753,37 @@ function ipcEinrichten() {
     if (id === gespraech.id) gespraech.id = null;
     return gespraeche.loeschen(id);
   });
+  // Code-Reiter: nur lesen. "In VS Code öffnen" startet den Editor direkt, ohne Shell.
+  const editorPfad = () => [
+    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Microsoft VS Code', 'Code.exe'),
+    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Microsoft VS Code', 'Code.exe'),
+    path.join(process.env.LOCALAPPDATA || '', 'Programs', 'cursor', 'Cursor.exe'),
+  ].find((p) => fs.existsSync(p)) || null;
+  ipc.handle('code:uebersicht', async () => ({ projekte: await code.uebersicht(), editor: !!editorPfad() }));
+  ipc.handle('code:details', async (_e, p) => { try { return await code.details(p); } catch (e) { return { fehler: e.message }; } });
+  ipc.handle('code:diff', async (_e, p, datei) => { try { return { text: await code.diff(p, datei) }; } catch (e) { return { fehler: e.message }; } });
+  ipc.handle('code:hinzufuegen', async () => {
+    const r = await dialog.showOpenDialog(chatFenster || undefined, { properties: ['openDirectory'] });
+    if (r.canceled || !r.filePaths[0]) return null;
+    config.set('code.projekte', [...config.get('code.projekte'), r.filePaths[0]]);
+    return path.resolve(r.filePaths[0]);
+  });
+  ipc.handle('code:entfernen', (_e, p) => {
+    const ziel = path.resolve(String(p || '')).toLowerCase();
+    config.set('code.projekte', config.get('code.projekte').filter((x) => path.resolve(x).toLowerCase() !== ziel));
+    return true;
+  });
+  ipc.handle('code:oeffnen', (_e, p, wie) => {
+    try {
+      const ordner = code.pruefen(p);
+      const exe = wie === 'editor' ? editorPfad() : null;
+      if (exe) spawn(exe, [ordner], { detached: true, stdio: 'ignore', windowsHide: false }).unref();
+      else shell.openPath(ordner);
+      return { ok: true };
+    } catch (e) {
+      return { fehler: e.message };
+    }
+  });
   ipc.handle('clips:liste', async () => {
     if (VORFUEHRUNG) return require('./vorfuehrung').beispielClips(config);
     return { status: await clips.status(), clips: clips.liste().map((c) => ({ ...c, url: pathToFileURL(c.pfad).href })) };
@@ -1188,6 +1222,7 @@ async function start() {
   gespraeche = new Gespraeche(DATEN, krypto);
   routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
   clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
+  code = new CodeProjekte({ config });
   sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
@@ -1270,7 +1305,7 @@ async function start() {
 
   if (VORFUEHRUNG) {
     await require('./vorfuehrung').aufnehmen({
-      ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen, gespraeche,
+      ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen, gespraeche, appOrdner: APP,
       orb: () => orbFenster, overlayZeigen, overlayVerstecken,
     });
     beendenLaeuft = true;

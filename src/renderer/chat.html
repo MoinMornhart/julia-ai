@@ -32,6 +32,7 @@
       <button class="nav-punkt" data-ansicht="verlauf" id="navVerlauf"><span class="nav-ico" data-ico="uhr"></span><span class="nav-text" data-nav="nav.verlauf"></span></button>
       <button class="nav-punkt" data-ansicht="routinen" id="navRoutinen"><span class="nav-ico" data-ico="blitz"></span><span class="nav-text" data-nav="nav.routinen"></span></button>
       <button class="nav-punkt" data-ansicht="clips" id="navClips"><span class="nav-ico" data-ico="film"></span><span class="nav-text" data-nav="nav.clips"></span></button>
+      <button class="nav-punkt" data-ansicht="code" id="navCode"><span class="nav-ico" data-ico="code"></span><span class="nav-text" data-nav="nav.code"></span></button>
       <div class="leiste-fuss">
         <div class="chip-modell" id="chipModell"><b id="chipAnbieter"></b><span id="chipName"></span></div>
         <button class="nav-punkt" id="navEinst"><span class="nav-ico" data-ico="einst"></span><span class="nav-text" data-nav="nav.einstellungen"></span></button>
@@ -144,6 +145,42 @@
         </div>
       </section>
 
+      <section class="ansicht vl" id="ansichtCode" hidden>
+        <div class="vl-liste">
+          <button class="knopf primaer klein cd-hinzu" id="cdHinzu"><span data-ico="plus"></span><span data-nav="code.hinzu"></span></button>
+          <div class="vl-eintraege" id="cdProjekte"></div>
+        </div>
+        <div class="vl-vorschau cd-detail">
+          <p class="vl-leer" id="cdLeer"></p>
+          <div class="cd-inhalt" id="cdInhalt" hidden>
+            <header class="cd-kopf">
+              <div class="cd-kopf-text"><h2 id="cdName"></h2><p id="cdPfad"></p></div>
+              <div class="vl-aktionen">
+                <button class="knopf primaer klein" id="cdEditor"><span data-ico="code"></span><span data-nav="code.editor"></span></button>
+                <button class="knopf klein" id="cdOrdner" data-nav="code.ordner"></button>
+                <button class="knopf klein" id="cdEntfernen" data-nav="code.entfernen"></button>
+              </div>
+            </header>
+            <div class="cd-chips" id="cdChips"></div>
+            <div class="cd-fragen" id="cdFragen"></div>
+            <div class="cd-spalten">
+              <section class="kachel">
+                <header class="kachel-kopf"><span data-ico="datei"></span><h2 data-nav="code.aenderungen"></h2></header>
+                <div class="kachel-inhalt" id="cdDateien"></div>
+              </section>
+              <section class="kachel">
+                <header class="kachel-kopf"><span data-ico="uhr"></span><h2 data-nav="code.commits"></h2></header>
+                <div class="kachel-inhalt" id="cdCommits"></div>
+              </section>
+            </div>
+            <div class="cd-diff-rahmen" id="cdDiffRahmen" hidden>
+              <div class="cd-diff-kopf"><code id="cdDiffDatei"></code><button class="knopf klein" id="cdDiffZu" data-nav="code.schliessen"></button></div>
+              <pre class="cd-diff" id="cdDiff"></pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="ansicht cl" id="ansichtClips" hidden>
         <div class="rt-innen">
           <header class="rt-kopf">
@@ -202,5 +239,6 @@
   <script src="verlauf.js"></script>
   <script src="routinen.js"></script>
   <script src="clips.js"></script>
+  <script src="code.js"></script>
 </body>
 </html>

@@ -100,7 +100,7 @@ function beispielGespraeche(gespraeche, sc) {
   }
 }
 
-async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken, gespraeche }) {
+async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken, gespraeche, appOrdner }) {
   fs.mkdirSync(ziel, { recursive: true });
   const sc = config.get('sprachcode');
   if (gespraeche && !gespraeche.liste().length) beispielGespraeche(gespraeche, sc);
@@ -128,6 +128,11 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.webContents.send('ansicht', 'clips');
   await warte(1500);
   await aufnehmenFenster(chatFenster, path.join(ziel, `clips-${sc}.png`), { mitRahmen: true });
+  // Code-Reiter mit diesem Repository als Beispielprojekt.
+  if (appOrdner && !config.get('code.projekte').length) config.set('code.projekte', [appOrdner]);
+  chatFenster.webContents.send('ansicht', 'code');
+  await warte(3000);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `code-${sc}.png`), { mitRahmen: true });
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });

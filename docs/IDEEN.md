@@ -39,12 +39,12 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.7.0 | Blase mit Untertiteln (was du sagst, darunter die Antwort) und frei verschiebbar: nur die Kugel ist greifbar, Position wird gemerkt, Doppelklick öffnet den Chat |
 | ✅ 1.8.0 | Gaming-Clips: Hotkey, Knopf oder „Clip das!“ löst Game Bar, NVIDIA oder AMD aus; Clip-Ansicht mit Vorschau, Player, Umbenennen, Im Ordner zeigen, Papierkorb; Hinweis mit Knopf, wenn die Windows-Hintergrundaufnahme aus ist |
 | ✅ 1.9.0 | Mikrofon und Lautsprecher wählbar (eigene WinMM-Anbindung, weil System.Speech nur das Standardgerät kennt), „Stimme testen“, Rückfall auf das Standardgerät; „Hey Julia“ startet nach Aussetzern selbst neu |
+| ✅ 2.0.0 | Code-Reiter: Projekte mit Zweig, voraus/zurück, Änderungen mit farbigem Diff, letzte Commits, erkannte Skripte; Knöpfe für Erklären, Prüfen, Tests, Beheben, Commit-Text – der Reiter liest nur, Änderungen laufen über den Chat und die Ampel |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 🔨 | **Code-Ansicht** – Projekte, Tests, Diffs übersichtlich; Änderungen erst nach Ja | L | hoch | Schreiben außerhalb der Arbeitsordner GELB, `git push` GELB |
 | 🔨 | **Spielhilfe** – Tipps per Blick auf den Bildschirm, einfache Schritte in Einzelspieler-Spielen übernehmen | M | mittel | Online-Spiele mit Anti-Cheat ROT (Bann-Gefahr); keine Echtzeit-Steuerung |
 | 📋 | **Signierter Installer** – Code-Signing-Zertifikat, damit SmartScreen nicht mehr warnt | S | mittel | Braucht ein Zertifikat auf deinen Namen |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
