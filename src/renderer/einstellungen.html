@@ -162,6 +162,26 @@
         </div>
       </div>
 
+      <div class="konto" id="kontoOutlook">
+        <div class="konto-kopf">
+          <span class="konto-logo">O</span>
+          <div class="konto-name">
+            <strong>Outlook</strong>
+            <small id="outlookStatus"></small>
+          </div>
+          <button class="zweit" id="outlookTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div id="outlookEinrichten" class="konto-einrichten">
+          <p class="hinweis"><span data-t="konten.outlook_text"></span> <a id="outlookAnleitung" target="_blank" rel="noreferrer" data-t="konten.anleitung"></a></p>
+          <div class="feld">
+            <label for="outlookClientId" data-t="konten.outlook_client_id"></label>
+            <input id="outlookClientId" spellcheck="false" autocomplete="off" placeholder="1a2b3c4d-1234-…">
+          </div>
+          <button class="primaer klein" id="outlookVerbinden" data-t="konten.outlook_verbinden"></button>
+          <small class="konto-meldung" id="outlookMeldung"></small>
+        </div>
+      </div>
+
       <div class="konto" id="kontoHandy">
         <div class="konto-kopf">
           <span class="konto-logo handy" aria-hidden="true">📱</span>

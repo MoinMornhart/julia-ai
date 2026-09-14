@@ -714,6 +714,22 @@ function ipcEinrichten() {
     }
   });
   ipc.handle('kosten:heute', () => agent.ctx.kosten.heute());
+  ipc.handle('konten:outlook:verbinden', async (_e, daten) => {
+    try {
+      await konten.outlook.verbinden(daten || {});
+      return { status: konten.status() };
+    } catch (e) {
+      return { fehler: e.message, status: konten.status() };
+    }
+  });
+  ipc.handle('konten:outlook:trennen', async () => {
+    try {
+      await konten.outlook.trennen();
+      return { status: konten.status() };
+    } catch (e) {
+      return { fehler: e.message, status: konten.status() };
+    }
+  });
   ipc.handle('konten:google:trennen', async () => {
     try {
       await konten.google.trennen();

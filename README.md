@@ -226,7 +226,8 @@ Julia spielt Minecraft (Java Edition) mit dir – als eigene Spielfigur auf dein
   <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google">
 </p>
 
-Julia kann dein **Google-Konto** nutzen – Gmail, Kalender und Kontakte:
+Julia kann dein **Google-Konto** (Gmail, Kalender, Kontakte) und dein **Outlook-Konto**
+(Outlook.com, Hotmail oder Microsoft 365) nutzen – auch beide gleichzeitig:
 
 > „Hab ich neue Mails?" · „Was steht morgen an?" · „Schreib Anna, dass ich zehn Minuten später komme." ·
 > „Leg mir Freitag 14 Uhr Zahnarzt ein." · „Speicher die Rechnung aus der Mail von Telekom in Downloads."
@@ -242,6 +243,10 @@ Anmelden tust du selbst im Browser, Julia sieht nie ein Passwort. Einmalig brauc
 eigenen OAuth-Client aus der Google Cloud Console, das dauert etwa zehn Minuten:
 **[Schritt-für-Schritt-Anleitung](docs/google-einrichten.md)**. Danach: *Einstellungen →
 Verbindungen → Mit Google verbinden*.
+
+Für Outlook reicht eine kostenlose App-Registrierung bei Microsoft (etwa fünf Minuten, nur
+eine Anwendungs-ID, kein Secret): **[Anleitung für Outlook](docs/outlook-einrichten.md)**.
+Danach: *Einstellungen → Verbindungen → Mit Outlook verbinden*.
 
 Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
 („Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.

@@ -27,6 +27,8 @@ contextBridge.exposeInMainWorld('julia', {
   kontenStatus: () => ipcRenderer.invoke('konten:status'),
   googleVerbinden: (daten) => ipcRenderer.invoke('konten:google:verbinden', daten),
   googleTrennen: () => ipcRenderer.invoke('konten:google:trennen'),
+  outlookVerbinden: (daten) => ipcRenderer.invoke('konten:outlook:verbinden', { clientId: String((daten && daten.clientId) || '') }),
+  outlookTrennen: () => ipcRenderer.invoke('konten:outlook:trennen'),
   kostenHeute: () => ipcRenderer.invoke('kosten:heute'),
   startUeberblick: (neu) => ipcRenderer.invoke('start:ueberblick', !!neu),
   verlaufListe: (suche) => ipcRenderer.invoke('verlauf:liste', String(suche || '')),

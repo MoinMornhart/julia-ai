@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.6.0 – 2026-09-14
+- Outlook verbinden: Julia liest und schreibt Mails, sieht deinen Kalender und findet Kontakte – Outlook.com, Hotmail oder Microsoft 365, auch neben Google
+
 ## 2.5.0 – 2026-09-14
 - Mit Julia im Minecraft-Chat schreiben – sie antwortet im Spiel – und beim Spielen einfach „Hey Julia, folge mir“ sagen; der Schalter dafür sitzt jetzt direkt im Minecraft-Reiter
 

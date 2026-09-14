@@ -87,7 +87,7 @@ function main() {
     .split('__GROESSE__').join(groesse);
   fs.writeFileSync(path.join(ORDNER, 'index.html'), seite, 'utf8');
   fs.mkdirSync(path.join(ORDNER, 'docs'), { recursive: true });
-  for (const d of ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md']) {
+  for (const d of ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md', 'outlook-einrichten.md', 'outlook-setup.en.md']) {
     fs.copyFileSync(path.join(WURZEL, 'docs', d), path.join(ORDNER, 'docs', d));
   }
   fs.writeFileSync(path.join(ORDNER, 'README.md'), README, 'utf8');

@@ -464,4 +464,4 @@ function zeitGrenze(s, ende) {
   return new Date(ms).toISOString();
 }
 
-module.exports = { GoogleKonto, GoogleFehler, SCOPES, zeitpunkt, plusMinuten, naechsterTag, zeitGrenze };
+module.exports = { GoogleKonto, GoogleFehler, SCOPES, zeitpunkt, plusMinuten, naechsterTag, zeitGrenze, antwortSeite };

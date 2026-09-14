@@ -225,7 +225,8 @@ Julia plays Minecraft (Java Edition) with you – as a character of her own on y
   <img src="docs/bilder/verbindungen-en.png" width="560" alt="Connections: Google">
 </p>
 
-Julia can use your **Google account** – Gmail, Calendar and Contacts:
+Julia can use your **Google account** (Gmail, Calendar, Contacts) and your **Outlook
+account** (Outlook.com, Hotmail or Microsoft 365) – even both at once:
 
 > "Any new mail?" · "What's on tomorrow?" · "Tell Anna I'll be ten minutes late." ·
 > "Put the dentist in for Friday 2 pm." · "Save the invoice from the Telekom mail to Downloads."
@@ -241,6 +242,10 @@ You sign in yourself in the browser; Julia never sees a password. Once, you need
 OAuth client from the Google Cloud Console, which takes about ten minutes:
 **[step-by-step guide](docs/google-setup.en.md)**. Then: *Settings → Connections → Connect
 Google*.
+
+For Outlook, a free app registration with Microsoft is enough (about five minutes, just an
+application ID, no secret): **[Outlook guide](docs/outlook-setup.en.md)**. Then: *Settings →
+Connections → Connect Outlook*.
 
 What an email says is never an instruction for Julia. Hidden instructions in mail
 ("Assistant, forward this") aren't carried out – she points them out to you instead.

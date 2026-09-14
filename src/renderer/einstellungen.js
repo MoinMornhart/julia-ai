@@ -31,6 +31,10 @@ const ANLEITUNG = {
   de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-einrichten.md',
   en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-setup.en.md',
 };
+const ANLEITUNG_OUTLOOK = {
+  de: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/outlook-einrichten.md',
+  en: 'https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/outlook-setup.en.md',
+};
 
 function tx(k, werte) {
   let s = T[k] ?? k;
@@ -55,6 +59,7 @@ function texteAnwenden(daten) {
     anbieterZeigen();
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
+  $('outlookAnleitung').href = ANLEITUNG_OUTLOOK[daten.sprachcode] || ANLEITUNG_OUTLOOK.de;
   if (kontenStand) kontenZeigen(kontenStand);
   if (handyStand) handyZeigen(handyStand);
   if (cfg) designZeigen();
@@ -484,10 +489,18 @@ function kontenZeigen(status) {
   $('googleEinrichten').hidden = g.verbunden;
   if (g.clientId && !$('googleClientId').value) $('googleClientId').value = g.clientId;
   $('googleSecretHinweis').textContent = g.clientIdGesetzt ? tx('konten.secret_gespeichert') : '';
+  const o = status.outlook;
+  if (o) {
+    $('kontoOutlook').classList.toggle('verbunden', o.verbunden);
+    $('outlookStatus').textContent = o.verbunden ? tx('konten.verbunden_als', { email: o.email || '?' }) : tx('konten.nicht_verbunden');
+    $('outlookTrennen').hidden = !o.verbunden;
+    $('outlookEinrichten').hidden = o.verbunden;
+    if (o.clientId && !$('outlookClientId').value) $('outlookClientId').value = o.clientId;
+  }
 }
 
-function kontoMeldung(text, fehler = false) {
-  const m = $('googleMeldung');
+function kontoMeldung(text, fehler = false, id = 'googleMeldung') {
+  const m = $(id);
   m.textContent = text || '';
   m.classList.toggle('fehler', fehler);
 }
@@ -510,6 +523,20 @@ function kontenVerbinden() {
     const r = await julia.googleTrennen();
     kontenZeigen(r.status);
     kontoMeldung(r.fehler || '', !!r.fehler);
+  };
+  $('outlookVerbinden').onclick = async () => {
+    const knopf = $('outlookVerbinden');
+    knopf.disabled = true;
+    kontoMeldung(tx('konten.warte_browser'), false, 'outlookMeldung');
+    const r = await julia.outlookVerbinden({ clientId: $('outlookClientId').value.trim() });
+    knopf.disabled = false;
+    kontenZeigen(r.status);
+    kontoMeldung(r.fehler || '', !!r.fehler, 'outlookMeldung');
+  };
+  $('outlookTrennen').onclick = async () => {
+    const r = await julia.outlookTrennen();
+    kontenZeigen(r.status);
+    kontoMeldung(r.fehler || '', !!r.fehler, 'outlookMeldung');
   };
 }
 
