@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.8.0 – 2026-09-14
+- Gaming-Clips – Strg+Alt+C oder Clip das speichert die letzten Sekunden deines Spiels, mit eigener Clip-Ansicht
+
 ## 1.7.0 – 2026-09-14
 - Die Blase zeigt jetzt Untertitel – was du sagst und was geantwortet wird – und du ziehst sie mit der Maus überallhin
 

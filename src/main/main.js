@@ -33,6 +33,8 @@ const { HandyServer, qrMatrix } = require('./handy/server');
 const { Gespraeche } = require('./gespraeche');
 const routinenModul = require('./routinen');
 const { anhaengeLesen } = require('./anhaenge');
+const { Clips } = require('./clips');
+const { pathToFileURL } = require('url');
 const { fremd } = require('./hilfen');
 const anzeige = require('./anzeige');
 const anbieterListe = require('./anbieter/liste');
@@ -62,6 +64,7 @@ let weckwortZuletzt = 0;
 let handy = null;
 let gespraeche = null;
 let routinen = null;
+let clips = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
 let tray = null;
@@ -492,6 +495,7 @@ function hotkeysRegistrieren() {
   const paare = [[config.get('hotkey.sprechen'), sprachUmschalten], [config.get('hotkey.chat'), chatUmschalten]];
   if (config.get('hotkey.overlay')) paare.push([config.get('hotkey.overlay'), overlayUmschalten]);
   if (config.get('hotkey.auswahl')) paare.push([config.get('hotkey.auswahl'), () => { auswahlHolen().catch(() => {}); }]);
+  if (config.get('hotkey.clip')) paare.push([config.get('hotkey.clip'), () => { clipJetzt(); }]);
   for (const [taste, aktion] of paare) {
     let ok = false;
     try { ok = globalShortcut.register(taste, aktion); } catch { ok = false; }
@@ -732,6 +736,27 @@ function ipcEinrichten() {
     if (id === gespraech.id) gespraech.id = null;
     return gespraeche.loeschen(id);
   });
+  ipc.handle('clips:liste', async () => {
+    if (VORFUEHRUNG) return require('./vorfuehrung').beispielClips(config);
+    return { status: await clips.status(), clips: clips.liste().map((c) => ({ ...c, url: pathToFileURL(c.pfad).href })) };
+  });
+  ipc.handle('clips:aufnehmen', () => clipJetzt());
+  ipc.handle('clips:ordner', () => {
+    const o = clips.ordner();
+    fs.mkdirSync(o, { recursive: true });
+    shell.openPath(o);
+    return true;
+  });
+  ipc.handle('clips:zeigen', (_e, p) => {
+    try { shell.showItemInFolder(clips.pruefen(p)); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('clips:loeschen', async (_e, p) => {
+    try { await shell.trashItem(clips.pruefen(p)); anAlle('clips:geaendert'); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('clips:umbenennen', (_e, p, name) => {
+    try { const neu = clips.umbenennen(p, name); anAlle('clips:geaendert'); return { ok: true, pfad: neu, url: pathToFileURL(neu).href }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('clips:windows', () => { shell.openExternal('ms-settings:gaming-gamedvr'); return true; });
   ipc.handle('routinen:liste', () => routinen.alle());
   ipc.handle('routinen:speichern', (_e, r) => {
     try {
@@ -827,6 +852,25 @@ function gespraechSpeichern() {
     if (g) anAlle('verlauf:geaendert');
   } catch (e) {
     protokoll.eintragen({ werkzeug: 'verlauf', stufe: 'INFO', ergebnis: 'nicht gespeichert', grund: e.message });
+  }
+}
+
+// --- Gaming-Clips ---
+
+async function clipJetzt() {
+  try {
+    const r = await clips.aufnehmen();
+    if (r.clip) {
+      melden(t('clip.titel'), t('clip.gespeichert', { name: r.clip.name }));
+      anAlle('clips:geaendert');
+    } else {
+      melden(t('clip.titel'), t('clip.nicht_gefunden'));
+    }
+    return r;
+  } catch (e) {
+    const text = e.message === 'keine_taste' ? t('clip.keine_taste') : e.message;
+    melden(t('clip.titel'), text);
+    return { fehler: text };
   }
 }
 
@@ -1107,6 +1151,7 @@ async function start() {
   });
   gespraeche = new Gespraeche(DATEN, krypto);
   routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
+  clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
   sprache = new Sprache();
   sprache.on('pegel', (p) => anAlle('pegel', p));
 
@@ -1123,6 +1168,7 @@ async function start() {
     kontextGeaendert: () => {},
     // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
     eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',
+    clipJetzt: () => clipJetzt(),
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),

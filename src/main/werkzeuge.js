@@ -172,7 +172,7 @@ function zeitText(ms, ctx) {
 
 const EINSTELLUNG_GRUEN = /^(blase\.|sprache\.)/;
 // Anbieter und Adresse bestimmen, wohin das Gespräch geht – nur mit Ja.
-const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|handy\.)/;
+const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|handy\.|clip\.)/;
 
 const WERKZEUGE = [
   {
@@ -616,6 +616,22 @@ const WERKZEUGE = [
     },
   },
 ];
+
+// Gaming-Clip: löst die Aufnahme des Systems aus (Game Bar, NVIDIA, AMD). Die
+// Aufnahme bleibt auf dem PC, deshalb GRÜN.
+WERKZEUGE.push({
+  name: 'clip_speichern',
+  description: 'Gaming-Clip speichern: löst die Aufnahme des Systems aus (Xbox Game Bar „Aufzeichnen, was passiert ist“, NVIDIA oder AMD) und meldet die neue Datei. Nur, wenn der Nutzer das will („Clip das!“).',
+  input_schema: { type: 'object', properties: {} },
+  einstufen: gruen,
+  async ausfuehren(e, ctx) {
+    if (!ctx.clipJetzt) throw new Error('Clips sind hier nicht verfügbar.');
+    const r = await ctx.clipJetzt();
+    if (r.fehler) throw new Error(r.fehler);
+    if (r.clip) return `Clip gespeichert: ${r.clip.pfad}`;
+    return 'Kein neuer Clip gefunden. Wahrscheinlich ist die Windows-Hintergrundaufnahme aus (Einstellungen → Spielen → Aufnahmen → „Aufzeichnen, was passiert ist“). In der Clip-Ansicht gibt es einen Knopf dorthin.';
+  },
+});
 
 // Für Anbieter ohne eigene Websuche. Nach außen gerichtet: Die Adresse selbst
 // kann Daten tragen, deshalb wird der Abruf nach fremden Inhalten GELB.

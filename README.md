@@ -79,6 +79,17 @@ Julia danach wieder her. Angehängte Dateien und markierter Text gelten als frem
 darin steht, ist nie ein Auftrag, und der Schutz gegen Datenabfluss greift. Jede Antwort hat
 einen Kopieren-Knopf.
 
+**Clips:** `Strg+Alt+C`, der Knopf in der Clip-Ansicht oder einfach „Clip das!“ speichert die
+letzten Sekunden deines Spiels. Julia nimmt dafür nicht selbst dauernd auf (das kostet Bilder pro
+Sekunde), sondern löst die Aufnahme deines Systems aus – Xbox Game Bar, NVIDIA oder AMD – und findet
+danach die Datei. In der Clip-Ansicht spielst du Clips ab, benennst sie um, zeigst sie im Ordner
+oder schiebst sie in den Papierkorb. Für die Game Bar muss in Windows *Spielen → Aufnahmen →
+„Aufzeichnen, was passiert ist“* an sein; ist es aus, zeigt Julia einen Knopf direkt dorthin.
+
+<p align="center">
+  <img src="docs/bilder/clips-de.png" width="760" alt="Clip-Ansicht mit Vorschaubildern">
+</p>
+
 ## KI-Anbieter
 
 Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:

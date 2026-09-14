@@ -329,6 +329,36 @@
     </section>
 
     <section class="gruppe">
+      <h2 data-t="einst.clips"></h2>
+      <p class="hinweis" data-t="einst.clips_hinweis"></p>
+      <div class="zwei">
+        <div class="feld">
+          <label for="clipMethode" data-t="einst.clip_methode"></label>
+          <select id="clipMethode" data-k="clip.methode">
+            <option value="gamebar" data-t="clip.m_gamebar"></option>
+            <option value="nvidia" data-t="clip.m_nvidia"></option>
+            <option value="amd" data-t="clip.m_amd"></option>
+            <option value="eigen" data-t="clip.m_eigen"></option>
+          </select>
+        </div>
+        <div class="feld">
+          <label for="hkClip" data-t="einst.hotkey_clip"></label>
+          <input id="hkClip" data-k="hotkey.clip" spellcheck="false" placeholder="Control+Alt+C">
+        </div>
+      </div>
+      <div class="zwei">
+        <div class="feld">
+          <label for="clipTaste" data-t="einst.clip_taste"></label>
+          <input id="clipTaste" data-k="clip.taste" spellcheck="false" placeholder="Alt+F10">
+        </div>
+        <div class="feld">
+          <label for="clipOrdner" data-t="einst.clip_ordner"></label>
+          <input id="clipOrdner" data-k="clip.ordner" spellcheck="false" placeholder="C:\Users\…\Videos\Captures">
+        </div>
+      </div>
+    </section>
+
+    <section class="gruppe">
       <h2 data-t="einst.system"></h2>
       <label class="schalter"><input type="checkbox" data-k="erinnerung.vorlesen"><span data-t="einst.erinnerung_vorlesen"></span></label>
       <label class="schalter"><input type="checkbox" data-k="verlauf.speichern"><span data-t="einst.verlauf_speichern"></span></label>

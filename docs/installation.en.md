@@ -77,6 +77,7 @@ light/dark, connect Google, pair your phone over Wi-Fi.
 | `Ctrl` + `Alt` + `J` | Open or close the chat window |
 | `Ctrl` + `Shift` + `Space` | Small overlay on top of a game |
 | `Ctrl` + `Alt` + `T` | Take marked text: translate, summarise, rephrase … |
+| `Ctrl` + `Alt` + `C` | Gaming clip: save the last seconds of your game |
 | `Esc` | Cancel the current task or close the window |
 
 All keys can be changed in the settings. If you like, Julia also listens for **"Hey Julia"** (or

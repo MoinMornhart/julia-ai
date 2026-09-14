@@ -76,6 +76,7 @@ Hell/Dunkel wählen, Google verbinden, das Handy im WLAN koppeln.
 | `Strg` + `Alt` + `J` | Chatfenster öffnen oder schließen |
 | `Strg` + `Umschalt` + `Leertaste` | Kleines Overlay über einem Spiel |
 | `Strg` + `Alt` + `T` | Markierten Text übernehmen: übersetzen, zusammenfassen, umformulieren … |
+| `Strg` + `Alt` + `C` | Gaming-Clip: die letzten Sekunden deines Spiels speichern |
 | `Esc` | Laufende Aufgabe abbrechen oder Fenster schließen |
 
 Alle Tasten lassen sich in den Einstellungen ändern. Auf Wunsch hört Julia auch auf

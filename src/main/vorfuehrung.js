@@ -125,6 +125,9 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.webContents.send('ansicht', 'routinen');
   await warte(1500);
   await aufnehmenFenster(chatFenster, path.join(ziel, `routinen-${sc}.png`), { mitRahmen: true });
+  chatFenster.webContents.send('ansicht', 'clips');
+  await warte(1500);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `clips-${sc}.png`), { mitRahmen: true });
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
@@ -215,4 +218,20 @@ function beispielUeberblick(config) {
   };
 }
 
-module.exports = { aufnehmen, GESPRAECH, beispielUeberblick };
+// Beispiel-Clips für den Screenshot – ohne echte Videodateien (Platzhalterbild).
+function beispielClips() {
+  const jetzt = Date.now();
+  const c = (name, spiel, minuten, mb) => ({ pfad: '', url: '', name, spiel, zeit: jetzt - minuten * 60000, groesse: mb * 1024 * 1024 });
+  return {
+    status: { methode: 'gamebar', ordner: 'C:\\Users\\philip\\Videos\\Captures', ordnerDa: true, hintergrund: true },
+    clips: [
+      c('Valorant 2026-09-14 20-15-33', 'Valorant', 12, 48),
+      c('Rocket League 2026-09-14 19-02-10', 'Rocket League', 85, 36),
+      c('Minecraft 2026-09-13 22-41-05', 'Minecraft', 60 * 22, 52),
+      c('Fortnite 2026-09-12 18-30-00', 'Fortnite', 60 * 50, 41),
+      c('Elden Ring 2026-09-11 23-12-44', 'Elden Ring', 60 * 70, 58),
+    ],
+  };
+}
+
+module.exports = { aufnehmen, GESPRAECH, beispielUeberblick, beispielClips };

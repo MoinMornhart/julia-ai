@@ -264,6 +264,98 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 .rt-aktionen [data-ico] svg { width: 12px; height: 12px; }
 .rt-leer { color: var(--text-3); }
 
+/* --- Clips --- */
+
+.cl { overflow-y: auto; padding: 24px 28px 30px; position: relative; }
+.cl-knoepfe { display: flex; flex-wrap: wrap; gap: 8px; }
+.cl-knoepfe [data-ico] svg { width: 16px; height: 16px; }
+.cl-rec { width: 10px; height: 10px; border-radius: 50%; background: var(--akzent-text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--akzent-text) 25%, transparent); }
+.knopf:disabled .cl-rec { animation: blinken 0.8s ease-in-out infinite; }
+.cl-warnung {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--gelb) 45%, transparent);
+  background: var(--gelb-weich);
+}
+.cl-warnung p { margin: 0; flex: 1 1 320px; color: var(--text); font-size: 13px; }
+.cl-raster { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.cl-karte {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid var(--linie);
+  background: var(--flaeche);
+  text-align: left;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+  animation: rein 0.3s ease-out both;
+}
+.cl-karte:hover { border-color: var(--akzent-rand); transform: translateY(-2px); box-shadow: var(--glow-klein), var(--schatten); }
+.cl-bild { position: relative; aspect-ratio: 16 / 9; background: #000; display: block; overflow: hidden; }
+.cl-bild video { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cl-platz {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--akzent) 70%, #fff);
+  background:
+    radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--akzent) 45%, transparent), transparent 60%),
+    linear-gradient(135deg, #1c1830, #0b0b12);
+}
+.cl-platz svg { width: 40px; height: 40px; opacity: 0.7; }
+.cl-play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--akzent) 88%, transparent);
+  box-shadow: var(--glow);
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.cl-play::after { content: ""; position: absolute; left: 17px; top: 13px; border-left: 14px solid var(--akzent-text); border-top: 9px solid transparent; border-bottom: 9px solid transparent; }
+.cl-karte:hover .cl-play { opacity: 1; }
+.cl-dauer { position: absolute; right: 8px; bottom: 8px; padding: 1px 7px; border-radius: 6px; background: rgba(0, 0, 0, 0.7); color: #fff; font: 11px var(--mono); }
+.cl-dauer:empty { display: none; }
+.cl-text { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px 12px; min-width: 0; }
+.cl-text b { font-weight: 650; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cl-text small { font-size: 11.5px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cl-player {
+  position: fixed;
+  inset: 50px 0 0;
+  z-index: 15;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--grund) 82%, transparent);
+  backdrop-filter: blur(8px);
+  animation: rein 0.15s ease-out;
+}
+.cl-player-innen { width: min(100%, 1000px); display: flex; flex-direction: column; gap: 10px; }
+.cl-player video { width: 100%; max-height: calc(100vh - 190px); border-radius: 14px; background: #000; box-shadow: var(--schatten), 0 0 0 1px var(--akzent-rand); }
+.cl-player-leiste { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.cl-player-leiste input {
+  flex: 1 1 220px;
+  min-width: 0;
+  font: inherit;
+  color: var(--text);
+  background: var(--grund-2);
+  border: 1px solid var(--linie-stark);
+  border-radius: 9px;
+  padding: 6px 10px;
+  outline: none;
+}
+.cl-player-leiste input:focus { border-color: var(--akzent-rand); }
+
 /* --- Verlauf: Liste links, Vorschau rechts --- */
 
 .vl { flex-direction: row; }

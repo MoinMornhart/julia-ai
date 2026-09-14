@@ -79,6 +79,17 @@ question. Julia restores your clipboard afterwards. Attached files and marked te
 foreign content – what they say is never an instruction, and the exfiltration guard kicks in.
 Every answer has a copy button.
 
+**Clips:** `Ctrl+Alt+C`, the button in the clip view or just "Clip that!" saves the last seconds
+of your game. Julia doesn't record constantly herself (that would cost frames per second) but
+triggers your system's recorder – Xbox Game Bar, NVIDIA or AMD – and then finds the file. In the
+clip view you play clips, rename them, show them in the folder or move them to the recycle bin.
+For the Game Bar, *Gaming → Captures → "Record what happened"* must be on in Windows; if it's off,
+Julia shows a button that takes you straight there.
+
+<p align="center">
+  <img src="docs/bilder/clips-en.png" width="760" alt="Clip view with thumbnails">
+</p>
+
 ## AI providers
 
 Julia runs with the provider of your choice – *Settings → General → AI provider*:

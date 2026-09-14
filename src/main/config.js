@@ -42,6 +42,11 @@ const STANDARD = {
   verlauf: {
     speichern: true, // Gespräche verschlüsselt auf diesem PC behalten
   },
+  clip: {
+    methode: 'gamebar', // 'gamebar' | 'nvidia' | 'amd' | 'eigen'
+    taste: '', // nur für 'eigen'
+    ordner: '', // leer = passend zur Methode (Videos\Captures …)
+  },
   kosten: {
     tageslimit_usd: 10, // 0 = keine Bremse
   },
@@ -59,6 +64,7 @@ const STANDARD = {
     chat: 'Control+Alt+J',
     overlay: 'Control+Shift+Space', // leer = abgeschaltet
     auswahl: 'Control+Alt+T', // markierten Text übernehmen; leer = abgeschaltet
+    clip: 'Control+Alt+C', // Gaming-Clip speichern; leer = abgeschaltet
   },
   overlay: {
     monitor: 0,
@@ -224,7 +230,22 @@ function pruefen(schluessel, wert) {
       return farbe(wert);
     case 'hotkey.overlay':
     case 'hotkey.auswahl':
+    case 'hotkey.clip':
       return String(wert ?? '').trim();
+    case 'clip.methode':
+      if (!['gamebar', 'nvidia', 'amd', 'eigen'].includes(wert)) throw new Error('Aufnahme über gamebar, nvidia, amd oder eigen.');
+      return wert;
+    case 'clip.taste': {
+      const s = String(wert ?? '').trim();
+      if (s.length > 40 || !/^[\w+ ]*$/.test(s)) throw new Error('Tastenkombination wie Alt+F10.');
+      return s;
+    }
+    case 'clip.ordner': {
+      const s = String(wert ?? '').trim();
+      if (!s) return '';
+      if (!path.isAbsolute(s)) throw new Error('Bitte einen vollständigen Ordnerpfad angeben (z. B. D:\\Clips).');
+      return path.resolve(s);
+    }
     case 'weckwort.schwelle':
       return Math.round(zahl(wert, 0.5, 0.95, 'Erkennungsschwelle') * 100) / 100;
     case 'kosten.tageslimit_usd':
