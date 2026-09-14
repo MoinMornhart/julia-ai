@@ -69,10 +69,95 @@
     $('mcCrashVersuch').textContent = v;
   }
 
+  function kleinerKnopf(text, klick) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'knopf klein';
+    b.textContent = text;
+    b.onclick = klick;
+    return b;
+  }
+
+  // Voice-Chat-Gruppen: nur neu zeichnen, wenn sich etwas geändert hat –
+  // sonst leerte das Aktualisieren alle 1,5 s das Passwortfeld beim Tippen.
+  let gruppenSig = '';
+  function gruppenZeigen(s) {
+    const v = s.stimme || {};
+    const gruppen = v.gruppen || [];
+    let leer = '';
+    if (!s.verbunden) leer = tx('mc.gruppen_offline');
+    else if (v.zustand !== 'verbunden') leer = tx('mc.gruppen_kein_vc');
+    else if (!gruppen.length) leer = tx('mc.gruppen_keine');
+    $('mcGruppenLeer').textContent = leer;
+    $('mcGruppenLeer').hidden = !leer;
+    $('mcGruppeGemerktZeile').hidden = !s.gruppeGemerkt;
+    $('mcGruppeGemerkt').textContent = s.gruppeGemerkt ? tx('mc.gruppe_gemerkt', { gruppe: s.gruppeGemerkt }) : '';
+    const sig = JSON.stringify([gruppen, v.gruppe, v.gruppeFehler, document.documentElement.lang]);
+    if (sig === gruppenSig) return;
+    gruppenSig = sig;
+    if (v.gruppeFehler === 'passwort') fehler(tx('mc.gruppe_falsch'));
+    const liste = $('mcGruppenListe');
+    liste.replaceChildren();
+    for (const g of gruppen) {
+      const drin = v.gruppe === g.id;
+      const li = document.createElement('li');
+      li.classList.toggle('drin', drin);
+      const kopf = document.createElement('div');
+      kopf.className = 'mc-gruppe-kopf';
+      const name = document.createElement('b');
+      name.textContent = `${g.passwort ? '🔒 ' : ''}${g.name}`;
+      const art = document.createElement('small');
+      art.textContent = tx(`mc.gruppe_${g.art}`) + (drin ? ` · ${tx('mc.gruppe_drin')}` : '');
+      kopf.append(name, art);
+      const reihe = document.createElement('div');
+      reihe.className = 'mc-zeile';
+      if (drin) {
+        reihe.append(kleinerKnopf(tx('mc.gruppe_verlassen'), async () => {
+          fehler('');
+          const r = await julia.mcGruppeVerlassen();
+          if (r.fehler) fehler(r.fehler);
+        }));
+      } else {
+        let pw = null;
+        if (g.passwort) {
+          pw = document.createElement('input');
+          pw.type = 'password';
+          pw.maxLength = 512;
+          pw.autocomplete = 'off';
+          pw.placeholder = tx('mc.gruppe_passwort');
+          pw.setAttribute('aria-label', `${tx('mc.gruppe_passwort')}: ${g.name}`);
+          reihe.append(pw);
+        }
+        reihe.append(kleinerKnopf(tx('mc.gruppe_beitreten'), async () => {
+          fehler('');
+          if (pw && !pw.value) { pw.focus(); return; }
+          const r = await julia.mcGruppeBeitreten(g.id, pw ? pw.value : '', $('mcGruppeMerken').checked);
+          if (pw) pw.value = '';
+          if (r.fehler) fehler(r.fehler);
+          laden();
+        }));
+      }
+      li.append(kopf, reihe);
+      liste.append(li);
+    }
+  }
+
+  function zielZeigen(s, an) {
+    const z = s.ziel || {};
+    $('mcZielLos').hidden = !!z.laeuft;
+    $('mcZielLos').disabled = !an;
+    $('mcZielStopp').hidden = !z.laeuft;
+    $('mcZielStand').textContent = z.laeuft ? tx('mc.ziel_laeuft') : '';
+    $('mcZielErgebnis').hidden = !z.ergebnis || !!z.laeuft;
+    $('mcZielErgebnis').textContent = z.ergebnis || '';
+  }
+
   function zeigen(s) {
     stand = s;
     const an = !!s.verbunden;
     crashZeigen(!an && s.trennung);
+    gruppenZeigen(s);
+    zielZeigen(s, an);
     $('mcZustand').textContent = an ? tx('mc.verbunden', { server: s.server }) : tx('mc.getrennt');
     $('mcZustand').classList.toggle('an', an);
     $('mcBeitreten').hidden = an;
@@ -151,6 +236,17 @@
     if ($('mcX').value === '' || $('mcZ').value === '') { ($('mcX').value === '' ? $('mcX') : $('mcZ')).focus(); return; }
     aufgabe({ aufgabe: 'gehen', x: $('mcX').value, y: $('mcY').value, z: $('mcZ').value });
   };
+  $('mcZielForm').onsubmit = async (e) => {
+    e.preventDefault();
+    const text = $('mcZielText').value.trim();
+    if (!text) { $('mcZielText').focus(); return; }
+    fehler('');
+    const r = await julia.mcZiel(text);
+    if (r.fehler) fehler(r.fehler);
+    laden();
+  };
+  $('mcZielStopp').onclick = async () => { await julia.mcZielStopp(); laden(); };
+  $('mcGruppeVergessen').onclick = async () => { await julia.mcGruppeVergessen(); laden(); };
   $('mcNeu').onclick = () => $('mcBeitreten').onclick();
   $('mcCrashWeg').onclick = async () => { await julia.mcTrennungWeg(); laden(); };
   $('mcSenden').onsubmit = async (e) => {
@@ -207,6 +303,9 @@
     $('mcSpieler').placeholder = tx('mc.spieler_platz');
     $('mcBlock').placeholder = tx('mc.block_platz');
     $('mcGebenItem').placeholder = tx('mc.item_platz');
+    $('mcZielText').placeholder = tx('mc.ziel_platz');
+    $('mcZielText').setAttribute('aria-label', tx('mc.ziel'));
+    gruppenSig = ''; // Texte neu – Gruppenliste neu zeichnen
     $('mcHerstellenItem').placeholder = tx('mc.herstellen_platz');
     $('mcChatText').placeholder = tx('mc.chat_platz');
     if (stand) zeigen(stand);

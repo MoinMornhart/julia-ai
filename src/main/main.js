@@ -1196,6 +1196,7 @@ function ipcEinrichten() {
         oeffentlich: true,
         konto: mcKonto(),
         stimme: config.get('minecraft.stimme') !== false,
+        gruppe: mcGruppe(),
       });
       anAlle('mc:geaendert');
       return { ok: true };
@@ -1209,6 +1210,52 @@ function ipcEinrichten() {
     return { ok: true };
   });
   ipc.handle('mc:trennungweg', () => { minecraft.trennungVergessen(); anAlle('mc:geaendert'); return true; });
+  // Freier Auftrag: Julia plant im Kanal "minecraft" – dort gibt es nur Werkzeuge im Spiel.
+  ipc.handle('mc:ziel', (_e, roh) => {
+    const text = String(roh || '').replace(/\s+/g, ' ').trim().slice(0, 1000);
+    if (!text) return { fehler: t('mc.ziel_leer') };
+    if (!minecraft.verbunden) return { fehler: t('mc.ziel_offline') };
+    if (agent.beschaeftigt) return { fehler: t('mc.beschaeftigt') };
+    mcZiel = { laeuft: true, text, ergebnis: '' };
+    anAlle('mc:geaendert');
+    protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { text: text.slice(0, 250) }, ergebnis: 'Auftrag im Minecraft-Reiter' });
+    anAlle('agent:nutzer', { text: t('mc.ziel_chat', { text }), perSprache: false });
+    agent.senden(`[${t('mc.ziel_kopf')}] ${text}`, { kanal: 'minecraft' })
+      .then((antwort) => { mcZiel.ergebnis = String(antwort || '').slice(0, 800); })
+      .catch((e) => { mcZiel.ergebnis = e.message === 'BESCHAEFTIGT' ? t('mc.beschaeftigt') : e.message; })
+      .finally(() => { mcZiel.laeuft = false; anAlle('mc:geaendert'); });
+    return { ok: true };
+  });
+  ipc.handle('mc:ziel:stopp', () => {
+    agent.abbrechen();
+    try { minecraft.aufgabe({ aufgabe: 'stopp' }); } catch { /* nicht im Spiel */ }
+    return { ok: true };
+  });
+  // Voice-Chat-Gruppen. Das Passwort geht nur an den Server – gespeichert
+  // (verschlüsselt) nur, wenn "Immer beitreten" an ist.
+  ipc.handle('mc:gruppe:beitreten', (_e, id, passwort, merken) => {
+    try {
+      const pw = passwort ? String(passwort).slice(0, 512) : null;
+      const g = minecraft.stimmeGruppeBeitreten(String(id || ''), pw);
+      if (merken) {
+        config.set('minecraft.gruppe', g.name);
+        konten.tresor.schreiben('minecraft', { gruppe_passwort: g.passwort ? pw : null });
+      }
+      protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', ergebnis: `Voice-Chat-Gruppe „${g.name}“ beitreten` });
+      return { ok: true };
+    } catch (e) {
+      return { fehler: e.message };
+    }
+  });
+  ipc.handle('mc:gruppe:verlassen', () => {
+    try { minecraft.stimmeGruppeVerlassen(); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('mc:gruppe:vergessen', () => {
+    config.set('minecraft.gruppe', '');
+    konten.tresor.schreiben('minecraft', { gruppe_passwort: null });
+    anAlle('mc:geaendert');
+    return { ok: true };
+  });
   ipc.handle('mc:aufgabe', (_e, a) => {
     try {
       const text = minecraft.aufgabe(a || {});
@@ -1423,9 +1470,20 @@ function mcKonto() {
   return name && mcSpeicher && mcSpeicher.vorhanden() ? { cache: mcSpeicher, name } : null;
 }
 
+// Freier Auftrag aus dem Minecraft-Reiter: läuft er, was kam heraus?
+let mcZiel = { laeuft: false, text: '', ergebnis: '' };
+
+// Gemerkte Voice-Chat-Gruppe – das Passwort liegt verschlüsselt im Tresor.
+function mcGruppe() {
+  const name = config.get('minecraft.gruppe');
+  if (!name) return null;
+  const t = (konten && konten.tresor && konten.tresor.lesen('minecraft')) || {};
+  return { name, passwort: t.gruppe_passwort || null };
+}
+
 function mcStand() {
   const c = config.get('minecraft');
-  return { ...minecraft.status(), konto: mcKonto() ? c.konto : '', adresse: c.adresse, port: c.port, meinName: c.spieler };
+  return { ...minecraft.status(), konto: mcKonto() ? c.konto : '', adresse: c.adresse, port: c.port, meinName: c.spieler, ziel: mcZiel, gruppeGemerkt: c.gruppe || '' };
 }
 
 // Den Code zeigt der Reiter; die Microsoft-Seite geht gleich im Browser auf.
@@ -1891,6 +1949,7 @@ async function start() {
     clipJetzt: () => clipJetzt(),
     minecraft,
     minecraftKonto: () => mcKonto(),
+    minecraftGruppe: () => mcGruppe(),
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),

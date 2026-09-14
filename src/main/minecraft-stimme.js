@@ -19,7 +19,11 @@ const { intern } = require('./webseite');
 // Spieler werden verworfen, bevor sie zu Audio werden – nichts wird gespeichert.
 
 const TYP = { mic: 1, spieler: 2, gruppe: 3, ort: 4, anmelden: 5, anmeldenOk: 6, ping: 7, keepAlive: 8, pruefen: 9, pruefenOk: 10 };
-const KANAELE = ['voicechat:secret', 'voicechat:request_secret', 'voicechat:update_state'];
+const KANAELE = [
+  'voicechat:secret', 'voicechat:request_secret', 'voicechat:update_state',
+  'voicechat:add_group', 'voicechat:remove_group', 'voicechat:joined_group', 'voicechat:set_group', 'voicechat:leave_group',
+];
+const GRUPPEN_ARTEN = ['normal', 'offen', 'isoliert'];
 const RATE = 48000;
 const FRAME = 960; // 20 ms bei 48 kHz
 const FRAME_BYTES = FRAME * 2;
@@ -189,12 +193,53 @@ function anredeEntfernen(text, phrasen) {
   return null;
 }
 
+// Gruppen im Simple Voice Chat. Der Server schickt jede Gruppe einzeln
+// (voicechat:add_group): ID, Name, Passwort ja/nein, dann je nach Version
+// dauerhaft, versteckt und die Art – deshalb nach den übrigen Bytes lesen.
+function gruppeLesen(daten) {
+  if (!Buffer.isBuffer(daten) || daten.length > MAX_PAKET) throw new Error('gruppe');
+  const r = new Leser(daten);
+  const id = r.uuid();
+  const name = r.feld(512 * 3).toString('utf8');
+  const passwort = r.bool();
+  let dauerhaft = false;
+  let versteckt = false;
+  let art = 0;
+  const rest = daten.length - r.o;
+  if (rest === 4) { dauerhaft = r.bool(); versteckt = r.bool(); art = r.bytes(2).readInt16BE(); }
+  else if (rest === 3) { dauerhaft = r.bool(); art = r.bytes(2).readInt16BE(); }
+  else if (rest === 2) art = r.bytes(2).readInt16BE();
+  else if (rest === 1) dauerhaft = r.bool();
+  return { id, name: name.slice(0, 64), passwort, dauerhaft, versteckt, art: GRUPPEN_ARTEN[art] || 'normal' };
+}
+
+// voicechat:set_group – ID, Passwort ja/nein, das Passwort (höchstens 512 Zeichen).
+function beitretenPaket(id, passwort) {
+  const uuid = Buffer.from(uuidHex(id), 'hex');
+  if (uuid.length !== 16) throw new Error('Unbekannte Gruppe.');
+  if (passwort == null || passwort === '') return Buffer.concat([uuid, Buffer.from([0])]);
+  const pw = Buffer.from(String(passwort).slice(0, 512), 'utf8');
+  return Buffer.concat([uuid, Buffer.from([1]), varInt(pw.length), pw]);
+}
+
+// voicechat:joined_group – in welcher Gruppe (oder keiner), und ob das Passwort falsch war.
+function beigetretenLesen(daten) {
+  const r = new Leser(daten);
+  const gruppe = r.bool() ? r.uuid() : null;
+  return { gruppe, falschesPasswort: r.bool() };
+}
+
 class Stimme extends EventEmitter {
   // client: das minecraft-protocol-Objekt des Bots (bot._client)
   // host: Adresse des Minecraft-Servers (Rückfall für den Voice-Server)
   // besitzerUuid(): UUID des Spielers, auf den Julia hört
-  constructor({ client, host, besitzerUuid = () => null, opus = () => require('opusscript'), versionen = [20, 18], wechselMs = 3000 }) {
+  // gruppe: { name, passwort } – dieser Gruppe von selbst beitreten, sobald es sie gibt
+  constructor({ client, host, besitzerUuid = () => null, opus = () => require('opusscript'), versionen = [20, 18], wechselMs = 3000, gruppe = null }) {
     super();
+    this.autoGruppe = gruppe && gruppe.name ? gruppe : null;
+    this.gruppen = new Map();
+    this.gruppe = null;
+    this.gruppeFehler = null;
     this.client = client;
     this.rueckfall = host;
     this.besitzerUuid = besitzerUuid;
@@ -213,14 +258,20 @@ class Stimme extends EventEmitter {
     this.hoerer = null;
     this.encoder = null;
     this.auftrag = null;
-    this._payload = (p) => this._secret(p);
+    this._payload = (p) => { this._secret(p); this._gruppenPaket(p); };
   }
 
   get verbunden() { return this.zustand === 'verbunden'; }
   get sprichtGerade() { return !!this.auftrag; }
 
   status() {
-    return { zustand: this.zustand, version: this.version === 20 ? '2.6' : this.version === 18 ? '2.5' : null, grund: this.grund };
+    return {
+      zustand: this.zustand, version: this.version === 20 ? '2.6' : this.version === 18 ? '2.5' : null, grund: this.grund,
+      gruppen: [...this.gruppen.values()].sort((a, b) => a.name.localeCompare(b.name)).slice(0, 50)
+        .map(({ id, name, passwort, art }) => ({ id, name, passwort, art })),
+      gruppe: this.gruppe,
+      gruppeFehler: this.gruppeFehler,
+    };
   }
 
   _setzen(z) {
@@ -405,6 +456,49 @@ class Stimme extends EventEmitter {
     this.auftrag = null;
   }
 
+  // Gruppen: Der Server meldet sie einzeln, Julia merkt sich die sichtbaren.
+  _gruppenPaket(p) {
+    if (!p || !Buffer.isBuffer(p.data)) return;
+    try {
+      if (p.channel === 'voicechat:add_group') {
+        const g = gruppeLesen(p.data);
+        if (g.versteckt || (this.gruppen.size >= 200 && !this.gruppen.has(g.id))) return;
+        this.gruppen.set(g.id, g);
+        const a = this.autoGruppe;
+        if (a && !this.gruppe && !this.autoVersucht && g.name.toLowerCase() === String(a.name).toLowerCase()) {
+          this.autoVersucht = true;
+          this.gruppeBeitreten(g.id, a.passwort);
+        }
+      } else if (p.channel === 'voicechat:remove_group') {
+        const id = new Leser(p.data).uuid();
+        this.gruppen.delete(id);
+        if (this.gruppe === id) this.gruppe = null;
+      } else if (p.channel === 'voicechat:joined_group') {
+        const j = beigetretenLesen(p.data);
+        this.gruppe = j.gruppe;
+        this.gruppeFehler = j.falschesPasswort ? 'passwort' : null;
+      } else {
+        return;
+      }
+    } catch {
+      return; // kaputtes Paket
+    }
+    this.emit('status', this.status());
+  }
+
+  // Einer Gruppe beitreten – das Passwort geht nur an den Server.
+  gruppeBeitreten(id, passwort) {
+    const g = this.gruppen.get(uuidHex(id));
+    if (!g) throw new Error('Diese Gruppe gibt es auf dem Server nicht mehr.');
+    this.gruppeFehler = null;
+    this.client.write('custom_payload', { channel: 'voicechat:set_group', data: beitretenPaket(g.id, g.passwort ? passwort : null) });
+    return g;
+  }
+
+  gruppeVerlassen() {
+    this.client.write('custom_payload', { channel: 'voicechat:leave_group', data: Buffer.alloc(0) });
+  }
+
   _senden(inhalt) {
     if (!this.socket || !this.secret) return;
     const b = clientPaket(inhalt, this.secret, this.version);
@@ -442,6 +536,8 @@ class Stimme extends EventEmitter {
 
   stoppen() {
     this.client.removeListener('custom_payload', this._payload);
+    this.gruppen.clear();
+    this.gruppe = null;
     this._aufraeumen();
     this._setzen('aus');
   }
@@ -450,4 +546,5 @@ class Stimme extends EventEmitter {
 module.exports = {
   Stimme, TYP, RATE, FRAME,
   varInt, secretLesen, clientPaket, serverPaketLesen, serverPaket, clientPaketLesen, micPaket, tonLesen, anredeEntfernen,
+  gruppeLesen, beitretenPaket, beigetretenLesen,
 };

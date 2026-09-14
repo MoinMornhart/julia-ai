@@ -137,9 +137,12 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   await warte(1500);
   await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-${sc}.png`), { mitRahmen: true });
   // Weiter unten: alle Aufgaben, die die Figur kann.
-  await chatFenster.webContents.executeJavaScript("document.getElementById('mcAufgaben').scrollIntoView({ block: 'start' })");
+  await chatFenster.webContents.executeJavaScript("document.getElementById('mcZiel').scrollIntoView({ block: 'start' })");
   await warte(500);
   await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-aufgaben-${sc}.png`), { mitRahmen: true });
+  await chatFenster.webContents.executeJavaScript("document.getElementById('mcGruppen').scrollIntoView({ block: 'end' })");
+  await warte(500);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-gruppen-${sc}.png`), { mitRahmen: true });
   await chatFenster.webContents.executeJavaScript("document.getElementById('ansichtMinecraft').scrollIntoView({ block: 'start' })");
   // Derselbe Reiter nach einem Rauswurf – mit Crash-Screen.
   demo.absturz = sc;
@@ -304,6 +307,16 @@ function beispielMinecraft() {
     spieler: [{ name: 'Morni', abstand: 3 }, { name: 'Lea_07', abstand: 41 }],
     feinde_nah: { zombie: 2, skeleton: 1 },
     chat: ['Morni: !beschütze mich', 'Julia: Ich passe auf Morni auf.', 'Lea_07: nice, die Julia haut die Zombies weg'],
+    stimme: {
+      zustand: 'verbunden', version: '2.6', grund: null, gruppeFehler: null, gruppe: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+      gruppen: [
+        { id: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1', name: 'Base-Team', passwort: false, art: 'normal' },
+        { id: 'b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2', name: 'Farmwelt', passwort: false, art: 'offen' },
+        { id: 'c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3', name: 'Lea & Morni', passwort: true, art: 'isoliert' },
+      ],
+    },
+    ziel: { laeuft: false, text: 'Hol Holz, bau eine Werkbank und mach dir eine Steinspitzhacke', ergebnis: 'Geschafft: 12 Holz abgebaut, Werkbank hingestellt, 4 Stöcke und eine Steinspitzhacke hergestellt – sie liegt in meiner Hand.' },
+    gruppeGemerkt: 'Base-Team',
     konto: 'Julia',
     adresse: '192.168.1.20',
     port: 25565,

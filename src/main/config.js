@@ -128,6 +128,7 @@ const STANDARD = {
     botname: '', // leer = Name der KI
     konto: '', // Name des verbundenen Minecraft-Kontos (nur Anzeige; die Anmeldung liegt verschlüsselt extra)
     stimme: true, // Simple Voice Chat nutzen, wenn der Server ihn hat
+    gruppe: '', // dieser Voice-Chat-Gruppe von selbst beitreten (Passwort verschlüsselt im Tresor)
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -258,6 +259,7 @@ function pruefen(schluessel, wert) {
       return s;
     }
     case 'minecraft.port': return Math.round(zahl(wert, 1, 65535, 'Port'));
+    case 'minecraft.gruppe': return String(wert ?? '').replace(/[ -]/g, '').trim().slice(0, 64);
     case 'minecraft.spieler':
     case 'minecraft.botname':
     case 'minecraft.konto': {

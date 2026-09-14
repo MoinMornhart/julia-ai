@@ -272,6 +272,20 @@
             </section>
           </div>
 
+          <section class="kachel" id="mcZiel">
+            <header class="kachel-kopf"><span data-ico="blitz"></span><h2 data-nav="mc.ziel"></h2></header>
+            <p class="mc-klein" data-nav="mc.ziel_hinweis"></p>
+            <form class="mc-ziel" id="mcZielForm">
+              <textarea id="mcZielText" rows="2" maxlength="1000" spellcheck="true"></textarea>
+              <div class="mc-knoepfe">
+                <button class="knopf primaer" type="submit" id="mcZielLos" data-nav="mc.ziel_los"></button>
+                <button class="knopf" type="button" id="mcZielStopp" data-nav="mc.ziel_stopp" hidden></button>
+                <small class="mc-klein" id="mcZielStand" aria-live="polite"></small>
+              </div>
+            </form>
+            <p class="mc-ziel-ergebnis" id="mcZielErgebnis" hidden></p>
+          </section>
+
           <section class="kachel" id="mcAufgaben">
             <header class="kachel-kopf"><span data-ico="blitz"></span><h2 data-nav="mc.aufgaben"></h2></header>
             <div class="mc-raster">
@@ -323,6 +337,18 @@
               <input id="mcChatText" maxlength="250" spellcheck="true" autocomplete="off">
               <button class="knopf klein" type="submit" data-nav="mc.senden"></button>
             </form>
+          </section>
+
+          <section class="kachel" id="mcGruppen">
+            <header class="kachel-kopf"><span data-ico="chat"></span><h2 data-nav="mc.gruppen"></h2></header>
+            <p class="mc-klein" data-nav="mc.gruppen_hinweis"></p>
+            <p class="mc-klein" id="mcGruppenLeer"></p>
+            <ul class="mc-gruppen" id="mcGruppenListe"></ul>
+            <label class="mc-schalter"><input type="checkbox" id="mcGruppeMerken"><span data-nav="mc.gruppe_merken"></span></label>
+            <div class="mc-knoepfe" id="mcGruppeGemerktZeile" hidden>
+              <small class="mc-klein" id="mcGruppeGemerkt"></small>
+              <button class="knopf klein" type="button" id="mcGruppeVergessen" data-nav="mc.gruppe_vergessen"></button>
+            </div>
           </section>
         </div>
       </section>

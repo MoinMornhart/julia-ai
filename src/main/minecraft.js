@@ -75,7 +75,29 @@ const TIERE = new Set(['cow', 'pig', 'chicken', 'sheep', 'rabbit', 'mooshroom'])
 const TIER_WOERTER = { kuh: 'cow', kuehe: 'cow', kühe: 'cow', schwein: 'pig', schweine: 'pig', huhn: 'chicken', huehner: 'chicken', hühner: 'chicken', schaf: 'sheep', schafe: 'sheep', hase: 'rabbit', hasen: 'rabbit', kaninchen: 'rabbit', pilzkuh: 'mooshroom' };
 // Das behält die Figur beim Einräumen: Waffen, Werkzeug, Rüstung, Essen, Fackeln.
 const BEHALTEN = /_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)$|^(shield|bow|crossbow|trident|arrow|torch)$/;
-const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !verstau · !schlaf';
+const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf';
+// Brennstoff für den Ofen: Name (oder Endung) und wie viele Dinge eins schafft.
+const BRENNSTOFF = [['coal', 8], ['charcoal', 8], ['_planks', 1.5], ['_log', 1.5], ['stick', 0.5]];
+// Was die Figur beim Umsehen meldet.
+const UMSEHEN = {
+  holz: (n) => n.endsWith('_log'),
+  stein: (n) => n === 'stone' || n === 'cobblestone',
+  kohle: (n) => n.endsWith('coal_ore'),
+  eisen: (n) => n.endsWith('iron_ore'),
+  kupfer: (n) => n.endsWith('copper_ore'),
+  gold: (n) => n.endsWith('gold_ore'),
+  redstone: (n) => n.endsWith('redstone_ore'),
+  diamant: (n) => n.endsWith('diamond_ore'),
+  smaragd: (n) => n.endsWith('emerald_ore'),
+  obsidian: (n) => n === 'obsidian',
+  wasser: (n) => n === 'water',
+  lava: (n) => n === 'lava',
+  werkbank: (n) => n === 'crafting_table',
+  ofen: (n) => n === 'furnace' || n === 'blast_furnace' || n === 'smoker',
+  truhe: (n) => n === 'chest' || n === 'barrel',
+  bett: (n) => n.endsWith('_bed'),
+};
+const DAUERHAFT = ['folgen', 'beschuetzen', 'kaempfen'];
 
 // --- Kleine, prüfbare Bausteine ---
 
@@ -350,6 +372,13 @@ function befehlLesen(text, namen = []) {
   if (abbau) { const m = mengeLesen(abbau[1]); return { aufgabe: 'abbauen', block: m.sache, anzahl: m.anzahl }; }
   const gib = /^(?:gib|gebe|give)(?:\s+(?:mir|me))?\s+(.+)$/.exec(s);
   if (gib) { const m = mengeLesen(gib[1]); return { aufgabe: 'geben', item: m.sache, anzahl: m.anzahl }; }
+  if (/^(ess|iss|essen|eat)( was| etwas)?$/.test(s)) return { aufgabe: 'essen' };
+  const schm = /^(?:schmelz(?:e)?|brat(?:e)?|smelt|cook)\s+(.+)$/.exec(s);
+  if (schm) { const m = mengeLesen(schm[1]); return { aufgabe: 'schmelzen', item: m.sache, anzahl: m.anzahl }; }
+  const hin = /^(?:stell(?:e)?\s+(.+?)\s+hin|platzier(?:e)?\s+(.+)|place\s+(.+))$/.exec(s);
+  if (hin) return { aufgabe: 'platzieren', item: (hin[1] || hin[2] || hin[3]).replace(/^(ein(e|en)?|die|den|das|a|an)\s+/, '') };
+  const nimm = /^(?:nimm|r(?:ü|ue)st(?:e)?|equip)\s+(?:(?:dein(?:e|en)?|die|den|das)\s+)?(.+?)(?:\s+aus)?$/.exec(s);
+  if (nimm) return { aufgabe: 'ausruesten', item: nimm[1] };
   const cr = /^(?:craft(?:e)?|herstellen|stell(?:e)?(?:\s+mir)?|mach(?:e)?\s+mir)\s+(.+?)(?:\s+her)?$/.exec(s);
   if (cr) { const m = mengeLesen(cr[1]); return { aufgabe: 'herstellen', item: m.sache, anzahl: m.anzahl }; }
   return null;
@@ -470,10 +499,12 @@ class Minecraft extends EventEmitter {
     return !!(this.bot && this.bot.entity);
   }
 
-  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false } = {}) {
+  // gruppe: { name, passwort } – dieser Voice-Chat-Gruppe von selbst beitreten.
+  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null } = {}) {
     clearTimeout(this.wiederTimer);
     this._botWeg();
-    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme };
+    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe };
+    this.autoGruppe = gruppe;
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
     const ziel = await zielFinden(adresse, p, { aufloesen: this.aufloesen, srv: this.srv, oeffentlich });
@@ -524,6 +555,7 @@ class Minecraft extends EventEmitter {
     const s = new Stimme({
       client: bot._client,
       host: ip,
+      gruppe: this.autoGruppe,
       besitzerUuid: () => {
         const k = Object.keys(bot.players).find((n) => n.toLowerCase() === String(this.besitzer || '').toLowerCase());
         return k ? bot.players[k].uuid : null;
@@ -537,6 +569,16 @@ class Minecraft extends EventEmitter {
 
   get stimmeAktiv() {
     return !!(this.stimme && this.stimme.verbunden);
+  }
+
+  stimmeGruppeBeitreten(id, passwort) {
+    if (!this.stimmeAktiv) throw new Error('Der Voice-Chat ist nicht verbunden – ohne ihn gibt es keine Gruppen.');
+    return this.stimme.gruppeBeitreten(id, passwort);
+  }
+
+  stimmeGruppeVerlassen() {
+    if (!this.stimmeAktiv) throw new Error('Der Voice-Chat ist nicht verbunden.');
+    this.stimme.gruppeVerlassen();
   }
 
   stimmeSprechen(pcm) {
@@ -706,6 +748,16 @@ class Minecraft extends EventEmitter {
         return this._herstellen(item || block, anzahl);
       case 'verstauen':
         return this._verstauen();
+      case 'schmelzen':
+        return this._schmelzen(item || block, anzahl);
+      case 'platzieren':
+        return this._platzieren(item || block);
+      case 'ausruesten':
+        return this._ausruestenMit(item || block);
+      case 'essen':
+        if (bot.food >= 20) return 'Ich bin satt.';
+        if (!this._essen([...ESSEN, ...HEILEN])) throw new Error('Ich habe nichts zu essen dabei.');
+        return 'Ich esse etwas.';
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
@@ -746,6 +798,7 @@ class Minecraft extends EventEmitter {
   // --- intern ---
 
   _melden(art, text) {
+    this.letzteMeldung = { art, text, zeit: Date.now() };
     this.emit('ereignis', { art, text });
   }
 
@@ -1184,6 +1237,151 @@ class Minecraft extends EventEmitter {
     })();
     return 'Ich räume das Inventar in die Truhe.';
   }
+
+  // Im Ofen schmelzen oder braten: Brennstoff und Ware rein, Ergebnis wieder raus.
+  _schmelzen(item, anzahl) {
+    const bot = this.bot;
+    const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+    if (!namen.length) throw new Error(`Einen Gegenstand "${item}" kenne ich nicht. Englische Namen wie raw_iron gehen immer.`);
+    // "eisen" meint zum Schmelzen das Roheisen, "steak" das rohe Fleisch – nicht das fertige Ergebnis.
+    const roh = namen.flatMap((n) => [n, `raw_${n.replace(/_ingot$/, '')}`, n.replace(/^cooked_/, '')]).filter((n) => bot.registry.itemsByName[n]);
+    const vorrat = bot.inventory.items().filter((i) => roh.includes(i.name) || namen.includes(i.name));
+    if (!vorrat.length) throw new Error(`Ich habe kein ${item} zum Schmelzen dabei.`);
+    const items = bot.inventory.items();
+    const brenn = BRENNSTOFF.map(([n, schafft]) => ({ it: items.find((i) => (n.startsWith('_') ? i.name.endsWith(n) : i.name === n)), schafft })).find((b) => b.it);
+    if (!brenn) throw new Error('Mir fehlt Brennstoff – Kohle, Holzkohle, Bretter oder Holz.');
+    const ofenBlock = bot.registry.blocksByName.furnace;
+    const ofen = ofenBlock ? bot.findBlock({ matching: ofenBlock.id, maxDistance: 32 }) : null;
+    if (!ofen) throw new Error('Hier ist kein Ofen. Stell einen hin (!stell ofen hin) – oder lass mich erst einen herstellen.');
+    const ware = vorrat[0];
+    const n = Math.max(1, Math.min(64, ware.count, Math.round(Number(anzahl) || ware.count)));
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'schmelzen', item, geschafft: 0, anzahl: n };
+    this.auftrag = a;
+    (async () => {
+      try {
+        await bot.pathfinder.goto(new GoalNear(ofen.position.x, ofen.position.y, ofen.position.z, 2));
+        if (this.auftrag !== a) return;
+        const f = await bot.openFurnace(ofen);
+        try {
+          if (!f.fuelItem()) await f.putFuel(brenn.it.type, null, Math.min(brenn.it.count, Math.ceil(n / brenn.schafft)));
+          await f.putInput(ware.type, null, n);
+          const bis = Date.now() + (n * 10 + 20) * 1000; // zehn Sekunden je Stück
+          while (this.auftrag === a && Date.now() < bis) {
+            await new Promise((r) => setTimeout(r, 2000));
+            const aus = f.outputItem();
+            if (aus && aus.count) {
+              a.geschafft += aus.count;
+              await f.takeOutput();
+            }
+            if (!f.inputItem() && !f.outputItem()) break;
+          }
+        } finally {
+          f.close();
+        }
+        this._fertig(a, a.geschafft ? `${a.geschafft}× fertig aus dem Ofen.` : 'Im Ofen ist nichts fertig geworden – fehlt Brennstoff?');
+      } catch (e) {
+        this._fertig(a, `Schmelzen hat nicht geklappt: ${e.message}`);
+      }
+    })();
+    return `Ich schmelze ${n}× ${ware.name}.`;
+  }
+
+  // Einen Block aus dem Inventar direkt neben sich hinstellen (Werkbank, Ofen, Truhe …).
+  _platzieren(item) {
+    const bot = this.bot;
+    const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+    const it = bot.inventory.items().find((i) => namen.includes(i.name) && bot.registry.blocksByName[i.name]);
+    if (!it) throw new Error(`Ich habe kein ${item} zum Hinstellen dabei.`);
+    const { Vec3 } = require('vec3');
+    const fuesse = bot.entity.position.floored();
+    let ziel = null;
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]) {
+      const ort = fuesse.offset(dx, 0, dz);
+      const boden = bot.blockAt(ort.offset(0, -1, 0));
+      const frei = bot.blockAt(ort);
+      if (boden && boden.boundingBox === 'block' && frei && frei.name === 'air') { ziel = { ort, boden }; break; }
+    }
+    if (!ziel) throw new Error('Hier ist kein freier Platz auf festem Boden.');
+    const a = { art: 'platzieren', item };
+    this.auftrag = a;
+    (async () => {
+      try {
+        await bot.equip(it, 'hand');
+        await bot.placeBlock(ziel.boden, new Vec3(0, 1, 0));
+        this._fertig(a, `${it.name} steht bei ${ortText(ziel.ort)}.`);
+      } catch (e) {
+        this._fertig(a, `Hinstellen hat nicht geklappt: ${e.message}`);
+      } finally {
+        this._ausruesten();
+      }
+    })();
+    return `Ich stelle ${it.name} hin.`;
+  }
+
+  // Etwas Bestimmtes in die Hand nehmen oder anziehen.
+  _ausruestenMit(item) {
+    const bot = this.bot;
+    const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+    const it = bot.inventory.items().find((i) => namen.includes(i.name));
+    if (!it) throw new Error(`Ich habe kein ${item} dabei.`);
+    const teil = ruestungTeil(it.name);
+    bot.equip(it, teil ? teil.platz : 'hand').catch((e) => { this.letzterFehler = e.message; });
+    return teil ? `Ich ziehe ${it.name} an.` : `Ich nehme ${it.name} in die Hand.`;
+  }
+
+  // Für die KI: warten, bis die laufende Aufgabe fertig ist – dann das Ergebnis.
+  async warten(sekunden = 60) {
+    if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
+    const bis = Date.now() + Math.max(1, Math.min(180, Number(sekunden) || 60)) * 1000;
+    const vorher = this.letzteMeldung;
+    while (this.verbunden && this.auftrag && !DAUERHAFT.includes(this.auftrag.art) && Date.now() < bis) {
+      await new Promise((r) => setTimeout(r, 400));
+    }
+    const a = this.auftrag;
+    let hinweis = null;
+    if (a && DAUERHAFT.includes(a.art)) hinweis = 'Diese Aufgabe läuft dauerhaft, bis eine neue kommt.';
+    else if (a) hinweis = 'Noch nicht fertig – später noch einmal warten.';
+    return {
+      fertig: !a,
+      laeuft_noch: a ? a.art : null,
+      hinweis,
+      ergebnis: this.letzteMeldung && this.letzteMeldung !== vorher ? this.letzteMeldung.text : null,
+      status: this.verbunden ? this.status() : { verbunden: false },
+    };
+  }
+
+  // Was es im Umkreis gibt: Bäume, Erze, Wasser, Werkbank … – jeweils Anzahl und der nächste.
+  umsehen() {
+    if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
+    const bot = this.bot;
+    const p = bot.entity.position;
+    const alle = Object.keys(bot.registry.blocksByName);
+    const bloecke = {};
+    for (const [was, passt] of Object.entries(UMSEHEN)) {
+      const ids = alle.filter(passt).map((n) => bot.registry.blocksByName[n].id);
+      if (!ids.length) continue;
+      const orte = bot.findBlocks({ matching: ids, maxDistance: 32, count: 40 });
+      if (!orte.length) continue;
+      const n = orte.reduce((b, v) => (v.distanceTo(p) < b.distanceTo(p) ? v : b));
+      bloecke[was] = { anzahl: orte.length >= 40 ? '40+' : orte.length, naechster: { x: n.x, y: n.y, z: n.z, abstand: Math.round(n.distanceTo(p)) } };
+    }
+    const tiere = {};
+    const feinde = {};
+    for (const e of Object.values(bot.entities)) {
+      if (!e.position || e.position.distanceTo(p) > 32) continue;
+      if (TIERE.has(e.name)) tiere[e.name] = (tiere[e.name] || 0) + 1;
+      else if (istFeind(e)) feinde[e.name] = (feinde[e.name] || 0) + 1;
+    }
+    return {
+      position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
+      dimension: bot.game && bot.game.dimension,
+      tageszeit: bot.time ? (bot.time.isDay ? 'Tag' : 'Nacht') : null,
+      bloecke,
+      tiere,
+      feinde,
+    };
+  }
 }
 
 // --- Werkzeuge für das Modell ---
@@ -1242,17 +1440,18 @@ const WERKZEUGE = [
         oeffentlich: z.eingetragen,
         konto: ctx.minecraftKonto ? ctx.minecraftKonto() : null,
         stimme: z.c.stimme !== false,
+        gruppe: ctx.minecraftGruppe ? ctx.minecraftGruppe() : null,
       });
       return `Verbunden als ${s.name} (Minecraft ${s.version}). Im Spiel nennt „!hilfe“ alle Befehle.\n${fremd('dem Minecraft-Server', JSON.stringify(s))}`;
     },
   },
   {
     name: 'minecraft_aufgabe',
-    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit und meldet sich, wenn sie fertig ist. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). gehen: zu Koordinaten laufen (x, z, optional y). geben: dem Spieler etwas aus dem Inventar bringen (item, anzahl). sammeln: herumliegende Gegenstände aufheben. jagen: Tiere für Essen jagen (tier: kuh, schwein, huhn, schaf, hase; anzahl bis 10). herstellen: etwas craften (item z. B. fackel, werkbank, bretter, stock oder torch; anzahl) – im Inventar oder an einer Werkbank in der Nähe. verstauen: Inventar in die nächste Truhe legen (Waffen, Werkzeug, Essen bleiben). schlafen: ins nächste Bett. stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen.',
+    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit und meldet sich, wenn sie fertig ist. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). gehen: zu Koordinaten laufen (x, z, optional y). geben: dem Spieler etwas aus dem Inventar bringen (item, anzahl). sammeln: herumliegende Gegenstände aufheben. jagen: Tiere für Essen jagen (tier: kuh, schwein, huhn, schaf, hase; anzahl bis 10). herstellen: etwas craften (item z. B. fackel, werkbank, bretter, stock oder torch; anzahl) – im Inventar oder an einer Werkbank in der Nähe. verstauen: Inventar in die nächste Truhe legen (Waffen, Werkzeug, Essen bleiben). schlafen: ins nächste Bett. schmelzen: im Ofen in der Nähe schmelzen oder braten (item z. B. eisen, raw_iron, beef; anzahl) – Brennstoff nimmt die Figur selbst. platzieren: einen Block aus dem Inventar neben sich hinstellen (item z. B. werkbank, ofen, truhe). ausruesten: ein bestimmtes Teil in die Hand nehmen oder anziehen. essen: sofort etwas essen. stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen. Nach Aufgaben, die dauern, mit minecraft_warten auf das Ergebnis warten, bevor der nächste Schritt kommt.',
     input_schema: {
       type: 'object',
       properties: {
-        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'stopp'] },
+        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'schmelzen', 'platzieren', 'ausruesten', 'essen', 'stopp'] },
         spieler: { type: 'string' },
         block: { type: 'string' },
         item: { type: 'string', description: 'für geben und herstellen, z. B. brot, fackel, diamant, oak_planks' },
@@ -1290,6 +1489,26 @@ const WERKZEUGE = [
     einstufen: () => gruen(),
     async ausfuehren(_e, ctx) {
       return fremd('dem Minecraft-Server', JSON.stringify(brauchtMinecraft(ctx).status()));
+    },
+  },
+  {
+    name: 'minecraft_warten',
+    fremd: true,
+    description: 'Warten, bis die laufende Aufgabe der Spielfigur fertig ist (höchstens sekunden, Standard 60, bis 180) – danach das Ergebnis und der Status. Nach jeder Aufgabe, die dauert (abbauen, gehen, herstellen, schmelzen, jagen …), aufrufen, bevor der nächste Schritt kommt.',
+    input_schema: { type: 'object', properties: { sekunden: { type: 'number' } } },
+    einstufen: () => gruen(),
+    async ausfuehren(e, ctx) {
+      return fremd('dem Minecraft-Server', JSON.stringify(await brauchtMinecraft(ctx).warten(e.sekunden)));
+    },
+  },
+  {
+    name: 'minecraft_umsehen',
+    fremd: true,
+    description: 'Was es im Umkreis von 32 Blöcken gibt: Bäume, Stein, Erze (Kohle, Eisen, Kupfer, Gold, Redstone, Diamant, Smaragd), Obsidian, Wasser, Lava, Werkbank, Ofen, Truhe, Bett – jeweils Anzahl und der nächste mit Koordinaten; dazu Tiere, Monster, Tageszeit und Dimension. Zum Planen vor größeren Zielen.',
+    input_schema: { type: 'object', properties: {} },
+    einstufen: () => gruen(),
+    async ausfuehren(_e, ctx) {
+      return fremd('dem Minecraft-Server', JSON.stringify(brauchtMinecraft(ctx).umsehen()));
     },
   },
   {

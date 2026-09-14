@@ -298,11 +298,20 @@ NeoProtect oder TCPShield).
 | Jagen | `!jag 3 kuh` | holt Essen von Tieren und sammelt es ein |
 | Herstellen | `!craft 4 fackel` | craftet im Inventar oder an der nächsten Werkbank |
 | Einräumen | `!verstau` | legt das Inventar in die nächste Truhe (Waffen, Werkzeug, Essen bleiben) |
+| Schmelzen | `!schmelz 8 eisen` | schmilzt oder brät im Ofen, Brennstoff nimmt sie selbst |
+| Hinstellen · Essen | `!stell werkbank hin` · `!ess` | stellt einen Block neben sich · isst etwas |
 | Schlafen · Stopp | `!schlaf` · `!stopp` | geht ins Bett · hört sofort auf |
 
 `!hilfe` nennt alle Befehle im Spiel. Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde
 direkt in Julia – die KI gibt nur die Aufgabe vor. Waffe und Rüstung legt die Figur selbst an,
 bei wenig Leben isst sie einen Goldapfel.
+
+- **Auftrag an Julia:** Im Reiter schreibst du in deinen Worten, was sie tun soll – etwa „Hol Holz, bau eine Werkbank und mach dir eine Steinspitzhacke“. Sie sieht sich um, plant die Schritte und arbeitet sie mit ihren Fähigkeiten ab, wartet jeweils auf das Ergebnis und sagt am Ende, was geschafft ist. Große Ziele wie den Enderdrachen zerlegt sie in Etappen – ganz allein durchspielen schafft ein Bot aber nicht zuverlässig.
+- **Voice-Chat-Gruppen:** Julia listet die Gruppen aus dem Simple Voice Chat des Servers auf; du wählst, in welche sie geht. Bei einer geschützten Gruppe gibst du das Passwort ein – es geht nur an den Server, die KI sieht es nie. Mit „Immer beitreten“ geht Julia beim nächsten Mal von selbst hinein; das Passwort liegt dann verschlüsselt auf deinem PC.
+
+<p align="center">
+  <img src="docs/bilder/minecraft-gruppen-de.png" width="760" alt="Voice-Chat-Gruppen: Julia ist in einer Gruppe, eine offene Gruppe und eine mit Passwort">
+</p>
 
 - **Crash-Screen:** Fliegt Julia vom Server, zeigt der Reiter warum – in klaren Worten, mit Zeit, Spieldauer und der Aufgabe, die gerade lief. Nach einem Verbindungsabbruch versucht sie es dreimal von selbst, nach einem Rauswurf nicht.
 - **Konto:** Ohne Konto geht es auf Servern mit `online-mode=false`. Mit **Konto verbinden** meldest du Julias eigenes Java-Konto an – im Browser auf microsoft.com/link, Julia sieht kein Passwort.

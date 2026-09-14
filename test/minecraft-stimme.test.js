@@ -73,6 +73,56 @@ test('Voice-Chat: Spieler-, Gruppen- und Ort-Töne werden richtig gelesen', () =
   assert.equal(v.tonLesen(Buffer.from([8])), null);
 });
 
+test('Voice-Chat: Gruppen lesen (2.6 und 2.5), beitreten mit und ohne Passwort', () => {
+  const id = '0123456789abcdef0123456789abcdef';
+  const name = Buffer.from('Freunde');
+  const kopf = Buffer.concat([Buffer.from(id, 'hex'), v.varInt(name.length), name]);
+  // 2.6: Passwort, dauerhaft, versteckt, Art (short)
+  assert.deepEqual(v.gruppeLesen(Buffer.concat([kopf, Buffer.from([1, 1, 0, 0, 1])])), { id, name: 'Freunde', passwort: true, dauerhaft: true, versteckt: false, art: 'offen' });
+  // 2.5: ohne "versteckt"
+  assert.deepEqual(v.gruppeLesen(Buffer.concat([kopf, Buffer.from([0, 1, 0, 2])])), { id, name: 'Freunde', passwort: false, dauerhaft: true, versteckt: false, art: 'isoliert' });
+  assert.throws(() => v.gruppeLesen(Buffer.from([1, 2, 3])));
+
+  const mitPw = v.beitretenPaket(id, 'geheim');
+  assert.equal(mitPw.subarray(0, 16).toString('hex'), id);
+  assert.deepEqual([...mitPw.subarray(16)], [1, 6, ...Buffer.from('geheim')]);
+  assert.deepEqual([...v.beitretenPaket(id, null).subarray(16)], [0], 'ohne Passwort: nur "nein"');
+  assert.throws(() => v.beitretenPaket('kaputt', null), /Gruppe/);
+
+  assert.deepEqual(v.beigetretenLesen(Buffer.concat([Buffer.from([1]), Buffer.from(id, 'hex'), Buffer.from([0])])), { gruppe: id, falschesPasswort: false });
+  assert.deepEqual(v.beigetretenLesen(Buffer.from([0, 1])), { gruppe: null, falschesPasswort: true });
+});
+
+test('Voice-Chat: gemerkte Gruppe wird von selbst betreten, falsches Passwort gemeldet', () => {
+  const { EventEmitter } = require('events');
+  const client = new EventEmitter();
+  const gesendet = [];
+  client.write = (art, p) => gesendet.push(p);
+  const s = new v.Stimme({ client, host: '127.0.0.1', gruppe: { name: 'freunde', passwort: 'geheim' } });
+  const id = 'aaaaaaaaaaaaaaaabbbbbbbbbbbbbbbb';
+  const name = Buffer.from('Freunde');
+  const gruppe = (versteckt) => Buffer.concat([Buffer.from(id, 'hex'), v.varInt(name.length), name, Buffer.from([1, 0, versteckt ? 1 : 0, 0, 0])]);
+  s._gruppenPaket({ channel: 'voicechat:add_group', data: gruppe(false) });
+  const beitritt = gesendet.find((p) => p.channel === 'voicechat:set_group');
+  assert.ok(beitritt, 'von selbst beigetreten');
+  assert.deepEqual(beitritt.data, v.beitretenPaket(id, 'geheim'));
+  assert.deepEqual(s.status().gruppen, [{ id, name: 'Freunde', passwort: true, art: 'normal' }]);
+
+  s._gruppenPaket({ channel: 'voicechat:joined_group', data: Buffer.from([0, 1]) });
+  assert.equal(s.status().gruppeFehler, 'passwort');
+  assert.equal(s.status().gruppe, null);
+  s._gruppenPaket({ channel: 'voicechat:joined_group', data: Buffer.concat([Buffer.from([1]), Buffer.from(id, 'hex'), Buffer.from([0])]) });
+  assert.equal(s.status().gruppe, id);
+  assert.equal(s.status().gruppeFehler, null);
+
+  s._gruppenPaket({ channel: 'voicechat:remove_group', data: Buffer.from(id, 'hex') });
+  assert.deepEqual(s.status().gruppen, []);
+  assert.equal(s.status().gruppe, null);
+  s._gruppenPaket({ channel: 'voicechat:add_group', data: gruppe(true) });
+  assert.deepEqual(s.status().gruppen, [], 'versteckte Gruppen erscheinen nicht');
+  assert.throws(() => s.gruppeBeitreten(id, 'x'), /nicht mehr/);
+});
+
 test('Voice-Chat: nur mit Anrede ist es eine Frage an Julia', () => {
   const phrasen = ['Hey Julia', 'Hallo Julia', 'Okay Julia', 'Julia'];
   assert.equal(v.anredeEntfernen('Hey Julia, folge mir', phrasen), 'folge mir');

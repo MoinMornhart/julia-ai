@@ -514,6 +514,20 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 .mc-schalter input:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
 .mc-koord { width: 84px; }
 
+/* Freier Auftrag und Voice-Chat-Gruppen */
+.mc-ziel { display: grid; gap: 8px; }
+.mc-ziel textarea { width: 100%; box-sizing: border-box; min-height: 64px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--linie); background: var(--grund-2); color: var(--text); font: inherit; resize: vertical; outline: none; }
+.mc-ziel textarea:focus { border-color: var(--akzent-rand); box-shadow: var(--glow); }
+.mc-ziel-ergebnis { margin: 0; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--linie); background: var(--grund-2); font-size: 13px; line-height: 1.5; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mc-gruppen { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.mc-gruppen:empty { display: none; }
+.mc-gruppen li { display: grid; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--linie); background: var(--grund-2); }
+.mc-gruppen li.drin { border-color: var(--akzent-rand); box-shadow: var(--glow-klein); }
+.mc-gruppe-kopf { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.mc-gruppe-kopf b { overflow-wrap: anywhere; }
+.mc-gruppe-kopf small { font-size: 12px; color: var(--text-3); }
+.mc-gruppen input[type="password"] { flex: 1 1 160px; }
+
 /* Crash-Screen: die Figur ist vom Server geflogen */
 .mc-crash { display: grid; gap: 10px; padding: 16px 18px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--rot) 55%, transparent); background: color-mix(in srgb, var(--rot) 9%, var(--flaeche)); }
 .mc-crash-kopf { display: flex; align-items: center; gap: 12px; }

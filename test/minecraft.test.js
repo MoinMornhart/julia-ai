@@ -109,6 +109,12 @@ test('Minecraft: neue Befehle im Spielchat', () => {
   assert.deepEqual(b('!bau ab holz 10'), { aufgabe: 'abbauen', block: 'holz', anzahl: 10 });
   assert.deepEqual(b('!verstau alles'), { aufgabe: 'verstauen' });
   assert.deepEqual(b('!schlaf'), { aufgabe: 'schlafen' });
+  assert.deepEqual(b('!ess was'), { aufgabe: 'essen' });
+  assert.deepEqual(b('!schmelz 8 eisen'), { aufgabe: 'schmelzen', item: 'eisen', anzahl: 8 });
+  assert.deepEqual(b('!stell eine werkbank hin'), { aufgabe: 'platzieren', item: 'werkbank' });
+  assert.deepEqual(b('!platzier ofen'), { aufgabe: 'platzieren', item: 'ofen' });
+  assert.deepEqual(b('!nimm dein schwert'), { aufgabe: 'ausruesten', item: 'schwert' });
+  assert.deepEqual(b('!stell mir eine werkbank her'), { aufgabe: 'herstellen', item: 'werkbank', anzahl: null }, 'herstellen bleibt herstellen');
 });
 
 test('Minecraft: Gegenstände auf Deutsch und gültige Koordinaten', () => {

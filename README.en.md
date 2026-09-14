@@ -287,11 +287,20 @@ NeoProtect or TCPShield).
 | Hunt | `!hunt 3 cow` | gets food from animals and collects it |
 | Craft | `!craft 4 torch` | crafts in her inventory or at the nearest crafting table |
 | Store | `!store` | puts her inventory into the nearest chest (weapons, tools, food stay) |
+| Smelt | `!smelt 8 raw_iron` | smelts or cooks in a furnace, takes fuel on her own |
+| Place · Eat | `!place crafting_table` · `!eat` | puts a block down next to her · eats something |
 | Sleep · Stop | `!sleep` · `!stop` | goes to bed · stops right away |
 
 `!help` lists every command in the game. Fighting, following and dodging run 20 times a second
 directly in Julia – the AI only sets the task. The character equips weapon and armor on its own
 and eats a golden apple when low on health.
+
+- **Task for Julia:** In the tab you write in your own words what she should do – say, “Get wood, build a crafting table and make yourself a stone pickaxe”. She looks around, plans the steps and works through them with her abilities, waits for each result and says at the end what she achieved. She breaks big goals like the Ender Dragon into stages – but no bot reliably beats the game on its own.
+- **Voice chat groups:** Julia lists the groups from the server’s Simple Voice Chat; you choose which one she joins. For a protected group you enter the password – it only goes to the server, the AI never sees it. With “Always join” Julia joins on her own next time; the password is then stored encrypted on your PC.
+
+<p align="center">
+  <img src="docs/bilder/minecraft-gruppen-en.png" width="760" alt="Voice chat groups: Julia is in one group, an open group and one with a password">
+</p>
 
 - **Crash screen:** If Julia gets kicked, the tab shows why – in plain words, with the time, how long she played and the task that was running. After a lost connection she tries three times on her own, after a kick she doesn’t.
 - **Account:** Without an account it works on servers with `online-mode=false`. With **Connect account** you sign in Julia’s own Java account – in the browser at microsoft.com/link; Julia never sees a password.

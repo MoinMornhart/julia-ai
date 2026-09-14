@@ -69,6 +69,11 @@ contextBridge.exposeInMainWorld('julia', {
     });
   },
   mcTrennungWeg: () => ipcRenderer.invoke('mc:trennungweg'),
+  mcZiel: (text) => ipcRenderer.invoke('mc:ziel', String(text || '').slice(0, 1000)),
+  mcZielStopp: () => ipcRenderer.invoke('mc:ziel:stopp'),
+  mcGruppeBeitreten: (id, passwort, merken) => ipcRenderer.invoke('mc:gruppe:beitreten', String(id || ''), String(passwort || '').slice(0, 512), !!merken),
+  mcGruppeVerlassen: () => ipcRenderer.invoke('mc:gruppe:verlassen'),
+  mcGruppeVergessen: () => ipcRenderer.invoke('mc:gruppe:vergessen'),
   overlayVorschau: () => ipcRenderer.invoke('overlay:vorschau'),
   mcpStatus: () => ipcRenderer.invoke('mcp:status'),
   mcpHinzufuegen: (d) => {
