@@ -169,7 +169,8 @@ rid of everything, delete that folder by hand afterwards.
 | Windows blocks the installer | *More info* → *Run anyway* (see above). |
 | "The API key was rejected" | Paste the key again in the settings; check that there's credit with the provider. |
 | "Model not found (404)" | In the settings, click *Load models* and pick a model from the list. |
-| Julia doesn't hear "Hey Julia" | Turn it on in the settings and pick a microphone as the default recording device. |
+| Julia doesn't hear "Hey Julia" | Turn it on in the settings and pick the right microphone under *Voice and hotkeys*. |
+| Julia speaks through the wrong speakers | Pick the device under *Voice and hotkeys → Speakers* and check it with *Test voice*. |
 | The overlay doesn't show in a game | Switch the game to "borderless window" instead of "exclusive fullscreen". |
 | Windows asks about the firewall | For the phone on Wi-Fi: allow **Private networks** only. |
 | "Daily limit reached" | The cost brake kicked in. It resets tomorrow, or raise the limit in the settings. |

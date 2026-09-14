@@ -39,7 +39,20 @@ try {
   $fueller = New-Object System.Speech.Recognition.DictationGrammar
   $fueller.Name = 'fueller'
   $rec.LoadGrammar($fueller)
-  try { $rec.SetInputToDefaultAudioDevice() } catch { Aus 'E KEIN_MIKROFON'; exit 3 }
+  $eingestellt = $false
+  if ($env:JULIA_MIKRO -and $env:JULIA_AUDIO_DLL) {
+    try {
+      Add-Type -Path $env:JULIA_AUDIO_DLL
+      $nr = [JuliaAudioGeraete]::EingangNr($env:JULIA_MIKRO)
+      if ($nr -ge 0) {
+        $strom = New-Object JuliaMikrofon($nr)
+        $format = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo(16000, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)
+        $rec.SetInputToAudioStream($strom, $format)
+        $eingestellt = $true
+      } else { Aus 'H MIKRO_FEHLT' }
+    } catch { Aus 'H MIKRO_FEHLT' }
+  }
+  if (-not $eingestellt) { try { $rec.SetInputToDefaultAudioDevice() } catch { Aus 'E KEIN_MIKROFON'; exit 3 } }
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
   $rec.RecognizeAsync([System.Speech.Recognition.RecognizeMode]::Multiple)
   Aus 'B'
@@ -58,21 +71,27 @@ try {
 `;
 
 class Weckwort extends EventEmitter {
-  constructor() {
+  // dll(): Pfad zur Audio-Hilfe – nur für ein eigenes Mikrofon nötig.
+  constructor({ dll } = {}) {
     super();
+    this.dll = dll || (async () => '');
     this.proc = null;
     this.schluessel = null;
+    this.lauf = 0;
   }
 
   get laeuft() {
     return !!this.proc;
   }
 
-  starten({ name, sprachcode, schwelle }) {
+  async starten({ name, sprachcode, schwelle, mikrofon = '' }) {
     const woerter = phrasen(name, sprachcode);
-    const schluessel = JSON.stringify([woerter, sprachcode, schwelle]);
+    const schluessel = JSON.stringify([woerter, sprachcode, schwelle, mikrofon]);
     if (this.proc && this.schluessel === schluessel) return;
     this.stoppen();
+    const lauf = ++this.lauf;
+    const dllPfad = mikrofon ? await this.dll().catch(() => '') : '';
+    if (lauf !== this.lauf) return; // inzwischen neu gestartet oder gestoppt
     this.schluessel = schluessel;
     const p = spawn('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-EncodedCommand', kodiert(SKRIPT)], {
       windowsHide: true,
@@ -81,6 +100,8 @@ class Weckwort extends EventEmitter {
         JULIA_WECKWOERTER: Buffer.from(JSON.stringify(woerter), 'utf8').toString('base64'),
         JULIA_KULTUR: sprachcode === 'en' ? 'en' : 'de',
         JULIA_SCHWELLE: String(schwelle),
+        JULIA_MIKRO: mikrofon,
+        JULIA_AUDIO_DLL: dllPfad,
       },
     });
     this.proc = p;
@@ -90,16 +111,20 @@ class Weckwort extends EventEmitter {
         const [, sicherheit, ...rest] = z.split(' ');
         this.emit('erkannt', { text: rest.join(' '), sicherheit: Number(sicherheit) });
       } else if (z.startsWith('E ')) this.emit('fehler', z.slice(2).trim());
+      else if (z.startsWith('H ')) this.emit('hinweis', z.slice(2).trim());
     });
     p.on('exit', () => {
-      if (this.proc === p) {
-        this.proc = null;
-        this.schluessel = null;
-      }
+      if (this.proc !== p) return; // absichtlich gestoppt
+      this.proc = null;
+      this.schluessel = null;
+      // Unerwartet beendet (Gerät weg, Engine abgestürzt …): Bescheid geben,
+      // damit das Aktivierungswort von selbst wieder anläuft.
+      this.emit('beendet');
     });
   }
 
   stoppen() {
+    this.lauf++;
     if (!this.proc) return;
     const p = this.proc;
     this.proc = null;

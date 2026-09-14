@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.9.0 – 2026-09-14
+- Mikrofon und Lautsprecher in den Einstellungen frei wählbar, mit Stimme testen – und Hey Julia startet nach Aussetzern von selbst wieder
+
 ## 1.8.0 – 2026-09-14
 - Gaming-Clips – Strg+Alt+C oder Clip das speichert die letzten Sekunden deines Spiels, mit eigener Clip-Ansicht
 

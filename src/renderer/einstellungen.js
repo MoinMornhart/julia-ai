@@ -413,6 +413,26 @@ async function stimmenLaden() {
   sel.value = aktuell;
 }
 
+// Mikrofon und Lautsprecher: "Windows-Standard" oder ein bestimmtes Gerät.
+async function geraeteLaden() {
+  const g = await julia.audioGeraete();
+  $('audioHinweis').textContent = g.fehler ? tx('einst.audio_fehler', { fehler: g.fehler }) : '';
+  for (const [id, liste, schluessel] of [['mikrofon', g.eingaenge, 'mikrofon'], ['lautsprecher', g.ausgaenge, 'lautsprecher']]) {
+    const sel = $(id);
+    const aktuell = cfg.sprache[schluessel] || '';
+    sel.innerHTML = '';
+    const optionen = [['', tx('einst.standardgeraet')], ...liste.map((n) => [n, n])];
+    if (aktuell && !liste.includes(aktuell)) optionen.push([aktuell, `${aktuell} ${tx('einst.nicht_verbunden')}`]);
+    for (const [wert, text] of optionen) {
+      const o = document.createElement('option');
+      o.value = wert;
+      o.textContent = text;
+      sel.appendChild(o);
+    }
+    sel.value = aktuell;
+  }
+}
+
 function melden(text, fehler = false) {
   const m = $('meldung');
   m.textContent = text;
@@ -543,6 +563,12 @@ async function init() {
   julia.on('texte:geaendert', texteAnwenden);
 
   stimmenLaden();
+  geraeteLaden();
+  $('stimmeTesten').onclick = async () => {
+    $('stimmeTesten').disabled = true;
+    await julia.spracheTesten();
+    $('stimmeTesten').disabled = false;
+  };
   if (einrichtung) $('name').focus();
 }
 

@@ -171,7 +171,8 @@ Hand.
 | Windows blockiert den Installer | *Weitere Informationen* → *Trotzdem ausführen* (siehe oben). |
 | „Der API-Schlüssel wurde abgelehnt“ | Schlüssel in den Einstellungen neu einfügen; prüfen, ob beim Anbieter Guthaben da ist. |
 | „Modell nicht gefunden (404)“ | In den Einstellungen *Modelle laden* und ein Modell aus der Liste wählen. |
-| Julia hört nicht auf „Hey Julia“ | In den Einstellungen einschalten und ein Mikrofon als Standard-Aufnahmegerät wählen. |
+| Julia hört nicht auf „Hey Julia“ | In den Einstellungen einschalten und unter *Sprache und Hotkeys* das richtige Mikrofon wählen. |
+| Julia spricht aus dem falschen Lautsprecher | Unter *Sprache und Hotkeys → Lautsprecher* das Gerät wählen und mit *Stimme testen* prüfen. |
 | Das Overlay erscheint nicht im Spiel | Das Spiel auf „Randloses Fenster“ statt „Exklusives Vollbild“ stellen. |
 | Windows fragt nach der Firewall | Beim Handy im WLAN: nur **Private Netzwerke** erlauben. |
 | „Tageslimit erreicht“ | Die Kostenbremse hat gegriffen. Morgen geht es weiter, oder das Limit in den Einstellungen erhöhen. |

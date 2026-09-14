@@ -38,6 +38,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.6.0 | Dateien in den Chat ziehen (Text, Bilder ohne Metadaten, PDFs mit Claude) und Hotkey für markierten Text mit Menü am Mauszeiger; Zwischenablage wird wiederhergestellt; beides gilt als fremder Inhalt; Kopieren-Knopf an jeder Antwort |
 | ✅ 1.7.0 | Blase mit Untertiteln (was du sagst, darunter die Antwort) und frei verschiebbar: nur die Kugel ist greifbar, Position wird gemerkt, Doppelklick öffnet den Chat |
 | ✅ 1.8.0 | Gaming-Clips: Hotkey, Knopf oder „Clip das!“ löst Game Bar, NVIDIA oder AMD aus; Clip-Ansicht mit Vorschau, Player, Umbenennen, Im Ordner zeigen, Papierkorb; Hinweis mit Knopf, wenn die Windows-Hintergrundaufnahme aus ist |
+| ✅ 1.9.0 | Mikrofon und Lautsprecher wählbar (eigene WinMM-Anbindung, weil System.Speech nur das Standardgerät kennt), „Stimme testen“, Rückfall auf das Standardgerät; „Hey Julia“ startet nach Aussetzern selbst neu |
 
 ## Als Nächstes
 

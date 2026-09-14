@@ -34,6 +34,7 @@ const { Gespraeche } = require('./gespraeche');
 const routinenModul = require('./routinen');
 const { anhaengeLesen } = require('./anhaenge');
 const { Clips } = require('./clips');
+const audio = require('./audio');
 const { pathToFileURL } = require('url');
 const { fremd } = require('./hilfen');
 const anzeige = require('./anzeige');
@@ -551,6 +552,7 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
       stimme: config.get('sprache.stimme'),
       tempo: config.get('sprache.tempo'),
       sprachcode: config.get('sprachcode'),
+      lautsprecher: config.get('sprache.lautsprecher'),
     });
     if (zustand === 'speaking') zustandSetzen('idle');
   }
@@ -565,7 +567,7 @@ async function sprachUmschalten() {
   anAlle('sprache:hoert', true);
   let text = '';
   try {
-    text = await sprache.zuhoeren(config.get('sprachcode'));
+    text = await sprache.zuhoeren(config.get('sprachcode'), { mikrofon: config.get('sprache.mikrofon') });
   } catch (e) {
     chatZeigen();
     anAlle('agent:fehler', { art: 'text', text: e.message });
@@ -663,6 +665,18 @@ function ipcEinrichten() {
     return r.canceled ? null : r.filePaths[0];
   });
   ipc.handle('stimmen', () => sprache.stimmen());
+  ipc.handle('audio:geraete', async () => {
+    try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
+  });
+  ipc.handle('sprache:testen', async () => {
+    await sprache.sprechen(t('einst.test_satz'), {
+      stimme: config.get('sprache.stimme'),
+      tempo: config.get('sprache.tempo'),
+      sprachcode: config.get('sprachcode'),
+      lautsprecher: config.get('sprache.lautsprecher'),
+    });
+    return true;
+  });
   ipc.handle('konten:status', () => konten.status());
   ipc.handle('konten:google:verbinden', async (_e, daten) => {
     try {
@@ -1053,6 +1067,7 @@ function erinnerungMelden(e) {
       stimme: config.get('sprache.stimme'),
       tempo: config.get('sprache.tempo'),
       sprachcode: config.get('sprachcode'),
+      lautsprecher: config.get('sprache.lautsprecher'),
     }).then(() => { if (zustand === 'speaking') zustandSetzen('idle'); });
   }
 }
@@ -1064,12 +1079,33 @@ function erinnerungMelden(e) {
 function weckwortAktualisieren() {
   if (!weckwort) return;
   const an = config.get('weckwort.an') && !VORFUEHRUNG && !sprache.hoertZu && !sprache.sprichtGerade;
-  if (an) weckwort.starten({ name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle') });
-  else weckwort.stoppen();
+  if (an) {
+    weckwort.starten({
+      name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle'), mikrofon: config.get('sprache.mikrofon'),
+    }).catch(() => {});
+  } else weckwort.stoppen();
 }
 
 function weckwortVerdrahten() {
   let fehlerGemeldet = false;
+  let neustarts = 0;
+  let mikroGemeldet = false;
+  // Steigt die Erkennung unerwartet aus, läuft sie von selbst wieder an –
+  // "Hey Julia" soll immer gehen, auch wenn nebenbei Netflix läuft.
+  weckwort.on('bereit', () => { neustarts = 0; });
+  weckwort.on('beendet', () => {
+    if (!config.get('weckwort.an') || VORFUEHRUNG) return;
+    neustarts += 1;
+    setTimeout(weckwortAktualisieren, Math.min(30000, 1500 * neustarts));
+  });
+  const mikroFehlt = () => {
+    if (mikroGemeldet) return;
+    mikroGemeldet = true;
+    melden(assistentName(), t('sprache.mikro_fehlt'));
+  };
+  weckwort.on('hinweis', (h) => { if (h === 'MIKRO_FEHLT') mikroFehlt(); });
+  sprache.on('hinweis', (h) => { if (h === 'MIKRO_FEHLT') mikroFehlt(); });
+  config.on('aenderung', (k) => { if (k === 'sprache.mikrofon') mikroGemeldet = false; });
   weckwort.on('erkannt', () => {
     if (Date.now() - weckwortZuletzt < 3000) return;
     weckwortZuletzt = Date.now();
@@ -1152,8 +1188,10 @@ async function start() {
   gespraeche = new Gespraeche(DATEN, krypto);
   routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
   clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
-  sprache = new Sprache();
+  sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
+  // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
+  if (config.get('sprache.mikrofon') || config.get('sprache.lautsprecher')) audio.dll().catch(() => {});
 
   const ctx = {
     config,
@@ -1188,7 +1226,7 @@ async function start() {
   agentVerdrahten();
   erinnerungenVerdrahten();
   handyEinrichten();
-  weckwort = new Weckwort();
+  weckwort = new Weckwort({ dll: audio.dll });
   weckwortVerdrahten();
   ipcEinrichten();
 
@@ -1213,7 +1251,8 @@ async function start() {
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }
     if (k === 'autostart') autostartSetzen();
     if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name' || k === 'weckwort.an') trayMenue();
-    if (/^(weckwort\.|assistent\.name$|sprachcode$)/.test(k)) weckwortAktualisieren();
+    if (/^(weckwort\.|assistent\.name$|sprachcode$|sprache\.mikrofon$)/.test(k)) weckwortAktualisieren();
+    if ((k === 'sprache.mikrofon' || k === 'sprache.lautsprecher') && config.get(k)) audio.dll().catch(() => {});
     if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
     if (k === 'assistent.name' && chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
     anAlle('config:geaendert', oeffentlicheConfig());

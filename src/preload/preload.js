@@ -20,6 +20,8 @@ contextBridge.exposeInMainWorld('julia', {
   modelleLaden: () => ipcRenderer.invoke('anbieter:modelle'),
   ordnerWaehlen: () => ipcRenderer.invoke('ordner:waehlen'),
   stimmen: () => ipcRenderer.invoke('stimmen'),
+  audioGeraete: () => ipcRenderer.invoke('audio:geraete'),
+  spracheTesten: () => ipcRenderer.invoke('sprache:testen'),
   kontenStatus: () => ipcRenderer.invoke('konten:status'),
   googleVerbinden: (daten) => ipcRenderer.invoke('konten:google:verbinden', daten),
   googleTrennen: () => ipcRenderer.invoke('konten:google:trennen'),

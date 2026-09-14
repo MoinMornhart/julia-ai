@@ -76,6 +76,8 @@ const STANDARD = {
     vorlesen: 'bei-sprache', // 'bei-sprache' | 'immer' | 'nie'
     stimme: 'Microsoft Hedda Desktop',
     tempo: 0,               // -10 bis 10
+    mikrofon: '',           // leer = Windows-Standard, sonst Gerätename
+    lautsprecher: '',       // leer = Windows-Standard, sonst Gerätename
   },
   blase: {
     an: false,
@@ -252,6 +254,12 @@ function pruefen(schluessel, wert) {
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'handy.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'sprache.mikrofon':
+    case 'sprache.lautsprecher': {
+      const s = String(wert ?? '').trim();
+      if (s.length > 64) throw new Error('Gerätename zu lang.');
+      return s;
+    }
     case 'blase.position':
       if (wert == null) return null;
       if (!istObjekt(wert)) throw new Error('Position ist { x, y } oder null.');
