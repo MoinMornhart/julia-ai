@@ -292,3 +292,62 @@ test('Minecraft: nur der eingetragene Spieler kann Julia im Chat fragen', () => 
   m._chat('Moin', 'Julia, und Gold?'); // zu schnell hintereinander
   assert.deepEqual(fragen, [{ von: 'Moin', text: 'wo finde ich Eisen?' }]);
 });
+
+test('Minecraft: Gefahr voraus – Lava, Abgrund und freie Bahn', () => {
+  const { Vec3 } = require('vec3');
+  const m = new mc.Minecraft();
+  // Figur bei (10, 64, 10), Blick nach -Z (yaw 0): vorne ist (10, 64, 9).
+  const welt = {};
+  const setz = (x, y, z, name, leer = false) => { welt[`${x},${y},${z}`] = { name, boundingBox: leer ? 'empty' : 'block', position: new Vec3(x, y, z) }; };
+  m.bot = {
+    entity: { position: new Vec3(10.5, 64, 10.5), yaw: 0 },
+    blockAt: (v) => welt[`${v.x},${v.y},${v.z}`] || { name: 'air', boundingBox: 'empty', position: v },
+    getControlState: () => false,
+  };
+  // Fester Boden vor den Füßen, sonst Luft: keine Gefahr.
+  setz(10, 63, 9, 'stone');
+  assert.equal(m._gefahrVoraus(), null);
+
+  // Lava auf Fußhöhe vor der Figur.
+  setz(10, 64, 9, 'lava');
+  assert.equal(m._gefahrVoraus().art, 'Lava');
+
+  // Lava weg, Boden weg: Abgrund.
+  delete welt['10,64,9'];
+  delete welt['10,63,9'];
+  assert.equal(m._gefahrVoraus().art, 'Abgrund');
+});
+
+test('Minecraft: _voraus meldet Block und Gefahr, umsehen nimmt es auf', () => {
+  const { Vec3 } = require('vec3');
+  const m = new mc.Minecraft();
+  const welt = { '10,63,9': { name: 'stone', boundingBox: 'block', position: new Vec3(10, 63, 9) }, '10,64,9': { name: 'oak_fence', boundingBox: 'block', position: new Vec3(10, 64, 9) } };
+  m.bot = {
+    entity: { position: new Vec3(10.5, 64, 10.5), yaw: 0 },
+    blockAt: (v) => welt[`${v.x},${v.y},${v.z}`] || { name: 'air', boundingBox: 'empty', position: v },
+    nearestEntity: () => null,
+  };
+  const v = m._voraus();
+  assert.equal(v.vor_fuessen, 'oak_fence');
+  assert.equal(v.boden_vorn, 'stone');
+  assert.equal(v.gefahr, null);
+});
+
+test('Minecraft: Gefahrenwache bremst selbstgesteuertes Vorlaufen', () => {
+  const { Vec3 } = require('vec3');
+  const m = new mc.Minecraft();
+  const zustand = { forward: true, sprint: true };
+  const meldungen = [];
+  m.on('ereignis', (e) => meldungen.push(e.art));
+  m.bot = {
+    entity: { position: new Vec3(10.5, 64, 10.5), yaw: 0 },
+    blockAt: (v) => (v.x === 10 && v.y === 64 && v.z === 9 ? { name: 'lava', boundingBox: 'empty', position: v } : { name: 'air', boundingBox: 'empty', position: v }),
+    getControlState: (k) => zustand[k],
+    setControlState: (k, an) => { zustand[k] = an; },
+  };
+  m.ticks = 5; // Vielfaches von 5, damit die Wache prüft
+  m._gefahrWache();
+  assert.equal(zustand.forward, false);
+  assert.equal(zustand.sprint, false);
+  assert.ok(meldungen.includes('gefahr'));
+});

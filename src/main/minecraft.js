@@ -47,6 +47,14 @@ const FEINDE = new Set([
   'hoglin', 'zoglin', 'silverfish', 'endermite', 'guardian', 'elder_guardian', 'breeze',
 ]);
 
+// Blöcke, in die man nicht hineinlaufen sollte – für die Gefahrenerkennung
+// direkt vor der Figur (schnell reagieren, ohne erst die KI zu fragen).
+const GEFAHR_VORAUS = {
+  lava: 'Lava', fire: 'Feuer', soul_fire: 'Seelenfeuer', magma_block: 'Magmablock',
+  cactus: 'Kaktus', sweet_berry_bush: 'Süßbeeren', wither_rose: 'Witherrose',
+  powder_snow: 'Pulverschnee', campfire: 'Lagerfeuer', soul_campfire: 'Seelenlagerfeuer',
+};
+
 // Deutsche Wörter für häufige Blöcke; sonst gilt der englische Name (oak_log).
 // Ein Eintrag mit "_" vorne passt auf alle Namen mit dieser Endung.
 const BLOCK_WOERTER = {
@@ -855,6 +863,7 @@ class Minecraft extends EventEmitter {
   _tick() {
     const bot = this.bot;
     if (!bot || !bot.entity || this.isst) return;
+    this._gefahrWache();
     const a = this.auftrag;
     // Hunger nebenbei stillen, nur nicht mitten im Duell.
     if (this.ticks % 100 === 0 && bot.food <= 14 && (!a || a.art !== 'kaempfen') && this._essen(ESSEN)) return;
@@ -925,6 +934,9 @@ class Minecraft extends EventEmitter {
     // Treffer. Sprint kurz loslassen nach dem Schlag gibt mehr Rückstoß.
     bot.setControlState('forward', d > 1.8);
     bot.setControlState('sprint', d > 1.8 && seit > 1);
+    // Gefahr voraus (Lava, Abgrund): nicht weiter vorlaufen, nur noch schlagen.
+    const eingefroren = this.ticks < (this.gefahrStopp || 0);
+    if (eingefroren) { bot.setControlState('forward', false); bot.setControlState('sprint', false); }
     const links = Math.floor(this.ticks / 18) % 2 === 0;
     bot.setControlState('left', links);
     bot.setControlState('right', !links);
@@ -1001,6 +1013,81 @@ class Minecraft extends EventEmitter {
       }
     })();
     return true;
+  }
+
+  // Blickrichtung waagerecht als Vektor (yaw 0 zeigt nach -Z).
+  _vorne() {
+    const { Vec3 } = require('vec3');
+    const yaw = this.bot.entity.yaw || 0;
+    return new Vec3(-Math.sin(yaw), 0, -Math.cos(yaw));
+  }
+
+  // Gefahr direkt vor der Figur: Lava, Feuer & Co. auf Fuß-, Kopf- oder
+  // Bodenhöhe, oder ein Abgrund (vor den Füßen und mehrere Blöcke darunter frei).
+  _gefahrVoraus() {
+    const bot = this.bot;
+    if (!bot || !bot.entity) return null;
+    const vor = this._vorne();
+    const fuss = bot.entity.position.offset(vor.x, 0.2, vor.z).floored();
+    for (const v of [fuss, fuss.offset(0, 1, 0), fuss.offset(0, -1, 0)]) {
+      const b = bot.blockAt(v);
+      if (b && GEFAHR_VORAUS[b.name]) return { art: GEFAHR_VORAUS[b.name], block: b.name, ort: { x: v.x, y: v.y, z: v.z } };
+    }
+    const frei = (v) => { const b = bot.blockAt(v); return !!b && b.boundingBox === 'empty' && b.name !== 'water'; };
+    if ([0, -1, -2, -3].every((dy) => frei(fuss.offset(0, dy, 0)))) {
+      return { art: 'Abgrund', block: null, ort: { x: fuss.x, y: fuss.y, z: fuss.z } };
+    }
+    return null;
+  }
+
+  // Was liegt vor mir? Für die KI (umsehen) – Block in Blickrichtung, was sie
+  // gerade anschaut, das nächste Wesen voraus und eine etwaige Gefahr.
+  _voraus() {
+    const bot = this.bot;
+    const vor = this._vorne();
+    const fuss = bot.entity.position.offset(vor.x, 0.2, vor.z).floored();
+    const name = (v) => { const b = bot.blockAt(v); return b ? b.name : null; };
+    let angeschaut = null;
+    try {
+      const b = bot.blockAtCursor ? bot.blockAtCursor(5) : null;
+      if (b) angeschaut = { block: b.name, ort: { x: b.position.x, y: b.position.y, z: b.position.z } };
+    } catch { /* nichts in Reichweite */ }
+    let wesen = null;
+    const p = bot.entity.position;
+    if (bot.nearestEntity) {
+      const e = bot.nearestEntity((x) => x.position && x.position.distanceTo(p) < 6 && vor.dot(x.position.minus(p).normalize()) > 0.6);
+      if (e) wesen = { was: e.name || e.username || 'etwas', feind: istFeind(e), abstand: Math.round(e.position.distanceTo(p)) };
+    }
+    return {
+      schaut_auf: angeschaut,
+      vor_fuessen: name(fuss),
+      ueber_kopf_vorn: name(fuss.offset(0, 1, 0)),
+      boden_vorn: name(fuss.offset(0, -1, 0)),
+      wesen_voraus: wesen,
+      gefahr: this._gefahrVoraus(),
+    };
+  }
+
+  // Läuft die Figur selbst (Kampf) oder per Wegsuche vorwärts und liegt Gefahr
+  // direkt voraus, sofort bremsen und einmal warnen – schneller als über die KI.
+  _gefahrWache() {
+    const bot = this.bot;
+    const selbst = bot.getControlState && (bot.getControlState('forward') || bot.getControlState('sprint'));
+    const wegsuche = bot.pathfinder && bot.pathfinder.isMoving && bot.pathfinder.isMoving();
+    if (this.ticks % 5 === 0 && (selbst || wegsuche)) {
+      const g = this._gefahrVoraus();
+      if (g) {
+        this.gefahrStopp = this.ticks + 15;
+        if (this.ticks - (this.letzteGefahrMeldung || -1000) > 100) {
+          this.letzteGefahrMeldung = this.ticks;
+          this._melden('gefahr', `Vorsicht, ${g.art} direkt vor mir – ich halte an.`);
+        }
+      }
+    }
+    if (this.ticks < (this.gefahrStopp || 0) && bot.setControlState) {
+      bot.setControlState('forward', false);
+      bot.setControlState('sprint', false);
+    }
   }
 
   _abbauen(block, anzahl) {
@@ -1377,6 +1464,7 @@ class Minecraft extends EventEmitter {
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       dimension: bot.game && bot.game.dimension,
       tageszeit: bot.time ? (bot.time.isDay ? 'Tag' : 'Nacht') : null,
+      voraus: this._voraus(),
       bloecke,
       tiere,
       feinde,

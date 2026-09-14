@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.2.0 – 2026-09-14
+- Julia erkennt in Minecraft, was direkt vor ihr liegt – Blöcke, Wesen und Gefahren wie Lava oder ein Abgrund – und bremst von selbst, statt hineinzulaufen
+
 ## 4.1.0 – 2026-09-14
 - Julia startet nie mehr wortlos: eine Selbstprüfung schreibt ein Logbuch, prüft Schreibrechte und Startflags, fängt wiederholte Grafikkarten-Abstürze mit Software-Grafik ab und zeigt bei Startproblemen eine klare Meldung mit Knopf zum Logbuch
 
