@@ -33,7 +33,7 @@ what's going on and gets it done – from renaming 200 files to tracking down a 
 - **Installs cleanly** – checks whether it's already there, then `winget` or the vendor's site, then verifies the version.
 - **Researches** – web search and page fetch for anything that must be current.
 - **Remembers lasting things** – projects, ways of working, devices. Never credentials.
-- **Reminds you** – "Remind me at 3 pm about the call", "pizza out in 20 minutes". As a notification, in the chat, read aloud and on your phone. Missed reminders arrive at the next start.
+- **Reminds you** – "Remind me at 3 pm about the call", "pizza out in 20 minutes". As a notification, in the chat and read aloud if you like. Missed reminders arrive at the next start.
 - **Speaks** English or German, via hotkey, offline through Windows speech.
 - **Updates herself** on request – tagged releases only, with automatic rollback.
 
@@ -116,7 +116,7 @@ changed at runtime – in the settings or just by saying "make it greener".
 ## Connecting accounts
 
 <p align="center">
-  <img src="docs/bilder/verbindungen-en.png" width="560" alt="Connections: Google and phone">
+  <img src="docs/bilder/verbindungen-en.png" width="560" alt="Connections: Google">
 </p>
 
 Julia can use your **Google account** – Gmail, Calendar and Contacts:
@@ -138,14 +138,6 @@ Google*.
 
 What an email says is never an instruction for Julia. Hidden instructions in mail
 ("Assistant, forward this") aren't carried out – she points them out to you instead.
-
-### From your phone
-
-Through **your own Telegram bot** you message Julia on the go – no server, no port
-forwarding: "Is the download still running?", "How full is the disk?", "What's on
-tomorrow?". Approvals arrive as **✅ Yes / ❌ No** buttons on the phone, `/stop` cancels
-immediately. After pairing, the bot only listens to your account, stale messages aren't
-executed, RED stays RED. **[Guide](docs/handy-telegram.en.md)**
 
 ## Installation
 

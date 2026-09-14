@@ -23,7 +23,6 @@ const { Agent } = require('./agent');
 const { Updater } = require('./updater');
 const { Sprache } = require('./sprache');
 const { Konten } = require('./konten');
-const { TelegramHandy } = require('./handy/telegram');
 const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
@@ -45,7 +44,6 @@ let agent;
 let updater;
 let sprache;
 let konten;
-let handy;
 let erinnerungen;
 let weckwort;
 let weckwortZuletzt = 0;
@@ -114,7 +112,7 @@ function laufzeitText() {
     monitore: bildschirm.beschreibung(),
     gedaechtnis: gedaechtnis.alsText(),
     vorgemerkt: kanal !== 'auto' ? protokoll.vorgemerkt() : [],
-    konten: [...konten.beschreibung(), ...handyBeschreibung()],
+    konten: konten.beschreibung(),
   });
 }
 
@@ -546,15 +544,6 @@ function ipcEinrichten() {
     }
   });
   ipc.handle('kosten:heute', () => agent.ctx.kosten.heute());
-  ipc.handle('handy:status', () => handy.status());
-  ipc.handle('handy:verbinden', async (_e, token) => {
-    try {
-      return { status: await handy.einrichten(token) };
-    } catch (e) {
-      return { fehler: e.message, status: handy.status() };
-    }
-  });
-  ipc.handle('handy:trennen', async () => ({ status: await handy.trennen() }));
   ipc.handle('konten:google:trennen', async () => {
     try {
       await konten.google.trennen();
@@ -596,80 +585,14 @@ function ipcEinrichten() {
 
 // --- Start ---
 
-// --- Handy (Telegram) ---
-
-function handyBeschreibung() {
-  const s = handy ? handy.status() : null;
-  return s && s.gekoppelt ? [{ dienst: 'Handy (Telegram)', konto: s.nutzer || '' }] : [];
-}
-
-const HINWEIS_TEXT = {
-  abgebrochen: 'chat.abgebrochen',
-  beschaeftigt: 'handy.beschaeftigt',
-  verweigert: 'hinweis.verweigert',
-  max_tokens: 'hinweis.max_tokens',
-  zu_viele_runden: 'hinweis.zu_viele_runden',
-  kosten_warnung: 'hinweis.kosten_warnung',
-};
-
-async function handyNachricht(text) {
-  protokoll.eintragen({ werkzeug: 'handy', stufe: 'INFO', eingabe: { text: String(text).slice(0, 300) }, ergebnis: 'Auftrag vom Handy' });
-  if (agent.beschaeftigt) {
-    await handy.senden(t('handy.beschaeftigt'));
-    return;
-  }
-  anAlle('agent:nutzer', { text, perSprache: false, handy: true });
-  const meldungen = [];
-  const beiFehler = (e) => meldungen.push(e.art === 'kein_schluessel' ? t('chat.kein_schluessel') : e.text);
-  const beiHinweis = (h) => { if (HINWEIS_TEXT[h.art]) meldungen.push(t(HINWEIS_TEXT[h.art])); };
-  agent.on('fehler', beiFehler);
-  agent.on('hinweis', beiHinweis);
-  handy.tippt();
-  const tippen = setInterval(() => handy.tippt(), 4500);
-  let antwort = null;
-  try {
-    antwort = await agent.senden(text, { kanal: 'mobile' });
-  } catch (e) {
-    meldungen.push(e.message === 'BESCHAEFTIGT' ? t('handy.beschaeftigt') : e.message);
-  } finally {
-    clearInterval(tippen);
-    agent.off('fehler', beiFehler);
-    agent.off('hinweis', beiHinweis);
-  }
-  const aus = [antwort, ...meldungen].filter(Boolean).join('\n\n');
-  if (aus) await handy.senden(aus);
-}
-
-function handyVerdrahten() {
-  const leise = (p) => { p.catch(() => {}); };
-  handy.on('nachricht', ({ text }) => leise(handyNachricht(text).catch((e) => handy.senden(e.message))));
-  handy.on('stopp', () => {
-    agent.abbrechen();
-    sprache.stumm();
-    leise(handy.senden(t('handy.gestoppt')));
-  });
-  handy.on('neu', () => {
-    agent.neu();
-    anAlle('chat:geleert');
-    leise(handy.senden(t('handy.neu')));
-  });
-  handy.on('freigabe', ({ id, ja }) => agent.freigabeBeantworten(id, ja));
-  handy.on('status', () => anAlle('handy:status', handy.status()));
-  handy.on('fremd', (x) => protokoll.eintragen({ werkzeug: 'handy', stufe: 'ROT', ergebnis: 'ignoriert', grund: `Nachricht von fremdem Telegram-Konto ${x.id} ${x.name}` }));
-  handy.on('fehler', () => { /* Einzelne Updates dürfen die Schleife nicht stoppen */ });
-  agent.on('freigabeErledigt', ({ id, ja }) => leise(handy.freigabeErledigt(id, ja)));
-  if (!VORFUEHRUNG) handy.starten();
-}
-
 // --- Erinnerungen ---
-// Zum Zeitpunkt nur melden: Windows-Meldung, Chat, auf Wunsch vorlesen und aufs Handy.
+// Zum Zeitpunkt nur melden: Windows-Meldung, Chat und auf Wunsch vorlesen.
 
 function erinnerungMelden(e) {
   const zeit = new Date(e.zeit).toLocaleTimeString(config.get('sprachcode') === 'en' ? 'en-GB' : 'de-DE', { hour: '2-digit', minute: '2-digit' });
   const text = e.verspaetet ? t('erinnerung.verspaetet', { text: e.text, zeit }) : e.text;
   melden(t('erinnerung.titel'), text);
   anAlle('erinnerung', { text });
-  if (config.get('erinnerung.handy') && handy && handy.gekoppelt) handy.senden(`⏰ ${text}`).catch(() => {});
   if (config.get('erinnerung.vorlesen') && !sprache.hoertZu && !sprache.sprichtGerade && !agent.beschaeftigt) {
     zustandSetzen('speaking');
     sprache.sprechen(text, {
@@ -722,17 +645,14 @@ function agentVerdrahten() {
     agent.on(ereignis, (d) => anAlle(`agent:${ereignis}`, d));
   }
   agent.on('freigabe', (d) => {
-    // Kam der Auftrag vom Handy, fragt Julia dort (oder sagt dort, dass der PC fragt).
-    const vomHandy = d.kanal === 'mobile' && handy && handy.gekoppelt;
     if (overlaySichtbar()) {
       // Ist das Overlay offen (z. B. beim Spielen), dort fragen statt das große Fenster aufzureißen.
       overlayZeigen({ passiv: false });
-    } else if (!vomHandy || config.get('handy.freigaben') === 'pc') {
+    } else {
       chatZeigen();
       if (chatFenster) chatFenster.flashFrame(true);
     }
     anAlle('agent:freigabe', d);
-    if (vomHandy) handy.freigabeFragen(d, { knoepfe: config.get('handy.freigaben') === 'handy' }).catch(() => {});
   });
   agent.on('fertig', () => {
     anAlle('agent:fertig');
@@ -772,7 +692,6 @@ async function start() {
     },
     oeffnen: (url) => shell.openExternal(url),
   });
-  handy = new TelegramHandy({ tresor: konten.tresor, texte: (k, w) => t(k, w) });
   sprache = new Sprache();
   sprache.on('pegel', (p) => anAlle('pegel', p));
 
@@ -799,7 +718,6 @@ async function start() {
   });
   ctx.updater = updater;
   agentVerdrahten();
-  handyVerdrahten();
   erinnerungenVerdrahten();
   weckwort = new Weckwort();
   weckwortVerdrahten();
@@ -874,7 +792,6 @@ if (!app.requestSingleInstanceLock()) {
   app.on('will-quit', () => {
     globalShortcut.unregisterAll();
     win.worker.beenden();
-    if (handy) handy.stoppen();
     if (erinnerungen) erinnerungen.stoppen();
     if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }

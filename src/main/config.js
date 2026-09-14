@@ -28,12 +28,8 @@ const STANDARD = {
   aufwand: 'high',
   kanal: 'desktop',
   autostart: false,
-  handy: {
-    freigaben: 'handy', // 'handy' (Ja/Nein-Knöpfe am Handy) | 'pc' (nur am PC)
-  },
   erinnerung: {
     vorlesen: true,
-    handy: true,
   },
   kosten: {
     tageslimit_usd: 10, // 0 = keine Bremse
@@ -143,7 +139,6 @@ function pruefen(schluessel, wert) {
     case 'einrichtung_fertig':
     case 'design.glow':
     case 'erinnerung.vorlesen':
-    case 'erinnerung.handy':
     case 'weckwort.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
@@ -220,9 +215,6 @@ function pruefen(schluessel, wert) {
       return wert;
     case 'overlay.bei_antwort':
       if (!['aus', 'passiv'].includes(wert)) throw new Error('Overlay bei Antworten: "aus" oder "passiv".');
-      return wert;
-    case 'handy.freigaben':
-      if (!['handy', 'pc'].includes(wert)) throw new Error('Freigaben vom Handy: "handy" oder "pc".');
       return wert;
     case 'arbeitsverzeichnisse':
       if (!Array.isArray(wert)) throw new Error('Arbeitsverzeichnisse sind eine Liste von Ordnern.');

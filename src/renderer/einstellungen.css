@@ -151,8 +151,6 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .konto.verbunden .konto-name small { color: var(--gruen); }
 .konto-einrichten { margin-top: 12px; }
 .konto + .konto { margin-top: 10px; }
-.konto-logo.handy { background: linear-gradient(135deg, #37bbfe, #1d93d2); font-size: 16px; }
-.kopplungscode { font-family: var(--mono); font-size: 30px; font-weight: 700; letter-spacing: 0.35em; color: var(--akzent); text-shadow: var(--glow-klein); margin: 4px 0 12px; }
 a.zweit { display: inline-block; color: var(--text); text-decoration: none; }
 .konto .feld.schmal { margin: 12px 0 0; }
 .konto-meldung { display: block; margin-top: 8px; color: var(--text-2); }

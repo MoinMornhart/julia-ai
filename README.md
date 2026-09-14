@@ -34,7 +34,7 @@ bis zur Fehlersuche in einem Repo.
 - **Installiert sauber** – erst nachsehen, ob es schon da ist, dann `winget` oder die Herstellerseite, danach eine Versionsprüfung.
 - **Recherchiert** – Websuche und Seitenabruf für alles, was aktuell sein muss.
 - **Merkt sich Dauerhaftes** – Projekte, Arbeitsweisen, Geräte. Zugangsdaten nie.
-- **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf", „in 20 Minuten Pizza raus". Als Meldung, im Chat, vorgelesen und aufs Handy. Verpasste Erinnerungen kommen beim nächsten Start.
+- **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf", „in 20 Minuten Pizza raus". Als Meldung, im Chat und auf Wunsch vorgelesen. Verpasste Erinnerungen kommen beim nächsten Start.
 - **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe.
 - **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
 
@@ -115,7 +115,7 @@ lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz:
 ## Konten verbinden
 
 <p align="center">
-  <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google und Handy">
+  <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google">
 </p>
 
 Julia kann dein **Google-Konto** nutzen – Gmail, Kalender und Kontakte:
@@ -137,14 +137,6 @@ Verbindungen → Mit Google verbinden*.
 
 Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
 („Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.
-
-### Vom Handy aus
-
-Über deinen **eigenen Telegram-Bot** schreibst du Julia von unterwegs – ohne Server und ohne
-Portfreigabe: „Läuft der Download noch?", „Wie voll ist die Platte?", „Was steht morgen an?".
-Freigaben kommen als **✅ Ja / ❌ Nein**-Knöpfe aufs Handy, `/stopp` bricht sofort ab. Der Bot
-hört nach der Kopplung nur auf dein Konto, alte Nachrichten werden nicht ausgeführt, ROT
-bleibt ROT. **[Anleitung](docs/handy-telegram.md)**
 
 ## Installation
 

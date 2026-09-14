@@ -27,13 +27,6 @@ const AKZENTE = [
   ['gold', '#FFC23D'],
 ];
 
-let handyStand = null;
-
-const ANLEITUNG_HANDY = {
-  de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/handy-telegram.md',
-  en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/handy-telegram.en.md',
-};
-
 const ANLEITUNG = {
   de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md',
   en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-setup.en.md',
@@ -63,8 +56,6 @@ function texteAnwenden(daten) {
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   if (kontenStand) kontenZeigen(kontenStand);
-  $('handyAnleitung').href = ANLEITUNG_HANDY[daten.sprachcode] || ANLEITUNG_HANDY.de;
-  if (handyStand) handyZeigen(handyStand);
   if (cfg) designZeigen();
 }
 
@@ -74,50 +65,6 @@ function kostenZeigen(k) {
   const betrag = Number(k && k.usd) || 0;
   const zahl = betrag.toLocaleString(document.documentElement.lang === 'en' ? 'en-GB' : 'de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   $('kostenHeute').textContent = tx('einst.kosten_heute', { usd: zahl, anfragen: (k && k.anfragen) || 0 });
-}
-
-// --- Handy (Telegram) ---
-
-function handyZeigen(s) {
-  handyStand = s;
-  $('kontoHandy').classList.toggle('verbunden', s.gekoppelt);
-  let status = tx('konten.nicht_verbunden');
-  if (s.gekoppelt) status = tx('handy.gekoppelt', { nutzer: s.nutzer || '?', bot: s.bot || '?' });
-  else if (s.fehler) status = s.fehler;
-  else if (s.eingerichtet && s.code) status = tx('handy.warte');
-  else if (s.eingerichtet && s.codeAbgelaufen) status = tx('handy.code_abgelaufen');
-  $('handyStatus').textContent = status;
-  $('handyTrennen').hidden = !(s.gekoppelt || s.eingerichtet);
-  $('handyEinrichten').hidden = s.gekoppelt || !!s.code;
-  $('handyKoppeln').hidden = s.gekoppelt || !s.code;
-  $('handyCode').textContent = s.code || '';
-  if (s.link) $('handyLink').href = s.link;
-  $('handyFreigabenFeld').hidden = !s.gekoppelt;
-}
-
-function handyMeldung(text, fehler = false) {
-  const m = $('handyMeldung');
-  m.textContent = text || '';
-  m.classList.toggle('fehler', fehler);
-}
-
-function handyVerbinden() {
-  $('handyVerbinden').onclick = async () => {
-    const knopf = $('handyVerbinden');
-    knopf.disabled = true;
-    handyMeldung('');
-    const r = await julia.handyVerbinden($('handyToken').value.trim());
-    knopf.disabled = false;
-    $('handyToken').value = '';
-    handyZeigen(r.status);
-    handyMeldung(r.fehler || '', !!r.fehler);
-  };
-  $('handyTrennen').onclick = async () => {
-    const r = await julia.handyTrennen();
-    handyZeigen(r.status);
-    handyMeldung('');
-  };
-  julia.on('handy:status', handyZeigen);
 }
 
 // --- Design ---
@@ -439,8 +386,6 @@ async function init() {
   kontenZeigen(await julia.kontenStatus());
   designVerbinden();
   designZeigen();
-  handyVerbinden();
-  handyZeigen(await julia.handyStatus());
   kostenZeigen(await julia.kostenHeute());
   julia.on('kosten', kostenZeigen);
 

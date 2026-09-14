@@ -403,7 +403,6 @@
   <div class="rahmen">
     <a href="https://github.com/MoinMornhart/julia-ai#readme">README</a>
     <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
-    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/handy-telegram.md" data-i18n="fuss.handy">Handy verbinden</a>
     <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/IDEEN.md" data-i18n="fuss.ideen">Ideen und Fahrplan</a>
     <span class="rechts" data-i18n="fuss.lokal">Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.</span>
   </div>
@@ -453,7 +452,7 @@
       'inst.k1': '# Herunterladen und auf die neueste Version', 'inst.k2': '# Abhängigkeiten und Start',
       'ver.etikett': 'Versionen', 'ver.titel': 'Jede Funktion ein eigenes Release',
       'ver.zehner': 'Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates gibt es nur auf getaggte Stände – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und mit automatischem Rückweg.',
-      'fuss.google': 'Google verbinden', 'fuss.handy': 'Handy verbinden', 'fuss.ideen': 'Ideen und Fahrplan',
+      'fuss.google': 'Google verbinden','fuss.ideen': 'Ideen und Fahrplan',
       'fuss.lokal': 'Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.',
     },
     en: {
@@ -482,7 +481,7 @@
       'inst.k1': '# Download and switch to the latest version', 'inst.k2': '# Dependencies and start',
       'ver.etikett': 'Versions', 'ver.titel': 'Every feature is its own release',
       'ver.zehner': 'Julia counts in steps of ten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates only go to tagged releases – after your yes, once the current task is done, with automatic rollback.',
-      'fuss.google': 'Connect Google', 'fuss.handy': 'Connect your phone', 'fuss.ideen': 'Ideas and roadmap',
+      'fuss.google': 'Connect Google','fuss.ideen': 'Ideas and roadmap',
       'fuss.lokal': 'Runs locally on your PC. No server of its own, no cloud storage.',
     },
   };
@@ -508,9 +507,8 @@
         ['Sehen', 'Screenshots aller Monitore, offene Fenster, Prozesse, Akku, Platte.', ['screenshot', 'fenster_auflisten']],
         ['Handeln', 'Klicken, tippen, Programme öffnen, Dateien schreiben, PowerShell.', ['klick', 'tippen', 'shell']],
         ['Google', 'Mails lesen und senden, Termine, Kontakte. Anmeldung im Browser, Tokens verschlüsselt.', ['mail_senden', 'kontakte_suchen']],
-        ['Handy', 'Über deinen eigenen Telegram-Bot. Hört nur auf dein Konto, alte Befehle werden verworfen.', ['/stopp', '/status']],
         ['Overlay', 'Kleines Chatfenster über dem Spiel, Freigaben direkt darin, Antworten passiv eingeblendet.', ['Strg+Umschalt+Leertaste']],
-        ['Erinnerungen', '„In 20 Minuten Pizza raus" – als Meldung, im Chat, vorgelesen und aufs Handy.', ['erinnerung_setzen']],
+        ['Erinnerungen', '„In 20 Minuten Pizza raus" – als Meldung, im Chat und auf Wunsch vorgelesen.', ['erinnerung_setzen']],
         ['Gedächtnis', 'Merkt sich Projekte, Arbeitsweisen und Geräte. Zugangsdaten nie.', ['gedaechtnis_schreiben']],
         ['Updates', 'Nur getaggte Versionen, erst nach der laufenden Aufgabe, mit Rückweg.', ['update_pruefen']],
       ],
@@ -518,7 +516,7 @@
         ['Voraussetzungen', 'Windows 10 oder 11, Node.js ab Version 20, Git und ein API-Schlüssel von Anthropic.'],
         ['Herunterladen und starten', 'Die Befehle rechts in PowerShell ausführen.'],
         ['Einmal einrichten', 'Beim ersten Start fragt Julia nach deinem Vornamen, dem Schlüssel und den Ordnern, in denen sie ohne Rückfrage schreiben darf.'],
-        ['Optional verbinden', 'Google für Mails und Kalender, Telegram fürs Handy – mit Schritt-für-Schritt-Anleitungen.'],
+        ['Optional verbinden', 'Google für Mails und Kalender – mit Schritt-für-Schritt-Anleitung.'],
       ],
       versionen: [
         ['0.9.1', 'Schutz gegen Datenabfluss: Nach fremden Inhalten fragt Julia auch vor Links und Netzwerk-Befehlen; heruntergeladene Programme startet sie nie.'],
@@ -526,10 +524,9 @@
         ['0.8.0', '„Hey Julia“ als Aktivierungswort – mit deinem eigenen Namen, nur lokal, standardmäßig aus.'],
         ['0.7.1', 'Protokoll als Prüfsummen-Kette; veröffentlicht wird nur mit grünen Tests und ohne bekannte Lücken.'],
         ['0.7.0', 'Kostenbremse: Tageslimit für die API-Kosten, Warnung bei 80 %.'],
-        ['0.6.0', 'Erinnerungen und Timer: per Satz stellen, als Meldung, im Chat, vorgelesen und aufs Handy.'],
+        ['0.6.0', 'Erinnerungen und Timer: per Satz stellen, als Meldung, im Chat und vorgelesen.'],
         ['0.5.0', 'Gaming-Overlay: kleines Chatfenster über dem Spiel, Antworten auf Sprachbefehle passiv eingeblendet.'],
         ['0.4.0', 'Eigener Name für die KI, ihre Form und deine Pronomen.'],
-        ['0.3.0', 'Handy über den eigenen Telegram-Bot, Freigaben per Knopf, /stopp bricht sofort ab.'],
         ['0.2.0', 'Gaming-Look: Dunkel mit Glut-Orange, Hell, wie Windows, sieben Akzentfarben.'],
         ['0.1.1', 'Härtung: Sandbox, geprüfte Absender, gefährliche Link-Protokolle blockiert.'],
         ['0.1.0', 'Google-Konto: Gmail, Kalender und Kontakte.'],
@@ -576,9 +573,8 @@
         ['See', 'Screenshots of every monitor, open windows, processes, battery, disk.', ['screenshot', 'fenster_auflisten']],
         ['Act', 'Click, type, open programs, write files, PowerShell.', ['klick', 'tippen', 'shell']],
         ['Google', 'Read and send mail, events, contacts. Sign-in in the browser, tokens encrypted.', ['mail_senden', 'kontakte_suchen']],
-        ['Phone', 'Through your own Telegram bot. Listens only to your account, stale commands are dropped.', ['/stop', '/status']],
         ['Overlay', 'Small chat window over the game, approvals right inside, answers shown passively.', ['Ctrl+Shift+Space']],
-        ['Reminders', '"Pizza out in 20 minutes" – as a notification, in the chat, read aloud and on your phone.', ['erinnerung_setzen']],
+        ['Reminders', '"Pizza out in 20 minutes" – as a notification, in the chat and read aloud if you like.', ['erinnerung_setzen']],
         ['Memory', 'Remembers projects, ways of working and devices. Never credentials.', ['gedaechtnis_schreiben']],
         ['Updates', 'Tagged releases only, after the current task, with rollback.', ['update_pruefen']],
       ],
@@ -586,7 +582,7 @@
         ['Requirements', 'Windows 10 or 11, Node.js 20 or newer, Git and an API key from Anthropic.'],
         ['Download and start', 'Run the commands on the right in PowerShell.'],
         ['Set up once', 'On first start Julia asks for your first name, the key and the folders where she may write without asking.'],
-        ['Connect if you like', 'Google for mail and calendar, Telegram for your phone – with step-by-step guides.'],
+        ['Connect if you like', 'Google for mail and calendar – with a step-by-step guide.'],
       ],
       versionen: [
         ['0.9.1', 'Exfiltration guard: after foreign content Julia also asks before links and network commands; downloaded programs never run.'],
@@ -594,10 +590,9 @@
         ['0.8.0', '“Hey Julia” as a wake word – with your own name, local only, off by default.'],
         ['0.7.1', 'Log as a checksum chain; releases only ship with green tests and no known vulnerabilities.'],
         ['0.7.0', 'Cost brake: a daily limit for API costs, warning at 80 %.'],
-        ['0.6.0', 'Reminders and timers: set by sentence, as a notification, in the chat, read aloud and on your phone.'],
+        ['0.6.0', 'Reminders and timers: set by sentence, as a notification, in the chat and read aloud.'],
         ['0.5.0', 'Gaming overlay: small chat window over the game, answers to voice commands shown passively.'],
         ['0.4.0', 'Your own name for the AI, its form and your pronouns.'],
-        ['0.3.0', 'Phone via your own Telegram bot, approvals by button, /stop cancels immediately.'],
         ['0.2.0', 'Gaming look: dark with ember orange, light, like Windows, seven accent colours.'],
         ['0.1.1', 'Hardening: sandbox, verified senders, dangerous link protocols blocked.'],
         ['0.1.0', 'Google account: Gmail, Calendar and Contacts.'],

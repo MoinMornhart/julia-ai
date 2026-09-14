@@ -117,9 +117,9 @@ function element(klasse, html) {
   return d;
 }
 
-function nutzerNachricht(text, perSprache, vomHandy) {
+function nutzerNachricht(text, perSprache) {
   antwortEl = null;
-  const meta = vomHandy ? `📱 ${esc(tx('chat.handy'))}` : perSprache ? `🎙 ${esc(tx('chat.sprache'))}` : '';
+  const meta = perSprache ? `🎙 ${esc(tx('chat.sprache'))}` : '';
   anhaengen(element('nachricht nutzer',
     `<div class="blase">${esc(text).replace(/\n/g, '<br>')}</div>${meta ? `<div class="meta">${meta}</div>` : ''}`));
 }
@@ -306,7 +306,7 @@ async function init() {
     else julia.schliessen();
   });
 
-  julia.on('agent:nutzer', ({ text, perSprache, handy }) => nutzerNachricht(text, perSprache, handy));
+  julia.on('agent:nutzer', ({ text, perSprache }) => nutzerNachricht(text, perSprache));
   julia.on('agent:start', () => beschaeftigtSetzen(true));
   julia.on('agent:text', (d) => juliaText(d));
   julia.on('agent:werkzeug', werkzeug);

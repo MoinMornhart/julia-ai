@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'handy:status', 'overlay:modus', 'erinnerung', 'kosten',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'erinnerung', 'kosten',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -21,10 +21,7 @@ contextBridge.exposeInMainWorld('julia', {
   kontenStatus: () => ipcRenderer.invoke('konten:status'),
   googleVerbinden: (daten) => ipcRenderer.invoke('konten:google:verbinden', daten),
   googleTrennen: () => ipcRenderer.invoke('konten:google:trennen'),
-  handyStatus: () => ipcRenderer.invoke('handy:status'),
   kostenHeute: () => ipcRenderer.invoke('kosten:heute'),
-  handyVerbinden: (token) => ipcRenderer.invoke('handy:verbinden', token),
-  handyTrennen: () => ipcRenderer.invoke('handy:trennen'),
   einrichtungFertig: () => ipcRenderer.invoke('einrichtung:fertig'),
   status: () => ipcRenderer.invoke('chat:status'),
   senden: (text) => ipcRenderer.invoke('chat:senden', text),

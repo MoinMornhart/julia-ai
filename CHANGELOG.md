@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 0.9.3 – 2026-09-14
+- Julia verbindet sich nicht mehr mit Telegram – das Handy kommt stattdessen über dein WLAN
+
 ## 0.9.2 – 2026-09-14
 - Julia merkt sich nach fremden Inhalten nichts mehr ohne dein Ja – so kann keine Mail ihr Gedächtnis vergiften
 

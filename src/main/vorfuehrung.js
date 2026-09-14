@@ -105,7 +105,7 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   einst.show();
   await warte(2500);
   await aufnehmenFenster(einst, path.join(ziel, `einstellungen-${sc}.png`), { mitRahmen: true });
-  await einst.webContents.executeJavaScript("document.getElementById('kontoGoogle').scrollIntoView({ block: 'start' })");
+  await einst.webContents.executeJavaScript("document.getElementById('kontoGoogle').closest('section').scrollIntoView({ block: 'start' })");
   await warte(500);
   await aufnehmenFenster(einst, path.join(ziel, `verbindungen-${sc}.png`), { mitRahmen: true });
   einst.destroy();
