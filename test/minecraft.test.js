@@ -391,3 +391,60 @@ test('Minecraft: der Ess-Befehl nennt, was gegessen wird, und sonst was fehlt', 
   leer.bot = essBot([]);
   assert.throws(() => leer.aufgabe({ aufgabe: 'essen' }), /nichts zu essen/);
 });
+
+// Eine Position mit den Methoden, die der Kampfcode nutzt (offset, distanceTo).
+function fpos(x, y, z) {
+  return { x, y, z, offset: (a, b, c) => fpos(x + a, y + b, z + c), distanceTo: (q) => Math.hypot(x - q.x, y - q.y, z - q.z) };
+}
+
+// Kampf-Fake-Bot: Position mit distanceTo/offset, Steuerzustände, Wegsuche-Ziele.
+function kampfBot({ health = 20, food = 20, inv = [], ziele = {} } = {}) {
+  const pos = fpos;
+  const bot = {
+    entity: { position: pos(0, 64, 0), yaw: 0, onGround: true, velocity: { y: 0 } },
+    health, food, ziele,
+    inventory: { items: () => inv, slots: {} },
+    control: {},
+    lookAt: () => ({ catch() {} }),
+    attack() { bot.schlaege = (bot.schlaege || 0) + 1; },
+    setControlState: (k, v) => { bot.control[k] = v; },
+    getControlState: (k) => !!bot.control[k],
+    clearControlStates: () => { bot.control = {}; },
+    pathfinder: { setGoal: (g) => { bot.ziel = g; }, isMoving: () => false },
+    entities: ziele,
+  };
+  return bot;
+}
+
+test('Minecraft: bei wenig Leben ohne Goldapfel zieht sie sich zurück', () => {
+  const m = new mc.Minecraft();
+  const meldungen = [];
+  m.on('ereignis', (e) => meldungen.push(e));
+  m.pf = { goals: { GoalFollow: class { constructor(z, r) { this.z = z; this.r = r; } }, GoalInvert: class { constructor(g) { this.flucht = g; } } } };
+  const feind = { id: 7, name: 'zombie', position: fpos(1, 64, 0) };
+  m.bot = kampfBot({ health: 4, inv: [] });
+  m._kampf(feind);
+  assert.ok(meldungen.some((e) => e.art === 'rueckzug'));
+  assert.ok(m.bot.ziel && m.bot.ziel.flucht, 'Flucht-Ziel gesetzt');
+  assert.equal(m.bot.schlaege, undefined, 'kein Angriff bei Rückzug');
+});
+
+test('Minecraft: einen Creeper umarmt sie nicht, sondern hält Abstand', () => {
+  const m = new mc.Minecraft();
+  m.pf = { goals: { GoalFollow: class { constructor(z, r) { this.z = z; this.r = r; } }, GoalInvert: class { constructor(g) { this.flucht = g; } } } };
+  m.bot = kampfBot({ health: 20 });
+  const nah = { id: 9, name: 'creeper', position: fpos(0, 64, 2) };
+  m._kampf(nah); // sehr nah -> weg
+  assert.ok(m.bot.ziel && m.bot.ziel.flucht, 'flieht vom nahen Creeper');
+  assert.equal(m.bot.schlaege, undefined);
+});
+
+test('Minecraft: Bedrohungswahl nimmt den Creeper vor dem näheren Zombie', () => {
+  const m = new mc.Minecraft();
+  const p = { x: 0, y: 64, z: 0 };
+  const mk = (name, dist) => ({ name, isValid: true, type: 'hostile', position: { distanceTo: (q) => (q === p ? dist : dist) } });
+  m.bot = { entity: { position: p }, entities: { 1: mk('zombie', 3), 2: mk('creeper', 8) } };
+  // distanceTo muss zu mitte (=p) und bot-position (=p) gleich messen; hier vereinfacht.
+  const feind = m._bedrohung(p);
+  assert.equal(feind.name, 'creeper');
+});

@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.4.0 – 2026-09-14
+- Julia kämpft in Minecraft klüger: bei wenig Leben ohne Goldapfel zieht sie sich zurück, einen Creeper umarmt sie nicht mehr sondern hält Abstand und schlägt aus der Distanz zu, und sie nimmt sich zuerst die gefährlichste Bedrohung vor
+
 ## 4.3.0 – 2026-09-14
 - Julia isst in Minecraft von selbst, sobald sie Hunger hat, greift bei wenig Leben zum Goldapfel und sagt, was sie isst – und sie weiß, welche Nahrung sie dabeihat
 

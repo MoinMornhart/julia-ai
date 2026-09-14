@@ -340,6 +340,16 @@ function istFeind(e) {
   return !!e && e.type !== 'player' && e.isValid !== false && (e.type === 'hostile' || FEINDE.has(e.name));
 }
 
+// Welchen Feind zuerst? Ein Creeper ist die größte Gefahr, danach zählt die Nähe.
+// Fernkämpfer (Skelett, Hexe) etwas vor gewöhnlichen Nahkämpfern.
+function bedrohWert(e, p) {
+  const naehe = 30 - Math.min(30, e.position.distanceTo(p));
+  let art = 0;
+  if (e.name === 'creeper') art = 100;
+  else if (e.name === 'skeleton' || e.name === 'stray' || e.name === 'bogged' || e.name === 'witch' || e.name === 'pillager') art = 20;
+  return art + naehe;
+}
+
 // Chat geht auf den eigenen Server – trotzdem keine Befehle (/op, /give …)
 // und keine Farb- oder Steuerzeichen.
 function chatText(text) {
@@ -831,6 +841,7 @@ class Minecraft extends EventEmitter {
   _anhalten() {
     this.auftrag = null;
     this.jagt = null;
+    this.flieht = null;
     if (!this.bot) return;
     this.bot.pathfinder.setGoal(null);
     this.bot.clearControlStates();
@@ -902,7 +913,7 @@ class Minecraft extends EventEmitter {
     } else if (a.art === 'beschuetzen') {
       const chef = this._spielerFigur(a.spieler);
       const mitte = chef ? chef.position : bot.entity.position;
-      const feind = bot.nearestEntity((e) => istFeind(e) && e.position.distanceTo(mitte) < 12 && e.position.distanceTo(bot.entity.position) < 20);
+      const feind = this._bedrohung(mitte);
       if (feind) {
         a.folgt = false;
         this._kampf(feind);
@@ -927,20 +938,85 @@ class Minecraft extends EventEmitter {
     }
   }
 
+  // Wähle den gefährlichsten Feind in der Nähe (Creeper zuerst, dann der nächste).
+  _bedrohung(mitte) {
+    const bot = this.bot;
+    const p = bot.entity.position;
+    const feinde = Object.values(bot.entities).filter((e) => istFeind(e) && e.position && e.position.distanceTo(mitte) < 12 && e.position.distanceTo(p) < 20);
+    if (!feinde.length) return null;
+    return feinde.sort((x, y) => bedrohWert(y, p) - bedrohWert(x, p))[0];
+  }
+
+  _hat(liste) {
+    return this.bot.inventory.items().some((i) => liste.includes(i.name));
+  }
+
+  // Vom Ziel wegflüchten (zu wenig Leben, oder Abstand zum Creeper halten).
+  _weg(ziel) {
+    const bot = this.bot;
+    const { GoalFollow, GoalInvert } = this.pf.goals;
+    bot.setControlState('sprint', false);
+    if (GoalInvert && GoalFollow) {
+      if (this.flieht !== ziel.id) {
+        bot.clearControlStates();
+        bot.pathfinder.setGoal(new GoalInvert(new GoalFollow(ziel, 8)), true);
+        this.flieht = ziel.id;
+        this.jagt = null;
+      }
+    } else {
+      bot.clearControlStates();
+      bot.setControlState('back', true);
+    }
+  }
+
+  _zurueckziehen(ziel) {
+    if (this.ticks - (this.letzteRueckzugMeldung || -1000) > 100) {
+      this.letzteRueckzugMeldung = this.ticks;
+      this._melden('rueckzug', 'Zu wenig Leben und nichts zum Heilen – ich ziehe mich zurück.');
+    }
+    this._weg(ziel);
+  }
+
+  // Creeper nicht umarmen: Abstand halten, kurz reinschlagen, sofort wieder weg.
+  _creeper(ziel, d) {
+    const bot = this.bot;
+    const { GoalFollow } = this.pf.goals;
+    const blick = bot.lookAt(ziel.position.offset(0, 1.4, 0), true);
+    if (blick && blick.catch) blick.catch(() => {});
+    if (this.ticks < (this.creeperRueckzug || 0) || d < 3.2) { this._weg(ziel); return; }
+    if (d > 3.0) {
+      if (this.jagt !== ziel.id) { bot.clearControlStates(); bot.pathfinder.setGoal(new GoalFollow(ziel, 3), true); this.jagt = ziel.id; this.flieht = null; }
+      return;
+    }
+    if (this.jagt !== null) { bot.pathfinder.setGoal(null); this.jagt = null; }
+    if (this.ticks - this.letzterSchlag >= this.pause) {
+      bot.attack(ziel);
+      this.letzterSchlag = this.ticks;
+      this.creeperRueckzug = this.ticks + 14; // nach dem Schlag sofort zurück
+    }
+  }
+
   // Ein Tick Kampf: hinlaufen, anvisieren, im richtigen Moment zuschlagen.
   _kampf(ziel) {
     const bot = this.bot;
     const { GoalFollow } = this.pf.goals;
     const d = bot.entity.position.distanceTo(ziel.position);
-    const blick = bot.lookAt(ziel.position.offset(0, (ziel.height || 1.8) * 0.85, 0), true);
-    if (blick && blick.catch) blick.catch(() => {});
+    // Zu wenig Leben und kein Goldapfel: nicht sterben, sondern zurückziehen.
+    if (bot.health <= 6 && !this._hat(HEILEN)) { this._zurueckziehen(ziel); return; }
     // Leben knapp: erst einen Goldapfel, wenn einer da ist.
     if (bot.health <= 8) { const g = this._essen(HEILEN); if (g) { this._essenMelden(g); return; } }
+    // Creeper braucht eine andere Taktik: auf Abstand bleiben.
+    if (ziel.name === 'creeper') { this._creeper(ziel, d); return; }
+    // Feind noch weit weg und Hunger? Kurz auffüllen, solange es sicher ist.
+    if (d > 7 && bot.food <= 14) { const g = this._essen(ESSEN); if (g) { this._essenMelden(g); return; } }
+    const blick = bot.lookAt(ziel.position.offset(0, (ziel.height || 1.8) * 0.85, 0), true);
+    if (blick && blick.catch) blick.catch(() => {});
     if (d > 3.4) {
       if (this.jagt !== ziel.id) {
         bot.clearControlStates();
         bot.pathfinder.setGoal(new GoalFollow(ziel, 1), true);
         this.jagt = ziel.id;
+        this.flieht = null;
       }
       bot.setControlState('sprint', true);
       return;
@@ -967,6 +1043,7 @@ class Minecraft extends EventEmitter {
 
   _kampfPause() {
     this.jagt = null;
+    this.flieht = null;
     this.bot.pathfinder.setGoal(null);
     this.bot.clearControlStates();
   }
