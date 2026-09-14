@@ -65,6 +65,15 @@ function overlayModus(modus) {
   if (modus !== 'passiv') $('text').focus();
 }
 
+// Aussehen des Overlays aus den Einstellungen: Schrift, Hintergrund, kompakt.
+function overlayStil(o) {
+  if (!imOverlay || !o) return;
+  const s = document.body.style;
+  s.setProperty('--ov-schrift', `${o.schrift || 13}px`);
+  s.setProperty('--ov-hintergrund', String(o.hintergrund ?? 0.86));
+  document.body.classList.toggle('kompakt', !!o.kompakt);
+}
+
 if (imOverlay) {
   const passiv = () => document.body.classList.contains('passiv');
   document.addEventListener('mousemove', () => {
@@ -361,6 +370,7 @@ async function init() {
   $('btnEinst').innerHTML = ICON.einst;
   $('btnMikro').innerHTML = ICON.mikro;
   if (imOverlay) {
+    julia.config().then((c) => overlayStil(c && c.overlay)).catch(() => { /* Standard bleibt */ });
     $('btnZu').hidden = false;
     $('btnZu').innerHTML = ICON.zu;
     $('btnZu').onclick = () => julia.schliessen();
@@ -431,6 +441,7 @@ async function init() {
   });
   julia.on('texte:geaendert', texteAnwenden);
   julia.on('config:geaendert', (c) => {
+    overlayStil(c && c.overlay);
     if (c.hotkey && c.hotkey.sprechen !== hotkey) {
       hotkey = c.hotkey.sprechen;
       texteAnwenden({ sprachcode: document.documentElement.lang, texte: T });

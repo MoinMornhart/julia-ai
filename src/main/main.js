@@ -416,9 +416,14 @@ function overlayGrenzen() {
   const ds = bildschirm.monitore();
   const d = ds[o.monitor] || ds[0];
   const wa = d.workArea;
-  const breite = 380;
-  const hoehe = Math.min(560, wa.height - 48);
   const rand = 24;
+  const breite = Math.round(Math.min(o.breite || 380, wa.width - 2 * rand));
+  const hoehe = Math.round(Math.min(o.hoehe || 560, wa.height - 48));
+  // Selbst verschoben: dort bleiben – solange die Stelle noch auf einem Bildschirm liegt.
+  const p = o.position;
+  if (p && ds.some((m) => p.x + 40 > m.workArea.x && p.x < m.workArea.x + m.workArea.width - 40 && p.y >= m.workArea.y - 10 && p.y < m.workArea.y + m.workArea.height - 40)) {
+    return { x: p.x, y: p.y, width: breite, height: hoehe };
+  }
   const x = o.ecke.endsWith('rechts') ? wa.x + wa.width - breite - rand : wa.x + rand;
   const y = o.ecke.startsWith('unten') ? wa.y + wa.height - hoehe - rand : wa.y + rand;
   return { x: Math.round(x), y: Math.round(y), width: breite, height: hoehe };
@@ -441,6 +446,12 @@ function overlayErstellen() {
   });
   overlayFenster.setAlwaysOnTop(true, 'screen-saver');
   overlayFenster.setOpacity(config.get('overlay.deckkraft'));
+  // An der Kopfzeile verschoben: die Stelle merken (kommt erst nach dem Loslassen).
+  overlayFenster.on('moved', () => {
+    if (!overlayFenster || overlayFenster.isDestroyed()) return;
+    const [x, y] = overlayFenster.getPosition();
+    config.set('overlay.position', { x, y });
+  });
   overlayFenster.loadFile(path.join(RENDERER, 'chat.html'), { query: { overlay: '1' } });
   overlayFenster.on('close', (e) => {
     if (!beendenLaeuft) {
@@ -450,7 +461,7 @@ function overlayErstellen() {
   });
   // Zurück ins Spiel geklickt: Beim Spielen wird das Overlay wieder durchlässig.
   overlayFenster.on('blur', () => {
-    if (!overlayPassiv && spielAktiv && overlaySichtbar()) overlayZeigen({ passiv: true });
+    if (!overlayPassiv && (spielAktiv || config.get('overlay.immer')) && overlaySichtbar()) overlayZeigen({ passiv: true });
   });
   return overlayFenster;
 }
@@ -525,13 +536,16 @@ function overlaySichtbar() {
 }
 
 function overlayUmschalten() {
-  if (overlaySichtbar() && !overlayPassiv) overlayVerstecken();
-  else overlayZeigen({ passiv: false });
+  // Mit "immer anzeigen" schaltet der Hotkey nur zwischen aktiv und durchlässig.
+  if (overlaySichtbar() && !overlayPassiv) {
+    if (config.get('overlay.immer')) overlayZeigen({ passiv: true });
+    else overlayVerstecken();
+  } else overlayZeigen({ passiv: false });
 }
 
-function overlaySpaeterVerstecken(ms = 12000) {
+function overlaySpaeterVerstecken(ms = (config.get('overlay.ausblenden') || 12) * 1000) {
   clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(() => { if (overlayPassiv && !spielAktiv) overlayVerstecken(); }, ms);
+  overlayTimer = setTimeout(() => { if (overlayPassiv && !spielAktiv && !config.get('overlay.immer')) overlayVerstecken(); }, ms);
 }
 
 // Läuft ein Spiel im Vordergrund, erscheint das Overlay von selbst – passiv:
@@ -548,7 +562,7 @@ async function spielPruefen() {
     if (!config.get('overlay.automatisch')) {
       if (spielAktiv) {
         spielAktiv = null;
-        if (overlaySichtbar() && overlayPassiv) overlayVerstecken();
+        if (overlaySichtbar() && overlayPassiv && !config.get('overlay.immer')) overlayVerstecken();
       }
       return;
     }
@@ -562,7 +576,7 @@ async function spielPruefen() {
       }
     } else if (spielAktiv) {
       spielAktiv = null;
-      if (overlaySichtbar() && overlayPassiv) overlayVerstecken();
+      if (overlaySichtbar() && overlayPassiv && !config.get('overlay.immer')) overlayVerstecken();
     }
   } catch {
     /* nächster Versuch in drei Sekunden */
@@ -574,6 +588,14 @@ async function spielPruefen() {
 function spielWaechterStarten() {
   clearInterval(spielTimer);
   spielTimer = setInterval(spielPruefen, 3000);
+  overlayImmerAnwenden();
+}
+
+// "Immer anzeigen": durchlässig stehen lassen, auch ohne Spiel.
+function overlayImmerAnwenden() {
+  if (config.get('overlay.immer')) {
+    if (!overlaySichtbar()) overlayZeigen({ passiv: true });
+  } else if (overlaySichtbar() && overlayPassiv && !spielAktiv) overlayVerstecken();
 }
 
 // --- Tray, Hotkeys, Autostart ---
@@ -1008,6 +1030,12 @@ function ipcEinrichten() {
     mausDurchlassen(overlayFenster, !drin);
     if (drin) clearTimeout(overlayTimer); // beim Lesen nicht wegblenden
     else if (!spielAktiv) overlaySpaeterVerstecken(6000);
+  });
+  // Aus den Einstellungen: das Overlay kurz zeigen, um Änderungen zu sehen.
+  ipc.handle('overlay:vorschau', () => {
+    overlayZeigen({ passiv: true });
+    overlaySpaeterVerstecken(8000);
+    return true;
   });
   ipc.on('overlay:aktivieren', (e) => {
     if (!overlayFenster || overlayFenster.isDestroyed() || e.sender !== overlayFenster.webContents) return;
@@ -1855,6 +1883,8 @@ async function start() {
     if ((k === 'blase.ecke' || k === 'blase.monitor') && config.get('blase.position')) config.set('blase.position', null);
     if (k.startsWith('blase')) blaseAktualisieren();
     if (k.startsWith('design')) designAnwenden();
+    if ((k === 'overlay.ecke' || k === 'overlay.monitor') && config.get('overlay.position')) config.set('overlay.position', null);
+    if (k === 'overlay.immer' && !VORFUEHRUNG) overlayImmerAnwenden();
     if (k.startsWith('overlay') && overlayFenster && !overlayFenster.isDestroyed()) {
       overlayFenster.setBounds(overlayGrenzen());
       overlayFenster.setOpacity(config.get('overlay.deckkraft'));

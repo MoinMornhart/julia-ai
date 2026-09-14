@@ -18,7 +18,7 @@ body.overlay::before {
   border-radius: 18px;
   background:
     radial-gradient(420px 200px at 50% -60px, color-mix(in srgb, var(--akzent) 22%, transparent), transparent 70%),
-    color-mix(in srgb, var(--grund) 86%, transparent);
+    color-mix(in srgb, var(--grund) calc(var(--ov-hintergrund, 0.86) * 100%), transparent);
   border: 1px solid var(--akzent-rand);
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04), inset 0 0 40px color-mix(in srgb, var(--akzent) 10%, transparent);
   z-index: -1;
@@ -28,7 +28,10 @@ body.overlay .kopf::after { left: 14px; right: 14px; }
 body.overlay .name { font-size: 13px; }
 body.overlay .mini-kugel { width: 20px; height: 20px; }
 body.overlay .icon { width: 30px; height: 30px; }
-body.overlay .verlauf { padding: 10px 10px 6px; gap: 8px; font-size: 13px; }
+body.overlay .verlauf { padding: 10px 10px 6px; gap: 8px; font-size: var(--ov-schrift, 13px); }
+body.overlay .verlauf .blase, body.overlay #text { font-size: var(--ov-schrift, 13px); }
+/* Kompakt: im Spiel nur die letzten drei Einträge */
+body.overlay.passiv.kompakt .verlauf > :not(:nth-last-child(-n+3)) { display: none; }
 body.overlay .nachricht .blase { max-width: 92%; padding: 7px 11px; }
 body.overlay .nachricht.julia .blase { backdrop-filter: none; box-shadow: none; }
 body.overlay .leer { padding-bottom: 10px; }

@@ -865,6 +865,8 @@ async function init() {
   whisperVerbinden();
   whisperZeigen(await julia.whisperStatus());
   piperVerbinden();
+  $('overlayVorschau').onclick = () => julia.overlayVorschau();
+  $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   if (einrichtung) $('name').focus();
 }
 

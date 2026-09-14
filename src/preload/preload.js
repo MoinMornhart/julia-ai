@@ -69,6 +69,7 @@ contextBridge.exposeInMainWorld('julia', {
     });
   },
   mcTrennungWeg: () => ipcRenderer.invoke('mc:trennungweg'),
+  overlayVorschau: () => ipcRenderer.invoke('overlay:vorschau'),
   mcChat: (text) => ipcRenderer.invoke('mc:chat', String(text || '')),
   mcKontoVerbinden: () => ipcRenderer.invoke('mc:konto:verbinden'),
   mcKontoAbmelden: () => ipcRenderer.invoke('mc:konto:abmelden'),

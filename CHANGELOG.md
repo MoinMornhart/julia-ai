@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.7.0 – 2026-09-14
+- Das Gaming-Overlay lässt sich anpassen: Größe, Schrift, durchsichtiger Hintergrund, frei verschiebbar, Kompakt-Modus, Ausblende-Zeit, Vorschau – und auf Wunsch ist es immer da
+
 ## 3.6.0 – 2026-09-14
 - Julia kann in Minecraft viel mehr: laufen, dir Sachen geben, einsammeln, jagen, craften, einräumen, schlafen – und fliegt sie raus, zeigt ein Crash-Screen warum; nach einem Verbindungsabbruch kommt sie selbst zurück
 

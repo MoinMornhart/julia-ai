@@ -411,6 +411,7 @@
       <h2 data-t="einst.overlay"></h2>
       <p class="hinweis" data-t="einst.overlay_hinweis"></p>
       <label class="schalter"><input type="checkbox" data-k="overlay.automatisch"><span data-t="einst.overlay_auto"></span></label>
+      <label class="schalter"><input type="checkbox" data-k="overlay.immer"><span data-t="einst.overlay_immer"></span></label>
       <div class="feld">
         <label for="overlaySpiele" data-t="einst.overlay_spiele"></label>
         <textarea id="overlaySpiele" data-k="overlay.spiele" rows="2" spellcheck="false" autocomplete="off" placeholder="valorant&#10;eldenring"></textarea>
@@ -448,6 +449,37 @@
         <label data-t="einst.overlay_deckkraft"></label>
         <input type="range" data-k="overlay.deckkraft" data-zahl data-live min="0.3" max="1" step="0.02">
         <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_hintergrund"></label>
+        <input type="range" data-k="overlay.hintergrund" data-zahl data-live min="0" max="1" step="0.02">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_breite"></label>
+        <input type="range" data-k="overlay.breite" data-zahl data-live min="280" max="720" step="10">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_hoehe"></label>
+        <input type="range" data-k="overlay.hoehe" data-zahl data-live min="240" max="1000" step="10">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_schrift"></label>
+        <input type="range" data-k="overlay.schrift" data-zahl data-live min="11" max="18" step="1">
+        <output></output>
+      </div>
+      <div class="regler">
+        <label data-t="einst.overlay_ausblenden"></label>
+        <input type="range" data-k="overlay.ausblenden" data-zahl min="4" max="60" step="1">
+        <output></output>
+      </div>
+      <label class="schalter"><input type="checkbox" data-k="overlay.kompakt"><span data-t="einst.overlay_kompakt"></span></label>
+      <p class="hinweis" data-t="einst.overlay_ziehen"></p>
+      <div class="knopfreihe">
+        <button class="zweit" id="overlayVorschau" data-t="einst.overlay_vorschau"></button>
+        <button class="zweit" id="overlayPositionWeg" data-t="einst.overlay_position_weg"></button>
       </div>
     </section>
 

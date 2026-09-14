@@ -77,6 +77,14 @@ const STANDARD = {
     bei_antwort: 'aus', // 'aus' | 'passiv' – bei Sprachbefehlen die Antwort kurz einblenden
     automatisch: true, // beim Spielen von selbst einblenden (passiv)
     spiele: [], // weitere Spiele als Programmnamen, z. B. "valorant"
+    breite: 380, // 280–720 px
+    hoehe: 560, // 240–1000 px, höchstens so hoch wie der Bildschirm
+    schrift: 13, // Schriftgröße 11–18 px
+    hintergrund: 0.86, // Deckkraft nur des Hintergrunds – der Text bleibt klar
+    kompakt: false, // im Spiel nur die letzten drei Nachrichten
+    ausblenden: 12, // Sekunden, bis eingeblendete Antworten wieder verschwinden
+    position: null, // { x, y } nach dem Verschieben, sonst Ecke
+    immer: false, // dauerhaft zeigen (durchlässig), auch ohne Spiel
   },
   sprache: {
     vorlesen: 'bei-sprache', // 'bei-sprache' | 'immer' | 'nie'
@@ -197,6 +205,8 @@ function pruefen(schluessel, wert) {
     case 'sync.an':
     case 'minecraft.stimme':
     case 'overlay.automatisch':
+    case 'overlay.kompakt':
+    case 'overlay.immer':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
@@ -332,10 +342,16 @@ function pruefen(schluessel, wert) {
       return s;
     }
     case 'blase.position':
+    case 'overlay.position':
       if (wert == null) return null;
       if (!istObjekt(wert)) throw new Error('Position ist { x, y } oder null.');
       return { x: Math.round(zahl(wert.x, -100000, 100000, 'x')), y: Math.round(zahl(wert.y, -100000, 100000, 'y')) };
     case 'overlay.deckkraft': return zahl(wert, 0.3, 1.0, 'Deckkraft');
+    case 'overlay.hintergrund': return zahl(wert, 0, 1, 'Hintergrund');
+    case 'overlay.breite': return Math.round(zahl(wert, 280, 720, 'Breite'));
+    case 'overlay.hoehe': return Math.round(zahl(wert, 240, 1000, 'Höhe'));
+    case 'overlay.schrift': return Math.round(zahl(wert, 11, 18, 'Schriftgröße'));
+    case 'overlay.ausblenden': return Math.round(zahl(wert, 4, 60, 'Ausblenden'));
     case 'overlay.ecke':
       if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);
       return wert;
