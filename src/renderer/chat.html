@@ -29,6 +29,7 @@
     <nav class="leiste" id="leiste">
       <button class="nav-punkt" data-ansicht="start" id="navStart"><span class="nav-ico" data-ico="start"></span><span class="nav-text" data-nav="nav.start"></span></button>
       <button class="nav-punkt" data-ansicht="chat" id="navChat"><span class="nav-ico" data-ico="chat"></span><span class="nav-text" data-nav="nav.chat"></span><i class="nav-marke" id="navChatMarke" hidden></i></button>
+      <button class="nav-punkt" data-ansicht="verlauf" id="navVerlauf"><span class="nav-ico" data-ico="uhr"></span><span class="nav-text" data-nav="nav.verlauf"></span></button>
       <div class="leiste-fuss">
         <div class="chip-modell" id="chipModell"><b id="chipAnbieter"></b><span id="chipName"></span></div>
         <button class="nav-punkt" id="navEinst"><span class="nav-ico" data-ico="einst"></span><span class="nav-text" data-nav="nav.einstellungen"></span></button>
@@ -86,6 +87,26 @@
         </div>
       </section>
 
+      <section class="ansicht vl" id="ansichtVerlauf" hidden>
+        <div class="vl-liste">
+          <label class="vl-suche"><span data-ico="lupe"></span><input id="vlSuche" type="search" autocomplete="off" spellcheck="false"></label>
+          <p class="vl-hinweis" id="vlAus" hidden></p>
+          <div class="vl-eintraege" id="vlEintraege"></div>
+          <div class="vl-fuss"><button class="knopf klein" id="vlAlleLoeschen"></button></div>
+        </div>
+        <div class="vl-vorschau">
+          <div class="vl-kopf" id="vlKopf" hidden>
+            <div class="vl-kopf-text"><h2 id="vlTitel"></h2><p id="vlDatum"></p></div>
+            <div class="vl-aktionen">
+              <button class="knopf primaer" id="vlFortsetzen"><span data-ico="chat"></span><span data-nav="vl.fortsetzen"></span></button>
+              <button class="knopf" id="vlLoeschen"></button>
+            </div>
+          </div>
+          <div class="verlauf vl-inhalt" id="vlInhalt"></div>
+          <p class="vl-leer" id="vlLeer"></p>
+        </div>
+      </section>
+
       <section class="ansicht chat-ansicht" id="ansichtChat">
         <main id="verlauf" class="verlauf">
           <div class="leer" id="leer">
@@ -107,5 +128,6 @@
 
   <script src="chat.js"></script>
   <script src="start.js"></script>
+  <script src="verlauf.js"></script>
 </body>
 </html>

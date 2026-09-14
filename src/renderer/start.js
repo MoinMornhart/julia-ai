@@ -16,6 +16,8 @@
     glocke: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 1 1 12 0v5l1.5 2h-15Z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>',
     pc: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>',
     muenze: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M14.8 9.2c-.5-.9-1.6-1.4-2.8-1.4-1.7 0-2.8.9-2.8 2.1 0 2.9 5.8 1.5 5.8 4.3 0 1.2-1.2 2.1-3 2.1-1.3 0-2.4-.5-3-1.5M12 6v1.8M12 16.2V18"/></svg>',
+    uhr: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3 4v4h4"/><path d="M12 7.5V12l3 2"/></svg>',
+    lupe: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
     'neu-laden': '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.6L20 8.5"/><path d="M20 3.5v5h-5"/></svg>',
   };
 
@@ -37,18 +39,22 @@
 
   // --- Ansichten ---
 
+  const BEREICHE = { start: 'ansichtStart', chat: 'ansichtChat', verlauf: 'ansichtVerlauf' };
+  // Weitere Ansichten (Verlauf …) hängen sich hier ein: beim Öffnen aufgerufen.
+  window.juliaAnsichtBeimOeffnen = {};
+
   function ansichtSetzen(neu) {
-    if (!['start', 'chat'].includes(neu)) return;
+    if (!BEREICHE[neu]) return;
     ansicht = neu;
     document.body.dataset.ansicht = neu;
-    $('ansichtStart').hidden = neu !== 'start';
-    $('ansichtChat').hidden = neu !== 'chat';
+    for (const [name, id] of Object.entries(BEREICHE)) $(id).hidden = name !== neu;
+    if (window.juliaAnsichtBeimOeffnen[neu]) window.juliaAnsichtBeimOeffnen[neu]();
     document.querySelectorAll('.nav-punkt[data-ansicht]').forEach((b) => b.classList.toggle('aktiv', b.dataset.ansicht === neu));
     speichern('julia-ansicht', neu);
     if (neu === 'start') {
       laden(false);
       setTimeout(() => $('schnellText').focus(), 0);
-    } else {
+    } else if (neu === 'chat') {
       $('navChatMarke').hidden = true;
       setTimeout(() => $('text').focus(), 0);
     }
@@ -236,8 +242,11 @@
     texteSetzen();
     cfg = await julia.config();
     chipSetzen();
-    ansichtSetzen(lesen('julia-ansicht') || 'start');
+    // Andere Skripte (verlauf.js) sind erst nach diesem hier geladen.
+    setTimeout(() => ansichtSetzen(lesen('julia-ansicht') || 'start'), 0);
   });
+  window.juliaIcons = iconsSetzen;
+  window.juliaFragen = fragen;
   // Uhrzeit und Gruß frisch halten
   setInterval(() => { if (ansicht === 'start' && daten) malen(); }, 60000);
 })();

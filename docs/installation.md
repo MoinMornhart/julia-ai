@@ -81,6 +81,9 @@ Alle Tasten lassen sich in den Einstellungen ändern. Auf Wunsch hört Julia auc
 **„Hey Julia“** (bzw. deinen eigenen Namen) – das ist standardmäßig aus und wird nur auf dem PC
 erkannt.
 
+Links im Hauptfenster findest du **Start** (dein Tag auf einen Blick, mit Tagesbriefing),
+**Chat** und **Verlauf** (alte Gespräche durchsuchen und fortsetzen).
+
 Schreib oder sag einfach, was du willst, in ganzen Sätzen. Julia sagt dir kurz, was sie vorhat,
 und meldet am Ende, was erledigt ist.
 

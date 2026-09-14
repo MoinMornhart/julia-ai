@@ -72,9 +72,38 @@ async function aufnehmenFenster(fenster, datei, { mitRahmen = false } = {}) {
   fs.writeFileSync(datei, bild.toPNG());
 }
 
-async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken }) {
+// Ausgedachte Gespräche für den Verlauf-Screenshot.
+function beispielGespraeche(gespraeche, sc) {
+  const anzeige = require('./anzeige');
+  const en = sc === 'en';
+  const n = (text) => [['nutzer', { text }]];
+  let z = 0;
+  const w = (name, eingabe = '{}') => { z += 1; return [['werkzeug', { id: `b${z}`, name, eingabe }], ['werkzeugFertig', { id: `b${z}`, ok: true }]]; };
+  const j = (text) => [['text', { text }], ['fertig', {}]];
+  const f = (beschreibung, grund) => { z += 1; return [['freigabe', { id: z, art: 'einzeln', beschreibung, grund }], ['freigabeErledigt', { id: z, ja: true }]]; };
+  const liste = en ? [
+    [5, [...n('How full is the disk?'), ...w('systemstatus'), ...j('C: is **82 %** full, 171 GB free. The biggest chunk is `Downloads` with 64 GB – want me to tidy up there?')]],
+    [95, [...n('Tell Anna that Friday 2 pm works'), ...w('kontakte_suchen', '{"name":"Anna"}'), ...f('Send email\nTo: anna@example.com\nSubject: Re: Friday?\n\nWorks for me, see you Friday at 2 pm!', 'category message'), ...w('mail_senden'), ...j('✓ Done: reply sent to Anna.')]],
+    [60 * 26, [...n('Install 7-Zip for me'), ...w('shell', '{"befehl":"winget list 7zip"}'), ...f('Shell: winget install 7zip.7zip', 'category software'), ...w('shell', '{"befehl":"winget install 7zip.7zip"}'), ...j('Installed – `7z` reports version 24.08.')]],
+    [60 * 24 * 4, [...n('Remind me about the call at 3 pm'), ...w('erinnerung_setzen', '{"zeitpunkt":"15:00"}'), ...j('Will do – the reminder comes at 3:00 pm.')]],
+  ] : [
+    [5, [...n('Wie voll ist die Platte?'), ...w('systemstatus'), ...j('C: ist zu **82 %** voll, 171 GB frei. Der größte Brocken ist `Downloads` mit 64 GB – soll ich dort aufräumen?')]],
+    [95, [...n('Sag Anna, dass Freitag 14 Uhr passt'), ...w('kontakte_suchen', '{"name":"Anna"}'), ...f('E-Mail senden\nAn: anna@example.com\nBetreff: Re: Freitag?\n\nPasst, bis Freitag um 14 Uhr!', 'Kategorie nachricht'), ...w('mail_senden'), ...j('✓ Erledigt: Zusage an Anna gesendet.')]],
+    [60 * 26, [...n('Installier mir 7-Zip'), ...w('shell', '{"befehl":"winget list 7zip"}'), ...f('Shell: winget install 7zip.7zip', 'Kategorie software'), ...w('shell', '{"befehl":"winget install 7zip.7zip"}'), ...j('Installiert – `7z` meldet Version 24.08.')]],
+    [60 * 24 * 4, [...n('Erinner mich um 15 Uhr an den Anruf'), ...w('erinnerung_setzen', '{"zeitpunkt":"15:00"}'), ...j('Mach ich – um 15:00 kommt die Erinnerung.')]],
+  ];
+  const jetzt = Date.now();
+  for (const [minuten, schritte] of liste) {
+    const v = [];
+    for (const [art, d] of schritte) anzeige.anwenden(v, art, d);
+    gespraeche.speichern({ id: gespraeche.neueId(), anzeige: v, verlauf: [], zeit: jetzt - minuten * 60000 });
+  }
+}
+
+async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zustandSetzen, orb, overlayZeigen, overlayVerstecken, gespraeche }) {
   fs.mkdirSync(ziel, { recursive: true });
   const sc = config.get('sprachcode');
+  if (gespraeche && !gespraeche.liste().length) beispielGespraeche(gespraeche, sc);
   if (!config.get('nutzer.name')) config.set('nutzer.name', 'Philip');
   if (!config.get('arbeitsverzeichnisse').length) {
     config.set('arbeitsverzeichnisse', ['C:\\Users\\philip\\Projekte', 'C:\\Users\\philip\\Downloads']);
@@ -88,6 +117,11 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.webContents.send('ansicht', 'start');
   await warte(2200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `start-${sc}.png`), { mitRahmen: true });
+  if (gespraeche) {
+    chatFenster.webContents.send('ansicht', 'verlauf');
+    await warte(1800);
+    await aufnehmenFenster(chatFenster, path.join(ziel, `verlauf-${sc}.png`), { mitRahmen: true });
+  }
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });

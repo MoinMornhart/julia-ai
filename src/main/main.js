@@ -30,6 +30,8 @@ const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
 const { HandyServer, qrMatrix } = require('./handy/server');
+const { Gespraeche } = require('./gespraeche');
+const anzeige = require('./anzeige');
 const anbieterListe = require('./anbieter/liste');
 const { claudeFinden } = require('./anbieter/claude-code');
 const { modelleLaden } = require('./anbieter/openai');
@@ -55,6 +57,9 @@ let erinnerungen;
 let weckwort;
 let weckwortZuletzt = 0;
 let handy = null;
+let gespraeche = null;
+// Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
+let gespraech = { id: null, anzeige: [] };
 let tray = null;
 let chatFenster = null;
 let orbFenster = null;
@@ -150,7 +155,7 @@ function anAlle(kanal, daten) {
   for (const w of [chatFenster, orbFenster, einstFenster, overlayFenster]) {
     if (w && !w.isDestroyed()) w.webContents.send(kanal, daten);
   }
-  if (handy) handyWeiterleiten(kanal, daten);
+  ereignisWeiterleiten(kanal, daten);
 }
 
 function zustandSetzen(z) {
@@ -650,6 +655,21 @@ function ipcEinrichten() {
     sprache.zuhoerenAbbrechen();
   });
   ipc.handle('start:ueberblick', (_e, neu) => startUeberblick(!!neu));
+  ipc.handle('verlauf:liste', (_e, suche) => gespraeche.liste({ suche }));
+  ipc.handle('verlauf:lesen', (_e, id) => {
+    const g = gespraeche.lesen(id);
+    return g ? { id: g.id, titel: g.titel, geaendert: g.geaendert, anzeige: g.anzeige } : null;
+  });
+  ipc.handle('verlauf:fortsetzen', (_e, id) => gespraechFortsetzen(id));
+  ipc.handle('verlauf:loeschen', (_e, id) => {
+    if (id === gespraech.id) gespraech.id = null;
+    return gespraeche.loeschen(id);
+  });
+  ipc.handle('verlauf:alle_loeschen', () => {
+    gespraeche.alleLoeschen();
+    gespraech.id = null;
+    return true;
+  });
   ipc.handle('handy:status', () => handy.status());
   ipc.handle('handy:koppeln', () => {
     try {
@@ -685,23 +705,60 @@ const HINWEIS_TEXT = {
   kosten_warnung: 'hinweis.kosten_warnung',
 };
 
-function handyWeiterleiten(kanal, d) {
+// Was an die Fenster geht, als Gesprächsereignis für Handy und Verlauf.
+function ereignisAus(kanal, d) {
   switch (kanal) {
-    case 'agent:nutzer': handy.ereignis('nutzer', d); break;
-    case 'agent:start': handy.ereignis('start'); break;
-    case 'agent:text': handy.ereignis('text', { text: d }); break;
-    case 'agent:werkzeug': handy.ereignis('werkzeug', d); break;
-    case 'agent:werkzeugFertig': handy.ereignis('werkzeugFertig', d); break;
-    case 'agent:freigabe': handy.ereignis('freigabe', d); break;
-    case 'agent:freigabeErledigt': handy.ereignis('freigabeErledigt', d); break;
-    case 'agent:fertig': handy.ereignis('fertig'); break;
-    case 'agent:fehler': handy.ereignis('system', { text: d.art === 'kein_schluessel' ? t('chat.kein_schluessel') : d.text, fehler: true }); break;
-    case 'agent:hinweis': if (HINWEIS_TEXT[d.art]) handy.ereignis('system', { text: t(HINWEIS_TEXT[d.art]) }); break;
-    case 'zustand': handy.ereignis('zustand', { zustand: d }); break;
-    case 'chat:geleert': handy.ereignis('geleert'); break;
-    case 'erinnerung': handy.ereignis('system', { text: `⏰ ${d.text}` }); break;
-    default: break;
+    case 'agent:nutzer': return ['nutzer', d];
+    case 'agent:start': return ['start', {}];
+    case 'agent:text': return ['text', { text: d }];
+    case 'agent:werkzeug': return ['werkzeug', d];
+    case 'agent:werkzeugFertig': return ['werkzeugFertig', d];
+    case 'agent:freigabe': return ['freigabe', d];
+    case 'agent:freigabeErledigt': return ['freigabeErledigt', d];
+    case 'agent:fertig': return ['fertig', {}];
+    case 'agent:fehler': return ['system', { text: d.art === 'kein_schluessel' ? t('chat.kein_schluessel') : d.text, fehler: true }];
+    case 'agent:hinweis': return HINWEIS_TEXT[d.art] ? ['system', { text: t(HINWEIS_TEXT[d.art]) }] : null;
+    case 'zustand': return ['zustand', { zustand: d }];
+    case 'chat:geleert': return ['geleert', {}];
+    case 'erinnerung': return ['system', { text: `⏰ ${d.text}` }];
+    default: return null;
   }
+}
+
+function ereignisWeiterleiten(kanal, d) {
+  const e = ereignisAus(kanal, d);
+  if (!e) return;
+  if (handy) handy.ereignis(e[0], e[1]);
+  if (e[0] === 'geleert') gespraech = { id: null, anzeige: [] };
+  else if (e[0] !== 'zustand' && e[0] !== 'start') anzeige.anwenden(gespraech.anzeige, e[0], e[1]);
+}
+
+// Nach jeder fertigen Antwort: Gespräch verschlüsselt sichern (wenn gewünscht).
+function gespraechSpeichern() {
+  if (!gespraeche || VORFUEHRUNG || config.get('verlauf.speichern') === false) return;
+  try {
+    if (!gespraech.id) gespraech.id = gespraeche.neueId();
+    const g = gespraeche.speichern({
+      id: gespraech.id, anzeige: gespraech.anzeige, verlauf: agent.verlauf, anbieter: config.get('anbieter'), modell: config.get('modell'), sitzung: agent.sitzung(),
+    });
+    if (g) anAlle('verlauf:geaendert');
+  } catch (e) {
+    protokoll.eintragen({ werkzeug: 'verlauf', stufe: 'INFO', ergebnis: 'nicht gespeichert', grund: e.message });
+  }
+}
+
+function gespraechFortsetzen(id) {
+  if (agent.beschaeftigt) return { fehler: t('vl.beschaeftigt') };
+  const g = gespraeche.lesen(id);
+  if (!g) return { fehler: t('vl.leer') };
+  agent.verlaufLaden(g.verlauf, g.sitzung);
+  gespraech = { id: g.id, anzeige: g.anzeige.map((e) => ({ ...e })) };
+  if (handy) handy.ereignis('geleert');
+  const datum = new Date(g.geaendert).toLocaleString(config.get('sprachcode') === 'en' ? 'en-GB' : 'de-DE', { dateStyle: 'medium', timeStyle: 'short' });
+  for (const w of [chatFenster, overlayFenster]) {
+    if (w && !w.isDestroyed()) w.webContents.send('chat:laden', { eintraege: g.anzeige, hinweis: t('vl.fortgesetzt', { datum }) });
+  }
+  return { ok: true };
 }
 
 function handyTexte() {
@@ -827,6 +884,7 @@ function agentVerdrahten() {
   });
   agent.on('fertig', () => {
     anAlle('agent:fertig');
+    gespraechSpeichern();
     if (config.get('kanal') !== 'auto' && protokoll.vorgemerkt().length) protokoll.vorgemerktLeeren();
     updater.aufgabeFertig();
   });
@@ -852,17 +910,20 @@ async function start() {
   protokoll = new Protokoll(DATEN);
   erinnerungen = new Erinnerungen(DATEN);
   const kosten = new Kosten(DATEN);
+  // Windows-Verschlüsselung (DPAPI) für Tresor und Gesprächsverlauf.
+  const krypto = {
+    verschluesseln: (text) => {
+      if (!safeStorage.isEncryptionAvailable()) throw new Error('Die Windows-Verschlüsselung ist nicht verfügbar.');
+      return safeStorage.encryptString(text).toString('base64');
+    },
+    entschluesseln: (b64) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
+  };
   konten = new Konten({
     ordner: DATEN,
-    krypto: {
-      verschluesseln: (text) => {
-        if (!safeStorage.isEncryptionAvailable()) throw new Error('Die Windows-Verschlüsselung ist nicht verfügbar.');
-        return safeStorage.encryptString(text).toString('base64');
-      },
-      entschluesseln: (b64) => safeStorage.decryptString(Buffer.from(b64, 'base64')),
-    },
+    krypto,
     oeffnen: (url) => shell.openExternal(url),
   });
+  gespraeche = new Gespraeche(DATEN, krypto);
   sprache = new Sprache();
   sprache.on('pegel', (p) => anAlle('pegel', p));
 
@@ -939,7 +1000,7 @@ async function start() {
 
   if (VORFUEHRUNG) {
     await require('./vorfuehrung').aufnehmen({
-      ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen,
+      ziel: VORFUEHRUNG, config, chatFenster, einstellungenOeffnen, zustandSetzen, gespraeche,
       orb: () => orbFenster, overlayZeigen, overlayVerstecken,
     });
     beendenLaeuft = true;

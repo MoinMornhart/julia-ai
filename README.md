@@ -45,6 +45,22 @@ bis zur Fehlersuche in einem Repo.
 - **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe.
 - **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
 
+## Startseite und Verlauf
+
+Das Hauptfenster hat links eine Seitenleiste: **Start** zeigt deinen Tag auf einen Blick –
+Termine, ungelesene Mails (nur Absender und Betreff), Erinnerungen, PC-Zustand und die Kosten –
+plus ein **Tagesbriefing** per Knopf. **Chat** ist das Gespräch. Im **Verlauf** findest du alte
+Gespräche wieder, durchsuchst sie und setzt sie mit einem Klick fort.
+
+<p align="center">
+  <img src="docs/bilder/verlauf-de.png" width="760" alt="Verlauf mit Suche und Vorschau">
+</p>
+
+Gespräche liegen mit Windows verschlüsselt nur auf deinem PC, Screenshots werden nie
+gespeichert. Ein fortgesetztes Gespräch behandelt Julia vorsichtshalber so, als hätte es fremde
+Inhalte enthalten – vor Links und Aktionen nach außen fragt sie dann nach. Abschalten unter
+*Einstellungen → System*.
+
 ## KI-Anbieter
 
 Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:

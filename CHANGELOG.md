@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.4.0 – 2026-09-14
+- Julia merkt sich deine Gespräche – im Verlauf suchst du alte Chats und setzt sie mit einem Klick fort, verschlüsselt und nur auf deinem PC
+
 ## 1.3.0 – 2026-09-14
 - Neues Hauptfenster mit Seitenleiste und Startseite – dein Tag auf einen Blick mit Terminen, Mails, Erinnerungen, PC-Zustand und einem Tagesbriefing per Knopf
 

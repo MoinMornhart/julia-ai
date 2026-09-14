@@ -47,6 +47,21 @@ what's going on and gets it done – from renaming 200 files to tracking down a 
 To use Julia in English, pick **English** under *Settings → General → Language*. The whole UI,
 Julia's replies and her voice switch immediately.
 
+## Home and history
+
+The main window has a sidebar on the left: **Home** shows your day at a glance – events, unread
+mail (sender and subject only), reminders, PC status and cost – plus a **daily briefing** at the
+push of a button. **Chat** is the conversation. In **History** you find old conversations,
+search them and continue them with one click.
+
+<p align="center">
+  <img src="docs/bilder/verlauf-en.png" width="760" alt="History with search and preview">
+</p>
+
+Conversations are stored only on your PC, encrypted by Windows; screenshots are never saved.
+Julia treats a continued conversation as if it had contained foreign content – so she asks
+before links and outward actions. Turn it off under *Settings → System*.
+
 ## AI providers
 
 Julia runs with the provider of your choice – *Settings → General → AI provider*:

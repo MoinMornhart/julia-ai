@@ -39,6 +39,9 @@ const STANDARD = {
     an: false, // Handy im WLAN – standardmäßig aus
     port: 8765,
   },
+  verlauf: {
+    speichern: true, // Gespräche verschlüsselt auf diesem PC behalten
+  },
   kosten: {
     tageslimit_usd: 10, // 0 = keine Bremse
   },
@@ -151,6 +154,7 @@ function pruefen(schluessel, wert) {
     case 'design.glow':
     case 'erinnerung.vorlesen':
     case 'handy.an':
+    case 'verlauf.speichern':
     case 'weckwort.an':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;

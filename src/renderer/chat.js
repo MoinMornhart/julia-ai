@@ -260,6 +260,21 @@ function absenden() {
   julia.senden(text);
 }
 
+// Ein gespeichertes Gespräch zum Weiterschreiben laden (aus dem Verlauf).
+function gespraechLaden(eintraege) {
+  leeren();
+  let n = 0;
+  for (const e of eintraege || []) {
+    const id = `alt-${n++}`;
+    if (e.typ === 'nutzer') nutzerNachricht(e.text, false, e.handy);
+    else if (e.typ === 'julia') { antwortEl = null; juliaText(e.text, true); antwortEl = null; }
+    else if (e.typ === 'werkzeug') { werkzeug({ id, name: e.name, eingabe: e.eingabe }); werkzeugFertig({ id, ok: e.stand === 'ok', rot: e.stand === 'rot' }); }
+    else if (e.typ === 'freigabe') { freigabe({ ...e, id }); freigabeErledigt({ id, ja: !!e.ja }); }
+    else if (e.typ === 'system') systemzeile(e.text, e.fehler ? 'fehler' : '');
+  }
+  verlauf.scrollTop = verlauf.scrollHeight;
+}
+
 function demo(eintraege) {
   if (window.juliaAnsicht) window.juliaAnsicht('chat');
   leeren();
@@ -334,6 +349,7 @@ async function init() {
     }
   });
   julia.on('chat:geleert', leeren);
+  julia.on('chat:laden', ({ eintraege, hinweis }) => { gespraechLaden(eintraege); if (hinweis) systemzeile(hinweis); });
   julia.on('erinnerung', ({ text }) => systemzeile(`⏰ ${text}`, 'erinnerung'));
 
   $('text').focus();

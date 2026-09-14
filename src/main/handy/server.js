@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { EventEmitter } = require('events');
 const qrcode = require('qrcode-generator');
 const zertifikat = require('./zertifikat');
+const anzeige = require('../anzeige');
 
 // Handy im WLAN: Julia als kleine Web-App im Handy-Browser. Ein HTTPS-Server im
 // Hauptprozess, nur aus privaten Netzen erreichbar, mit genau einem gekoppelten
@@ -260,62 +261,10 @@ class HandyServer extends EventEmitter {
   }
 
   _anwenden(art, d) {
-    const v = this.verlauf;
-    const offen = () => { const l = v[v.length - 1]; return l && l.typ === 'julia' && l.offen ? l : null; };
-    const schliessen = () => { const l = offen(); if (l) l.offen = false; };
-    switch (art) {
-      case 'nutzer':
-        schliessen();
-        v.push({ typ: 'nutzer', text: String(d.text || ''), handy: !!d.handy });
-        break;
-      case 'start':
-        this.beschaeftigt = true;
-        break;
-      case 'text': {
-        const l = offen();
-        if (l) l.text += String(d.text || '');
-        else v.push({ typ: 'julia', text: String(d.text || ''), offen: true });
-        break;
-      }
-      case 'werkzeug':
-        schliessen();
-        v.push({ typ: 'werkzeug', id: d.id, name: String(d.name || ''), eingabe: d.eingabe === '{}' ? '' : String(d.eingabe || '').slice(0, 160), stand: 'laeuft' });
-        break;
-      case 'werkzeugFertig': {
-        const w = v.find((x) => x.typ === 'werkzeug' && x.id === d.id);
-        if (w) w.stand = d.ok ? 'ok' : d.rot ? 'rot' : 'fehler';
-        break;
-      }
-      case 'freigabe':
-        schliessen();
-        v.push({
-          typ: 'freigabe', id: d.id, art: d.art, beschreibung: String(d.beschreibung || ''), grund: String(d.grund || ''),
-          schritte: Array.isArray(d.schritte) ? d.schritte.map(String) : [], offen: true,
-        });
-        break;
-      case 'freigabeErledigt': {
-        const f = v.find((x) => x.typ === 'freigabe' && x.id === d.id);
-        if (f) { f.offen = false; f.ja = !!d.ja; }
-        break;
-      }
-      case 'fertig':
-        schliessen();
-        this.beschaeftigt = false;
-        break;
-      case 'system':
-        schliessen();
-        v.push({ typ: 'system', text: String(d.text || ''), fehler: !!d.fehler });
-        break;
-      case 'zustand':
-        this.zustand = String(d.zustand || 'idle');
-        break;
-      case 'geleert':
-        v.length = 0;
-        break;
-      default:
-        break;
-    }
-    if (v.length > MAX_VERLAUF) v.splice(0, v.length - MAX_VERLAUF);
+    if (art === 'start') this.beschaeftigt = true;
+    if (art === 'fertig') this.beschaeftigt = false;
+    if (art === 'zustand') this.zustand = String(d.zustand || 'idle');
+    anzeige.anwenden(this.verlauf, art, d, MAX_VERLAUF);
   }
 
   // --- HTTP ---

@@ -83,11 +83,28 @@ class Agent extends EventEmitter {
     if (this.beschaeftigt) this.abbrechen();
     this.verlauf = [];
     this.fremdKontakt = false;
+    this.aboSitzung = null;
     if (this.abo) this.abo.neu();
   }
 
   stoppen() {
     if (this.abo) this.abo.stoppen();
+  }
+
+  // Ein gespeichertes Gespräch fortsetzen. Was damals im Gespräch war, kann
+  // fremde Inhalte enthalten haben – deshalb gilt sofort der Schutz gegen
+  // Datenabfluss (Aktionen nach außen werden GELB).
+  verlaufLaden(verlauf, sitzung = null) {
+    if (this.beschaeftigt) throw new Error('BESCHAEFTIGT');
+    this.verlauf = Array.isArray(verlauf) ? verlauf : [];
+    this._reparieren();
+    this.fremdKontakt = true;
+    this.aboSitzung = sitzung;
+    if (this.abo) this.abo.sitzung = sitzung;
+  }
+
+  sitzung() {
+    return this.abo ? this.abo.sitzung : null;
   }
 
   abbrechen() {
@@ -343,7 +360,9 @@ class Agent extends EventEmitter {
         werkzeuge: () => werkzeuge.definitionen(this.ctx),
         aufrufen: (name, eingabe) => this._werkzeugUeberMcp(name, eingabe),
       });
+      if (this.aboSitzung) this.abo.sitzung = this.aboSitzung;
     }
+    this.aboSitzung = null;
     const r = await this.abo.senden({
       text: this.letzteNachricht,
       system: this._systemText(a),

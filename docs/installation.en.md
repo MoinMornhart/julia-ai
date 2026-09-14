@@ -81,6 +81,9 @@ light/dark, connect Google, pair your phone over Wi-Fi.
 All keys can be changed in the settings. If you like, Julia also listens for **"Hey Julia"** (or
 your own name) – that's off by default and recognised only on the PC.
 
+On the left of the main window you'll find **Home** (your day at a glance, with a daily
+briefing), **Chat** and **History** (search and continue old conversations).
+
 Just write or say what you want, in full sentences. Julia briefly tells you what she's about to do
 and reports what's done at the end.
 

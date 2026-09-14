@@ -163,6 +163,79 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 
 .start-fuss { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text-3); }
 
+/* --- Verlauf: Liste links, Vorschau rechts --- */
+
+.vl { flex-direction: row; }
+.vl-liste {
+  width: 320px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 12px 12px;
+  border-right: 1px solid var(--linie);
+  min-height: 0;
+}
+.vl-suche {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--linie-stark);
+  background: var(--flaeche);
+  color: var(--text-3);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.vl-suche:focus-within { border-color: var(--akzent-rand); box-shadow: var(--glow); }
+.vl-suche [data-ico] { display: grid; place-items: center; }
+.vl-suche [data-ico] svg { width: 16px; height: 16px; }
+.vl-suche input { flex: 1; min-width: 0; border: none; outline: none; background: transparent; color: var(--text); font: inherit; }
+.vl-suche input:focus-visible { outline: none; }
+.vl-eintraege { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 3px; margin-right: -6px; padding-right: 6px; }
+.vl-gruppe { padding: 10px 10px 4px; font-size: 10.5px; font-weight: 750; letter-spacing: 0.13em; text-transform: uppercase; color: var(--text-3); }
+.vl-eintrag {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 10px;
+  text-align: left;
+  border: 1px solid transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+.vl-eintrag:hover { background: var(--flaeche-2); }
+.vl-eintrag.aktiv { background: var(--akzent-weich); border-color: var(--akzent-rand); }
+.vl-e-kopf { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.vl-e-kopf b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 650; font-size: 13px; }
+.vl-e-kopf time { flex: none; font: 11px var(--mono); color: var(--text-3); }
+.vl-e-text { font-size: 12px; color: var(--text-3); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.vl-hinweis { margin: 6px 10px; font-size: 13px; color: var(--text-3); }
+.vl-fuss { display: flex; justify-content: flex-end; }
+.knopf.gefahr { border-color: color-mix(in srgb, var(--rot) 55%, transparent); color: var(--rot); background: var(--rot-weich); }
+
+.vl-vorschau { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
+.vl-kopf {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  padding: 16px 22px 14px;
+  border-bottom: 1px solid var(--linie);
+}
+.vl-kopf-text { flex: 1 1 220px; min-width: 0; }
+.vl-kopf h2 { margin: 0; font-family: var(--schrift-titel); font-size: 18px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vl-kopf p { margin: 2px 0 0; font-size: 12px; color: var(--text-3); }
+.vl-aktionen { display: flex; gap: 8px; }
+.vl-inhalt { flex: 1; padding: 18px 22px; max-width: 940px; width: 100%; margin: 0 auto; }
+.vl-inhalt .nachricht { animation: none; }
+.vl-leer { margin: auto; color: var(--text-3); padding: 20px; text-align: center; }
+
+@media (max-width: 860px) {
+  .vl-liste { width: 250px; }
+}
+
 @media (max-width: 560px) {
   .start { padding: 16px 14px 20px; }
   .held { padding: 18px; }

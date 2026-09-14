@@ -33,12 +33,12 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.1.0 | Handy im WLAN: Web-App im Handy-Browser, HTTPS mit eigenem Zertifikat, Kopplung per QR-Einmal-Code, nur ein Gerät (PC kennt nur den Hash des Schlüssels), nur Heimnetz, Schutz gegen DNS-Rebinding, Sperre nach Fehlversuchen, Freigaben per Knopf |
 | ✅ 1.2.0 | Jeder Anbieter: Anthropic, OpenAI, Gemini, Mistral, Groq, OpenRouter, Ollama, LM Studio, eigene OpenAI-kompatible Adresse – Schlüssel je Anbieter verschlüsselt, Modelle laden, eigenes Werkzeug `webseite_abrufen` ohne Zugriff aufs Heimnetz. Dazu versteckt das Claude-Abo über Claude Code (nur eigener Gebrauch): eingebaute Werkzeuge aus, nur Julias Werkzeuge über lokalen MCP-Zugang |
 | ✅ 1.3.0 | Neues Hauptfenster mit Seitenleiste und Startseite: Begrüßung, Schnelleingabe, Vorschläge, Kacheln für Termine, Posteingang (nur Absender und Betreff), Erinnerungen, PC-Zustand und Kosten, Tagesbriefing per Knopf |
+| ✅ 1.4.0 | Gesprächsverlauf: jedes Gespräch DPAPI-verschlüsselt auf dem PC, ohne Screenshots; Suche, Vorschau, Fortsetzen (dann gilt sofort der Schutz gegen Datenabfluss), Löschen mit zweitem Klick |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 🔨 | **Gesprächsverlauf mit Suche** – alte Chats lokal und verschlüsselt speichern, durchsuchen, fortsetzen, löschen | M | hoch | Verschlüsselt mit DPAPI, nie in der Cloud; Löschen ist endgültig |
 | 🔨 | **Schnellaktionen & Routinen** – eigene Knöpfe („Feierabend“, „Fokus“, „Zocken“) mit mehreren Schritten | M | hoch | Routine einmal ansehen und freigeben, GELB-Schritte bleiben GELB, ROT bleibt ROT |
 | 🔨 | **Dateien & markierter Text** – Dateien/Bilder in den Chat ziehen; Hotkey für markierten Text (übersetzen, zusammenfassen, umformulieren) | M | hoch | Inhalte gelten als fremd (Schutz gegen Datenabfluss greift) |
 | 🔨 | **Code-Ansicht** – Projekte, Tests, Diffs übersichtlich; Änderungen erst nach Ja | L | hoch | Schreiben außerhalb der Arbeitsordner GELB, `git push` GELB |
