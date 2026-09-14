@@ -395,6 +395,7 @@
 <pre><span class="kommentar" data-i18n="dl.pruefen"># Prüfsumme vergleichen (PowerShell)</span>
 <span class="prompt">&gt; </span>Get-FileHash .\Julia-AI-Setup.exe</pre>
         </div>
+        <p class="klein"><a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation.md" id="anleitungLink2" data-i18n="dl.anleitung">Schritt-für-Schritt-Anleitung und was Julia kann</a></p>
         <p class="klein"><span data-i18n="dl.alle_text">Ältere Versionen und Versionshinweise:</span> <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="dl.alle">alle Releases</a></p>
       </div>
     </div>
@@ -412,6 +413,7 @@
 
 <footer>
   <div class="rahmen">
+    <a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation.md" id="anleitungLink" data-i18n="fuss.anleitung">Anleitung</a>
     <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="fuss.releases">Downloads</a>
     <a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
     <span class="rechts" data-i18n="fuss.lokal">Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.</span>
@@ -460,10 +462,10 @@
       'anp.antwort': 'Um 15 Uhr der Anruf mit der Werkstatt, um 18:30 Training. Soll ich dich um 14:50 erinnern?',
       'inst.etikett': 'Installieren', 'inst.titel': 'In zwei Minuten auf deinem PC',
       'dl.system': 'Windows 10 und 11 · 64 Bit', 'dl.knopf': 'Julia AI herunterladen', 'dl.datei': 'Datei',
-      'dl.pruefen': '# Prüfsumme vergleichen (PowerShell)', 'dl.alle_text': 'Ältere Versionen und Versionshinweise:', 'dl.alle': 'alle Releases',
+      'dl.pruefen': '# Prüfsumme vergleichen (PowerShell)', 'dl.alle_text': 'Ältere Versionen und Versionshinweise:', 'dl.alle': 'alle Releases', 'dl.anleitung': 'Schritt-für-Schritt-Anleitung und was Julia kann',
       'ver.etikett': 'Versionen', 'ver.titel': 'Jede Funktion ein eigenes Release',
       'ver.zehner': 'Julia zählt in Zehnerschritten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. Updates holt sie sich nur aus den offiziellen Releases – nach deinem Ja, erst wenn die laufende Aufgabe fertig ist, und nur, wenn die Prüfsumme stimmt.',
-      'fuss.releases': 'Downloads', 'fuss.google': 'Google verbinden',
+      'fuss.anleitung': 'Anleitung', 'fuss.releases': 'Downloads', 'fuss.google': 'Google verbinden',
       'fuss.lokal': 'Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.',
     },
     en: {
@@ -490,10 +492,10 @@
       'anp.antwort': 'The call with the garage at 3 pm, training at 6:30. Want a reminder at 2:50?',
       'inst.etikett': 'Install', 'inst.titel': 'On your PC in two minutes',
       'dl.system': 'Windows 10 and 11 · 64-bit', 'dl.knopf': 'Download Julia AI', 'dl.datei': 'File',
-      'dl.pruefen': '# Compare the checksum (PowerShell)', 'dl.alle_text': 'Older versions and release notes:', 'dl.alle': 'all releases',
+      'dl.pruefen': '# Compare the checksum (PowerShell)', 'dl.alle_text': 'Older versions and release notes:', 'dl.alle': 'all releases', 'dl.anleitung': 'Step-by-step guide and what Julia can do',
       'ver.etikett': 'Versions', 'ver.titel': 'Every feature is its own release',
       'ver.zehner': 'Julia counts in steps of ten: 0.0.9 → 0.1.0, 0.9.9 → 1.0.0. She only takes updates from the official releases – after your yes, once the current task is done, and only if the checksum matches.',
-      'fuss.releases': 'Downloads', 'fuss.google': 'Connect Google',
+      'fuss.anleitung': 'Guide', 'fuss.releases': 'Downloads', 'fuss.google': 'Connect Google',
       'fuss.lokal': 'Runs locally on your PC. No server of its own, no cloud storage.',
     },
   };
@@ -680,6 +682,9 @@
     document.documentElement.lang = sprache;
     document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll('.ki-name').forEach((el) => { el.textContent = kiName; });
+    for (const id of ['#anleitungLink', '#anleitungLink2']) {
+      $(id).href = `https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation${sprache === 'en' ? '.en' : ''}.md`;
+    }
     $('#sprachKnopf').textContent = sprache === 'de' ? 'EN' : 'DE';
     $('#sprachKnopf').setAttribute('aria-label', sprache === 'de' ? 'Switch to English' : 'Auf Deutsch umschalten');
     $('#eingabeText').textContent = t('eingabe');

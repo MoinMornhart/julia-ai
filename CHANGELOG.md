@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.1.1 – 2026-09-14
+- Neue Schritt-für-Schritt-Anleitung zum Installieren, mit allem, was Julia kann – oben in der README und auf der Webseite verlinkt
+
 ## 1.1.0 – 2026-09-14
 - Julia gibt es jetzt auch auf dem Handy – im selben WLAN im Browser, gekoppelt per QR-Code, verschlüsselt und nur für dein Handy
 

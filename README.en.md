@@ -10,7 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="site/index.html">Website with live demo</a>
+  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://moinmornhart.github.io/julia-ai-web/">Website with live demo and download</a>
+</p>
+
+<p align="center">
+  <a href="docs/installation.en.md"><b>➜ Install and get started – step by step, with everything Julia can do</b></a>
 </p>
 
 ---
