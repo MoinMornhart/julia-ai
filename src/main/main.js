@@ -227,17 +227,19 @@ function fensterOptionen(extra, kopfHoehe = 48) {
   };
 }
 
+// Das Hauptfenster: Seitenleiste mit Start und Chat. Schmal gezogen wird die
+// Leiste zur Icon-Leiste, dann passt es auch neben ein Spiel oder eine IDE.
 function chatFensterErstellen() {
   const wa = screen.getPrimaryDisplay().workArea;
-  const breite = 460;
-  const hoehe = Math.min(760, wa.height - 40);
+  const breite = Math.min(1080, wa.width - 80);
+  const hoehe = Math.min(740, wa.height - 60);
   chatFenster = new BrowserWindow(fensterOptionen({
     width: breite,
     height: hoehe,
-    minWidth: 360,
-    minHeight: 420,
-    x: wa.x + wa.width - breite - 20,
-    y: wa.y + wa.height - hoehe - 20,
+    minWidth: 420,
+    minHeight: 460,
+    x: wa.x + Math.round((wa.width - breite) / 2),
+    y: wa.y + Math.round((wa.height - hoehe) / 2),
     title: assistentName(),
   }, 50));
   chatFenster.juliaKopfHoehe = 50;
@@ -250,16 +252,33 @@ function chatFensterErstellen() {
   });
 }
 
-function chatZeigen() {
+// ansicht: 'chat' (Hotkey, Sprache, Freigaben), 'start' oder null (so lassen).
+function chatZeigen(ansicht = 'chat') {
   if (!chatFenster || chatFenster.isDestroyed()) chatFensterErstellen();
   if (chatFenster.isMinimized()) chatFenster.restore();
+  if (ansicht) {
+    const senden = () => chatFenster.webContents.send('ansicht', ansicht);
+    if (chatFenster.webContents.isLoading()) chatFenster.webContents.once('did-finish-load', senden);
+    else senden();
+  }
   chatFenster.show();
   chatFenster.focus();
 }
 
-function chatUmschalten() {
+function chatUmschalten(ansicht = 'chat') {
   if (chatFenster && chatFenster.isVisible() && chatFenster.isFocused()) chatFenster.hide();
-  else chatZeigen();
+  else chatZeigen(ansicht);
+}
+
+// Startseite: kurz zwischengespeichert, damit nicht jeder Wechsel Gmail fragt.
+let ueberblickZwischen = null;
+async function startUeberblick(neu) {
+  if (VORFUEHRUNG) return require('./vorfuehrung').beispielUeberblick(config);
+  if (!neu && ueberblickZwischen && Date.now() - ueberblickZwischen.jetzt < 60000) return ueberblickZwischen;
+  ueberblickZwischen = await require('./ueberblick').ueberblick({
+    config, erinnerungen, kosten, konten, systemStatus: () => win.systemStatus(),
+  });
+  return ueberblickZwischen;
 }
 
 function einstellungenOeffnen(einrichtung = false) {
@@ -630,6 +649,7 @@ function ipcEinrichten() {
     sprache.stumm();
     sprache.zuhoerenAbbrechen();
   });
+  ipc.handle('start:ueberblick', (_e, neu) => startUeberblick(!!neu));
   ipc.handle('handy:status', () => handy.status());
   ipc.handle('handy:koppeln', () => {
     try {
@@ -908,7 +928,7 @@ async function start() {
   });
 
   tray = new Tray(trayBild());
-  tray.on('click', chatUmschalten);
+  tray.on('click', () => chatUmschalten(null));
   trayMenue();
 
   if (!VORFUEHRUNG) hotkeysRegistrieren();
@@ -937,7 +957,7 @@ async function start() {
   }
 
   if (!config.get('einrichtung_fertig') || !bereit()) einstellungenOeffnen(true);
-  else if (!process.argv.includes('--versteckt')) chatFenster.once('ready-to-show', () => chatZeigen());
+  else if (!process.argv.includes('--versteckt')) chatFenster.once('ready-to-show', () => chatZeigen(null));
 
   setTimeout(() => updatesBeimStart().catch(() => {}), 15000);
 }
@@ -948,7 +968,7 @@ if (!app.requestSingleInstanceLock()) {
   app.on('web-contents-created', (_e, wc) => {
     sicherheit.fensterHaerten(wc, { rendererOrdner: RENDERER, oeffnen: (url) => shell.openExternal(url) });
   });
-  app.on('second-instance', () => { if (chatFenster) chatZeigen(); });
+  app.on('second-instance', () => { if (chatFenster) chatZeigen(null); });
   app.on('window-all-closed', () => { /* Julia läuft im Tray weiter */ });
   app.on('before-quit', () => { beendenLaeuft = true; });
   app.on('will-quit', () => {

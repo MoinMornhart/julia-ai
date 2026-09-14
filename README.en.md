@@ -20,9 +20,12 @@
 ---
 
 <p align="center">
-  <img src="docs/bilder/chat-en.png" width="420" alt="Chat window with approval card">
+  <img src="docs/bilder/start-en.png" width="860" alt="Main window with home page: greeting, events, inbox, reminders, PC status and cost">
+</p>
+<p align="center">
+  <img src="docs/bilder/chat-en.png" width="520" alt="Chat with approval card">
   &nbsp;
-  <img src="docs/bilder/einstellungen-en.png" width="420" alt="Settings">
+  <img src="docs/bilder/einstellungen-en.png" width="330" alt="Settings">
 </p>
 
 ## What Julia is

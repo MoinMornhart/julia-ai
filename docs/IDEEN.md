@@ -32,11 +32,17 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.0.0 | Installer (Julia-AI-Setup.exe) und öffentliche Webseite mit Prüfsumme; Updates der installierten Fassung aus den Releases, geprüft per SHA-512; Electron Fuses (kein RunAsNode, keine NODE_OPTIONS, nur geprüftes ASAR) |
 | ✅ 1.1.0 | Handy im WLAN: Web-App im Handy-Browser, HTTPS mit eigenem Zertifikat, Kopplung per QR-Einmal-Code, nur ein Gerät (PC kennt nur den Hash des Schlüssels), nur Heimnetz, Schutz gegen DNS-Rebinding, Sperre nach Fehlversuchen, Freigaben per Knopf |
 | ✅ 1.2.0 | Jeder Anbieter: Anthropic, OpenAI, Gemini, Mistral, Groq, OpenRouter, Ollama, LM Studio, eigene OpenAI-kompatible Adresse – Schlüssel je Anbieter verschlüsselt, Modelle laden, eigenes Werkzeug `webseite_abrufen` ohne Zugriff aufs Heimnetz. Dazu versteckt das Claude-Abo über Claude Code (nur eigener Gebrauch): eingebaute Werkzeuge aus, nur Julias Werkzeuge über lokalen MCP-Zugang |
+| ✅ 1.3.0 | Neues Hauptfenster mit Seitenleiste und Startseite: Begrüßung, Schnelleingabe, Vorschläge, Kacheln für Termine, Posteingang (nur Absender und Betreff), Erinnerungen, PC-Zustand und Kosten, Tagesbriefing per Knopf |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
+| 🔨 | **Gesprächsverlauf mit Suche** – alte Chats lokal und verschlüsselt speichern, durchsuchen, fortsetzen, löschen | M | hoch | Verschlüsselt mit DPAPI, nie in der Cloud; Löschen ist endgültig |
+| 🔨 | **Schnellaktionen & Routinen** – eigene Knöpfe („Feierabend“, „Fokus“, „Zocken“) mit mehreren Schritten | M | hoch | Routine einmal ansehen und freigeben, GELB-Schritte bleiben GELB, ROT bleibt ROT |
+| 🔨 | **Dateien & markierter Text** – Dateien/Bilder in den Chat ziehen; Hotkey für markierten Text (übersetzen, zusammenfassen, umformulieren) | M | hoch | Inhalte gelten als fremd (Schutz gegen Datenabfluss greift) |
+| 🔨 | **Code-Ansicht** – Projekte, Tests, Diffs übersichtlich; Änderungen erst nach Ja | L | hoch | Schreiben außerhalb der Arbeitsordner GELB, `git push` GELB |
+| 🔨 | **Spielhilfe** – Tipps per Blick auf den Bildschirm, einfache Schritte in Einzelspieler-Spielen übernehmen | M | mittel | Online-Spiele mit Anti-Cheat ROT (Bann-Gefahr); keine Echtzeit-Steuerung |
 | 📋 | **Signierter Installer** – Code-Signing-Zertifikat, damit SmartScreen nicht mehr warnt | S | mittel | Braucht ein Zertifikat auf deinen Namen |
 | 📋 | **Weitere Mail-Konten** über IMAP/SMTP (GMX, web.de, Outlook, iCloud) mit App-Passwort | M | hoch | Passwort gibst du selbst in den Einstellungen ein, Julia tippt es nie; verschlüsselt im Tresor; Senden GELB |
 | 📋 | **MCP-Erweiterungen** – beliebige Dienste (Notion, Spotify, Home Assistant, GitHub …) über lokale MCP-Server | L | hoch | Jedes Werkzeug standardmäßig GELB, nur ausdrücklich lesende GRÜN; Server nur aus Liste, die du bestätigst |

@@ -85,6 +85,9 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
 
   await geladen(chatFenster);
   chatFenster.show();
+  chatFenster.webContents.send('ansicht', 'start');
+  await warte(2200);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `start-${sc}.png`), { mitRahmen: true });
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
@@ -125,4 +128,45 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   }
 }
 
-module.exports = { aufnehmen, GESPRAECH };
+// Beispiel-Tagesüberblick für die Screenshots – ausgedachte Termine und Mails.
+function beispielUeberblick(config) {
+  const en = config.get('sprachcode') === 'en';
+  const heute = (h, m) => { const d = new Date(); d.setHours(h, m, 0, 0); return d; };
+  const morgen = (h, m) => { const d = heute(h, m); d.setDate(d.getDate() + 1); return d; };
+  const bis = (d, min) => new Date(d.getTime() + min * 60000).toISOString();
+  const spaet = new Date().getHours() >= 17;
+  const t = (d, titel, ort = '', min = 60) => ({ titel, start: d.toISOString(), ende: bis(d, min), ganztaegig: false, ort });
+  const termine = en
+    ? [t(heute(spaet ? 19 : 10, 0), 'Stand-up with the team', 'Teams'), t(heute(spaet ? 20 : 14, 30), 'Call with the garage'), t(heute(spaet ? 21 : 18, 30), 'Training', 'Gym'), t(morgen(9, 0), 'Dentist', 'Main Street 12')]
+    : [t(heute(spaet ? 19 : 10, 0), 'Stand-up mit dem Team', 'Teams'), t(heute(spaet ? 20 : 14, 30), 'Anruf Werkstatt'), t(heute(spaet ? 21 : 18, 30), 'Training', 'Halle Süd'), t(morgen(9, 0), 'Zahnarzt', 'Hauptstraße 12')];
+  const jetzt = Date.now();
+  return {
+    jetzt,
+    nutzer: config.get('nutzer.name') || 'Philip',
+    anbieter: 'Anthropic (Claude)',
+    modell: config.get('modell'),
+    erinnerungen: en
+      ? [{ id: 'a', text: 'Pizza out of the oven', zeit: jetzt + 18 * 60000 }, { id: 'b', text: 'Call Mum back', zeit: jetzt + 150 * 60000 }]
+      : [{ id: 'a', text: 'Pizza aus dem Ofen', zeit: jetzt + 18 * 60000 }, { id: 'b', text: 'Mama zurückrufen', zeit: jetzt + 150 * 60000 }],
+    kosten: { usd: 0.42, anfragen: 17, limit: 10, lokal: false },
+    termine: { daten: termine },
+    mails: {
+      daten: {
+        anzahl: 3,
+        mails: en
+          ? [{ von: 'Anna Schmidt', betreff: 'Does Friday 2 pm work?' }, { von: 'Telekom', betreff: 'Your September invoice' }, { von: 'GitHub', betreff: '[julia-ai] Release v1.2.0' }]
+          : [{ von: 'Anna Schmidt', betreff: 'Passt Freitag 14 Uhr?' }, { von: 'Telekom', betreff: 'Ihre Rechnung für September' }, { von: 'GitHub', betreff: '[julia-ai] Release v1.2.0' }],
+      },
+    },
+    pc: {
+      daten: {
+        akku: { prozent: 84, am_netz: true },
+        ram_gesamt_gb: 32,
+        ram_frei_gb: 13.4,
+        laufwerke: [{ laufwerk: 'C:', groesse_gb: 953.9, frei_gb: 171.2, frei_prozent: 18 }, { laufwerk: 'D:', groesse_gb: 1863, frei_gb: 1204, frei_prozent: 65 }],
+      },
+    },
+  };
+}
+
+module.exports = { aufnehmen, GESPRAECH, beispielUeberblick };

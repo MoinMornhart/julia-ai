@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.3.0 – 2026-09-14
+- Neues Hauptfenster mit Seitenleiste und Startseite – dein Tag auf einen Blick mit Terminen, Mails, Erinnerungen, PC-Zustand und einem Tagesbriefing per Knopf
+
 ## 1.2.0 – 2026-09-14
 - Julia läuft jetzt mit jedem KI-Anbieter – Claude, OpenAI, Gemini, Mistral, Groq, OpenRouter oder kostenlos lokal mit Ollama und LM Studio
 

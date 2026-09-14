@@ -94,6 +94,80 @@ body[data-zustand="speaking"] .mini-kugel { animation: pulsieren 0.9s ease-in-ou
 .icon:hover { background: var(--akzent-weich); color: var(--akzent); }
 .icon svg { width: 18px; height: 18px; }
 
+/* --- Rumpf: Seitenleiste + Inhalt --- */
+
+.rumpf { flex: 1; display: flex; min-height: 0; }
+.inhalt { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.ansicht { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.chat-ansicht { width: 100%; max-width: 940px; margin: 0 auto; }
+body.overlay .leiste,
+body.overlay .start { display: none !important; }
+
+.leiste {
+  width: 212px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 14px 10px 12px;
+  border-right: 1px solid var(--linie);
+  background: color-mix(in srgb, var(--grund) 64%, transparent);
+  backdrop-filter: blur(14px);
+}
+.nav-punkt {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: var(--text-2);
+  font-weight: 600;
+  font-size: 13.5px;
+  text-align: left;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.nav-ico { display: grid; place-items: center; flex: none; }
+.nav-ico svg, [data-ico] svg { width: 18px; height: 18px; }
+.nav-punkt:hover { background: var(--flaeche-2); color: var(--text); }
+.nav-punkt.aktiv { background: var(--akzent-weich); color: var(--text); box-shadow: inset 0 0 0 1px var(--akzent-rand); }
+.nav-punkt.aktiv::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--akzent);
+  box-shadow: var(--glow-klein);
+}
+.nav-punkt.aktiv .nav-ico { color: var(--akzent); }
+.nav-marke { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--akzent); box-shadow: var(--glow-klein); animation: blinken 1.2s ease-in-out infinite; }
+.leiste-fuss { margin-top: auto; display: flex; flex-direction: column; gap: 6px; }
+.chip-modell {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 12px;
+  border: 1px solid var(--linie);
+  border-radius: 10px;
+  background: var(--flaeche);
+  font: 11px/1.35 var(--mono);
+  color: var(--text-3);
+  min-width: 0;
+}
+.chip-modell b { font: 650 11.5px var(--schrift); color: var(--text-2); }
+.chip-modell b, .chip-modell span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .leiste { width: 60px; padding-inline: 8px; }
+  .nav-punkt { justify-content: center; padding: 10px; }
+  .nav-punkt.aktiv::before { left: -8px; }
+  .nav-text, .chip-modell { display: none; }
+  .nav-marke { position: absolute; top: 6px; right: 6px; }
+}
+
 /* --- Verlauf --- */
 
 .verlauf {

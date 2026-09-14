@@ -6,9 +6,10 @@
   <title>Julia</title>
   <link rel="stylesheet" href="basis.css">
   <link rel="stylesheet" href="chat.css">
+  <link rel="stylesheet" href="start.css">
   <script src="design.js"></script>
 </head>
-<body>
+<body data-ansicht="chat">
   <header class="kopf ziehbar">
     <div class="marke">
       <span class="mini-kugel" id="kugel"></span>
@@ -24,21 +25,87 @@
     </div>
   </header>
 
-  <main id="verlauf" class="verlauf">
-    <div class="leer" id="leer">
-      <div class="leer-kugel"><i></i></div>
-      <p id="leerText"></p>
-    </div>
-  </main>
+  <div class="rumpf">
+    <nav class="leiste" id="leiste">
+      <button class="nav-punkt" data-ansicht="start" id="navStart"><span class="nav-ico" data-ico="start"></span><span class="nav-text" data-nav="nav.start"></span></button>
+      <button class="nav-punkt" data-ansicht="chat" id="navChat"><span class="nav-ico" data-ico="chat"></span><span class="nav-text" data-nav="nav.chat"></span><i class="nav-marke" id="navChatMarke" hidden></i></button>
+      <div class="leiste-fuss">
+        <div class="chip-modell" id="chipModell"><b id="chipAnbieter"></b><span id="chipName"></span></div>
+        <button class="nav-punkt" id="navEinst"><span class="nav-ico" data-ico="einst"></span><span class="nav-text" data-nav="nav.einstellungen"></span></button>
+      </div>
+    </nav>
 
-  <footer class="eingabe">
-    <div class="eingabe-feld">
-      <textarea id="text" rows="1" spellcheck="true"></textarea>
-      <button class="rund mikro" id="btnMikro"></button>
-      <button class="rund senden" id="btnSenden"></button>
+    <div class="inhalt">
+      <section class="ansicht start" id="ansichtStart" hidden>
+        <div class="start-innen">
+          <div class="held">
+            <div class="held-kugel"><i></i></div>
+            <div class="held-text">
+              <p class="held-datum" id="startDatum"></p>
+              <h1 id="startGruss"></h1>
+              <p class="held-unter" id="startUnter"></p>
+            </div>
+            <div class="held-aktionen">
+              <button class="knopf primaer" id="btnBriefing"><span data-ico="funken"></span><span data-nav="start.briefing"></span></button>
+            </div>
+          </div>
+
+          <form class="eingabe-feld schnell" id="schnellForm">
+            <input id="schnellText" autocomplete="off" spellcheck="true">
+            <button type="submit" class="rund senden" id="schnellSenden"></button>
+          </form>
+          <div class="vorschlaege" id="vorschlaege"></div>
+
+          <div class="karten" id="karten">
+            <article class="kachel" id="kachelTermine">
+              <header class="kachel-kopf"><span data-ico="kalender"></span><h2 data-nav="start.termine"></h2><button class="kachel-aktion" data-frage="start.frage_termine" data-nav="start.aktion_termine"></button></header>
+              <div class="kachel-inhalt"></div>
+            </article>
+            <article class="kachel" id="kachelMails">
+              <header class="kachel-kopf"><span data-ico="post"></span><h2 data-nav="start.mails"></h2><button class="kachel-aktion" data-frage="start.frage_mails" data-nav="start.aktion_mails"></button></header>
+              <div class="kachel-inhalt"></div>
+            </article>
+            <article class="kachel" id="kachelErinnerungen">
+              <header class="kachel-kopf"><span data-ico="glocke"></span><h2 data-nav="start.erinnerungen"></h2></header>
+              <div class="kachel-inhalt"></div>
+            </article>
+            <article class="kachel" id="kachelPc">
+              <header class="kachel-kopf"><span data-ico="pc"></span><h2 data-nav="start.pc"></h2><button class="kachel-aktion" data-frage="start.frage_pc" data-nav="start.aktion_pc"></button></header>
+              <div class="kachel-inhalt"></div>
+            </article>
+            <article class="kachel" id="kachelKosten">
+              <header class="kachel-kopf"><span data-ico="muenze"></span><h2 data-nav="start.kosten"></h2></header>
+              <div class="kachel-inhalt"></div>
+            </article>
+          </div>
+
+          <div class="start-fuss">
+            <button class="knopf klein" id="btnAktualisieren"><span data-ico="neu-laden"></span><span data-nav="start.aktualisieren"></span></button>
+            <span id="startStand"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="ansicht chat-ansicht" id="ansichtChat">
+        <main id="verlauf" class="verlauf">
+          <div class="leer" id="leer">
+            <div class="leer-kugel"><i></i></div>
+            <p id="leerText"></p>
+          </div>
+        </main>
+
+        <footer class="eingabe">
+          <div class="eingabe-feld">
+            <textarea id="text" rows="1" spellcheck="true"></textarea>
+            <button class="rund mikro" id="btnMikro"></button>
+            <button class="rund senden" id="btnSenden"></button>
+          </div>
+        </footer>
+      </section>
     </div>
-  </footer>
+  </div>
 
   <script src="chat.js"></script>
+  <script src="start.js"></script>
 </body>
 </html>

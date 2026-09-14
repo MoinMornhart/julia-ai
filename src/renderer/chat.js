@@ -261,6 +261,7 @@ function absenden() {
 }
 
 function demo(eintraege) {
+  if (window.juliaAnsicht) window.juliaAnsicht('chat');
   leeren();
   for (const e of eintraege) {
     if (e.typ === 'nutzer') nutzerNachricht(e.text, false);

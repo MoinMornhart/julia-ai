@@ -20,9 +20,12 @@
 ---
 
 <p align="center">
-  <img src="docs/bilder/chat-de.png" width="420" alt="Chatfenster mit Freigabekarte">
+  <img src="docs/bilder/start-de.png" width="860" alt="Hauptfenster mit Startseite: Begrüßung, Termine, Posteingang, Erinnerungen, PC-Zustand und Kosten">
+</p>
+<p align="center">
+  <img src="docs/bilder/chat-de.png" width="520" alt="Chat mit Freigabekarte">
   &nbsp;
-  <img src="docs/bilder/einstellungen-de.png" width="420" alt="Einstellungen">
+  <img src="docs/bilder/einstellungen-de.png" width="330" alt="Einstellungen">
 </p>
 
 ## Was Julia ist
