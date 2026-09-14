@@ -104,12 +104,14 @@ function systemPrompt(opts) {
 
 // Der zweite Block im System-Prompt: ändert sich selten (Gedächtnis, Kanal),
 // deshalb getrennt vom großen, gecachten ersten Block.
-function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vorgemerkt, konten }) {
+function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vorgemerkt, konten, minecraft }) {
   const en = sprachcode === 'en';
   const mon = (monitore || [])
     .map((m) => `${m.index}${m.haupt ? (en ? ' (primary)' : ' (Hauptmonitor)') : ''}: ${m.breite}x${m.hoehe}`)
     .join(', ');
   const kontoText = (konten || []).map((k) => `${k.dienst}${k.konto ? ` – ${k.konto}` : ''}`).join('; ');
+  // Nur was sich während einer Runde nicht ändert – sonst verfällt der Cache.
+  const mc = minecraft && minecraft.verbunden ? `${minecraft.name} @ ${minecraft.server} (${minecraft.version})` : '';
   const zeilen = en
     ? [
       '## Runtime',
@@ -117,6 +119,7 @@ function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vo
       `- Julia version: ${version}`,
       `- Monitors: ${mon || 'unknown'}`,
       `- Connected accounts: ${kontoText || 'none'}`,
+      ...(mc ? [`- Minecraft: in game as ${mc} – use the minecraft_* tools for anything in the game`] : []),
       '',
       '## Memory',
       gedaechtnis,
@@ -127,6 +130,7 @@ function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vo
       `- Julia-Version: ${version}`,
       `- Monitore: ${mon || 'unbekannt'}`,
       `- Verbundene Konten: ${kontoText || 'keine'}`,
+      ...(mc ? [`- Minecraft: im Spiel als ${mc} – für alles im Spiel die minecraft_*-Werkzeuge`] : []),
       '',
       '## Gedächtnis',
       gedaechtnis,

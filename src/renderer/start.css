@@ -505,3 +505,9 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 #mcChatText { flex: 1 1 240px; }
 .mc-zeilen { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
 .mc-zeilen p { margin: 0; overflow-wrap: anywhere; }
+.mc-schalter { display: flex; align-items: center; gap: 10px; font-weight: 650; cursor: pointer; }
+.mc-schalter input { appearance: none; width: 38px; height: 21px; border-radius: 21px; background: var(--flaeche-2); border: 1px solid var(--linie-stark); position: relative; cursor: pointer; flex: none; margin: 0; transition: background 0.2s, box-shadow 0.2s; }
+.mc-schalter input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--text-2); transition: transform 0.2s, background 0.2s; }
+.mc-schalter input:checked { background: var(--akzent); border-color: var(--akzent); box-shadow: var(--glow-klein); }
+.mc-schalter input:checked::after { transform: translateX(17px); background: var(--akzent-text); }
+.mc-schalter input:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }

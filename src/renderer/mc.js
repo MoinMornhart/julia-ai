@@ -119,6 +119,19 @@
   $('mcKontoAbmelden').onclick = async () => { await julia.mcKontoAbmelden(); laden(); };
   $('mcCodeKopieren').onclick = () => julia.kopieren($('mcCodeWert').textContent);
 
+  // "Hey Julia" beim Spielen – derselbe Schalter wie in den Einstellungen.
+  async function stimmeZeigen() {
+    try {
+      const c = await julia.config();
+      $('mcStimme').checked = !!(c.weckwort && c.weckwort.an);
+    } catch { /* Fenster wird geschlossen */ }
+  }
+  $('mcStimme').onchange = async () => {
+    const r = await julia.setzen('weckwort.an', $('mcStimme').checked);
+    if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
+  };
+  julia.on('config:geaendert', (c) => { if (c && c.weckwort) $('mcStimme').checked = !!c.weckwort.an; });
+
   julia.on('mc:code', (c) => {
     $('mcCodeWert').textContent = c && c.code ? c.code : '';
     $('mcCode').hidden = !(c && c.code);
@@ -134,7 +147,7 @@
     if (stand) zeigen(stand);
   }
 
-  window.juliaAnsichtBeimOeffnen.minecraft = () => { texte(); laden(); beobachten(); };
+  window.juliaAnsichtBeimOeffnen.minecraft = () => { texte(); laden(); stimmeZeigen(); beobachten(); };
   julia.on('texte:geaendert', () => setTimeout(texte, 0));
   bereit.then(() => { if (window.juliaIcons) window.juliaIcons(document.getElementById('ansichtMinecraft')); texte(); });
 })();

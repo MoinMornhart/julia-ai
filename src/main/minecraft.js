@@ -255,6 +255,49 @@ function befehlLesen(text, namen = []) {
   return null;
 }
 
+// Eine Frage an Julia im Spielchat: mit "!" oder ihrem Namen vorne
+// ("Julia, wo finde ich Diamanten?"). Liefert den Text ohne Anrede.
+function frageLesen(text, namen = []) {
+  const roh = String(text || '').trim();
+  const klein = roh.toLowerCase();
+  let ab = -1;
+  if (klein.startsWith('!')) ab = 1;
+  else {
+    const n = namen.filter(Boolean).map((x) => String(x).toLowerCase())
+      .find((x) => klein.startsWith(x) && !/[\p{L}\p{N}_]/u.test(klein[x.length] || ''));
+    if (n) ab = n.length;
+  }
+  if (ab < 0) return null;
+  const rest = roh.slice(ab).replace(/^[\s,:!]+/, '').trim().slice(0, 250);
+  return rest.length >= 2 ? rest : null;
+}
+
+// Antworten für den Spielchat: ohne Formatierung, in Stücken bis 240
+// Zeichen, höchstens drei Nachrichten – der Rest wird mit … gekürzt.
+function chatTeile(text, max = 3) {
+  const s = String(text || '')
+    .replace(/```[\s\S]*?```/g, ' ')
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+    .replace(/[*_`#>]+/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const teile = [];
+  let rest = s;
+  while (rest) {
+    if (teile.length === max) {
+      teile[max - 1] = `${teile[max - 1].slice(0, 236)} …`;
+      break;
+    }
+    if (rest.length <= 240) { teile.push(rest); break; }
+    let schnitt = Math.max(rest.lastIndexOf('. ', 240), rest.lastIndexOf('! ', 240), rest.lastIndexOf('? ', 240));
+    if (schnitt < 80) schnitt = rest.lastIndexOf(' ', 240);
+    if (schnitt < 40) schnitt = 239;
+    teile.push(rest.slice(0, schnitt + 1).trim());
+    rest = rest.slice(schnitt + 1).trim();
+  }
+  return teile;
+}
+
 function klartext(grund) {
   if (typeof grund === 'string') {
     try { return klartext(JSON.parse(grund)); } catch { return grund; }
@@ -486,12 +529,33 @@ class Minecraft extends EventEmitter {
     if (this.chatVerlauf.length > 30) this.chatVerlauf.shift();
     // Ist ein Spielername eingetragen, hört die Figur nur auf diesen.
     if (this.besitzer && String(von).toLowerCase() !== this.besitzer.toLowerCase()) return;
-    const b = befehlLesen(text, [this.bot.username, this.assistent]);
-    if (!b) return;
-    try {
-      this.chat(this.aufgabe({ ...b, spieler: b.spieler || von }));
-    } catch (e) {
-      try { this.chat(e.message); } catch { /* getrennt */ }
+    const namen = [this.bot.username, this.assistent];
+    const b = befehlLesen(text, namen);
+    if (b) {
+      try {
+        this.chat(this.aufgabe({ ...b, spieler: b.spieler || von }));
+      } catch (e) {
+        try { this.chat(e.message); } catch { /* getrennt */ }
+      }
+      return;
+    }
+    // Sonst eine Frage an Julia – nur von deinem eingetragenen Namen und
+    // höchstens alle vier Sekunden (Kosten, Spam).
+    const frage = frageLesen(text, namen);
+    if (!frage || !this.besitzer) return;
+    if (Date.now() - (this.letzteFrage || 0) < 4000) return;
+    this.letzteFrage = Date.now();
+    this.emit('frage', { von, text: frage });
+  }
+
+  // Antwort der KI in den Spielchat – in kleinen Stücken mit kurzer Pause,
+  // damit der Spam-Schutz des Servers nicht anschlägt.
+  async antworten(text) {
+    const teile = chatTeile(text);
+    for (let i = 0; i < teile.length; i++) {
+      if (!this.verbunden) return;
+      if (i) await new Promise((r) => setTimeout(r, 800));
+      this.chat(teile[i]);
     }
   }
 
@@ -786,5 +850,5 @@ module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, befehlLesen, rauswurfText,
+  istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, chatTeile,
 };

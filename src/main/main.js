@@ -160,6 +160,7 @@ function laufzeitText() {
     gedaechtnis: gedaechtnis.alsText(),
     vorgemerkt: kanal !== 'auto' ? protokoll.vorgemerkt() : [],
     konten: konten.beschreibung(),
+    minecraft: minecraft && minecraft.verbunden ? minecraft.status() : null,
   });
 }
 
@@ -1250,6 +1251,24 @@ async function handyNachricht(text) {
   return { ok: true };
 }
 
+// Eine Frage aus dem Minecraft-Chat (nur von deinem Spielernamen). Die Antwort
+// geht kurz zurück in den Spielchat; handeln darf Julia von dort nur im Spiel
+// (Kanal "minecraft", siehe agent.js).
+async function minecraftFrage({ von, text }) {
+  if (agent.beschaeftigt) {
+    try { minecraft.chat(t('mc.beschaeftigt')); } catch { /* nicht mehr im Spiel */ }
+    return;
+  }
+  protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { von, text: text.slice(0, 250) }, ergebnis: 'Frage aus dem Minecraft-Chat' });
+  anAlle('agent:nutzer', { text: t('mc.im_spiel', { von, text }), perSprache: false });
+  try {
+    const antwort = await agent.senden(`[${t('mc.auftrag_kopf', { von })}] ${text}`, { kanal: 'minecraft' });
+    if (antwort) await minecraft.antworten(antwort);
+  } catch (e) {
+    if (e.message !== 'BESCHAEFTIGT') anAlle('agent:fehler', { art: 'text', text: e.message });
+  }
+}
+
 function handyEinrichten() {
   handy = new HandyServer({
     tresor: konten.tresor,
@@ -1423,6 +1442,7 @@ async function start() {
   minecraft = new Minecraft();
   mcSpeicher = kontoSpeicher({ datei: path.join(DATEN, 'minecraft-konto.bin'), krypto });
   minecraft.on('ereignis', (e) => { melden(t('minecraft.titel'), e.text); anAlle('mc:geaendert'); });
+  minecraft.on('frage', (f) => minecraftFrage(f));
   sprache = new Sprache({ dll: audio.dll });
   sprache.on('pegel', (p) => anAlle('pegel', p));
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.

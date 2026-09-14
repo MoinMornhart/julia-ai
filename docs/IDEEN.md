@@ -40,6 +40,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.8.0 | Gaming-Clips: Hotkey, Knopf oder „Clip das!“ löst Game Bar, NVIDIA oder AMD aus; Clip-Ansicht mit Vorschau, Player, Umbenennen, Im Ordner zeigen, Papierkorb; Hinweis mit Knopf, wenn die Windows-Hintergrundaufnahme aus ist |
 | ✅ 1.9.0 | Mikrofon und Lautsprecher wählbar (eigene WinMM-Anbindung, weil System.Speech nur das Standardgerät kennt), „Stimme testen“, Rückfall auf das Standardgerät; „Hey Julia“ startet nach Aussetzern selbst neu |
 | ✅ 2.0.0 | Code-Reiter: Projekte mit Zweig, voraus/zurück, Änderungen mit farbigem Diff, letzte Commits, erkannte Skripte; Knöpfe für Erklären, Prüfen, Tests, Beheben, Commit-Text – der Reiter liest nur, Änderungen laufen über den Chat und die Ampel |
+| ✅ 2.5.0 | Mit Julia im Minecraft-Chat reden (Antwort in den Spielchat, nur vom eigenen Spielernamen, von dort nur Handgriffe im Spiel) und „Hey Julia“ direkt im Minecraft-Reiter einschalten |
 | ✅ 2.4.0 | Minecraft-Reiter: Julia spielt als eigene Figur mit (folgen, beschützen, Duell, abbauen, Chat), optional mit eigenem Microsoft-Konto per Code-Anmeldung; große öffentliche Netzwerke gesperrt |
 | ✅ 2.2.0 | „Allem zustimmen" in den Einstellungen: einmal bestätigen, danach keine Rückfragen bei GELB; ROT bleibt gesperrt, Schutzfragen nach fremden Inhalten bleiben |
 | ✅ 2.1.0 | Hinweis oben auf jedem Bildschirm, solange Julia hinsieht oder steuert (Akzentfarbe, Stopp-Knopf, vor Aufnahmen geschützt); Blasen-Untertitel zeigen den ganzen Text |

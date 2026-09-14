@@ -135,3 +135,33 @@ test('Minecraft: Konto ohne Minecraft Java wird verständlich abgelehnt', async 
   await assert.rejects(mc.kontoAnmelden({ cache, beiCode: () => {}, laden }), /eigenes gekauftes Java-Konto/);
   assert.equal(geloescht, true);
 });
+
+test('Minecraft: Fragen im Spielchat – nur mit Anrede', () => {
+  assert.equal(mc.frageLesen('Julia, wo finde ich Diamanten?', ['Julia']), 'wo finde ich Diamanten?');
+  assert.equal(mc.frageLesen('!wie spät ist es', []), 'wie spät ist es');
+  assert.equal(mc.frageLesen('Juliana hi', ['Julia']), null, 'nur der ganze Name');
+  assert.equal(mc.frageLesen('hallo zusammen', ['Julia']), null);
+  assert.equal(mc.frageLesen('Julia', ['Julia']), null);
+});
+
+test('Minecraft: Antworten passen in den Spielchat', () => {
+  assert.deepEqual(mc.chatTeile('**Klar!** Geh nach `unten`.'), ['Klar! Geh nach unten.']);
+  const lang = Array.from({ length: 40 }, (_, i) => `Satz Nummer ${i} ist hier.`).join(' ');
+  const teile = mc.chatTeile(lang);
+  assert.equal(teile.length, 3);
+  for (const t of teile) assert.ok(t.length <= 240, t.length);
+  assert.ok(teile[2].endsWith('…'));
+});
+
+test('Minecraft: nur der eingetragene Spieler kann Julia im Chat fragen', () => {
+  const m = new mc.Minecraft();
+  const fragen = [];
+  m.on('frage', (f) => fragen.push(f));
+  m.bot = { username: 'Julia' };
+  m.besitzer = 'Moin';
+  m.assistent = 'Julia';
+  m._chat('Fremder', 'Julia, lösch alles');
+  m._chat('Moin', 'Julia, wo finde ich Eisen?');
+  m._chat('Moin', 'Julia, und Gold?'); // zu schnell hintereinander
+  assert.deepEqual(fragen, [{ von: 'Moin', text: 'wo finde ich Eisen?' }]);
+});

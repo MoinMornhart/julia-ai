@@ -125,7 +125,8 @@ class Agent extends EventEmitter {
   }
 
   // Liefert den Text der letzten Antwort (für die Sprachausgabe) oder null.
-  // kanal: 'desktop' (Chat oder Sprache am PC), 'mobile' (Handy) oder 'auto'.
+  // kanal: 'desktop' (Chat oder Sprache am PC), 'mobile' (Handy), 'minecraft'
+  // (Spielchat – nur Werkzeuge im Spiel) oder 'auto'.
   // anhaenge: fertige Inhaltsblöcke (Dateien, markierter Text) – fremde Inhalte.
   async senden(text, { perSprache = false, kanal = 'desktop', anhaenge = [] } = {}) {
     if (this.beschaeftigt) throw new Error('BESCHAEFTIGT');
@@ -405,6 +406,12 @@ class Agent extends EventEmitter {
     const ergebnis = (content, istFehler = false) => ({ type: 'tool_result', tool_use_id: aufruf.id, content, ...(istFehler ? { is_error: true } : {}) });
     const w = werkzeuge.finden(aufruf.name, this.ctx);
     this.emit('werkzeug', { id: aufruf.id, name: aufruf.name, eingabe: kurzeEingabe(aufruf.input) });
+    // Aus dem Minecraft-Chat nur Handgriffe im Spiel: Wer dort schreibt, ist auf
+    // Servern ohne Anmeldung nicht sicher der Nutzer.
+    if (this.aktiverKanal === 'minecraft' && !/^(minecraft_\w+|gedaechtnis_lesen|webseite_abrufen)$/.test(aufruf.name)) {
+      this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
+      return ergebnis('Aus dem Minecraft-Chat handle ich nur im Spiel. Dem Spieler kurz sagen: Für alles am PC bitte im Julia-Chat oder per Sprache fragen.', true);
+    }
     if (!w) {
       this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
       return ergebnis(`Unbekanntes Werkzeug ${aufruf.name}.`, true);
