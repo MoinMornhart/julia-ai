@@ -12,6 +12,7 @@ const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./mi
 const { Sync } = require('./sync');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
+const { istSpiel } = require('./spiele');
 
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
 // (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
@@ -478,7 +479,49 @@ function overlayUmschalten() {
 
 function overlaySpaeterVerstecken(ms = 12000) {
   clearTimeout(overlayTimer);
-  overlayTimer = setTimeout(() => { if (overlayPassiv) overlayVerstecken(); }, ms);
+  overlayTimer = setTimeout(() => { if (overlayPassiv && !spielAktiv) overlayVerstecken(); }, ms);
+}
+
+// Läuft ein Spiel im Vordergrund, erscheint das Overlay von selbst – passiv:
+// Klicks gehen durch, das Spiel behält den Fokus. Ist das Spiel weg, geht es
+// wieder, aber nur, wenn Julia es selbst eingeblendet hat.
+let spielAktiv = null;
+let spielTimer = null;
+let spielPruefLaeuft = false;
+
+async function spielPruefen() {
+  if (spielPruefLaeuft) return;
+  spielPruefLaeuft = true;
+  try {
+    if (!config.get('overlay.automatisch')) {
+      if (spielAktiv) {
+        spielAktiv = null;
+        if (overlaySichtbar() && overlayPassiv) overlayVerstecken();
+      }
+      return;
+    }
+    const v = await win.vordergrundInfo();
+    if (!v || v.pid === process.pid) return; // Julias eigene Fenster ändern nichts
+    const s = istSpiel(v, config.get('overlay.spiele'));
+    if (s.spiel) {
+      if (spielAktiv !== s.name) {
+        spielAktiv = s.name;
+        if (!overlaySichtbar()) overlayZeigen({ passiv: true });
+      }
+    } else if (spielAktiv) {
+      spielAktiv = null;
+      if (overlaySichtbar() && overlayPassiv) overlayVerstecken();
+    }
+  } catch {
+    /* nächster Versuch in drei Sekunden */
+  } finally {
+    spielPruefLaeuft = false;
+  }
+}
+
+function spielWaechterStarten() {
+  clearInterval(spielTimer);
+  spielTimer = setInterval(spielPruefen, 3000);
 }
 
 // --- Tray, Hotkeys, Autostart ---
@@ -1621,7 +1664,10 @@ async function start() {
   tray.on('click', () => chatUmschalten(null));
   trayMenue();
 
-  if (!VORFUEHRUNG) hotkeysRegistrieren();
+  if (!VORFUEHRUNG) {
+    hotkeysRegistrieren();
+    spielWaechterStarten();
+  }
   blaseAktualisieren();
   for (const e of ['display-added', 'display-removed', 'display-metrics-changed']) screen.on(e, () => blaseAktualisieren());
   chatFensterErstellen();
@@ -1669,6 +1715,7 @@ if (!app.requestSingleInstanceLock()) {
     if (erinnerungen) erinnerungen.stoppen();
     if (handy) handy.stoppen();
     if (sync) sync.stoppen();
+    clearInterval(spielTimer);
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();
     if (weckwort) weckwort.stoppen();

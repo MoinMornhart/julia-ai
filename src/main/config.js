@@ -75,6 +75,8 @@ const STANDARD = {
     ecke: 'oben-rechts',
     deckkraft: 0.94,
     bei_antwort: 'aus', // 'aus' | 'passiv' – bei Sprachbefehlen die Antwort kurz einblenden
+    automatisch: true, // beim Spielen von selbst einblenden (passiv)
+    spiele: [], // weitere Spiele als Programmnamen, z. B. "valorant"
   },
   sprache: {
     vorlesen: 'bei-sprache', // 'bei-sprache' | 'immer' | 'nie'
@@ -192,6 +194,7 @@ function pruefen(schluessel, wert) {
     case 'freigabe.fremd':
     case 'sync.an':
     case 'minecraft.stimme':
+    case 'overlay.automatisch':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
@@ -328,6 +331,15 @@ function pruefen(schluessel, wert) {
     case 'overlay.ecke':
       if (!ECKEN.includes(wert)) throw new Error(`Ecke muss eine von ${ECKEN.join(', ')} sein.`);
       return wert;
+    case 'overlay.spiele': {
+      const roh = Array.isArray(wert) ? wert : String(wert ?? '').split(/[\n,;]/);
+      const liste = [...new Set(roh.map((p) => String(p).trim().replace(/\.exe$/i, '')).filter(Boolean))];
+      for (const p of liste) {
+        if (p.length > 60 || !/^[\p{L}\p{N}][\p{L}\p{N} ._()-]*$/u.test(p)) throw new Error(`„${p.slice(0, 60)}“ ist kein Programmname (etwa valorant oder eldenring).`);
+      }
+      if (liste.length > 30) throw new Error('Höchstens 30 eigene Spiele.');
+      return liste;
+    }
     case 'overlay.bei_antwort':
       if (!['aus', 'passiv'].includes(wert)) throw new Error('Overlay bei Antworten: "aus" oder "passiv".');
       return wert;

@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.1.0 – 2026-09-14
+- Das Gaming-Overlay erscheint von selbst, sobald du ein Spiel startest – passiv, dein Spiel behält den Fokus; eigene Spiele lassen sich ergänzen
+
 ## 3.0.0 – 2026-09-14
 - Eigene Aktivierungswörter: Statt „Hey Julia“ legst du in den Einstellungen selbst fest, worauf Julia reagiert – am PC und im Minecraft-Voice-Chat
 

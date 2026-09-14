@@ -175,6 +175,8 @@ in den Meldungen und im Gespräch.
   <img src="docs/bilder/overlay-de.png" width="300" alt="Overlay über dem Spiel">
 </p>
 
+**Von selbst beim Spielen:** Startest du ein Spiel, blendet Julia das Overlay automatisch ein – passiv, also gehen Klicks durch und das Spiel behält den Fokus; mit dem Hotkey schreibst du hinein. Wechselst du weg oder beendest das Spiel, verschwindet es wieder. Erkannt werden Spiele von Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG und Xbox sowie Minecraft; weitere trägst du unter *Einstellungen → Gaming-Overlay* als Programmnamen ein. Abschaltbar ebenda.
+
 Mit `Strg+Umschalt+Leertaste` legt sich ein kleines, halbtransparentes Chatfenster über dein
 Spiel – im Fenstermodus oder randlosen Vollbild. Tippen, Enter, weiterspielen; `Esc` oder
 derselbe Hotkey blendet es aus. Freigaben erscheinen dann im Overlay, statt das große

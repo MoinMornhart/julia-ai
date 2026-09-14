@@ -101,6 +101,17 @@ $p = Get-Process -Id ([int]$t[0]) -ErrorAction SilentlyContinue
 @{ pid = [int]$t[0]; klasse = $t[1]; titel = $t[2]; programm = $(if ($p) { $p.ProcessName } else { '' }) }`);
 }
 
+// Vordergrund mit Programmpfad – für die Spielerkennung (Overlay von selbst).
+// Bei geschützten Prozessen (Anti-Cheat) bleibt der Pfad leer.
+async function vordergrundInfo() {
+  return worker.ausfuehren(`
+$t = [JuliaWin]::Vordergrund() -split [char]9, 3
+$p = Get-Process -Id ([int]$t[0]) -ErrorAction SilentlyContinue
+$pfad = ''
+if ($p) { try { $pfad = [string]$p.Path } catch { $pfad = '' } }
+@{ pid = [int]$t[0]; titel = $t[2]; programm = $(if ($p) { $p.ProcessName } else { '' }); pfad = $pfad }`);
+}
+
 async function prozesse(anzahl = 15, sortierung = 'ram') {
   return worker.ausfuehren(mitArgs({ anzahl, sortierung }, `
 $last = (Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average
@@ -272,6 +283,6 @@ $true`), 30000);
 }
 
 module.exports = {
-  worker, aufwaermen, fensterAuflisten, vordergrund, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
+  worker, aufwaermen, fensterAuflisten, vordergrund, vordergrundInfo, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
   klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen, kopierenNachHotkey,
 };

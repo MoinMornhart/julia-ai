@@ -40,6 +40,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.8.0 | Gaming-Clips: Hotkey, Knopf oder „Clip das!“ löst Game Bar, NVIDIA oder AMD aus; Clip-Ansicht mit Vorschau, Player, Umbenennen, Im Ordner zeigen, Papierkorb; Hinweis mit Knopf, wenn die Windows-Hintergrundaufnahme aus ist |
 | ✅ 1.9.0 | Mikrofon und Lautsprecher wählbar (eigene WinMM-Anbindung, weil System.Speech nur das Standardgerät kennt), „Stimme testen“, Rückfall auf das Standardgerät; „Hey Julia“ startet nach Aussetzern selbst neu |
 | ✅ 2.0.0 | Code-Reiter: Projekte mit Zweig, voraus/zurück, Änderungen mit farbigem Diff, letzte Commits, erkannte Skripte; Knöpfe für Erklären, Prüfen, Tests, Beheben, Commit-Text – der Reiter liest nur, Änderungen laufen über den Chat und die Ampel |
+| ✅ 3.1.0 | Gaming-Overlay erscheint von selbst, sobald ein Spiel im Vordergrund läuft (Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG, Xbox, Minecraft, eigene Liste), passiv und ohne Fokus-Klau |
 | ✅ 3.0.0 | Eigene Aktivierungswörter statt „Hey Julia" (eins pro Zeile, höchstens acht, geprüft) – am PC und im Minecraft-Voice-Chat |
 | ✅ 2.9.0 | Minecraft Simple Voice Chat (Testversion): Julia hört im Voice-Chat nur ihrem Besitzer zu, erkennt „Hey Julia …" und antwortet mit Stimme im Spiel statt über den PC; 2.5 (CBC) und 2.6 (GCM) |
 | ✅ 2.8.0 | Mehrere PCs abgleichen: Gespräche, Gedächtnis, Routinen und Erinnerungen direkt von PC zu PC, gekoppelt per Code mit gegenseitigem Beweis, festgehaltenem Zertifikat und Grabsteinen für Gelöschtes |

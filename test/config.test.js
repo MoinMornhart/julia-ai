@@ -56,7 +56,7 @@ test('Namen: erlaubte Zeichen, Länge, keine Prompt-Tricks', () => {
 
 test('Overlay: Standardwerte, abschaltbarer Hotkey, geprüfte Werte', () => {
   assert.equal(STANDARD.hotkey.overlay, 'Control+Shift+Space');
-  assert.deepEqual(STANDARD.overlay, { monitor: 0, ecke: 'oben-rechts', deckkraft: 0.94, bei_antwort: 'aus' });
+  assert.deepEqual(STANDARD.overlay, { monitor: 0, ecke: 'oben-rechts', deckkraft: 0.94, bei_antwort: 'aus', automatisch: true, spiele: [] });
   assert.equal(pruefen('hotkey.overlay', ''), '', 'leer schaltet den Hotkey ab');
   assert.equal(pruefen('hotkey.overlay', ' Alt+O '), 'Alt+O');
   assert.throws(() => pruefen('overlay.deckkraft', 0.1), /zwischen 0.3 und 1/);
