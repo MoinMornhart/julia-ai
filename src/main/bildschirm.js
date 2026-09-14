@@ -7,7 +7,10 @@ const schwaerzen = require('./schwaerzen');
 // pixel. Julia klickt in Koordinaten des zuletzt gesehenen Bildes; hier wird
 // daraus die physische Position.
 
-const MAX_KANTE = 1568;
+// Kleinere Bilder wertet das Modell schneller aus; 1280 reicht für
+// Schaltflächen und Text noch gut.
+const MAX_KANTE = 1280;
+const JPEG_QUALITAET = 72;
 
 const letzte = new Map();
 let letzterScreenshot = 0;
@@ -29,7 +32,8 @@ function beschreibung() {
 }
 
 // rechtecke: Bereiche in physischen Bildschirmpixeln, die geschwärzt werden
-// (Passwortfelder), bevor das Bild weitergegeben wird.
+// (Passwortfelder), bevor das Bild weitergegeben wird. Darf auch ein Promise
+// sein – dann läuft die Suche, während das Bild schon aufgenommen wird.
 async function aufnehmen(index, { rechtecke = [] } = {}) {
   const ds = monitore();
   const ziele = index == null ? ds.map((_, i) => i) : [index];
@@ -51,7 +55,7 @@ async function aufnehmen(index, { rechtecke = [] } = {}) {
     const s = q.thumbnail.getSize();
     letzte.set(i, { phys, breite: s.width, hoehe: s.height });
     let bild = q.thumbnail;
-    const bereiche = schwaerzen.aufBild(rechtecke, phys, s.width, s.height);
+    const bereiche = schwaerzen.aufBild(await rechtecke, phys, s.width, s.height);
     if (bereiche.length) {
       const puffer = schwaerzen.fuellen(Buffer.from(bild.toBitmap()), s.width, bereiche);
       bild = nativeImage.createFromBitmap(puffer, { width: s.width, height: s.height });
@@ -62,7 +66,7 @@ async function aufnehmen(index, { rechtecke = [] } = {}) {
       breite: s.width,
       hoehe: s.height,
       geschwaerzt: bereiche.length,
-      jpeg: bild.toJPEG(80).toString('base64'),
+      jpeg: bild.toJPEG(JPEG_QUALITAET).toString('base64'),
     });
   }
   letzterScreenshot = Date.now();

@@ -265,13 +265,23 @@ class Agent extends EventEmitter {
       ],
       tools,
       messages: this.verlauf,
-      context_management: { edits: [{ type: 'clear_tool_uses_20250919' }] },
+      // Alte Werkzeug-Ergebnisse (vor allem Screenshots) früh aus dem Verlauf
+      // nehmen: Jedes Bild, das mitgeschickt wird, kostet bei jeder Runde Zeit.
+      context_management: {
+        edits: [{
+          type: 'clear_tool_uses_20250919',
+          trigger: { type: 'input_tokens', value: 40000 },
+          keep: { type: 'tool_uses', value: 4 },
+          clear_at_least: { type: 'input_tokens', value: 10000 },
+        }],
+      },
       cache_control: { type: 'ephemeral' },
     };
     if (f.fallback) p.fallbacks = 'default';
     if (f.adaptiv) {
       p.thinking = { type: 'adaptive' };
-      p.output_config = { effort: this.config.get('aufwand') || 'high' };
+      // Mitten in der Bildschirmsteuerung: kurz nachdenken, schnell weiterklicken.
+      p.output_config = { effort: this.uiRunde ? 'low' : this.config.get('aufwand') || 'high' };
     }
     return p;
   }
@@ -313,6 +323,8 @@ class Agent extends EventEmitter {
     const client = a.art === 'anthropic' ? this._client() : null;
     const schluessel = client ? null : this._schluesselFuer(a);
     let letzterText = null;
+    const UI = new Set(['screenshot', 'klick', 'tippen', 'taste', 'scrollen', 'aktionen']);
+    this.uiRunde = false;
     for (let runde = 0; runde < MAX_RUNDEN; runde++) {
       this._limitPruefen();
       const msg = client ? await this._rundeAnthropic(client) : await this._rundeOpenAI(a, schluessel);
@@ -344,6 +356,7 @@ class Agent extends EventEmitter {
         }
         ergebnisse.push(await this._werkzeug(aufruf));
       }
+      this.uiRunde = aufrufe.some((b) => UI.has(b.name));
       this.verlauf.push({ role: 'user', content: ergebnisse });
       if (this.abbruch.signal.aborted) throw new Anthropic.APIUserAbortError();
     }

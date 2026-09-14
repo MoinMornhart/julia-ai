@@ -956,7 +956,7 @@ function gespraechSpeichern() {
 // Stopp-Knopf. Das Fenster ist vor Bildschirmaufnahmen geschützt und taucht
 // deshalb in Julias eigenen Screenshots nicht auf.
 
-const ZUGRIFF = { screenshot: 'sieht', klick: 'steuert', tippen: 'steuert', taste: 'steuert', scrollen: 'steuert' };
+const ZUGRIFF = { screenshot: 'sieht', klick: 'steuert', tippen: 'steuert', taste: 'steuert', scrollen: 'steuert', aktionen: 'steuert' };
 let zugriffFenster = [];
 let zugriffSignatur = '';
 let zugriffTimer = null;

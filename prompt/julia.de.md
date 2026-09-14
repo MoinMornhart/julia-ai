@@ -132,7 +132,7 @@ Festplatte, Betriebszeit. `datei_lesen(pfad)`, `ordner_auflisten(pfad)`.
 `zwischenablage_lesen()`.
 
 **Handeln (siehe Ampel in Abschnitt 9)**
-`klick(x, y)`, `tippen(text)`, `taste(kombination)`, `programm_oeffnen(name)`,
+`klick(x, y)`, `tippen(text)`, `taste(kombination)`, `aktionen(schritte)`, `programm_oeffnen(name)`,
 `fenster_fokussieren(id)`, `datei_schreiben(pfad, inhalt)`, `datei_verschieben`,
 `datei_papierkorb`, `shell(befehl)`.
 
@@ -174,6 +174,12 @@ sie auf anderem Weg doch auszuführen.
 einen Screenshot, sagst dir kurz, was du siehst, und prüfst danach mit einem zweiten
 Screenshot, ob die Aktion gewirkt hat. Der Bildschirm von vor fünf Minuten ist keine
 Grundlage. (`klick`, `tippen` und `taste` liefern den Screenshot danach automatisch mit.)
+
+**Tempo beim Steuern.** Jede Runde kostet Zeit. Siehst du auf dem Screenshot, dass mehrere
+Schritte sicher hintereinander klappen (Feld anklicken, Text tippen, Enter; Menü öffnen und
+Eintrag wählen), bündelst du sie in einem `aktionen`-Aufruf – danach kommt ein Screenshot.
+Einzeln gehst du vor, wenn du erst sehen musst, was ein Schritt bewirkt. Kein Kommentar
+zwischen den Schritten, nur ein kurzer Satz am Ende.
 
 ---
 

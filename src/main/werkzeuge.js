@@ -49,7 +49,8 @@ function zoneLesen(pfad) {
 // vorher gesucht und im Bild geschwärzt. Scheitert die Suche, bleibt das Bild
 // ungeschwärzt – die Regel aus Abschnitt 10 gilt dann weiter über den Prompt.
 async function aufnahme(monitor) {
-  const felder = await win.passwortFelder().catch(() => []);
+  // Suche und Aufnahme laufen gleichzeitig; geschwärzt wird, bevor das Bild rausgeht.
+  const felder = win.passwortFelder().catch(() => []);
   return bildschirm.aufnehmen(monitor, { rechtecke: felder });
 }
 
@@ -69,11 +70,74 @@ function uiPruefen() {
   }
 }
 
+const kurzWarten = (ms) => new Promise((r) => setTimeout(r, ms));
+
 async function nachAktion(monitor, was) {
   letzteUiAktion = Date.now();
-  await new Promise((r) => setTimeout(r, 700));
+  await kurzWarten(300); // dem Fenster kurz Zeit geben, sichtbar zu reagieren
   const bilder = await aufnahme(monitor);
   return bildBloecke(bilder, `${was}. Screenshot danach:`);
+}
+
+// Die eigentlichen Handgriffe – einzeln (mit Screenshot danach) oder
+// gebündelt über das Werkzeug aktionen. Jeder gibt den Monitor zurück, auf
+// dem er gewirkt hat.
+async function klickTun(e) {
+  const m = e.monitor ?? 0;
+  const p = bildschirm.aufPhysisch(m, e.x, e.y);
+  await win.klick(p.x, p.y, e.taste || 'links', !!e.doppelt);
+  return m;
+}
+
+async function scrollenTun(e) {
+  const m = e.monitor ?? 0;
+  const p = bildschirm.aufPhysisch(m, e.x, e.y);
+  await win.scrollen(p.x, p.y, Math.max(-50, Math.min(50, Number(e.schritte) || 0)));
+  return m;
+}
+
+async function tippenTun(e) {
+  const text = String(e.text ?? '');
+  if (ampel.enthaeltZahlungsdaten(text)) throw new Error('ROT: Karten- oder Kontodaten werden nie eingetippt.');
+  const v = await win.vordergrund();
+  if (TERMINALS.test(v.programm || '') || (v.klasse === '#32770' && /^(Ausführen|Run)$/i.test(v.titel || ''))) {
+    throw new Error(`Im Vordergrund ist ${v.programm || v.titel}. In Terminals und den Ausführen-Dialog tippe ich nicht, dafür gibt es das Werkzeug shell, damit die Ampel greift.`);
+  }
+  const r = await win.tippen(text);
+  if (r && r.passwortfeld) throw new Error('ROT: Der Fokus liegt in einem Passwortfeld. Dort tippe ich nichts ein.');
+  return bildschirm.monitorUnterMaus();
+}
+
+async function tasteTun(e) {
+  win.vkCodes(e.kombination);
+  await win.taste(e.kombination);
+  return bildschirm.monitorUnterMaus();
+}
+
+function tippenEinstufen(text) {
+  if (ampel.enthaeltZahlungsdaten(text)) return { stufe: ROT, kategorie: null, grund: 'Karten- oder Kontodaten werden nie eingetippt' };
+  return gruen();
+}
+
+function tasteEinstufen(kombination) {
+  const k = String(kombination || '').toLowerCase().replace(/\s+/g, '');
+  if (/^(win|windows|meta)\+r$/.test(k)) return { stufe: GELB, kategorie: 'shell', grund: 'Ausführen-Dialog öffnen' };
+  if (/^(win|windows|meta)\+l$/.test(k)) return { stufe: GELB, kategorie: 'system', grund: 'Bildschirm sperren' };
+  return gruen();
+}
+
+const MAX_SCHRITTE = 12;
+
+// voll: für Freigaben immer der vollständige Text, sonst kurz fürs Ergebnis.
+function schrittText(s, voll = false) {
+  switch (s && s.art) {
+    case 'klick': return `${s.doppelt ? 'Doppelklick' : 'Klick'} (${s.x}, ${s.y})${s.monitor ? ` Monitor ${s.monitor}` : ''}`;
+    case 'scrollen': return `Scrollen ${s.schritte} bei (${s.x}, ${s.y})`;
+    case 'tippen': return voll ? `Tippen ${JSON.stringify(String(s.text ?? ''))}` : `${String(s.text ?? '').length} Zeichen getippt`;
+    case 'taste': return `Taste ${s.kombination}`;
+    case 'warten': return `${Number(s.ms) || 0} ms warten`;
+    default: return `unbekannt (${JSON.stringify(s)})`;
+  }
 }
 
 function pfadAbs(p, ctx) {
@@ -280,7 +344,7 @@ const WERKZEUGE = [
   {
     name: 'klick',
     fremd: true,
-    description: 'Mausklick. x und y sind Pixel im zuletzt aufgenommenen Screenshot des angegebenen Monitors. Liefert danach automatisch einen neuen Screenshot.',
+    description: 'Mausklick. x und y sind Pixel im zuletzt aufgenommenen Screenshot des angegebenen Monitors. Liefert danach automatisch einen neuen Screenshot. Für mehrere vorhersehbare Schritte am Stück (anklicken, tippen, Enter) schneller: aktionen.',
     input_schema: {
       type: 'object',
       properties: {
@@ -295,9 +359,7 @@ const WERKZEUGE = [
     einstufen: gruen,
     async ausfuehren(e) {
       uiPruefen();
-      const m = e.monitor ?? 0;
-      const p = bildschirm.aufPhysisch(m, e.x, e.y);
-      await win.klick(p.x, p.y, e.taste || 'links', !!e.doppelt);
+      const m = await klickTun(e);
       return nachAktion(m, `Geklickt bei (${e.x}, ${e.y}) auf Monitor ${m}`);
     },
   },
@@ -313,9 +375,7 @@ const WERKZEUGE = [
     einstufen: gruen,
     async ausfuehren(e) {
       uiPruefen();
-      const m = e.monitor ?? 0;
-      const p = bildschirm.aufPhysisch(m, e.x, e.y);
-      await win.scrollen(p.x, p.y, Math.max(-50, Math.min(50, e.schritte)));
+      const m = await scrollenTun(e);
       return nachAktion(m, `Gescrollt um ${e.schritte}`);
     },
   },
@@ -324,19 +384,11 @@ const WERKZEUGE = [
     fremd: true,
     description: 'Text in das Feld mit dem Tastaturfokus tippen. Verweigert Passwortfelder, Terminals und Zahlungsdaten. Für Befehle das Werkzeug shell verwenden.',
     input_schema: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] },
-    einstufen(e) {
-      if (ampel.enthaeltZahlungsdaten(e.text)) return { stufe: ROT, kategorie: null, grund: 'Karten- oder Kontodaten werden nie eingetippt' };
-      return gruen();
-    },
+    einstufen: (e) => tippenEinstufen(e.text),
     async ausfuehren(e) {
       uiPruefen();
-      const v = await win.vordergrund();
-      if (TERMINALS.test(v.programm || '') || (v.klasse === '#32770' && /^(Ausführen|Run)$/i.test(v.titel || ''))) {
-        throw new Error(`Im Vordergrund ist ${v.programm || v.titel}. In Terminals und den Ausführen-Dialog tippe ich nicht, dafür gibt es das Werkzeug shell, damit die Ampel greift.`);
-      }
-      const r = await win.tippen(e.text);
-      if (r && r.passwortfeld) throw new Error('ROT: Der Fokus liegt in einem Passwortfeld. Dort tippe ich nichts ein.');
-      return nachAktion(bildschirm.monitorUnterMaus(), `${e.text.length} Zeichen getippt`);
+      const m = await tippenTun(e);
+      return nachAktion(m, `${String(e.text ?? '').length} Zeichen getippt`);
     },
   },
   {
@@ -344,17 +396,75 @@ const WERKZEUGE = [
     fremd: true,
     description: 'Taste oder Kombination drücken, z. B. "enter", "ctrl+s", "alt+tab", "win+d", "f5".',
     input_schema: { type: 'object', properties: { kombination: { type: 'string' } }, required: ['kombination'] },
-    einstufen(e) {
-      const k = String(e.kombination || '').toLowerCase().replace(/\s+/g, '');
-      if (/^(win|windows|meta)\+r$/.test(k)) return { stufe: GELB, kategorie: 'shell', grund: 'Ausführen-Dialog öffnen' };
-      if (/^(win|windows|meta)\+l$/.test(k)) return { stufe: GELB, kategorie: 'system', grund: 'Bildschirm sperren' };
-      return gruen();
-    },
+    einstufen: (e) => tasteEinstufen(e.kombination),
     async ausfuehren(e) {
       uiPruefen();
-      win.vkCodes(e.kombination);
-      await win.taste(e.kombination);
-      return nachAktion(bildschirm.monitorUnterMaus(), `Taste ${e.kombination} gedrückt`);
+      const m = await tasteTun(e);
+      return nachAktion(m, `Taste ${e.kombination} gedrückt`);
+    },
+  },
+  {
+    name: 'aktionen',
+    fremd: true,
+    description: `Mehrere Maus- und Tastaturschritte direkt hintereinander, danach ein einziger Screenshot – deutlich schneller als einzelne Aufrufe. Nur für Schritte, deren Wirkung vorhersehbar ist (Feld anklicken, Text tippen, Enter). Koordinaten beziehen sich auf den letzten Screenshot. Arten: klick (x, y, monitor, taste, doppelt), tippen (text), taste (kombination), scrollen (x, y, schritte, monitor), warten (ms, höchstens 3000). Höchstens ${MAX_SCHRITTE} Schritte; beim ersten Fehler ist Schluss.`,
+    input_schema: {
+      type: 'object',
+      properties: {
+        schritte: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              art: { type: 'string', enum: ['klick', 'tippen', 'taste', 'scrollen', 'warten'] },
+              x: { type: 'integer' },
+              y: { type: 'integer' },
+              monitor: { type: 'integer' },
+              taste: { type: 'string', enum: ['links', 'rechts', 'mitte'] },
+              doppelt: { type: 'boolean' },
+              text: { type: 'string' },
+              kombination: { type: 'string' },
+              schritte: { type: 'integer' },
+              ms: { type: 'integer' },
+            },
+            required: ['art'],
+          },
+        },
+      },
+      required: ['schritte'],
+    },
+    // Die strengste Stufe eines einzelnen Schritts gilt für alle.
+    einstufen(e) {
+      const schritte = Array.isArray(e.schritte) ? e.schritte : [];
+      let gelb = null;
+      for (const s of schritte) {
+        const st = s.art === 'tippen' ? tippenEinstufen(s.text) : s.art === 'taste' ? tasteEinstufen(s.kombination) : gruen();
+        if (st.stufe === ROT) return st;
+        if (st.stufe === GELB && !gelb) gelb = st;
+      }
+      return { ...(gelb || gruen()), beschreibung: `Schritte: ${schritte.map((s) => schrittText(s, true)).join(' → ')}` };
+    },
+    async ausfuehren(e) {
+      const schritte = Array.isArray(e.schritte) ? e.schritte : [];
+      if (!schritte.length) throw new Error('Keine Schritte angegeben.');
+      if (schritte.length > MAX_SCHRITTE) throw new Error(`Höchstens ${MAX_SCHRITTE} Schritte auf einmal.`);
+      uiPruefen();
+      let monitor = bildschirm.monitorUnterMaus();
+      const erledigt = [];
+      for (const s of schritte) {
+        try {
+          if (s.art === 'klick') monitor = await klickTun(s);
+          else if (s.art === 'scrollen') monitor = await scrollenTun(s);
+          else if (s.art === 'tippen') monitor = await tippenTun(s);
+          else if (s.art === 'taste') monitor = await tasteTun(s);
+          else if (s.art === 'warten') await kurzWarten(Math.max(0, Math.min(3000, Number(s.ms) || 0)));
+          else throw new Error(`Unbekannte Art "${s.art}".`);
+        } catch (err) {
+          return nachAktion(monitor, `Schritt ${erledigt.length + 1} (${schrittText(s)}) ging nicht: ${err.message} Erledigt davor: ${erledigt.join(' → ') || 'nichts'}. Nichts danach ausgeführt`);
+        }
+        erledigt.push(schrittText(s));
+        await kurzWarten(60); // Fokus und Eingabe kurz setzen lassen
+      }
+      return nachAktion(monitor, `${erledigt.length} Schritte: ${erledigt.join(' → ')}`);
     },
   },
   {

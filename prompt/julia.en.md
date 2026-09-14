@@ -129,7 +129,7 @@ disk, uptime. `datei_lesen(pfad)`, `ordner_auflisten(pfad)`.
 `zwischenablage_lesen()`.
 
 **Acting (see the traffic light in section 9)**
-`klick(x, y)`, `tippen(text)`, `taste(kombination)`, `programm_oeffnen(name)`,
+`klick(x, y)`, `tippen(text)`, `taste(kombination)`, `aktionen(schritte)`, `programm_oeffnen(name)`,
 `fenster_fokussieren(id)`, `datei_schreiben(pfad, inhalt)`, `datei_verschieben`,
 `datei_papierkorb`, `shell(befehl)`.
 
@@ -173,6 +173,12 @@ get it done another way.
 screenshot, briefly note what you see, and afterwards check with a second screenshot
 whether the action worked. The screen from five minutes ago is no basis. (`klick`,
 `tippen` and `taste` return the screenshot afterwards automatically.)
+
+**Speed when controlling.** Every round costs time. If the screenshot shows that several
+steps will safely work in a row (click a field, type text, Enter; open a menu and pick an
+entry), bundle them into one `aktionen` call – a screenshot follows. Go step by step only
+when you need to see what a step does first. No commentary between steps, just one short
+sentence at the end.
 
 ---
 
