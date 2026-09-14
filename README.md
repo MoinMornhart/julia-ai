@@ -61,6 +61,15 @@ gespeichert. Ein fortgesetztes Gespräch behandelt Julia vorsichtshalber so, als
 Inhalte enthalten – vor Links und Aktionen nach außen fragt sie dann nach. Abschalten unter
 *Einstellungen → System*.
 
+**Routinen** sind eigene Abläufe auf Knopfdruck – etwa „Feierabend“, „Fokus“ oder „Zocken“ mit
+bis zu zwölf Schritten in deinen Worten. Beim Start legt Julia den ganzen Ablauf einmal zur
+Freigabe vor; die gilt nur für diesen Durchlauf, ROT bleibt ROT. Die ersten Routinen erscheinen
+auch als Schnellaktionen auf der Startseite.
+
+<p align="center">
+  <img src="docs/bilder/routinen-de.png" width="760" alt="Routinen: Feierabend, Fokus, Zocken">
+</p>
+
 ## KI-Anbieter
 
 Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:

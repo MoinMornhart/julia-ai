@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'erinnerung', 'kosten',
+  'zustand', 'pegel', 'sprache:hoert', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'erinnerung', 'kosten',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -30,6 +30,10 @@ contextBridge.exposeInMainWorld('julia', {
   verlaufFortsetzen: (id) => ipcRenderer.invoke('verlauf:fortsetzen', String(id)),
   verlaufLoeschen: (id) => ipcRenderer.invoke('verlauf:loeschen', String(id)),
   verlaufAlleLoeschen: () => ipcRenderer.invoke('verlauf:alle_loeschen'),
+  routinenListe: () => ipcRenderer.invoke('routinen:liste'),
+  routineSpeichern: (r) => ipcRenderer.invoke('routinen:speichern', r),
+  routineLoeschen: (id) => ipcRenderer.invoke('routinen:loeschen', String(id)),
+  routineStarten: (id) => ipcRenderer.invoke('routinen:starten', String(id)),
   handyStatus: () => ipcRenderer.invoke('handy:status'),
   handyKoppeln: () => ipcRenderer.invoke('handy:koppeln'),
   handyTrennen: () => ipcRenderer.invoke('handy:trennen'),

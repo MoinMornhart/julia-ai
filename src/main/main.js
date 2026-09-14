@@ -31,6 +31,7 @@ const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
 const { HandyServer, qrMatrix } = require('./handy/server');
 const { Gespraeche } = require('./gespraeche');
+const routinenModul = require('./routinen');
 const anzeige = require('./anzeige');
 const anbieterListe = require('./anbieter/liste');
 const { claudeFinden } = require('./anbieter/claude-code');
@@ -58,6 +59,7 @@ let weckwort;
 let weckwortZuletzt = 0;
 let handy = null;
 let gespraeche = null;
+let routinen = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
 let tray = null;
@@ -665,6 +667,22 @@ function ipcEinrichten() {
     if (id === gespraech.id) gespraech.id = null;
     return gespraeche.loeschen(id);
   });
+  ipc.handle('routinen:liste', () => routinen.alle());
+  ipc.handle('routinen:speichern', (_e, r) => {
+    try {
+      const neu = routinen.speichern(r && typeof r === 'object' ? r : {});
+      anAlle('routinen:geaendert');
+      return { routine: neu };
+    } catch (e) {
+      return { fehler: e.schluessel ? t(e.schluessel) : e.message };
+    }
+  });
+  ipc.handle('routinen:loeschen', (_e, id) => {
+    const ok = routinen.loeschen(String(id));
+    anAlle('routinen:geaendert');
+    return ok;
+  });
+  ipc.handle('routinen:starten', (_e, id) => routineStarten(String(id)));
   ipc.handle('verlauf:alle_loeschen', () => {
     gespraeche.alleLoeschen();
     gespraech.id = null;
@@ -745,6 +763,24 @@ function gespraechSpeichern() {
   } catch (e) {
     protokoll.eintragen({ werkzeug: 'verlauf', stufe: 'INFO', ergebnis: 'nicht gespeichert', grund: e.message });
   }
+}
+
+// Routine starten: Im Chat steht nur "▶ Name", Julia bekommt den ganzen
+// Ablauf mit der Bitte, ihn einmal per auftrag_vorlegen freigeben zu lassen.
+function routineStarten(id) {
+  const r = routinen.lesen(id);
+  if (!r) return { fehler: t('rt.fehlt') };
+  if (agent.beschaeftigt) return { fehler: t('chat.beschaeftigt') };
+  const text = routinenModul.nachricht(r, t('rt.nachricht'));
+  chatZeigen('chat');
+  sprache.stumm();
+  anAlle('agent:nutzer', { text: `▶ ${r.name}`, perSprache: false });
+  protokoll.eintragen({ werkzeug: 'routine', stufe: 'INFO', eingabe: { name: r.name, schritte: r.schritte }, ergebnis: 'gestartet' });
+  agent.senden(text).catch((e) => {
+    if (e.message === 'BESCHAEFTIGT') anAlle('agent:hinweis', { art: 'beschaeftigt' });
+    else anAlle('agent:fehler', { art: 'text', text: e.message });
+  });
+  return { ok: true };
 }
 
 function gespraechFortsetzen(id) {
@@ -924,6 +960,7 @@ async function start() {
     oeffnen: (url) => shell.openExternal(url),
   });
   gespraeche = new Gespraeche(DATEN, krypto);
+  routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
   sprache = new Sprache();
   sprache.on('pegel', (p) => anAlle('pegel', p));
 

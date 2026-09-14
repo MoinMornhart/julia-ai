@@ -122,6 +122,9 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
     await warte(1800);
     await aufnehmenFenster(chatFenster, path.join(ziel, `verlauf-${sc}.png`), { mitRahmen: true });
   }
+  chatFenster.webContents.send('ansicht', 'routinen');
+  await warte(1500);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `routinen-${sc}.png`), { mitRahmen: true });
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });

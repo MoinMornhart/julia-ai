@@ -34,12 +34,12 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 1.2.0 | Jeder Anbieter: Anthropic, OpenAI, Gemini, Mistral, Groq, OpenRouter, Ollama, LM Studio, eigene OpenAI-kompatible Adresse – Schlüssel je Anbieter verschlüsselt, Modelle laden, eigenes Werkzeug `webseite_abrufen` ohne Zugriff aufs Heimnetz. Dazu versteckt das Claude-Abo über Claude Code (nur eigener Gebrauch): eingebaute Werkzeuge aus, nur Julias Werkzeuge über lokalen MCP-Zugang |
 | ✅ 1.3.0 | Neues Hauptfenster mit Seitenleiste und Startseite: Begrüßung, Schnelleingabe, Vorschläge, Kacheln für Termine, Posteingang (nur Absender und Betreff), Erinnerungen, PC-Zustand und Kosten, Tagesbriefing per Knopf |
 | ✅ 1.4.0 | Gesprächsverlauf: jedes Gespräch DPAPI-verschlüsselt auf dem PC, ohne Screenshots; Suche, Vorschau, Fortsetzen (dann gilt sofort der Schutz gegen Datenabfluss), Löschen mit zweitem Klick |
+| ✅ 1.5.0 | Routinen und Schnellaktionen: eigene Abläufe mit bis zu zwölf Schritten, Beispiele „Feierabend“, „Fokus“, „Zocken“; jeder Durchlauf wird einmal per auftrag_vorlegen freigegeben, ROT bleibt ROT |
 
 ## Als Nächstes
 
 | | Idee | Aufwand | Nutzen | Ampel / Sicherheit |
 |---|---|---|---|---|
-| 🔨 | **Schnellaktionen & Routinen** – eigene Knöpfe („Feierabend“, „Fokus“, „Zocken“) mit mehreren Schritten | M | hoch | Routine einmal ansehen und freigeben, GELB-Schritte bleiben GELB, ROT bleibt ROT |
 | 🔨 | **Dateien & markierter Text** – Dateien/Bilder in den Chat ziehen; Hotkey für markierten Text (übersetzen, zusammenfassen, umformulieren) | M | hoch | Inhalte gelten als fremd (Schutz gegen Datenabfluss greift) |
 | 🔨 | **Code-Ansicht** – Projekte, Tests, Diffs übersichtlich; Änderungen erst nach Ja | L | hoch | Schreiben außerhalb der Arbeitsordner GELB, `git push` GELB |
 | 🔨 | **Spielhilfe** – Tipps per Blick auf den Bildschirm, einfache Schritte in Einzelspieler-Spielen übernehmen | M | mittel | Online-Spiele mit Anti-Cheat ROT (Bann-Gefahr); keine Echtzeit-Steuerung |

@@ -62,6 +62,15 @@ Conversations are stored only on your PC, encrypted by Windows; screenshots are 
 Julia treats a continued conversation as if it had contained foreign content – so she asks
 before links and outward actions. Turn it off under *Settings → System*.
 
+**Routines** are your own workflows at the push of a button – such as "End of day", "Focus" or
+"Gaming", with up to twelve steps in your own words. When started, Julia presents the whole
+workflow once for approval; it covers only that run, RED stays RED. The first routines also
+appear as quick actions on the home page.
+
+<p align="center">
+  <img src="docs/bilder/routinen-en.png" width="760" alt="Routines: End of day, Focus, Gaming">
+</p>
+
 ## AI providers
 
 Julia runs with the provider of your choice – *Settings → General → AI provider*:

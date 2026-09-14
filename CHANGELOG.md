@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.5.0 – 2026-09-14
+- Routinen auf Knopfdruck – eigene Abläufe wie Feierabend, Fokus oder Zocken, einmal freigeben und Julia arbeitet sie ab
+
 ## 1.4.0 – 2026-09-14
 - Julia merkt sich deine Gespräche – im Verlauf suchst du alte Chats und setzt sie mit einem Klick fort, verschlüsselt und nur auf deinem PC
 
