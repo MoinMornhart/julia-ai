@@ -242,6 +242,11 @@ function felderFuellen() {
 
 function felderVerbinden() {
   document.querySelectorAll('[data-k]').forEach((el) => {
+    if (el.dataset.k === 'freigabe.immer') {
+      // Einschalten nur über die Rückfrage im Hauptprozess.
+      el.addEventListener('change', async () => { el.checked = !!(await julia.alleFreigeben(el.checked)).wert; });
+      return;
+    }
     if (el.type === 'range') {
       el.addEventListener('input', () => {
         ausgabe(el);

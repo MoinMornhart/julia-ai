@@ -151,6 +151,7 @@ Was die Software selbst durchsetzt:
 - **Schutz gegen Datenabfluss:** Sobald fremde Inhalte im Gespräch sind (Mails, Dateien, Webseiten, Bildschirm), fragt Julia auch vor dem Öffnen von Links und vor Netzwerk-Befehlen wie `ping` oder `nslookup` – über solche Wege ließen sich sonst Daten hinausschmuggeln. Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden, entfernt sie vorher. Auch dauerhaft merken darf sie sich dann nur mit deinem Ja – so kann keine Mail ihr Gedächtnis vergiften.
 - Aus dem Internet heruntergeladene Programme startet Julia nie (Mark-of-the-Web), und Updates spielen Pakete ohne deren Installationsskripte ein.
 - Eine Freigabe gilt für genau eine Aktion. Im Modus **zupackend** („zieh das durch") legt Julia den ganzen Auftrag einmal vor, danach laufen nur die dort genannten Kategorien ohne Einzelfrage.
+- Wer gar nicht mehr gefragt werden will, schaltet in den Einstellungen unter **Freigaben** „Allem zustimmen" ein – das geht nur von Hand und nach einer Rückfrage, Julia kann es nicht selbst. Danach laufen gelbe Aktionen ohne Nachfrage (und stehen im Protokoll). Rot bleibt gesperrt, und nach fremden Inhalten fragt Julia weiter, bevor etwas nach außen geht oder dauerhaft gemerkt wird.
 
 Was die Software **nicht** erkennen kann: dass ein bestimmter Klick eine Mail abschickt oder eine
 Bestellung auslöst. Dafür ist Julia selbst zuständig, sie fragt dann im Chat.

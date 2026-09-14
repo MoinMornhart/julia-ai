@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 2.2.0 – 2026-09-14
+- Einmal in den Einstellungen allem zustimmen – danach fragt Julia bei gelben Aktionen nicht mehr nach; Gesperrtes bleibt gesperrt, und nach fremden Inhalten fragt sie weiter, bevor etwas nach außen geht
+
 ## 2.1.0 – 2026-09-14
 - Oben in der Mitte siehst du jetzt immer, wenn Julia auf deinen Bildschirm schaut oder Maus und Tastatur steuert – in der Farbe des Overlays und mit Stopp-Knopf; unter der Blase steht außerdem der ganze Text
 

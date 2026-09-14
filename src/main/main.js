@@ -636,8 +636,21 @@ function ipcEinrichten() {
     return oeffentlicheConfig();
   });
   ipc.handle('config:setzen', (_e, schluessel, wert) => {
-    if (String(schluessel).startsWith('api.')) return { fehler: 'Nicht erlaubt.' };
+    if (/^(api|freigabe)\./.test(String(schluessel))) return { fehler: 'Nicht erlaubt.' };
     try { return { wert: config.set(schluessel, wert) }; } catch (e) { return { fehler: e.message }; }
+  });
+  // "Allem zustimmen" lässt sich nur hier einschalten – nach einem Ja im
+  // Windows-Dialog. Julia selbst kann es nicht (einstellung_setzen: ROT).
+  ipc.handle('freigabe:immer', async (_e, an) => {
+    if (an) {
+      const opts = {
+        type: 'warning', buttons: [t('freigabe.ja'), t('freigabe.nein')], defaultId: 1, cancelId: 1, noLink: true,
+        title: t('freigabe.titel'), message: t('freigabe.frage'), detail: t('freigabe.details'),
+      };
+      const r = einstFenster && !einstFenster.isDestroyed() ? await dialog.showMessageBox(einstFenster, opts) : await dialog.showMessageBox(opts);
+      if (r.response !== 0) return { wert: config.get('freigabe.immer') };
+    }
+    return { wert: config.set('freigabe.immer', !!an) };
   });
   ipc.handle('schluessel:setzen', (_e, s) => {
     try { schluesselSetzen(s); return { ok: true }; } catch (e) { return { fehler: e.message }; }

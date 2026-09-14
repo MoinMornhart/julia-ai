@@ -207,6 +207,16 @@ function nachFremdemInhalt(stufe, fremdKontakt, nachAussen, dauerhaft = false) {
   return stufe;
 }
 
+// "Allem zustimmen" in den Einstellungen: GELB läuft dann ohne Rückfrage –
+// außer den Schutzfragen nach fremden Inhalten (Datenabfluss, vergiftetes
+// Gedächtnis). Sonst könnte eine Webseite Julia unbemerkt etwas hinausschicken
+// lassen. ROT bleibt davon unberührt gesperrt.
+const IMMER_FRAGEN = ['netz', 'gedaechtnis'];
+
+function ohneFrage(kategorie, allemZugestimmt) {
+  return allemZugestimmt === true && !IMMER_FRAGEN.includes(kategorie);
+}
+
 // Kartennummern (Luhn-geprüft) und IBANs tippt Julia nie ein.
 function enthaeltZahlungsdaten(text) {
   const s = String(text || '');
@@ -230,6 +240,6 @@ function luhn(ziffern) {
 
 module.exports = {
   GRUEN, GELB, ROT, KATEGORIEN,
-  einstufenShell, einstufenPfade, einstufenProgramm, nachFremdemInhalt, NETZ_BEFEHLE,
+  einstufenShell, einstufenPfade, einstufenProgramm, nachFremdemInhalt, NETZ_BEFEHLE, ohneFrage, IMMER_FRAGEN,
   inArbeitsverzeichnis, liegtIn, enthaeltZahlungsdaten,
 };

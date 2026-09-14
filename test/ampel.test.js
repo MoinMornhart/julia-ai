@@ -100,3 +100,23 @@ test('Zahlungsdaten werden erkannt', () => {
   assert.equal(a.enthaeltZahlungsdaten('Rechnung 2024-118 über 49,90 €'), false);
   assert.equal(a.enthaeltZahlungsdaten('1234567890123'), false);
 });
+
+test('Allem zustimmen: GELB ohne Rückfrage, Schutzfragen nach fremden Inhalten bleiben', () => {
+  for (const k of ['dateien', 'software', 'system', 'shell', 'nachricht', 'oeffentlich', 'programm']) {
+    assert.equal(a.ohneFrage(k, true), true, k);
+    assert.equal(a.ohneFrage(k, false), false, k);
+  }
+  assert.equal(a.ohneFrage('netz', true), false);
+  assert.equal(a.ohneFrage('gedaechtnis', true), false);
+  // Nur ein echtes true zählt, kein "true" als Text.
+  assert.equal(a.ohneFrage('dateien', 'true'), false);
+  assert.equal(a.ohneFrage('dateien', undefined), false);
+});
+
+test('Julia kann "Allem zustimmen" nicht selbst einschalten', () => {
+  const { WERKZEUGE } = require('../src/main/werkzeuge');
+  const w = WERKZEUGE.find((x) => x.name === 'einstellung_setzen');
+  for (const wert of [true, 'true', 'an']) {
+    assert.equal(w.einstufen({ schluessel: 'freigabe.immer', wert }).stufe, a.ROT);
+  }
+});

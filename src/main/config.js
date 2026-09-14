@@ -104,6 +104,9 @@ const STANDARD = {
     automatisch: false,
     kanal: 'stabil', // 'stabil' | 'test'
   },
+  freigabe: {
+    immer: false, // "Allem zustimmen": nur von Hand, nach einer Rückfrage
+  },
 };
 
 function klon(x) {
@@ -171,6 +174,7 @@ function pruefen(schluessel, wert) {
     case 'verlauf.speichern':
     case 'blase.untertitel':
     case 'weckwort.an':
+    case 'freigabe.immer':
       if (typeof wert === 'boolean') return wert;
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
