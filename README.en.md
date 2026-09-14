@@ -44,6 +44,32 @@ what's going on and gets it done – from renaming 200 files to tracking down a 
 To use Julia in English, pick **English** under *Settings → General → Language*. The whole UI,
 Julia's replies and her voice switch immediately.
 
+## AI providers
+
+Julia runs with the provider of your choice – *Settings → General → AI provider*:
+
+| Provider | What you need |
+|---|---|
+| **Anthropic (Claude)** – default | API key from [console.anthropic.com](https://console.anthropic.com). The only provider with built-in web search. |
+| **OpenAI**, **Google Gemini**, **Mistral**, **Groq**, **OpenRouter** | the provider's API key |
+| **Ollama**, **LM Studio** | nothing – the model runs for free on your PC |
+| **Custom address** | any OpenAI-compatible API (HTTPS, or HTTP on your home network) |
+| **Claude subscription via Claude Code** | your installed Claude Code with subscription login – only shown when Claude Code is found; personal use only |
+
+Each key is stored separately, encrypted by Windows. *Load models* fetches the current model list
+straight from the provider. The model must support tool calling, and for screenshots it needs to
+understand images. The traffic light, approvals and cost brake work the same with every provider.
+Providers without their own web search read web pages through Julia's `webseite_abrufen` tool,
+which never fetches addresses on the PC or the home network.
+
+**Claude subscription:** Julia runs your Claude Code in the background with your login – no API
+key and no API costs. Claude Code's built-in tools (Bash, files, web …) are switched off entirely
+and other MCP servers are excluded; Claude Code only gets Julia's tools through a local MCP
+endpoint with a random key, and every call goes through the same traffic light. If Claude Code
+reports tools of its own anyway, Julia aborts. Anthropic doesn't allow offering subscription
+access in third-party products – so this option is meant for yourself only and isn't advertised
+on the website.
+
 ## The traffic light
 
 Every action falls into exactly one level. This isn't just in the prompt – the software checks

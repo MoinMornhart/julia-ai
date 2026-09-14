@@ -171,7 +171,8 @@ function zeitText(ms, ctx) {
 }
 
 const EINSTELLUNG_GRUEN = /^(blase\.|sprache\.)/;
-const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|nutzer\.name$|sprachcode$)/;
+// Anbieter und Adresse bestimmen, wohin das Gespräch geht – nur mit Ja.
+const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|handy\.)/;
 
 const WERKZEUGE = [
   {
@@ -616,10 +617,28 @@ const WERKZEUGE = [
   },
 ];
 
+// Für Anbieter ohne eigene Websuche. Nach außen gerichtet: Die Adresse selbst
+// kann Daten tragen, deshalb wird der Abruf nach fremden Inhalten GELB.
+const WEBSEITE = {
+  name: 'webseite_abrufen',
+  fremd: true,
+  description: 'Eine öffentliche Webseite abrufen und als Text lesen. Nur http/https, keine Adressen auf diesem PC oder im Heimnetz. Nur Seiten, deren Adresse du kennst oder die der Nutzer genannt hat.',
+  input_schema: { type: 'object', properties: { url: { type: 'string' } }, required: ['url'] },
+  nachAussen: () => true,
+  einstufen(e) {
+    return { ...gruen(), beschreibung: `Webseite abrufen: ${e.url}` };
+  },
+  async ausfuehren(e) {
+    const text = await require('./webseite').webseiteLesen(e.url);
+    return fremd(`der Webseite ${String(e.url).slice(0, 200)}`, text);
+  },
+};
+
 // Grundwerkzeuge plus die Werkzeuge verbundener Konten.
 function alle(ctx) {
   const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
-  return [...WERKZEUGE, ...extra];
+  const web = ctx && ctx.eigenesWeb && ctx.eigenesWeb() ? [WEBSEITE] : [];
+  return [...WERKZEUGE, ...web, ...extra];
 }
 
 function definitionen(ctx) {
@@ -630,4 +649,4 @@ function finden(name, ctx) {
   return alle(ctx).find((w) => w.name === name);
 }
 
-module.exports = { WERKZEUGE, definitionen, finden, shellAusfuehren, bildBloecke };
+module.exports = { WERKZEUGE, WEBSEITE, definitionen, finden, shellAusfuehren, bildBloecke };

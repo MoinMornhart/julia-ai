@@ -19,9 +19,11 @@ use her.
 ## 1. What you need
 
 - Windows 10 or 11, 64-bit.
-- An **API key from Anthropic**. You get it at
-  [console.anthropic.com](https://console.anthropic.com) → *API Keys*. Usage is billed there by
-  consumption; Julia has a cost brake with a daily limit (default 10 US$).
+- Access to an AI model. Best is an **API key from Anthropic** – you get it at
+  [console.anthropic.com](https://console.anthropic.com) → *API Keys*. Keys from **OpenAI**,
+  **Google Gemini**, **Mistral**, **Groq** or **OpenRouter** work just as well, or a free **local
+  model** with [Ollama](https://ollama.com) or [LM Studio](https://lmstudio.ai). The provider bills
+  by consumption; Julia has a cost brake with a daily limit (default 10 US$).
 
 You don't need admin rights.
 
@@ -52,8 +54,9 @@ Get-FileHash .\Julia-AI-Setup.exe
 On first start the setup opens:
 
 1. **Your first name** – that's how Julia addresses you.
-2. **API key** – paste it (`sk-ant-…`). It's stored encrypted by Windows; Julia never shows it
-   again.
+2. **AI provider and API key** – pick a provider (default: Anthropic) and paste the key. It's
+   stored encrypted by Windows; Julia never shows it again. Ollama or LM Studio need no key; *Load
+   models* shows which models are available.
 3. **Working folders** – the folders where Julia may create and change files without asking, for
    example `Documents\Projects`. Everywhere else she asks first.
 4. Click **Done**.
@@ -101,7 +104,8 @@ then checks that it runs
 **Read and review code**
 > "Look at the repo and tell me why the test fails."
 
-**Look things up** – search the web and read pages
+**Look things up** – search the web and read pages (web search comes with Claude; with other
+providers Julia reads pages whose address is known)
 > "What's the current Node version?"
 
 **Remind you**
@@ -153,7 +157,8 @@ rid of everything, delete that folder by hand afterwards.
 | Problem | Fix |
 |---|---|
 | Windows blocks the installer | *More info* → *Run anyway* (see above). |
-| "The API key was rejected" | Paste the key again in the settings; check that there's credit in the Anthropic console. |
+| "The API key was rejected" | Paste the key again in the settings; check that there's credit with the provider. |
+| "Model not found (404)" | In the settings, click *Load models* and pick a model from the list. |
 | Julia doesn't hear "Hey Julia" | Turn it on in the settings and pick a microphone as the default recording device. |
 | The overlay doesn't show in a game | Switch the game to "borderless window" instead of "exclusive fullscreen". |
 | Windows asks about the firewall | For the phone on Wi-Fi: allow **Private networks** only. |

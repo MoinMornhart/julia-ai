@@ -31,6 +31,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.9.3 | Telegram-Anbindung ausgebaut |
 | ✅ 1.0.0 | Installer (Julia-AI-Setup.exe) und öffentliche Webseite mit Prüfsumme; Updates der installierten Fassung aus den Releases, geprüft per SHA-512; Electron Fuses (kein RunAsNode, keine NODE_OPTIONS, nur geprüftes ASAR) |
 | ✅ 1.1.0 | Handy im WLAN: Web-App im Handy-Browser, HTTPS mit eigenem Zertifikat, Kopplung per QR-Einmal-Code, nur ein Gerät (PC kennt nur den Hash des Schlüssels), nur Heimnetz, Schutz gegen DNS-Rebinding, Sperre nach Fehlversuchen, Freigaben per Knopf |
+| ✅ 1.2.0 | Jeder Anbieter: Anthropic, OpenAI, Gemini, Mistral, Groq, OpenRouter, Ollama, LM Studio, eigene OpenAI-kompatible Adresse – Schlüssel je Anbieter verschlüsselt, Modelle laden, eigenes Werkzeug `webseite_abrufen` ohne Zugriff aufs Heimnetz. Dazu versteckt das Claude-Abo über Claude Code (nur eigener Gebrauch): eingebaute Werkzeuge aus, nur Julias Werkzeuge über lokalen MCP-Zugang |
 
 ## Als Nächstes
 

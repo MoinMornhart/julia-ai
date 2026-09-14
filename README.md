@@ -42,6 +42,32 @@ bis zur Fehlersuche in einem Repo.
 - **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe.
 - **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
 
+## KI-Anbieter
+
+Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → KI-Anbieter*:
+
+| Anbieter | Was du brauchst |
+|---|---|
+| **Anthropic (Claude)** – Standard | API-Schlüssel von [console.anthropic.com](https://console.anthropic.com). Einziger Anbieter mit eingebauter Websuche. |
+| **OpenAI**, **Google Gemini**, **Mistral**, **Groq**, **OpenRouter** | API-Schlüssel des Anbieters |
+| **Ollama**, **LM Studio** | nichts – das Modell läuft kostenlos auf deinem PC |
+| **Eigene Adresse** | jede OpenAI-kompatible Schnittstelle (HTTPS, oder HTTP im Heimnetz) |
+| **Claude-Abo über Claude Code** | dein installiertes Claude Code mit Abo-Login – erscheint nur, wenn Claude Code gefunden wird; nur für den eigenen Gebrauch |
+
+Jeder Schlüssel wird einzeln mit Windows verschlüsselt gespeichert. *Modelle laden* holt die
+aktuelle Modellliste direkt beim Anbieter. Das Modell muss Werkzeuge aufrufen können, für
+Screenshots eines, das Bilder versteht. Ampel, Freigaben und Kostenbremse gelten bei jedem
+Anbieter gleich. Anbieter ohne eigene Websuche lesen Webseiten über Julias Werkzeug
+`webseite_abrufen`, das nie Adressen auf dem PC oder im Heimnetz abruft.
+
+**Claude-Abo:** Julia startet dein Claude Code im Hintergrund mit deinem Login – ohne
+API-Schlüssel und ohne API-Kosten. Die eingebauten Werkzeuge von Claude Code (Bash, Dateien,
+Web …) sind komplett abgeschaltet, fremde MCP-Server ausgeschlossen; Claude Code bekommt nur
+Julias Werkzeuge über einen lokalen MCP-Zugang mit Zufallsschlüssel, und jeder Aufruf läuft durch
+dieselbe Ampel. Meldet Claude Code doch eigene Werkzeuge, bricht Julia ab. Anthropic erlaubt
+nicht, Abo-Zugänge in fremden Produkten anzubieten – deshalb ist diese Option nur für dich selbst
+gedacht und wird auf der Webseite nicht beworben.
+
 ## Die Ampel
 
 Jede Aktion fällt in genau eine Stufe. Das steht nicht nur im Prompt, die Software prüft es

@@ -52,7 +52,7 @@ function texteAnwenden(daten) {
     monitoreFuellen();
     ordnerZeigen();
     farbenZeigen();
-    schluesselHinweis();
+    anbieterZeigen();
   }
   $('googleAnleitung').href = ANLEITUNG[daten.sprachcode] || ANLEITUNG.de;
   if (kontenStand) kontenZeigen(kontenStand);
@@ -334,6 +334,70 @@ function schluesselHinweis() {
   $('schluesselHinweis').textContent = cfg.schluesselGesetzt ? tx('einst.schluessel_gesetzt') : tx('einst.schluessel_hinweis');
 }
 
+// --- KI-Anbieter ---
+
+function aktuellerAnbieter() {
+  const liste = cfg.anbieterListe || [];
+  return liste.find((a) => a.id === cfg.anbieter) || liste[0] || { id: 'anthropic', art: 'anthropic', modelle: [], brauchtSchluessel: true };
+}
+
+function modelleZeigen(modelle) {
+  const dl = $('modelle');
+  dl.innerHTML = '';
+  for (const m of modelle || []) {
+    const o = document.createElement('option');
+    o.value = m;
+    dl.appendChild(o);
+  }
+}
+
+function anbieterZeigen() {
+  const sel = $('anbieter');
+  sel.innerHTML = '';
+  for (const a of cfg.anbieterListe || []) {
+    const o = document.createElement('option');
+    o.value = a.id;
+    o.textContent = a.id === 'claude-abo' ? tx('einst.anbieter_abo') : a.name;
+    sel.appendChild(o);
+  }
+  sel.value = cfg.anbieter;
+  const a = aktuellerAnbieter();
+  $('anbieterUrlFeld').hidden = !a.eigeneUrl;
+  $('schluesselFeld').hidden = !(a.brauchtSchluessel || a.eigeneUrl);
+  $('schluesselLabel').textContent = tx('einst.schluessel', { anbieter: a.name || '' });
+  $('schluessel').placeholder = a.schluessel || '';
+  $('schluesselSeite').hidden = !a.seite;
+  if (a.seite) $('schluesselSeite').href = a.seite;
+  $('aufwandFeld').hidden = !(a.art === 'anthropic' || a.art === 'claude-code');
+  const hinweis = a.id === 'claude-abo' ? 'einst.abo_hinweis' : a.lokal ? 'einst.lokal_hinweis' : a.art === 'openai' ? 'einst.fremd_hinweis' : '';
+  $('anbieterHinweis').hidden = !hinweis;
+  $('anbieterHinweis').textContent = hinweis ? tx(hinweis) : '';
+  $('modelleMeldung').textContent = '';
+  modelleZeigen(a.modelle);
+  schluesselHinweis();
+}
+
+function anbieterVerbinden() {
+  $('anbieter').addEventListener('change', async () => {
+    const r = await julia.anbieterSetzen($('anbieter').value);
+    cfg = { ...cfg, ...r.config };
+    felderFuellen();
+    anbieterZeigen();
+    if (r.fehler) melden(r.fehler, true);
+  });
+  $('modelleLaden').addEventListener('click', async (e) => {
+    e.preventDefault();
+    $('modelleMeldung').textContent = '…';
+    const r = await julia.modelleLaden();
+    if (r.fehler) {
+      $('modelleMeldung').textContent = r.fehler;
+      return;
+    }
+    modelleZeigen(r.modelle);
+    $('modelleMeldung').textContent = tx('einst.modelle_geladen', { anzahl: r.modelle.length });
+  });
+}
+
 async function stimmenLaden() {
   const sel = $('stimme');
   const stimmen = await julia.stimmen();
@@ -363,12 +427,19 @@ async function speichern() {
     const r = await julia.schluesselSetzen(schluessel);
     if (r.fehler) { melden(r.fehler, true); return; }
     $('schluessel').value = '';
-    cfg.schluesselGesetzt = true;
-    schluesselHinweis();
   }
+  cfg = await julia.config();
+  schluesselHinweis();
   if (einrichtung) {
     if (!name) { melden(tx('einst.fehlt_name'), true); $('name').focus(); return; }
-    if (!cfg.schluesselGesetzt) { melden(tx('einst.fehlt_schluessel'), true); $('schluessel').focus(); return; }
+    if (!cfg.bereit) {
+      const a = aktuellerAnbieter();
+      if (a.eigeneUrl && !cfg.anbieter_url) { melden(tx('einst.fehlt_url'), true); $('anbieterUrl').focus(); return; }
+      if (a.id === 'claude-abo') { melden(tx('einst.fehlt_claude'), true); return; }
+      melden(tx('einst.fehlt_schluessel'), true);
+      $('schluessel').focus();
+      return;
+    }
     await julia.einrichtungFertig();
     return;
   }
@@ -431,7 +502,8 @@ async function init() {
   monitoreFuellen();
   ordnerZeigen();
   farbenZeigen();
-  schluesselHinweis();
+  anbieterZeigen();
+  anbieterVerbinden();
 
   $('ordnerHinzu').onclick = async () => {
     const p = await julia.ordnerWaehlen();

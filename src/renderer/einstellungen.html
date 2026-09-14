@@ -67,23 +67,30 @@
           <input id="pronomenEigen" data-k="nutzer.pronomen_eigen" type="text" maxlength="30" placeholder="xier/xiem" autocomplete="off">
         </div>
       </div>
-      <div class="feld">
-        <label for="schluessel" data-t="einst.schluessel"></label>
-        <input id="schluessel" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
-        <small id="schluesselHinweis"></small>
+      <div class="zwei">
+        <div class="feld">
+          <label for="anbieter" data-t="einst.anbieter"></label>
+          <select id="anbieter"></select>
+        </div>
+        <div class="feld" id="anbieterUrlFeld" hidden>
+          <label for="anbieterUrl" data-t="einst.anbieter_url"></label>
+          <input id="anbieterUrl" data-k="anbieter_url" placeholder="https://…/v1" autocomplete="off" spellcheck="false">
+        </div>
+      </div>
+      <p class="hinweis" id="anbieterHinweis" hidden></p>
+      <div class="feld" id="schluesselFeld">
+        <label for="schluessel" id="schluesselLabel"></label>
+        <input id="schluessel" type="password" autocomplete="off" spellcheck="false">
+        <small><span id="schluesselHinweis"></span> <a id="schluesselSeite" target="_blank" rel="noreferrer" data-t="einst.schluessel_holen" hidden></a></small>
       </div>
       <div class="zwei">
         <div class="feld">
           <label for="modell" data-t="einst.modell"></label>
-          <input id="modell" data-k="modell" list="modelle" spellcheck="false">
-          <datalist id="modelle">
-            <option value="claude-opus-5">
-            <option value="claude-fable-5-1">
-            <option value="claude-sonnet-5">
-            <option value="claude-haiku-4-5">
-          </datalist>
+          <input id="modell" data-k="modell" list="modelle" spellcheck="false" autocomplete="off">
+          <datalist id="modelle"></datalist>
+          <small><a href="#" id="modelleLaden" data-t="einst.modelle_laden"></a> <span id="modelleMeldung"></span></small>
         </div>
-        <div class="feld">
+        <div class="feld" id="aufwandFeld">
           <label for="aufwand" data-t="einst.aufwand"></label>
           <select id="aufwand" data-k="aufwand">
             <option value="low">low</option>

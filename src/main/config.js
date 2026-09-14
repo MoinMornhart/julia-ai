@@ -23,7 +23,11 @@ const STANDARD = {
     pronomen_eigen: '',
   },
   arbeitsverzeichnisse: [],
-  api: { schluessel_verschluesselt: '' },
+  // Schlüssel liegen nur DPAPI-verschlüsselt hier: Anthropic im alten Feld,
+  // alle anderen Anbieter unter je_anbieter.<id>.
+  api: { schluessel_verschluesselt: '', je_anbieter: {} },
+  anbieter: 'anthropic', // siehe anbieter/liste.js
+  anbieter_url: '', // nur für "eigen": OpenAI-kompatible Adresse
   modell: 'claude-opus-5',
   aufwand: 'high',
   kanal: 'desktop',
@@ -100,7 +104,10 @@ function mischen(standard, datei) {
   if (!istObjekt(datei)) return out;
   for (const [k, v] of Object.entries(datei)) {
     if (!(k in standard)) continue;
-    if (istObjekt(standard[k]) && k !== 'farben') out[k] = mischen(standard[k], v);
+    if (k === 'je_anbieter') {
+      // Freie Schlüssel (Anbieter-IDs), nur Texte übernehmen.
+      if (istObjekt(v)) for (const [id, s] of Object.entries(v)) if (typeof s === 'string' && s) out.je_anbieter[id] = s;
+    } else if (istObjekt(standard[k]) && k !== 'farben') out[k] = mischen(standard[k], v);
     else if (k === 'farben' && istObjekt(v)) {
       for (const z of ZUSTAENDE) if (Array.isArray(v[z]) && v[z].length) out.farben[z] = v[z];
     } else if (v !== undefined) out[k] = v;
@@ -230,6 +237,19 @@ function pruefen(schluessel, wert) {
       return Object.fromEntries(ZUSTAENDE.map((z) => [z, wert[z] ? pruefen(`blase.farben.${z}`, wert[z]) : STANDARD.blase.farben[z]]));
     case 'api.schluessel_verschluesselt':
       return String(wert);
+    case 'api.je_anbieter': {
+      const { IDS } = require('./anbieter/liste');
+      if (!istObjekt(wert)) throw new Error('api.je_anbieter ist ein Objekt.');
+      return Object.fromEntries(Object.entries(wert).filter(([id, s]) => IDS.includes(id) && typeof s === 'string' && s));
+    }
+    case 'anbieter': {
+      const { IDS } = require('./anbieter/liste');
+      if (!IDS.includes(wert)) throw new Error(`Unbekannter Anbieter, erlaubt: ${IDS.join(', ')}.`);
+      return wert;
+    }
+    case 'anbieter_url':
+      if (wert === '' || wert == null) return '';
+      return require('./anbieter/liste').urlPruefen(wert);
     default:
       throw new Error(`Unbekannte Einstellung "${schluessel}".`);
   }

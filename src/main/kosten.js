@@ -21,6 +21,18 @@ const PREISE = {
   'claude-sonnet-5': [2, 10],
   'claude-sonnet-4-6': [3, 15],
   'claude-haiku-4-5': [1, 5],
+  // Andere Anbieter: Listenpreise als Schätzung. Unbekannte Modelle rechnet
+  // die Bremse vorsichtig teuer.
+  'gpt-5': [1.25, 10],
+  'gpt-5-mini': [0.25, 2],
+  'gpt-4.1': [2, 8],
+  'gemini-2.5-pro': [1.25, 10],
+  'gemini-2.5-flash': [0.3, 2.5],
+  'mistral-large': [2, 6],
+  'mistral-medium': [0.4, 2],
+  'pixtral-large': [2, 6],
+  'meta-llama/llama-4-maverick': [0.2, 0.6],
+  'meta-llama/llama-4-scout': [0.11, 0.34],
 };
 // Unbekanntes Modell: lieber zu teuer schätzen, dann greift die Bremse früher.
 const VORSICHTIG = [10, 50];
@@ -30,10 +42,12 @@ const CACHE_SCHREIBEN = 1.25;
 const TAGE_BEHALTEN = 62;
 
 function preis(modell) {
-  const m = String(modell || '');
-  const treffer = Object.keys(PREISE)
+  const suchen = (m) => Object.keys(PREISE)
     .sort((a, b) => b.length - a.length)
     .find((p) => m === p || m.startsWith(`${p}-`));
+  const m = String(modell || '');
+  // OpenRouter nennt Modelle mit Anbieter davor ("openai/gpt-5").
+  const treffer = suchen(m) || suchen(m.split('/').pop());
   return treffer ? PREISE[treffer] : VORSICHTIG;
 }
 

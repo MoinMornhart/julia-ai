@@ -1,12 +1,19 @@
 'use strict';
 
+const path = require('path');
 const { EventEmitter } = require('events');
 const { Anthropic } = require('@anthropic-ai/sdk');
 const ampel = require('./ampel');
 const werkzeuge = require('./werkzeuge');
+const anbieter = require('./anbieter/liste');
+const openai = require('./anbieter/openai');
+const { ClaudeCode, PRAEFIX } = require('./anbieter/claude-code');
 
-// Die Gesprächsschleife: schickt den Verlauf an Claude, führt Werkzeuge aus,
-// holt Freigaben ein und hält die Ampel durch – im Code, nicht nur im Prompt.
+// Die Gesprächsschleife: schickt den Verlauf an das Modell, führt Werkzeuge
+// aus, holt Freigaben ein und hält die Ampel durch – im Code, nicht nur im
+// Prompt. Welcher Anbieter antwortet (Anthropic, ein OpenAI-kompatibler oder
+// das Claude-Abo über Claude Code), ändert an Ampel und Werkzeugen nichts:
+// Jeder Werkzeugaufruf läuft durch _werkzeug().
 
 const MAX_RUNDEN = 60;
 
@@ -29,13 +36,17 @@ function kurzeEingabe(eingabe) {
 }
 
 class Agent extends EventEmitter {
-  constructor({ config, ctx, apiSchluessel, systemPrompt, laufzeitKontext }) {
+  // apiSchluessel(anbieterId): Schlüssel des Anbieters oder ''
+  // claudeCodeExe(): Pfad zu claude.exe oder null
+  constructor({ config, ctx, apiSchluessel, systemPrompt, laufzeitKontext, claudeCodeExe = () => null, holen }) {
     super();
     this.config = config;
     this.ctx = ctx;
     this.apiSchluessel = apiSchluessel;
     this.systemPrompt = systemPrompt;
     this.laufzeitKontext = laufzeitKontext;
+    this.claudeCodeExe = claudeCodeExe;
+    this.holen = holen;
     this.verlauf = [];
     this.beschaeftigt = false;
     this.abbruch = null;
@@ -44,18 +55,23 @@ class Agent extends EventEmitter {
     this.auftrag = null;
     this.client = null;
     this.clientSchluessel = null;
+    this.abo = null;
+    this.mcpZaehler = 0;
+    this.letzteNachricht = '';
     // Waren im Gespräch schon fremde Inhalte (Mail, Datei, Web, Bildschirm)?
     // Dann werden Aktionen nach außen GELB (ampel.nachFremdemInhalt).
     this.fremdKontakt = false;
   }
 
+  _keinSchluessel() {
+    const e = new Error('KEIN_SCHLUESSEL');
+    e.keinSchluessel = true;
+    return e;
+  }
+
   _client() {
-    const schluessel = this.apiSchluessel();
-    if (!schluessel) {
-      const e = new Error('KEIN_SCHLUESSEL');
-      e.keinSchluessel = true;
-      throw e;
-    }
+    const schluessel = this.apiSchluessel('anthropic');
+    if (!schluessel) throw this._keinSchluessel();
     if (!this.client || this.clientSchluessel !== schluessel) {
       this.client = new Anthropic({ apiKey: schluessel, timeout: 10 * 60 * 1000, maxRetries: 2 });
       this.clientSchluessel = schluessel;
@@ -67,6 +83,11 @@ class Agent extends EventEmitter {
     if (this.beschaeftigt) this.abbrechen();
     this.verlauf = [];
     this.fremdKontakt = false;
+    if (this.abo) this.abo.neu();
+  }
+
+  stoppen() {
+    if (this.abo) this.abo.stoppen();
   }
 
   abbrechen() {
@@ -99,13 +120,14 @@ class Agent extends EventEmitter {
     const kopf = [require('./prompt').zeitstempel(sc)];
     if (perSprache) kopf.push(sc === 'en' ? 'by voice, answer will be read aloud' : 'per Sprache, Antwort wird vorgelesen');
     if (kanal !== 'desktop') kopf.push(sc === 'en' ? `channel: ${kanal}` : `Kanal: ${kanal}`);
-    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: `[${kopf.join(' · ')}]\n${text}` }] });
+    this.letzteNachricht = `[${kopf.join(' · ')}]\n${text}`;
+    this.verlauf.push({ role: 'user', content: [{ type: 'text', text: this.letzteNachricht }] });
     let letzterText = null;
     try {
       letzterText = await this._schleife();
       return letzterText;
     } catch (e) {
-      if (this.abbruch.signal.aborted || e instanceof Anthropic.APIUserAbortError) {
+      if (this.abbruch.signal.aborted || e instanceof Anthropic.APIUserAbortError || e.abgebrochen) {
         this.emit('hinweis', { art: 'abgebrochen' });
         return null;
       }
@@ -136,8 +158,9 @@ class Agent extends EventEmitter {
     throw e;
   }
 
-  _kostenErfassen(modell, usage) {
-    if (!this.ctx.kosten) return;
+  // Lokale Modelle und das Abo kosten nichts pro Anfrage.
+  _kostenErfassen(modell, usage, a) {
+    if (!this.ctx.kosten || (a && a.lokal)) return;
     const stand = this.ctx.kosten.erfassen(modell, usage);
     this.emit('kosten', stand);
     const limit = Number(this.config.get('kosten.tageslimit_usd')) || 0;
@@ -156,6 +179,11 @@ class Agent extends EventEmitter {
     if (e instanceof Anthropic.BadRequestError) return { art: 'text', text: `Die Anfrage wurde abgelehnt (400): ${e.message}` };
     if (e instanceof Anthropic.APIConnectionError) return { art: 'text', text: 'Keine Verbindung zur Anthropic-API. Internet prüfen.' };
     if (e instanceof Anthropic.APIError) return { art: 'text', text: `API-Fehler ${e.status ?? ''}: ${e.message}` };
+    // Fehler der anderen Anbieter
+    if (e.status === 401 || e.status === 403) return { art: 'text', text: `Der Anbieter hat den Zugriff abgelehnt (${e.status}). Bitte API-Schlüssel und Modell in den Einstellungen prüfen. ${e.message}` };
+    if (e.status === 404) return { art: 'text', text: `Modell oder Adresse nicht gefunden (404). Mit „Modelle laden“ in den Einstellungen siehst du, was es gibt. ${e.message}` };
+    if (e.status === 429) return { art: 'text', text: `Zu viele Anfragen oder Kontingent aufgebraucht (429): ${e.message}` };
+    if (e.status) return { art: 'text', text: `Fehler vom Anbieter (${e.status}): ${e.message}` };
     return { art: 'text', text: e.message || String(e) };
   }
 
@@ -170,6 +198,25 @@ class Agent extends EventEmitter {
       role: 'user',
       content: offen.map((b) => ({ type: 'tool_result', tool_use_id: b.id, content: 'Abgebrochen durch den Nutzer.', is_error: true })),
     });
+  }
+
+  // Was bei diesem Anbieter anders ist, sagt Julia sich selbst im System-Prompt.
+  _hinweisAnbieter(a) {
+    if (a.art === 'anthropic') return '';
+    const en = this.config.get('sprachcode') === 'en';
+    let h = en
+      ? 'Note on this provider: there is no web search here. Read web pages whose address you know with `webseite_abrufen`.'
+      : 'Hinweis zu diesem Anbieter: Eine Websuche gibt es hier nicht. Webseiten, deren Adresse du kennst, liest du mit `webseite_abrufen`.';
+    if (a.art === 'claude-code') {
+      h += en
+        ? ` Your tools are named ${PRAEFIX}<name> here, e.g. ${PRAEFIX}screenshot. You have no other tools.`
+        : ` Deine Werkzeuge heißen hier ${PRAEFIX}<name>, z. B. ${PRAEFIX}screenshot. Andere Werkzeuge hast du nicht.`;
+    }
+    return h;
+  }
+
+  _systemText(a) {
+    return [this.systemPrompt(), this.laufzeitKontext(), this._hinweisAnbieter(a)].filter(Boolean).join('\n\n');
   }
 
   _parameter() {
@@ -207,16 +254,47 @@ class Agent extends EventEmitter {
     return p;
   }
 
+  async _rundeAnthropic(client) {
+    const parameter = this._parameter();
+    const stream = client.beta.messages.stream(parameter, { signal: this.abbruch.signal });
+    stream.on('text', (d) => this.emit('text', d));
+    const msg = await stream.finalMessage();
+    return { content: msg.content, stop_reason: msg.stop_reason, usage: msg.usage, model: msg.model || parameter.model };
+  }
+
+  _schluesselFuer(a) {
+    const en = this.config.get('sprachcode') === 'en';
+    if (!a.url) throw new Error(en ? 'The API address for "custom address" is missing. Enter it in the settings.' : 'Für „Eigene Adresse“ fehlt die Adresse der Schnittstelle. Trag sie in den Einstellungen ein.');
+    const s = this.apiSchluessel(a.id) || '';
+    if (!s && anbieter.brauchtSchluessel(a.id)) throw this._keinSchluessel();
+    return s;
+  }
+
+  _rundeOpenAI(a, schluessel) {
+    return openai.runde({
+      url: a.url,
+      schluessel,
+      modell: this.config.get('modell'),
+      system: this._systemText(a),
+      werkzeuge: werkzeuge.definitionen(this.ctx),
+      verlauf: this.verlauf,
+      signal: this.abbruch.signal,
+      beiText: (d) => this.emit('text', d),
+      holen: this.holen,
+      optionen: { nutzung: a.nutzung, kopf: a.kopf, zwischenAntwort: a.zwischenAntwort },
+    });
+  }
+
   async _schleife() {
-    const client = this._client();
+    const a = anbieter.anbieterVon(this.config);
+    if (a.art === 'claude-code') return this._schleifeAbo(a);
+    const client = a.art === 'anthropic' ? this._client() : null;
+    const schluessel = client ? null : this._schluesselFuer(a);
     let letzterText = null;
     for (let runde = 0; runde < MAX_RUNDEN; runde++) {
       this._limitPruefen();
-      const parameter = this._parameter();
-      const stream = client.beta.messages.stream(parameter, { signal: this.abbruch.signal });
-      stream.on('text', (d) => this.emit('text', d));
-      const msg = await stream.finalMessage();
-      this._kostenErfassen(msg.model || parameter.model, msg.usage);
+      const msg = client ? await this._rundeAnthropic(client) : await this._rundeOpenAI(a, schluessel);
+      this._kostenErfassen(msg.model, msg.usage, a);
 
       if (msg.content && msg.content.length) this.verlauf.push({ role: 'assistant', content: msg.content });
       // Websuche und Seitenabruf laufen bei Anthropic; ihre Ergebnisse sind fremde Inhalte.
@@ -249,6 +327,41 @@ class Agent extends EventEmitter {
     }
     this.emit('hinweis', { art: 'zu_viele_runden' });
     return letzterText;
+  }
+
+  // Claude-Abo: Claude Code führt das Gespräch (samt Sitzung), Julias
+  // Werkzeuge ruft es über den lokalen MCP-Zugang auf.
+  async _schleifeAbo(a) {
+    const en = this.config.get('sprachcode') === 'en';
+    const exe = this.claudeCodeExe();
+    if (!exe) throw new Error(en ? 'Claude Code was not found on this PC. Install it or pick another provider.' : 'Claude Code wurde auf diesem PC nicht gefunden. Installiere es oder wähle einen anderen Anbieter.');
+    if (!this.abo || this.abo.exe !== exe) {
+      if (this.abo) this.abo.stoppen();
+      this.abo = new ClaudeCode({
+        exe,
+        ordner: path.join(this.ctx.datenOrdner, 'claude-code'),
+        werkzeuge: () => werkzeuge.definitionen(this.ctx),
+        aufrufen: (name, eingabe) => this._werkzeugUeberMcp(name, eingabe),
+      });
+    }
+    const r = await this.abo.senden({
+      text: this.letzteNachricht,
+      system: this._systemText(a),
+      modell: this.config.get('modell'),
+      aufwand: this.config.get('aufwand'),
+      signal: this.abbruch.signal,
+      beiText: (d) => this.emit('text', d),
+    });
+    if (r.text) this.verlauf.push({ role: 'assistant', content: [{ type: 'text', text: r.text }] });
+    return r.text || null;
+  }
+
+  async _werkzeugUeberMcp(name, eingabe) {
+    if (!this.beschaeftigt || !this.abbruch || this.abbruch.signal.aborted) {
+      return { content: 'Kein laufender Auftrag – nicht ausgeführt.', is_error: true };
+    }
+    const r = await this._werkzeug({ id: `mcp_${++this.mcpZaehler}`, name, input: eingabe });
+    return { content: r.content, is_error: !!r.is_error };
   }
 
   async _werkzeug(aufruf) {

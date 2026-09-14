@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 1.2.0 – 2026-09-14
+- Julia läuft jetzt mit jedem KI-Anbieter – Claude, OpenAI, Gemini, Mistral, Groq, OpenRouter oder kostenlos lokal mit Ollama und LM Studio
+
 ## 1.1.1 – 2026-09-14
 - Neue Schritt-für-Schritt-Anleitung zum Installieren, mit allem, was Julia kann – oben in der README und auf der Webseite verlinkt
 

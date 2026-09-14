@@ -30,6 +30,9 @@ const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
 const { HandyServer, qrMatrix } = require('./handy/server');
+const anbieterListe = require('./anbieter/liste');
+const { claudeFinden } = require('./anbieter/claude-code');
+const { modelleLaden } = require('./anbieter/openai');
 const prompt = require('./prompt');
 const bildschirm = require('./bildschirm');
 const win = require('./win/win');
@@ -77,19 +80,39 @@ function version() {
 
 // --- API-Schlüssel: mit Windows (DPAPI) verschlüsselt in der config.json ---
 
-function apiSchluessel() {
-  const v = config.get('api.schluessel_verschluesselt');
+// Je Anbieter ein eigener Schlüssel; Anthropic behält sein altes Feld.
+function apiSchluessel(id = config.get('anbieter')) {
+  const a = anbieterListe.ANBIETER[id] || anbieterListe.ANBIETER.anthropic;
+  const v = id === 'anthropic' ? config.get('api.schluessel_verschluesselt') : (config.get('api.je_anbieter') || {})[id];
   if (v && safeStorage.isEncryptionAvailable()) {
     try { return safeStorage.decryptString(Buffer.from(v, 'base64')); } catch { /* unlesbar, Umgebung versuchen */ }
   }
-  return process.env.ANTHROPIC_API_KEY || '';
+  return (a.umgebung && process.env[a.umgebung]) || '';
 }
 
 function schluesselSetzen(s) {
   const text = String(s || '').trim();
   if (!text) return;
   if (!safeStorage.isEncryptionAvailable()) throw new Error('Die Windows-Verschlüsselung ist nicht verfügbar.');
-  config.set('api.schluessel_verschluesselt', safeStorage.encryptString(text).toString('base64'));
+  const verschluesselt = safeStorage.encryptString(text).toString('base64');
+  const id = config.get('anbieter');
+  if (id === 'anthropic') config.set('api.schluessel_verschluesselt', verschluesselt);
+  else config.set('api.je_anbieter', { ...(config.get('api.je_anbieter') || {}), [id]: verschluesselt });
+}
+
+// Claude Code wird einmal gesucht; die Einstellungen suchen beim Öffnen neu.
+let claudeCodeGefunden;
+function claudeCodePfad(neu = false) {
+  if (neu || claudeCodeGefunden === undefined) claudeCodeGefunden = claudeFinden();
+  return claudeCodeGefunden;
+}
+
+// Kann Julia mit dem gewählten Anbieter loslegen?
+function bereit() {
+  const id = config.get('anbieter');
+  if (id === 'claude-abo') return !!claudeCodePfad();
+  if (id === 'eigen' && !config.get('anbieter_url')) return false;
+  return !anbieterListe.brauchtSchluessel(id) || !!apiSchluessel(id);
 }
 
 // --- Prompt ---
@@ -141,6 +164,8 @@ function oeffentlicheConfig() {
   return {
     ...c,
     schluesselGesetzt: !!apiSchluessel(),
+    bereit: bereit(),
+    anbieterListe: anbieterListe.fuerOberflaeche({ claudeCode: !!claudeCodePfad() }),
     version: version(),
     monitore: bildschirm.beschreibung(),
   };
@@ -525,13 +550,39 @@ function ipcEinrichten() {
     protokoll.eintragen({ werkzeug: 'ipc', stufe: 'ROT', ergebnis: 'abgelehnt', grund: `Nachricht auf ${kanal} von fremder Seite ${url}` });
   });
   ipc.handle('texte', () => texteFuerRenderer());
-  ipc.handle('config:lesen', () => oeffentlicheConfig());
+  ipc.handle('config:lesen', () => {
+    claudeCodePfad(true); // vielleicht inzwischen installiert
+    return oeffentlicheConfig();
+  });
   ipc.handle('config:setzen', (_e, schluessel, wert) => {
     if (String(schluessel).startsWith('api.')) return { fehler: 'Nicht erlaubt.' };
     try { return { wert: config.set(schluessel, wert) }; } catch (e) { return { fehler: e.message }; }
   });
   ipc.handle('schluessel:setzen', (_e, s) => {
     try { schluesselSetzen(s); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('anbieter:setzen', (_e, id) => {
+    try {
+      if (id === 'claude-abo' && !claudeCodePfad(true)) throw new Error(t('einst.fehlt_claude'));
+      const alt = config.get('anbieter');
+      config.set('anbieter', id);
+      // Beim Wechsel das Standardmodell des neuen Anbieters vorschlagen.
+      const vorschlag = anbieterListe.ANBIETER[id].modell;
+      if (id !== alt && vorschlag) config.set('modell', vorschlag);
+      return { config: oeffentlicheConfig() };
+    } catch (e) {
+      return { fehler: e.message, config: oeffentlicheConfig() };
+    }
+  });
+  ipc.handle('anbieter:modelle', async () => {
+    const a = anbieterListe.anbieterVon(config);
+    if (a.art !== 'openai') return { modelle: a.modelle };
+    try {
+      if (!a.url) throw new Error(t('einst.fehlt_url'));
+      return { modelle: await modelleLaden({ url: a.url, schluessel: apiSchluessel(a.id) }) };
+    } catch (e) {
+      return { fehler: e.message };
+    }
   });
   ipc.handle('ordner:waehlen', async () => {
     const r = await dialog.showOpenDialog(einstFenster || undefined, { properties: ['openDirectory'] });
@@ -806,8 +857,12 @@ async function start() {
     appOrdner: APP,
     arbeitsordner: () => config.get('arbeitsverzeichnisse')[0] || os.homedir(),
     kontextGeaendert: () => {},
+    // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
+    eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',
   };
-  agent = new Agent({ config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText });
+  agent = new Agent({
+    config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),
+  });
   // Aus Git gestartet: Updates über Tags. Installiert: über die Releases der Webseite.
   const UpdaterArt = app.isPackaged ? InstallerUpdater : Updater;
   updater = new UpdaterArt({
@@ -842,6 +897,8 @@ async function start() {
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k.startsWith('handy.')) handyAnwenden();
+    // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
+    if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }
     if (k === 'autostart') autostartSetzen();
     if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name' || k === 'weckwort.an') trayMenue();
     if (/^(weckwort\.|assistent\.name$|sprachcode$)/.test(k)) weckwortAktualisieren();
@@ -879,7 +936,7 @@ async function start() {
     melden(t('update.titel'), st.ok ? t('update.erfolg', { version: st.version }) : t('update.zurueck', { version: st.version, fehler: st.fehler || '' }));
   }
 
-  if (!config.get('einrichtung_fertig') || !apiSchluessel()) einstellungenOeffnen(true);
+  if (!config.get('einrichtung_fertig') || !bereit()) einstellungenOeffnen(true);
   else if (!process.argv.includes('--versteckt')) chatFenster.once('ready-to-show', () => chatZeigen());
 
   setTimeout(() => updatesBeimStart().catch(() => {}), 15000);
@@ -899,6 +956,7 @@ if (!app.requestSingleInstanceLock()) {
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
     if (handy) handy.stoppen();
+    if (agent) agent.stoppen();
     if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }
   });

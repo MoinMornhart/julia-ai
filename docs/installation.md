@@ -19,9 +19,11 @@ kann und wie du sie bedienst.
 ## 1. Was du brauchst
 
 - Windows 10 oder 11, 64 Bit.
-- Einen **API-Schlüssel von Anthropic**. Den bekommst du unter
-  [console.anthropic.com](https://console.anthropic.com) → *API Keys*. Die Nutzung wird dort nach
-  Verbrauch abgerechnet; Julia hat eine Kostenbremse mit Tageslimit (Standard 10 US-$).
+- Einen Zugang zu einem KI-Modell. Am besten ein **API-Schlüssel von Anthropic** – den bekommst du
+  unter [console.anthropic.com](https://console.anthropic.com) → *API Keys*. Genauso gehen Schlüssel
+  von **OpenAI**, **Google Gemini**, **Mistral**, **Groq** oder **OpenRouter**, oder ein kostenloses
+  **lokales Modell** mit [Ollama](https://ollama.com) oder [LM Studio](https://lmstudio.ai). Bezahlt
+  wird beim Anbieter nach Verbrauch; Julia hat eine Kostenbremse mit Tageslimit (Standard 10 US-$).
 
 Admin-Rechte brauchst du nicht.
 
@@ -52,8 +54,10 @@ Get-FileHash .\Julia-AI-Setup.exe
 Beim ersten Start öffnet sich die Einrichtung:
 
 1. **Dein Vorname** – so spricht Julia dich an.
-2. **API-Schlüssel** – einfügen (`sk-ant-…`). Er wird mit Windows verschlüsselt gespeichert; Julia
-   zeigt ihn nie wieder an.
+2. **KI-Anbieter und API-Schlüssel** – Anbieter wählen (Standard: Anthropic) und den Schlüssel
+   einfügen. Er wird mit Windows verschlüsselt gespeichert; Julia zeigt ihn nie wieder an. Bei
+   Ollama oder LM Studio brauchst du keinen Schlüssel; mit *Modelle laden* siehst du, welche
+   Modelle bereitstehen.
 3. **Arbeitsordner** – die Ordner, in denen Julia ohne Rückfrage Dateien anlegen und ändern darf,
    zum Beispiel `Dokumente\Projekte`. Überall sonst fragt sie vorher.
 4. Auf **Fertig** klicken.
@@ -100,7 +104,8 @@ Herstellerseite, danach prüfen, ob es läuft
 **Code lesen und prüfen**
 > „Schau dir das Repo an und sag mir, warum der Test fehlschlägt.“
 
-**Nachschlagen** – im Web suchen und Seiten lesen
+**Nachschlagen** – im Web suchen und Seiten lesen (die Websuche gibt es mit Claude; bei anderen
+Anbietern liest Julia Seiten, deren Adresse bekannt ist)
 > „Was ist die aktuelle Node-Version?“
 
 **Erinnern**
@@ -154,7 +159,8 @@ Hand.
 | Problem | Lösung |
 |---|---|
 | Windows blockiert den Installer | *Weitere Informationen* → *Trotzdem ausführen* (siehe oben). |
-| „Der API-Schlüssel wurde abgelehnt“ | Schlüssel in den Einstellungen neu einfügen; prüfen, ob in der Anthropic-Konsole Guthaben da ist. |
+| „Der API-Schlüssel wurde abgelehnt“ | Schlüssel in den Einstellungen neu einfügen; prüfen, ob beim Anbieter Guthaben da ist. |
+| „Modell nicht gefunden (404)“ | In den Einstellungen *Modelle laden* und ein Modell aus der Liste wählen. |
 | Julia hört nicht auf „Hey Julia“ | In den Einstellungen einschalten und ein Mikrofon als Standard-Aufnahmegerät wählen. |
 | Das Overlay erscheint nicht im Spiel | Das Spiel auf „Randloses Fenster“ statt „Exklusives Vollbild“ stellen. |
 | Windows fragt nach der Firewall | Beim Handy im WLAN: nur **Private Netzwerke** erlauben. |
