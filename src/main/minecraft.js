@@ -452,6 +452,9 @@ class Minecraft extends EventEmitter {
     bewegung.canDig = false; // beim Folgen und Kämpfen nichts von deinen Bauten abreißen
     bewegung.allowParkour = true;
     bot.pathfinder.setMovements(bewegung);
+    // Wegsuche in kleinen Happen (Standard: 40 ms je Tick) – sonst stockt
+    // Julia neben dem Spiel.
+    bot.pathfinder.tickTimeout = 10;
     const v = bot.registry && bot.registry.version;
     this.neuesKampfsystem = v && typeof v['>='] === 'function' ? v['>=']('1.9') : true;
     this.pause = schlagPause(null, this.neuesKampfsystem);

@@ -383,7 +383,7 @@ function blaseAktualisieren() {
     });
     // Durchklickbar, aber Mausbewegungen kommen an – so merkt die Seite, wann
     // der Zeiger über der Kugel ist, und schaltet nur dort die Maus ein.
-    orbFenster.setIgnoreMouseEvents(true, { forward: true });
+    mausDurchlassen(orbFenster, true);
     orbFenster.setAlwaysOnTop(true, 'screen-saver');
     orbFenster.loadFile(path.join(RENDERER, 'blase.html'));
     orbFenster.once('ready-to-show', () => {
@@ -450,15 +450,55 @@ function overlayErstellen() {
   return overlayFenster;
 }
 
+// Durchklickbare Fenster (Blase, Overlay, Zugriffs-Hinweis): Mausbewegungen
+// reicht Electron unter Windows über einen Maus-Hook für den ganzen PC weiter.
+// Der hängt nur, solange der Zeiger wirklich über so einem Fenster ist – sonst
+// wartet jede Mausbewegung im Spiel auf Julia, und das fühlt sich wie Lag an.
+const durchlaessig = new Map(); // Fenster -> Mausbewegungen gerade weitergereicht?
+let durchlaessigTimer = null;
+
+function zeigerUeber(f) {
+  if (!f.isVisible()) return false;
+  const p = screen.getCursorScreenPoint();
+  const b = f.getBounds();
+  return p.x >= b.x && p.x < b.x + b.width && p.y >= b.y && p.y < b.y + b.height;
+}
+
+function durchlaessigPruefen() {
+  for (const [f, an] of durchlaessig) {
+    if (f.isDestroyed()) { durchlaessig.delete(f); continue; }
+    const drueber = zeigerUeber(f);
+    if (drueber !== an) {
+      durchlaessig.set(f, drueber);
+      f.setIgnoreMouseEvents(true, drueber ? { forward: true } : undefined);
+    }
+  }
+  if (!durchlaessig.size) { clearInterval(durchlaessigTimer); durchlaessigTimer = null; }
+}
+
+// durch = true: Klicks gehen durch; über dem Fenster kommen Mausbewegungen an,
+// damit die Seite selbst entscheiden kann, wo sie greifbar wird.
+function mausDurchlassen(f, durch) {
+  if (!f || f.isDestroyed()) return;
+  if (!durch) {
+    durchlaessig.delete(f);
+    f.setIgnoreMouseEvents(false);
+    return;
+  }
+  const drueber = zeigerUeber(f);
+  durchlaessig.set(f, drueber);
+  f.setIgnoreMouseEvents(true, drueber ? { forward: true } : undefined);
+  if (!durchlaessigTimer) durchlaessigTimer = setInterval(durchlaessigPruefen, 120);
+}
+
 function overlayZeigen({ passiv = false } = {}) {
   if (!overlayFenster || overlayFenster.isDestroyed()) overlayErstellen();
   clearTimeout(overlayTimer);
   overlayPassiv = passiv;
   const o = overlayFenster;
-  // Passiv: Klicks gehen ans Spiel, Mausbewegungen kommen trotzdem an – fährt
-  // die Maus über den Chat, schaltet overlay:maus ihn greifbar (scrollen, klicken).
-  if (passiv) o.setIgnoreMouseEvents(true, { forward: true });
-  else o.setIgnoreMouseEvents(false);
+  // Passiv: Klicks gehen ans Spiel; fährt die Maus über den Chat, schaltet
+  // overlay:maus ihn greifbar (scrollen, klicken).
+  mausDurchlassen(o, passiv);
   o.setFocusable(!passiv);
   const zeigen = () => {
     o.webContents.send('overlay:modus', passiv ? 'passiv' : 'aktiv');
@@ -818,7 +858,7 @@ function ipcEinrichten() {
   });
   // Blase: Maus nur über der Kugel, verschieben, ablegen, Doppelklick.
   const blaseDa = () => orbFenster && !orbFenster.isDestroyed();
-  ipc.on('blase:maus', (_e, ueber) => { if (blaseDa()) orbFenster.setIgnoreMouseEvents(!ueber, { forward: true }); });
+  ipc.on('blase:maus', (_e, ueber) => { if (blaseDa()) mausDurchlassen(orbFenster, !ueber); });
   ipc.on('blase:ziehen', (_e, dx, dy) => {
     if (!blaseDa()) return;
     const [x, y] = orbFenster.getPosition();
@@ -836,7 +876,7 @@ function ipcEinrichten() {
   // daneben gehen Klicks weiter ans Spiel. Ein Klick hinein macht es aktiv.
   ipc.on('overlay:maus', (e, drin) => {
     if (!overlayFenster || overlayFenster.isDestroyed() || e.sender !== overlayFenster.webContents || !overlayPassiv) return;
-    overlayFenster.setIgnoreMouseEvents(!drin, { forward: true });
+    mausDurchlassen(overlayFenster, !drin);
     if (drin) clearTimeout(overlayTimer); // beim Lesen nicht wegblenden
     else if (!spielAktiv) overlaySpaeterVerstecken(6000);
   });
@@ -846,7 +886,7 @@ function ipcEinrichten() {
   });
   ipc.on('zugriff:maus', (e, ueber) => {
     const f = BrowserWindow.fromWebContents(e.sender);
-    if (f && zugriffFenster.includes(f)) f.setIgnoreMouseEvents(!ueber, { forward: true });
+    if (f && zugriffFenster.includes(f)) mausDurchlassen(f, !ueber);
   });
   ipc.on('zugriff:stopp', () => {
     agent.abbrechen();
@@ -1147,7 +1187,7 @@ function zugriffFensterBauen() {
       show: false, hasShadow: false, backgroundColor: '#00000000', title: assistentName(),
       webPreferences: { preload: PRELOAD, contextIsolation: true, nodeIntegration: false, sandbox: true },
     });
-    f.setIgnoreMouseEvents(true, { forward: true });
+    mausDurchlassen(f, true);
     f.setAlwaysOnTop(true, 'screen-saver');
     f.setContentProtection(true);
     f.loadFile(path.join(RENDERER, 'zugriff.html'));

@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.4 – 2026-09-14
+- Weniger Lag beim Spielen: Julia hängt sich nicht mehr in jede Mausbewegung ein, nur noch wenn die Maus über ihrer Blase oder dem Overlay ist, und die Minecraft-Spielfigur rechnet in kleineren Happen
+
 ## 3.2.3 – 2026-09-14
 - Per Remotedesktop sagt Julia jetzt klar, warum sie dich nicht hört und welchen Schalter du im Remotedesktop-Client einschalten musst, damit dein Mikrofon ankommt
 
