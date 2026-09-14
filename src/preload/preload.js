@@ -59,9 +59,16 @@ contextBridge.exposeInMainWorld('julia', {
   mcStatus: () => ipcRenderer.invoke('mc:status'),
   mcBeitreten: (d) => ipcRenderer.invoke('mc:beitreten', { adresse: String((d && d.adresse) || ''), spieler: String((d && d.spieler) || '') }),
   mcVerlassen: () => ipcRenderer.invoke('mc:verlassen'),
-  mcAufgabe: (a) => ipcRenderer.invoke('mc:aufgabe', {
-    aufgabe: String((a && a.aufgabe) || ''), block: a && a.block ? String(a.block) : undefined, anzahl: a && a.anzahl ? Number(a.anzahl) : undefined,
-  }),
+  mcAufgabe: (a) => {
+    const d = a || {};
+    const text = (v) => (v ? String(v).slice(0, 60) : undefined);
+    const zahl = (v) => (v === undefined || v === null || v === '' ? undefined : Number(v));
+    return ipcRenderer.invoke('mc:aufgabe', {
+      aufgabe: String(d.aufgabe || ''), block: text(d.block), item: text(d.item), tier: text(d.tier),
+      anzahl: d.anzahl ? Number(d.anzahl) : undefined, x: zahl(d.x), y: zahl(d.y), z: zahl(d.z),
+    });
+  },
+  mcTrennungWeg: () => ipcRenderer.invoke('mc:trennungweg'),
   mcChat: (text) => ipcRenderer.invoke('mc:chat', String(text || '')),
   mcKontoVerbinden: () => ipcRenderer.invoke('mc:konto:verbinden'),
   mcKontoAbmelden: () => ipcRenderer.invoke('mc:konto:abmelden'),

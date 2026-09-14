@@ -136,6 +136,19 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
   chatFenster.webContents.send('ansicht', 'minecraft');
   await warte(1500);
   await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-${sc}.png`), { mitRahmen: true });
+  // Weiter unten: alle Aufgaben, die die Figur kann.
+  await chatFenster.webContents.executeJavaScript("document.getElementById('mcAufgaben').scrollIntoView({ block: 'start' })");
+  await warte(500);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-aufgaben-${sc}.png`), { mitRahmen: true });
+  await chatFenster.webContents.executeJavaScript("document.getElementById('ansichtMinecraft').scrollIntoView({ block: 'start' })");
+  // Derselbe Reiter nach einem Rauswurf – mit Crash-Screen.
+  demo.absturz = sc;
+  chatFenster.webContents.send('mc:geaendert');
+  await warte(1200);
+  await chatFenster.webContents.executeJavaScript("document.getElementById('mcCrash').scrollIntoView({ block: 'center' })");
+  await warte(400);
+  await aufnehmenFenster(chatFenster, path.join(ziel, `minecraft-absturz-${sc}.png`), { mitRahmen: true });
+  demo.absturz = null;
   chatFenster.webContents.send('demo', GESPRAECH[sc] || GESPRAECH.de);
   await warte(1200);
   await aufnehmenFenster(chatFenster, path.join(ziel, `chat-${sc}.png`), { mitRahmen: true });
@@ -251,8 +264,26 @@ function beispielClips() {
   };
 }
 
+// Für den Screenshot mit Crash-Screen (Sprachcode oder null).
+const demo = { absturz: null };
+
 // Minecraft-Reiter mitten im Spiel – Beispielwerte, keine echte Verbindung.
 function beispielMinecraft() {
+  const konto = { konto: 'Julia', adresse: '192.168.1.20', port: 25565, meinName: 'Morni' };
+  if (demo.absturz) {
+    const en = demo.absturz === 'en';
+    return {
+      verbunden: false,
+      trennung: {
+        zeit: Date.now() - 2 * 60000,
+        grund: en
+          ? 'Kicked for “flying” – usually the server’s anti-cheat reacting to bots. On your own server, allow-flight=true in server.properties helps.'
+          : 'Rausgeworfen wegen „Fliegen“ – meist schlägt der Anti-Cheat bei Bots an. Auf eigenen Servern hilft allow-flight=true in server.properties.',
+        rauswurf: true, server: '192.168.1.20:25565', dauerS: 47 * 60, aufgabe: 'jagen', fehler: null, versuch: 0, naechsterVersuch: null, aufgegeben: false,
+      },
+      ...konto,
+    };
+  }
   return {
     verbunden: true,
     server: '192.168.1.20:25565',

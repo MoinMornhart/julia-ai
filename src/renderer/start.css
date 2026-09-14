@@ -500,8 +500,9 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 .mc-zeile label { font-size: 12px; font-weight: 650; color: var(--text-2); }
 .mc-zeile input { padding: 8px 11px; border-radius: 10px; border: 1px solid var(--linie); background: var(--grund-2); color: var(--text); font: inherit; outline: none; }
 .mc-zeile input:focus { border-color: var(--akzent-rand); box-shadow: var(--glow); }
-#mcBlock { flex: 1 1 160px; }
-#mcAnzahl { width: 76px; }
+#mcBlock, #mcGebenItem, #mcHerstellenItem { flex: 1 1 160px; }
+#mcAnzahl, #mcGebenAnzahl, #mcHerstellenAnzahl { width: 76px; }
+#mcAufgaben .mc-zeile label { min-width: 76px; }
 #mcChatText { flex: 1 1 240px; }
 .mc-zeilen { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
 .mc-zeilen p { margin: 0; overflow-wrap: anywhere; }
@@ -511,3 +512,16 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 .mc-schalter input:checked { background: var(--akzent); border-color: var(--akzent); box-shadow: var(--glow-klein); }
 .mc-schalter input:checked::after { transform: translateX(17px); background: var(--akzent-text); }
 .mc-schalter input:focus-visible { outline: 2px solid var(--akzent); outline-offset: 2px; }
+.mc-koord { width: 84px; }
+
+/* Crash-Screen: die Figur ist vom Server geflogen */
+.mc-crash { display: grid; gap: 10px; padding: 16px 18px; border-radius: 16px; border: 1px solid color-mix(in srgb, var(--rot) 55%, transparent); background: color-mix(in srgb, var(--rot) 9%, var(--flaeche)); }
+.mc-crash-kopf { display: flex; align-items: center; gap: 12px; }
+.mc-crash-ico { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--rot); color: #fff; font-weight: 800; font-size: 18px; }
+.mc-crash h2 { margin: 0; font-size: 16px; }
+.mc-crash-kopf p { margin: 2px 0 0; font-size: 11px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; color: var(--rot); }
+.mc-crash-grund { margin: 0; font-size: 14px; line-height: 1.5; }
+.mc-crash-infos { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+.mc-crash-infos div { padding: 8px 10px; border-radius: 10px; background: var(--grund-2); border: 1px solid var(--linie); min-width: 0; }
+.mc-crash-infos dt { font-size: 10.5px; font-weight: 750; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-3); }
+.mc-crash-infos dd { margin: 2px 0 0; font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }

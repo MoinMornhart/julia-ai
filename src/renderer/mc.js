@@ -22,7 +22,7 @@
     box.hidden = !s.verbunden;
     if (!s.verbunden) { box.innerHTML = ''; return; }
     const a = s.aufgabe;
-    const aufgabe = a ? tx(`mc.l_${a.art}`, { spieler: a.spieler || '', n: a.geschafft || 0 }) : tx('mc.l_frei');
+    const aufgabe = a ? tx(`mc.l_${a.art}`, { spieler: a.spieler || '', n: a.geschafft || 0, ort: a.ort || '' }) : tx('mc.l_frei');
     const spieler = (s.spieler || []).map((p) => (p.abstand != null ? `${p.name} (${p.abstand} m)` : p.name)).join(', ');
     const feinde = Object.entries(s.feinde_nah || {}).map(([n, z]) => `${z}× ${n}`).join(', ');
     box.innerHTML = [
@@ -36,9 +36,43 @@
     ].map(([k, v]) => `<div><span>${esc(tx(k))}</span><b>${esc(v)}</b></div>`).join('');
   }
 
+  // Crash-Screen: Warum ist die Figur vom Server geflogen – und kommt sie zurück?
+  const aufgabeName = (art) => {
+    const k = `mc.a_${art}`;
+    const t = tx(k);
+    return t !== k ? t : tx(`mc.${art}`);
+  };
+
+  function dauerText(s) {
+    if (s < 60) return tx('mc.dauer_s', { n: s });
+    const m = Math.round(s / 60);
+    return m < 60 ? tx('mc.dauer_min', { n: m }) : tx('mc.dauer_std', { h: Math.floor(m / 60), m: m % 60 });
+  }
+
+  function crashZeigen(t) {
+    $('mcCrash').hidden = !t;
+    if (!t) return;
+    $('mcCrashArt').textContent = tx(t.rauswurf ? 'mc.crash_rauswurf' : 'mc.crash_verbindung');
+    $('mcCrashGrund').textContent = t.grund;
+    const uhr = new Date(t.zeit).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const infos = [
+      [tx('mc.crash_wann'), tx('mc.crash_wann_wert', { zeit: uhr, dauer: dauerText(t.dauerS || 0) })],
+      [tx('mc.crash_server'), t.server || '–'],
+    ];
+    if (t.aufgabe) infos.push([tx('mc.crash_aufgabe'), aufgabeName(t.aufgabe)]);
+    if (t.fehler && t.fehler !== t.grund) infos.push([tx('mc.crash_fehler'), t.fehler]);
+    $('mcCrashInfos').innerHTML = infos.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    let v = '';
+    if (t.naechsterVersuch) v = tx('mc.crash_versuch', { s: Math.max(0, Math.ceil((t.naechsterVersuch - Date.now()) / 1000)), n: t.versuch, max: 3 });
+    else if (t.aufgegeben) v = tx('mc.crash_aufgegeben');
+    else if (t.rauswurf) v = tx('mc.crash_kein_versuch');
+    $('mcCrashVersuch').textContent = v;
+  }
+
   function zeigen(s) {
     stand = s;
     const an = !!s.verbunden;
+    crashZeigen(!an && s.trennung);
     $('mcZustand').textContent = an ? tx('mc.verbunden', { server: s.server }) : tx('mc.getrennt');
     $('mcZustand').classList.toggle('an', an);
     $('mcBeitreten').hidden = an;
@@ -100,6 +134,25 @@
     if (!block) { $('mcBlock').focus(); return; }
     aufgabe({ aufgabe: 'abbauen', block, anzahl: $('mcAnzahl').value });
   };
+  $('mcGeben').onsubmit = (e) => {
+    e.preventDefault();
+    const item = $('mcGebenItem').value.trim();
+    if (!item) { $('mcGebenItem').focus(); return; }
+    aufgabe({ aufgabe: 'geben', item, anzahl: $('mcGebenAnzahl').value });
+  };
+  $('mcHerstellen').onsubmit = (e) => {
+    e.preventDefault();
+    const item = $('mcHerstellenItem').value.trim();
+    if (!item) { $('mcHerstellenItem').focus(); return; }
+    aufgabe({ aufgabe: 'herstellen', item, anzahl: $('mcHerstellenAnzahl').value });
+  };
+  $('mcGehen').onsubmit = (e) => {
+    e.preventDefault();
+    if ($('mcX').value === '' || $('mcZ').value === '') { ($('mcX').value === '' ? $('mcX') : $('mcZ')).focus(); return; }
+    aufgabe({ aufgabe: 'gehen', x: $('mcX').value, y: $('mcY').value, z: $('mcZ').value });
+  };
+  $('mcNeu').onclick = () => $('mcBeitreten').onclick();
+  $('mcCrashWeg').onclick = async () => { await julia.mcTrennungWeg(); laden(); };
   $('mcSenden').onsubmit = async (e) => {
     e.preventDefault();
     const text = $('mcChatText').value.trim();
@@ -153,6 +206,8 @@
     $('mcAdresse').placeholder = tx('mc.adresse_platz');
     $('mcSpieler').placeholder = tx('mc.spieler_platz');
     $('mcBlock').placeholder = tx('mc.block_platz');
+    $('mcGebenItem').placeholder = tx('mc.item_platz');
+    $('mcHerstellenItem').placeholder = tx('mc.herstellen_platz');
     $('mcChatText').placeholder = tx('mc.chat_platz');
     if (stand) zeigen(stand);
   }

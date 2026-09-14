@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.6.0 – 2026-09-14
+- Julia kann in Minecraft viel mehr: laufen, dir Sachen geben, einsammeln, jagen, craften, einräumen, schlafen – und fliegt sie raus, zeigt ein Crash-Screen warum; nach einem Verbindungsabbruch kommt sie selbst zurück
+
 ## 3.5.0 – 2026-09-14
 - Natürliche Stimmen: Julia kann jetzt mit Thorsten oder Kerstin sprechen – neuronal, lokal auf deinem PC, auch im Minecraft-Voice-Chat; einfach in den Einstellungen auswählen
 

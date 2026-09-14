@@ -1143,6 +1143,7 @@ function ipcEinrichten() {
     anAlle('mc:geaendert');
     return { ok: true };
   });
+  ipc.handle('mc:trennungweg', () => { minecraft.trennungVergessen(); anAlle('mc:geaendert'); return true; });
   ipc.handle('mc:aufgabe', (_e, a) => {
     try {
       const text = minecraft.aufgabe(a || {});
@@ -1781,6 +1782,7 @@ async function start() {
   minecraft.on('frage', (f) => minecraftFrage(f));
   minecraft.on('stimme', (d) => minecraftStimme(d.pcm));
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
+  minecraft.on('geaendert', () => anAlle('mc:geaendert'));
   piper = new Piper({ ordner: path.join(DATEN, 'piper'), holen: (url, o) => net.fetch(url, o) });
   piper.on('status', () => anAlle('piper:status', piper.status()));
   sprache = new Sprache({ dll: audio.dll, piper });

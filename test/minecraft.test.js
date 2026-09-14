@@ -94,6 +94,97 @@ test('Minecraft: Befehle im Spielchat', () => {
   assert.equal(mc.befehlLesen('!lösch alles', []), null);
 });
 
+test('Minecraft: neue Befehle im Spielchat', () => {
+  const b = (t) => mc.befehlLesen(t, ['Julia']);
+  assert.deepEqual(b('!hilfe'), { aufgabe: 'hilfe' });
+  assert.deepEqual(b('!gib mir 5 brot'), { aufgabe: 'geben', item: 'brot', anzahl: 5 });
+  assert.deepEqual(b('Julia, gib mir diamant 2'), { aufgabe: 'geben', item: 'diamant', anzahl: 2 });
+  assert.deepEqual(b('!geh 100 64 -20'), { aufgabe: 'gehen', x: 100, y: 64, z: -20 });
+  assert.deepEqual(b('!geh zu 10 -5'), { aufgabe: 'gehen', x: 10, z: -5 });
+  assert.deepEqual(b('!sammel alles'), { aufgabe: 'sammeln' });
+  assert.deepEqual(b('!jag 3 kuh'), { aufgabe: 'jagen', anzahl: 3, tier: 'kuh' });
+  assert.deepEqual(b('!jagen'), { aufgabe: 'jagen', anzahl: null, tier: null });
+  assert.deepEqual(b('!craft 4 fackeln'), { aufgabe: 'herstellen', item: 'fackeln', anzahl: 4 });
+  assert.deepEqual(b('!stell mir eine werkbank her'), { aufgabe: 'herstellen', item: 'werkbank', anzahl: null });
+  assert.deepEqual(b('!bau ab holz 10'), { aufgabe: 'abbauen', block: 'holz', anzahl: 10 });
+  assert.deepEqual(b('!verstau alles'), { aufgabe: 'verstauen' });
+  assert.deepEqual(b('!schlaf'), { aufgabe: 'schlafen' });
+});
+
+test('Minecraft: Gegenstände auf Deutsch und gültige Koordinaten', () => {
+  const namen = ['bread', 'torch', 'crafting_table', 'oak_planks', 'birch_planks', 'stick', 'diamond', 'cooked_beef', 'iron_ingot', 'iron_ore'];
+  assert.deepEqual(mc.itemNamen('brot', namen), ['bread']);
+  assert.deepEqual(mc.itemNamen('fackeln', namen), ['torch']);
+  assert.deepEqual(mc.itemNamen('werkbank', namen), ['crafting_table']);
+  assert.deepEqual(mc.itemNamen('bretter', namen), ['oak_planks', 'birch_planks']);
+  assert.deepEqual(mc.itemNamen('eisen', namen), ['iron_ingot']);
+  assert.deepEqual(mc.itemNamen('torch', namen), ['torch']);
+  assert.deepEqual(mc.itemNamen('xyz', namen), []);
+  assert.deepEqual(mc.ortLesen({ x: '100', y: 64, z: -20.4 }), { x: 100, y: 64, z: -20 });
+  assert.deepEqual(mc.ortLesen({ x: 1, z: 2, y: '' }), { x: 1, z: 2 });
+  assert.throws(() => mc.ortLesen({ x: 'a', z: 1 }), /Koordinaten/);
+  assert.throws(() => mc.ortLesen({ x: 1, y: 999, z: 1 }), /Koordinaten/);
+  assert.throws(() => mc.ortLesen({ x: 1, y: -100, z: 1 }), /Höhe/);
+});
+
+test('Minecraft: Rauswurf und Abbruch werden verständlich erklärt', () => {
+  assert.match(mc.rauswurfText('{"text":"Flying is not enabled on this server"}'), /Fliegen/);
+  assert.match(mc.rauswurfText('You logged in from another location'), /eigenes Minecraft-Konto/);
+  assert.match(mc.rauswurfText('Server closed'), /beendet|neu gestartet/);
+  assert.match(mc.endeText('keepAliveError', null, 'mc.example.de:25565'), /Zeitüberschreitung/);
+  assert.match(mc.endeText('socketClosed', null, 'mc.example.de:25565'), /abgebrochen/);
+  assert.match(mc.endeText('socketClosed', 'read ECONNRESET', 'mc.example.de:25565'), /abrupt/);
+});
+
+test('Minecraft: Crash-Screen – Grund merken, nach Verbindungsabbruch selbst zurück, nach Rauswurf nicht', async () => {
+  const { EventEmitter } = require('events');
+  const boten = [];
+  const pf = { pathfinder: () => {}, Movements: class {}, goals: {} };
+  const laden = () => ({
+    pf,
+    mineflayer: {
+      createBot: () => {
+        const b = new EventEmitter();
+        b.loadPlugin = () => {};
+        b.pathfinder = { setMovements() {}, setGoal() {} };
+        b.registry = null;
+        b.clearControlStates = () => {};
+        b.quit = () => b.emit('end', 'disconnect.quitting');
+        boten.push(b);
+        setImmediate(() => {
+          Object.assign(b, { entity: { position: { x: 1, y: 64, z: 2 } }, username: 'Julia', version: '1.21.1', players: {}, entities: {}, inventory: { items: () => [] }, health: 20, food: 20, game: {} });
+          b.emit('spawn');
+        });
+        return b;
+      },
+    },
+  });
+  const m = new mc.Minecraft({ laden, wiederPausen: [5, 5, 5] });
+  const warten = (ms) => new Promise((r) => setTimeout(r, ms));
+  await m.verbinden({ adresse: '127.0.0.1', botname: 'Julia' });
+
+  boten[0].emit('end', 'socketClosed');
+  const t = m.status().trennung;
+  assert.equal(m.status().verbunden, false);
+  assert.equal(t.rauswurf, false);
+  assert.match(t.grund, /abgebrochen/);
+  assert.equal(t.versuch, 1);
+  await warten(60);
+  assert.equal(boten.length, 2, 'nach dem Abbruch selbst wieder beigetreten');
+  assert.equal(m.verbunden, true);
+  assert.equal(m.status().trennung, undefined);
+
+  boten[1].emit('kicked', '{"text":"Flying is not enabled on this server"}');
+  boten[1].emit('end', 'socketClosed');
+  assert.equal(m.status().trennung.rauswurf, true);
+  assert.match(m.status().trennung.grund, /Fliegen/);
+  await warten(40);
+  assert.equal(boten.length, 2, 'nach einem Rauswurf kein neuer Versuch');
+
+  m.trennungVergessen();
+  assert.equal(m.status().trennung, null);
+});
+
 test('Minecraft: Chat ohne Befehle und Steuerzeichen, gültiger Figurname', () => {
   assert.equal(mc.chatText('/op Moin'), 'op Moin');
   assert.equal(mc.chatText('hi\nda §4rot'), 'hi da 4rot');

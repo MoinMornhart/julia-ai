@@ -58,6 +58,25 @@ const BLOCK_WOERTER = {
   redstone: ['redstone_ore', 'deepslate_redstone_ore'], smaragd: ['emerald_ore', 'deepslate_emerald_ore'],
 };
 
+// Deutsche Wörter für Gegenstände (geben, herstellen); sonst gilt der englische Name.
+const ITEM_WOERTER = {
+  holz: ['_log'], bretter: ['_planks'], brett: ['_planks'], stock: ['stick'], stoecke: ['stick'], stöcke: ['stick'],
+  fackel: ['torch'], werkbank: ['crafting_table'], ofen: ['furnace'], truhe: ['chest'], bett: ['_bed'], leiter: ['ladder'],
+  brot: ['bread'], steak: ['cooked_beef'], fleisch: ['cooked_beef', 'cooked_porkchop', 'cooked_mutton', 'cooked_chicken', 'beef', 'porkchop'],
+  apfel: ['apple'], goldapfel: ['golden_apple'], karotte: ['carrot'], kartoffel: ['baked_potato', 'potato'], essen: ESSEN,
+  eisen: ['iron_ingot'], gold: ['gold_ingot'], diamant: ['diamond'], diamanten: ['diamond'], kohle: ['coal', 'charcoal'], smaragd: ['emerald'],
+  stein: ['cobblestone', 'stone'], bruchstein: ['cobblestone'], erde: ['dirt'], sand: ['sand'], glas: ['glass'], wolle: ['_wool'],
+  pfeil: ['arrow'], bogen: ['bow'], schild: ['shield'], eimer: ['bucket'], boot: ['_boat'],
+  schwert: ['_sword'], spitzhacke: ['_pickaxe'], axt: ['_axe'], schaufel: ['_shovel'], hacke: ['_hoe'],
+};
+
+// Tiere, die Essen geben – nur die jagt die Figur.
+const TIERE = new Set(['cow', 'pig', 'chicken', 'sheep', 'rabbit', 'mooshroom']);
+const TIER_WOERTER = { kuh: 'cow', kuehe: 'cow', kühe: 'cow', schwein: 'pig', schweine: 'pig', huhn: 'chicken', huehner: 'chicken', hühner: 'chicken', schaf: 'sheep', schafe: 'sheep', hase: 'rabbit', hasen: 'rabbit', kaninchen: 'rabbit', pilzkuh: 'mooshroom' };
+// Das behält die Figur beim Einräumen: Waffen, Werkzeug, Rüstung, Essen, Fackeln.
+const BEHALTEN = /_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)$|^(shield|bow|crossbow|trident|arrow|torch)$/;
+const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !verstau · !schlaf';
+
 // --- Kleine, prüfbare Bausteine ---
 
 function adresseTeilen(roh, port) {
@@ -235,6 +254,49 @@ function blockNamen(wort, alleNamen) {
   return alleNamen.filter((n) => n.endsWith(`_${w}`));
 }
 
+// Wie blockNamen, für Gegenstände; verzeiht die Mehrzahl ("fackeln", "brote").
+function itemNamen(wort, alleNamen) {
+  const w = String(wort || '').trim().toLowerCase().replace(/\s+/g, '_');
+  if (!w) return [];
+  for (const v of [w, w.replace(/(en|n|e|s)$/, ''), w.replace(/n$/, '')]) {
+    if (!v) continue;
+    if (alleNamen.includes(v)) return [v];
+    const muster = ITEM_WOERTER[v] || BLOCK_WOERTER[v];
+    if (muster) {
+      const treffer = alleNamen.filter((n) => muster.some((m) => (m.startsWith('_') ? n.endsWith(m) : n === m)));
+      if (treffer.length) return muster.some((m) => m.startsWith('_')) ? treffer : muster.filter((m) => treffer.includes(m));
+    }
+  }
+  return alleNamen.filter((n) => n.endsWith(`_${w}`));
+}
+
+// Koordinaten prüfen: ganze Zahlen innerhalb der Welt; y darf fehlen.
+function ortLesen({ x, y, z } = {}) {
+  const zahl = (v, max) => {
+    const n = Number(v);
+    if (!Number.isFinite(n) || Math.abs(n) > max) throw new Error('Das sind keine gültigen Koordinaten – z. B. !geh 100 64 -20.');
+    return Math.round(n);
+  };
+  const ort = { x: zahl(x, 3e7), z: zahl(z, 3e7) };
+  if (y !== undefined && y !== null && y !== '') {
+    ort.y = zahl(y, 400);
+    if (ort.y < -64 || ort.y > 320) throw new Error('Die Höhe liegt zwischen -64 und 320.');
+  }
+  return ort;
+}
+
+const ortText = (o) => (o.y == null ? `${o.x} / ${o.z}` : `${o.x} / ${o.y} / ${o.z}`);
+
+// "5 brot", "brot 5", "ein brot" → { anzahl, sache }
+function mengeLesen(roh) {
+  const r = String(roh || '').trim().replace(/^(ein|eine|einen|a|an)\s+/i, '');
+  let m = /^(\d{1,3})\s*(?:x|stück|stueck)?\s+(.+)$/i.exec(r);
+  if (m) return { anzahl: Number(m[1]), sache: m[2].trim() };
+  m = /^(.+?)\s+(\d{1,3})$/.exec(r);
+  if (m) return { anzahl: Number(m[2]), sache: m[1].trim() };
+  return { anzahl: null, sache: r };
+}
+
 function istFeind(e) {
   return !!e && e.type !== 'player' && e.isValid !== false && (e.type === 'hostile' || FEINDE.has(e.name));
 }
@@ -276,6 +338,20 @@ function befehlLesen(text, namen = []) {
   if (/^(besch(ü|ue)tz(e)?( mich)?|hilf( mir)?|protect( me)?|guard)$/.test(s)) return { aufgabe: 'beschuetzen' };
   const k = /^(?:duell|k(?:ä|ae)mpf(?:e)?|kampf|fight|duel|pvp|attack|greif(?:e)? an)(?:\s+(?:gegen|mit|against|with))?(?:\s+([A-Za-z0-9_]{3,16}))?$/i.exec(rest);
   if (k) return { aufgabe: 'kaempfen', spieler: k[1] && !/^(mich|me)$/i.test(k[1]) ? k[1] : null };
+  if (/^(hilfe|help|befehle|commands|\?)$/.test(s)) return { aufgabe: 'hilfe' };
+  if (/^(sammel|sammle|einsammeln|aufheben|heb auf|pick ?up|collect)( alles| das| ein| auf)*$/.test(s)) return { aufgabe: 'sammeln' };
+  if (/^(schlaf(en)?|geh schlafen|ins bett|sleep|bed)$/.test(s)) return { aufgabe: 'schlafen' };
+  if (/^(verstau(e|en)?|r(ä|ae)um( das inventar)? ein|einr(ä|ae)umen|store|stash)( alles)?( in die truhe)?$/.test(s)) return { aufgabe: 'verstauen' };
+  const g = /^(?:geh|gehe|lauf|laufe|go|goto)(?:\s+(?:zu|nach|to))?\s+(-?\d+)\s+(-?\d+)(?:\s+(-?\d+))?$/.exec(s);
+  if (g) return g[3] !== undefined ? { aufgabe: 'gehen', x: Number(g[1]), y: Number(g[2]), z: Number(g[3]) } : { aufgabe: 'gehen', x: Number(g[1]), z: Number(g[2]) };
+  const j = /^(?:jag|jage|jagen|hunt)(?:\s+(\d{1,2}))?(?:\s+([a-zäöüß_]+))?(?:\s+(\d{1,2}))?$/.exec(s);
+  if (j) return { aufgabe: 'jagen', anzahl: Number(j[1] || j[3]) || null, tier: j[2] || null };
+  const abbau = /^(?:bau(?:e)?\s+ab|abbauen|mine|hack(?:e)?)\s+(.+)$/.exec(s);
+  if (abbau) { const m = mengeLesen(abbau[1]); return { aufgabe: 'abbauen', block: m.sache, anzahl: m.anzahl }; }
+  const gib = /^(?:gib|gebe|give)(?:\s+(?:mir|me))?\s+(.+)$/.exec(s);
+  if (gib) { const m = mengeLesen(gib[1]); return { aufgabe: 'geben', item: m.sache, anzahl: m.anzahl }; }
+  const cr = /^(?:craft(?:e)?|herstellen|stell(?:e)?(?:\s+mir)?|mach(?:e)?\s+mir)\s+(.+?)(?:\s+her)?$/.exec(s);
+  if (cr) { const m = mengeLesen(cr[1]); return { aufgabe: 'herstellen', item: m.sache, anzahl: m.anzahl }; }
   return null;
 }
 
@@ -337,9 +413,27 @@ function rauswurfText(grund) {
   if (/verif|authenticat|unverified|premium|online.?mode/i.test(t)) {
     return 'Der Server verlangt ein Microsoft-Konto (online-mode=true). Julia loggt sich nie ein – stell in server.properties online-mode=false ein. Solche Server nur im Heimnetz betreiben, nie offen im Internet.';
   }
+  if (/fly(ing)?\b.*(not|nicht)|kicked for flying|fliegen/i.test(t)) return 'Rausgeworfen wegen „Fliegen“ – meist schlägt der Anti-Cheat bei Bots an. Auf eigenen Servern hilft allow-flight=true in server.properties.';
+  if (/\bbann?ed\b|gebannt|gesperrt/i.test(t)) return `Die Spielfigur ist auf diesem Server gebannt: ${t}`;
+  if (/too many packets|spam|flood|zu schnell/i.test(t)) return 'Der Spam-Schutz des Servers hat die Figur rausgeworfen (zu viele Nachrichten oder Aktionen).';
+  if (/logged in from another location|duplicate.?login|anderen ort|already connected|bereits (verbunden|online)/i.test(t)) return 'Mit demselben Konto hat sich jemand anderes angemeldet – Julia braucht ein eigenes Minecraft-Konto.';
+  if (/timed? ?out|keep.?alive|zeitüberschreitung/i.test(t)) return 'Der Server hat keine Antwort mehr bekommen (Zeitüberschreitung).';
+  if (/server (closed|is restarting|stopp)|shutting down|restart|neustart|wird neu gestartet/i.test(t)) return 'Der Server wurde beendet oder neu gestartet.';
+  if (/kicked by an? (operator|admin)|you (have been|were) kicked/i.test(t)) return `Ein Admin hat die Figur rausgeworfen${t ? `: ${t}` : '.'}`;
   if (/white.?list/i.test(t)) return 'Der Server hat eine Whitelist – trag die Spielfigur dort ein (/whitelist add NAME).';
   if (/outdated|incompatible|version/i.test(t)) return `Die Versionen passen nicht zusammen: ${t}`;
   return `Vom Server getrennt: ${t || 'ohne Grund'}`;
+}
+
+// Verbindung ohne Rauswurf zu Ende: mineflayer nennt einen kurzen Grund
+// ("socketClosed", "keepAliveError"), dazu kommt der letzte Fehler.
+function endeText(grund, fehler, server) {
+  const g = String(grund || '');
+  const f = String(fehler || '');
+  if (/keep.?alive|timeout|timed out/i.test(g) || /ETIMEDOUT|timed out/i.test(f)) return `${server} hat nicht mehr geantwortet (Zeitüberschreitung).`;
+  if (/ECONNRESET/i.test(f)) return `${server} hat die Verbindung abrupt getrennt.`;
+  if (!g || /socketClosed|^end$/i.test(g)) return `Die Verbindung zu ${server} ist abgebrochen.`;
+  return `Die Verbindung zu ${server} wurde beendet (${g}).`;
 }
 
 function fehlerText(e, server) {
@@ -354,8 +448,11 @@ function fehlerText(e, server) {
 // --- Die Spielfigur ---
 
 class Minecraft extends EventEmitter {
-  constructor({ laden, aufloesen, srv } = {}) {
+  // wiederPausen: Wartezeiten vor den automatischen Wiederversuchen (ms).
+  constructor({ laden, aufloesen, srv, wiederPausen = [5000, 15000, 30000] } = {}) {
     super();
+    this.wiederPausen = wiederPausen;
+    this.trennung = null; // warum die Figur zuletzt vom Server geflogen ist
     this.laden = laden || (() => ({ mineflayer: require('mineflayer'), pf: require('mineflayer-pathfinder') }));
     this.aufloesen = aufloesen;
     this.srv = srv;
@@ -374,7 +471,9 @@ class Minecraft extends EventEmitter {
   }
 
   async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false } = {}) {
-    this.trennen();
+    clearTimeout(this.wiederTimer);
+    this._botWeg();
+    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme };
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
     const ziel = await zielFinden(adresse, p, { aufloesen: this.aufloesen, srv: this.srv, oeffentlich });
@@ -409,9 +508,12 @@ class Minecraft extends EventEmitter {
         bot.once('end', ende(() => nein(new Error(`Verbindung zu ${this.server} beendet.`))));
       });
     } catch (e) {
-      this.trennen();
+      this._botWeg();
       throw e;
     }
+    this.trennung = null;
+    this.verbundenSeit = Date.now();
+    this.letzterFehler = null;
     this._einrichten(bot);
     if (stimme) this._stimmeStarten(bot, ip);
     return this.status();
@@ -466,17 +568,41 @@ class Minecraft extends EventEmitter {
     bot.on('death', () => this._gestorben());
     bot.on('entityDead', (e) => this._tot(e));
     bot.on('kicked', (g) => { this.grund = rauswurfText(g); });
-    bot.on('end', () => {
+    // Unerwartet weg: für den Crash-Screen merken, warum. Nur die Verbindung
+    // verloren (kein Rauswurf)? Dann versucht die Figur selbst, zurückzukommen.
+    bot.on('end', (grund) => {
       if (this.bot !== bot) return; // selbst getrennt
+      const a = this.auftrag;
       this.bot = null;
       this.auftrag = null;
+      this.jagt = null;
       this._stimmeStoppen();
-      this._melden('getrennt', this.grund || `Verbindung zu ${this.server} beendet.`);
+      const rauswurf = !!this.grund;
+      const text = this.grund || endeText(grund, this.letzterFehler, this.server);
+      this.trennung = {
+        zeit: Date.now(), grund: text, rauswurf, server: this.server,
+        dauerS: Math.max(0, Math.round((Date.now() - (this.verbundenSeit || Date.now())) / 1000)),
+        aufgabe: a ? a.art : null, fehler: this.letzterFehler || null, versuch: 0, naechsterVersuch: null, aufgegeben: false,
+      };
       this.grund = null;
+      this._melden('getrennt', text);
+      if (!rauswurf) this._wiederVerbinden();
     });
   }
 
+  // Server verlassen, weil du es willst – kein Crash-Screen, kein Wiederversuch.
   trennen() {
+    clearTimeout(this.wiederTimer);
+    this.trennung = null;
+    this._botWeg();
+  }
+
+  trennungVergessen() {
+    clearTimeout(this.wiederTimer);
+    this.trennung = null;
+  }
+
+  _botWeg() {
     const bot = this.bot;
     this.bot = null;
     this.auftrag = null;
@@ -487,20 +613,53 @@ class Minecraft extends EventEmitter {
     }
   }
 
+  _wiederVerbinden() {
+    const t = this.trennung;
+    if (!t || !this.letzteOptionen) return;
+    if (t.versuch >= this.wiederPausen.length) {
+      t.naechsterVersuch = null;
+      t.aufgegeben = true;
+      this.emit('geaendert');
+      return;
+    }
+    const warte = this.wiederPausen[t.versuch];
+    t.versuch += 1;
+    t.naechsterVersuch = Date.now() + warte;
+    this.emit('geaendert');
+    clearTimeout(this.wiederTimer);
+    this.wiederTimer = setTimeout(async () => {
+      if (this.trennung !== t || this.bot) return;
+      t.naechsterVersuch = null;
+      try {
+        await this.verbinden(this.letzteOptionen);
+        this._melden('zurueck', `Wieder da auf ${this.server}.`);
+      } catch (e) {
+        if (this.bot) return;
+        this.trennung = t;
+        t.fehler = e.message;
+        this._wiederVerbinden();
+      }
+    }, warte);
+    if (this.wiederTimer.unref) this.wiederTimer.unref();
+  }
+
   chat(text) {
     if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
     this.bot.chat(chatText(text));
     return 'Gesendet.';
   }
 
-  aufgabe({ aufgabe: art, spieler, block, anzahl } = {}) {
+  aufgabe({ aufgabe: art, spieler, block, anzahl, item, x, y, z, tier } = {}) {
     if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
+    if (art === 'hilfe') return HILFE; // hält nichts an
     const bot = this.bot;
     const { GoalFollow, GoalNear } = this.pf.goals;
     const name = spieler || this.besitzer;
     const brauchtName = () => {
       if (!name) throw new Error('Mit wem? Nenn den Spielernamen oder trag deinen in den Einstellungen unter Minecraft ein.');
     };
+    // Erst prüfen, dann anhalten – ein Tippfehler soll nichts abbrechen.
+    const ort = art === 'gehen' ? ortLesen({ x, y, z }) : null;
     this._anhalten();
     switch (art) {
       case 'stopp':
@@ -532,13 +691,28 @@ class Minecraft extends EventEmitter {
         return `Duell gegen ${name} – los in 3 Sekunden!`;
       case 'abbauen':
         return this._abbauen(block, anzahl);
+      case 'gehen':
+        return this._gehen(ort);
+      case 'geben':
+        brauchtName();
+        return this._geben(item || block, anzahl, name);
+      case 'sammeln':
+        return this._sammeln();
+      case 'schlafen':
+        return this._schlafen();
+      case 'jagen':
+        return this._jagen(tier, anzahl);
+      case 'herstellen':
+        return this._herstellen(item || block, anzahl);
+      case 'verstauen':
+        return this._verstauen();
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
   }
 
   status() {
-    if (!this.verbunden) return { verbunden: false };
+    if (!this.verbunden) return { verbunden: false, trennung: this.trennung ? { ...this.trennung } : null };
     const bot = this.bot;
     const p = bot.entity.position;
     const spieler = Object.values(bot.players)
@@ -560,7 +734,7 @@ class Minecraft extends EventEmitter {
       hunger: Math.round(bot.food),
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       spielmodus: bot.game && bot.game.gameMode,
-      aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block, geschafft: a.geschafft, ziel: a.anzahl } : null,
+      aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block || a.item, geschafft: a.geschafft, ziel: a.anzahl, ort: a.ort } : null,
       spieler,
       feinde_nah: feinde,
       inventar: Object.fromEntries(Object.entries(inventar).slice(0, 24)),
@@ -658,6 +832,19 @@ class Minecraft extends EventEmitter {
         bot.pathfinder.setGoal(new GoalFollow(chef, 3), true);
         a.folgt = true;
       }
+    } else if (a.art === 'jagen') {
+      let ziel = a.zielId != null ? bot.entities[a.zielId] : null;
+      if (!ziel || ziel.isValid === false) {
+        ziel = bot.nearestEntity((e) => a.tiere.includes(e.name) && e.position.distanceTo(bot.entity.position) < 32);
+        a.zielId = ziel ? ziel.id : null;
+      }
+      if (!ziel || this.ticks > a.bis) {
+        this._kampfPause();
+        if (a.geschafft) this._jagdEnde(a);
+        else this._fertig(a, 'Hier sind keine Tiere zum Jagen.');
+        return;
+      }
+      this._kampf(ziel);
     }
   }
 
@@ -704,6 +891,12 @@ class Minecraft extends EventEmitter {
 
   _tot(e) {
     const a = this.auftrag;
+    if (a && a.art === 'jagen' && e && e.id === a.zielId) {
+      a.geschafft += 1;
+      a.zielId = null;
+      if (a.geschafft >= a.anzahl) { this._kampfPause(); this._jagdEnde(a); }
+      return;
+    }
     if (!a || a.art !== 'kaempfen' || !e || e.type !== 'player') return;
     if (String(e.username || '').toLowerCase() !== String(a.spieler).toLowerCase()) return;
     this._anhalten();
@@ -796,6 +989,201 @@ class Minecraft extends EventEmitter {
     });
     return `Ich baue bis zu ${ziel}× ${block} ab.`;
   }
+
+  // Aufgabe erledigt (oder gescheitert): melden und im Spiel Bescheid sagen.
+  _fertig(a, text) {
+    if (this.auftrag !== a) return;
+    this.auftrag = null;
+    this._melden('fertig', text);
+    try { this.chat(text); } catch { /* getrennt */ }
+  }
+
+  _gehen(ort) {
+    const { GoalNear, GoalXZ } = this.pf.goals;
+    const a = { art: 'gehen', ort: ortText(ort) };
+    this.auftrag = a;
+    const ziel = ort.y == null ? new GoalXZ(ort.x, ort.z) : new GoalNear(ort.x, ort.y, ort.z, 1);
+    this.bot.pathfinder.goto(ziel).then(
+      () => this._fertig(a, `Angekommen bei ${a.ort}.`),
+      () => this._fertig(a, `Ich komme nicht bis ${a.ort} durch.`),
+    );
+    return `Ich laufe zu ${a.ort}.`;
+  }
+
+  _geben(item, anzahl, name) {
+    const bot = this.bot;
+    const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+    if (!namen.length) throw new Error(`Einen Gegenstand "${item}" kenne ich nicht. Englische Namen wie bread gehen immer.`);
+    const vorrat = bot.inventory.items().filter((i) => namen.includes(i.name));
+    if (!vorrat.length) throw new Error(`Ich habe kein ${item} dabei.`);
+    const art = vorrat[0].name;
+    const da = vorrat.filter((i) => i.name === art).reduce((s, i) => s + i.count, 0);
+    const n = Math.max(1, Math.min(da, Math.round(Number(anzahl) || da)));
+    const e = this._spielerFigur(name);
+    if (!e) throw new Error(`Ich sehe ${name} gerade nicht. Komm näher, dann bringe ich es dir.`);
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'geben', spieler: name, item: art };
+    this.auftrag = a;
+    (async () => {
+      try {
+        await bot.pathfinder.goto(new GoalNear(e.position.x, e.position.y, e.position.z, 2));
+        if (this.auftrag !== a) return;
+        await bot.lookAt(e.position.offset(0, 1.6, 0), true);
+        await bot.toss(vorrat[0].type, null, n);
+        this._fertig(a, `Hier, ${n}× ${art} für dich.`);
+      } catch (err) {
+        this._fertig(a, `Das Geben hat nicht geklappt: ${err.message}`);
+      }
+    })();
+    return `Ich bringe ${name} ${n}× ${art}.`;
+  }
+
+  _sammeln() {
+    const bot = this.bot;
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'sammeln', geschafft: 0 };
+    this.auftrag = a;
+    const bis = Date.now() + 60 * 1000;
+    const istDrop = (e) => e.name === 'item' || e.name === 'Item' || e.objectType === 'Item';
+    (async () => {
+      const versucht = new Set();
+      while (this.auftrag === a && Date.now() < bis && a.geschafft < 40) {
+        const drop = bot.nearestEntity((e) => istDrop(e) && !versucht.has(e.id) && e.position.distanceTo(bot.entity.position) < 16);
+        if (!drop) break;
+        versucht.add(drop.id);
+        try {
+          await bot.pathfinder.goto(new GoalNear(drop.position.x, drop.position.y, drop.position.z, 0.5));
+          a.geschafft += 1;
+        } catch {
+          if (this.auftrag !== a) return;
+        }
+      }
+      this._fertig(a, a.geschafft ? `${a.geschafft}× eingesammelt.` : 'Hier liegt nichts zum Einsammeln.');
+    })();
+    return 'Ich sammle ein, was hier herumliegt.';
+  }
+
+  _schlafen() {
+    const bot = this.bot;
+    const ids = Object.keys(bot.registry.blocksByName).filter((n) => n.endsWith('_bed')).map((n) => bot.registry.blocksByName[n].id);
+    const bett = bot.findBlock({ matching: ids, maxDistance: 32 });
+    if (!bett) throw new Error('Hier in der Nähe ist kein Bett.');
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'schlafen' };
+    this.auftrag = a;
+    (async () => {
+      try {
+        await bot.pathfinder.goto(new GoalNear(bett.position.x, bett.position.y, bett.position.z, 2));
+        if (this.auftrag !== a) return;
+        await bot.sleep(bett);
+        this._fertig(a, 'Gute Nacht – ich liege im Bett.');
+      } catch (e) {
+        this._fertig(a, /night|thunder|nacht/i.test(e.message) ? 'Schlafen geht nur nachts oder bei Gewitter.' : `Schlafen klappt nicht: ${e.message}`);
+      }
+    })();
+    return 'Ich gehe schlafen.';
+  }
+
+  _jagen(tier, anzahl) {
+    let tiere = [...TIERE];
+    if (tier) {
+      const w = String(tier).toLowerCase();
+      const t = TIER_WOERTER[w] || w;
+      if (!TIERE.has(t)) throw new Error('Jagen geht auf Kühe, Schweine, Hühner, Schafe und Hasen.');
+      tiere = [t];
+    }
+    this._ausruesten();
+    const n = Math.max(1, Math.min(10, Math.round(Number(anzahl) || 3)));
+    this.auftrag = { art: 'jagen', tiere, anzahl: n, geschafft: 0, zielId: null, bis: this.ticks + 20 * 180 };
+    return `Ich jage ${n}× ${tier || 'Tiere'} fürs Essen.`;
+  }
+
+  // Nach der Jagd das Fleisch aufsammeln.
+  _jagdEnde(a) {
+    if (this.auftrag !== a) return;
+    this.auftrag = null;
+    this._melden('fertig', `${a.geschafft} Tiere erlegt – ich sammle das Essen ein.`);
+    this._sammeln();
+  }
+
+  _herstellen(item, anzahl) {
+    const bot = this.bot;
+    const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+    if (!namen.length) throw new Error(`Einen Gegenstand "${item}" kenne ich nicht. Englische Namen wie torch gehen immer.`);
+    const wunsch = Math.max(1, Math.min(64, Math.round(Number(anzahl) || 1)));
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'herstellen', item };
+    this.auftrag = a;
+    (async () => {
+      try {
+        const tischBlock = bot.registry.blocksByName.crafting_table;
+        const tisch = tischBlock ? bot.findBlock({ matching: tischBlock.id, maxDistance: 32 }) : null;
+        // Erst im Inventar (2×2), sonst an der nächsten Werkbank.
+        let wahl = null;
+        for (const mitTisch of [null, tisch]) {
+          if (wahl || (mitTisch === null ? false : !mitTisch)) continue;
+          for (const n of namen) {
+            const r = bot.recipesFor(bot.registry.itemsByName[n].id, null, 1, mitTisch)[0];
+            if (r) { wahl = { r, n, tisch: mitTisch }; break; }
+          }
+        }
+        if (!wahl) {
+          this._fertig(a, tisch ? `Für ${item} fehlen mir die Zutaten.` : `Für ${item} fehlen mir die Zutaten – oder es braucht eine Werkbank in der Nähe.`);
+          return;
+        }
+        if (wahl.tisch) {
+          await bot.pathfinder.goto(new GoalNear(wahl.tisch.position.x, wahl.tisch.position.y, wahl.tisch.position.z, 2));
+          if (this.auftrag !== a) return;
+        }
+        let geschafft = 0;
+        while (geschafft < wunsch && this.auftrag === a) {
+          const r = bot.recipesFor(wahl.r.result.id, null, 1, wahl.tisch)[0];
+          if (!r) break;
+          await bot.craft(r, 1, wahl.tisch || undefined);
+          geschafft += r.result.count;
+        }
+        this._fertig(a, geschafft ? `${geschafft}× ${wahl.n} hergestellt.` : `Für ${item} fehlen mir die Zutaten.`);
+      } catch (e) {
+        this._fertig(a, `Herstellen hat nicht geklappt: ${e.message}`);
+      }
+    })();
+    return `Ich stelle ${wunsch}× ${item} her.`;
+  }
+
+  _verstauen() {
+    const bot = this.bot;
+    const ids = ['chest', 'trapped_chest', 'barrel'].map((n) => bot.registry.blocksByName[n]).filter(Boolean).map((b) => b.id);
+    const truhe = bot.findBlock({ matching: ids, maxDistance: 32 });
+    if (!truhe) throw new Error('Hier in der Nähe ist keine Truhe.');
+    const { GoalNear } = this.pf.goals;
+    const a = { art: 'verstauen', geschafft: 0 };
+    this.auftrag = a;
+    (async () => {
+      try {
+        await bot.pathfinder.goto(new GoalNear(truhe.position.x, truhe.position.y, truhe.position.z, 2));
+        if (this.auftrag !== a) return;
+        const kiste = await bot.openContainer(truhe);
+        try {
+          for (const it of bot.inventory.items()) {
+            if (this.auftrag !== a) break;
+            if (BEHALTEN.test(it.name) || ESSEN.includes(it.name) || HEILEN.includes(it.name)) continue;
+            try {
+              await kiste.deposit(it.type, null, it.count);
+              a.geschafft += it.count;
+            } catch {
+              break; // Truhe voll
+            }
+          }
+        } finally {
+          kiste.close();
+        }
+        this._fertig(a, a.geschafft ? `${a.geschafft} Sachen in die Truhe gelegt – Waffen, Werkzeug und Essen behalte ich.` : 'Es gab nichts zum Einräumen.');
+      } catch (e) {
+        this._fertig(a, `Einräumen hat nicht geklappt: ${e.message}`);
+      }
+    })();
+    return 'Ich räume das Inventar in die Truhe.';
+  }
 }
 
 // --- Werkzeuge für das Modell ---
@@ -855,19 +1243,24 @@ const WERKZEUGE = [
         konto: ctx.minecraftKonto ? ctx.minecraftKonto() : null,
         stimme: z.c.stimme !== false,
       });
-      return `Verbunden als ${s.name} (Minecraft ${s.version}). Die Spielfigur hört im Spiel auf !folge, !komm, !beschütze mich, !duell und !stopp.\n${fremd('dem Minecraft-Server', JSON.stringify(s))}`;
+      return `Verbunden als ${s.name} (Minecraft ${s.version}). Im Spiel nennt „!hilfe“ alle Befehle.\n${fremd('dem Minecraft-Server', JSON.stringify(s))}`;
     },
   },
   {
     name: 'minecraft_aufgabe',
-    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen.',
+    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit und meldet sich, wenn sie fertig ist. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). gehen: zu Koordinaten laufen (x, z, optional y). geben: dem Spieler etwas aus dem Inventar bringen (item, anzahl). sammeln: herumliegende Gegenstände aufheben. jagen: Tiere für Essen jagen (tier: kuh, schwein, huhn, schaf, hase; anzahl bis 10). herstellen: etwas craften (item z. B. fackel, werkbank, bretter, stock oder torch; anzahl) – im Inventar oder an einer Werkbank in der Nähe. verstauen: Inventar in die nächste Truhe legen (Waffen, Werkzeug, Essen bleiben). schlafen: ins nächste Bett. stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen.',
     input_schema: {
       type: 'object',
       properties: {
-        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'stopp'] },
+        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'stopp'] },
         spieler: { type: 'string' },
         block: { type: 'string' },
+        item: { type: 'string', description: 'für geben und herstellen, z. B. brot, fackel, diamant, oak_planks' },
         anzahl: { type: 'number' },
+        x: { type: 'number' },
+        y: { type: 'number' },
+        z: { type: 'number' },
+        tier: { type: 'string', description: 'für jagen: kuh, schwein, huhn, schaf oder hase' },
       },
       required: ['aufgabe'],
     },
@@ -918,4 +1311,5 @@ module.exports = {
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, befehlLesen, rauswurfText, frageLesen, chatTeile,
+  itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };

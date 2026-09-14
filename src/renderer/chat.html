@@ -219,6 +219,20 @@
             <span class="mc-zustand" id="mcZustand"></span>
           </header>
 
+          <section class="mc-crash" id="mcCrash" role="alert" hidden>
+            <div class="mc-crash-kopf">
+              <span class="mc-crash-ico" aria-hidden="true">!</span>
+              <div><h2 data-nav="mc.crash_titel"></h2><p id="mcCrashArt"></p></div>
+            </div>
+            <p class="mc-crash-grund" id="mcCrashGrund"></p>
+            <dl class="mc-crash-infos" id="mcCrashInfos"></dl>
+            <p class="mc-klein" id="mcCrashVersuch"></p>
+            <div class="mc-knoepfe">
+              <button class="knopf primaer" id="mcNeu" data-nav="mc.crash_neu"></button>
+              <button class="knopf klein" id="mcCrashWeg" data-nav="mc.crash_weg"></button>
+            </div>
+          </section>
+
           <div class="mc-spalten">
             <section class="kachel">
               <header class="kachel-kopf"><span data-ico="wuerfel"></span><h2 data-nav="mc.server"></h2></header>
@@ -265,6 +279,10 @@
               <button class="mc-aufgabe" data-aufgabe="kommen"><b data-nav="mc.a_kommen"></b><small data-nav="mc.a_kommen_t"></small></button>
               <button class="mc-aufgabe" data-aufgabe="beschuetzen"><b data-nav="mc.a_beschuetzen"></b><small data-nav="mc.a_beschuetzen_t"></small></button>
               <button class="mc-aufgabe" data-aufgabe="kaempfen"><b data-nav="mc.a_kaempfen"></b><small data-nav="mc.a_kaempfen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="sammeln"><b data-nav="mc.a_sammeln"></b><small data-nav="mc.a_sammeln_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="jagen"><b data-nav="mc.a_jagen"></b><small data-nav="mc.a_jagen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="verstauen"><b data-nav="mc.a_verstauen"></b><small data-nav="mc.a_verstauen_t"></small></button>
+              <button class="mc-aufgabe" data-aufgabe="schlafen"><b data-nav="mc.a_schlafen"></b><small data-nav="mc.a_schlafen_t"></small></button>
               <button class="mc-aufgabe stopp" data-aufgabe="stopp"><b data-nav="mc.a_stopp"></b><small data-nav="mc.a_stopp_t"></small></button>
             </div>
             <form class="mc-zeile" id="mcAbbauen">
@@ -272,6 +290,25 @@
               <input id="mcBlock" maxlength="40" spellcheck="false" autocomplete="off">
               <input id="mcAnzahl" type="number" min="1" max="64" value="16">
               <button class="knopf klein" type="submit" data-nav="mc.abbauen_los"></button>
+            </form>
+            <form class="mc-zeile" id="mcGeben">
+              <label for="mcGebenItem" data-nav="mc.geben"></label>
+              <input id="mcGebenItem" maxlength="40" spellcheck="false" autocomplete="off">
+              <input id="mcGebenAnzahl" type="number" min="1" max="64" value="1" aria-label="Anzahl">
+              <button class="knopf klein" type="submit" data-nav="mc.los"></button>
+            </form>
+            <form class="mc-zeile" id="mcHerstellen">
+              <label for="mcHerstellenItem" data-nav="mc.herstellen"></label>
+              <input id="mcHerstellenItem" maxlength="40" spellcheck="false" autocomplete="off">
+              <input id="mcHerstellenAnzahl" type="number" min="1" max="64" value="1" aria-label="Anzahl">
+              <button class="knopf klein" type="submit" data-nav="mc.los"></button>
+            </form>
+            <form class="mc-zeile" id="mcGehen">
+              <label for="mcX" data-nav="mc.gehen"></label>
+              <input id="mcX" class="mc-koord" type="number" placeholder="X" aria-label="X">
+              <input id="mcY" class="mc-koord" type="number" placeholder="Y" aria-label="Y">
+              <input id="mcZ" class="mc-koord" type="number" placeholder="Z" aria-label="Z">
+              <button class="knopf klein" type="submit" data-nav="mc.los"></button>
             </form>
           </section>
 
