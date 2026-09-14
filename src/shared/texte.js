@@ -699,6 +699,7 @@ const TEXTE = {
     'zustand.thinking': 'denkt',
     'zustand.speaking': 'spricht',
 
+    'start.gpu_software': 'Die Grafikkarte hat wiederholt Probleme gemacht. {name} wechselt zur Sicherheit auf Software-Grafik und startet dafür neu.',
     'update.titel': '{name}-Update',
     'update.aktuell': '{name} ist aktuell (Version {version}).',
     'update.neu': 'Version {neu} ist verfügbar (du hast {alt}).',
@@ -1409,6 +1410,7 @@ const TEXTE = {
     'zustand.thinking': 'thinking',
     'zustand.speaking': 'speaking',
 
+    'start.gpu_software': 'The graphics card kept causing trouble. To be safe {name} switches to software graphics and restarts for it.',
     'update.titel': '{name} update',
     'update.aktuell': '{name} is up to date (version {version}).',
     'update.neu': 'Version {neu} is available (you have {alt}).',

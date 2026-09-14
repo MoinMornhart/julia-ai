@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.1.0 – 2026-09-14
+- Julia startet nie mehr wortlos: eine Selbstprüfung schreibt ein Logbuch, prüft Schreibrechte und Startflags, fängt wiederholte Grafikkarten-Abstürze mit Software-Grafik ab und zeigt bei Startproblemen eine klare Meldung mit Knopf zum Logbuch
+
 ## 4.0.0 – 2026-09-14
 - Julia von überall erreichen – über ein eigenes Proxmox-Relay: mit einem Befehl installiert, Anmeldung nur per Passkey, dein PC verbindet sich von selbst, am PC bleibt jeder Port zu
 

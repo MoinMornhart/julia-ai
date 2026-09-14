@@ -28,6 +28,24 @@ app.setAppUserModelId(app.isPackaged ? 'io.github.moinmornhart.julia' : 'Julia')
 // Jede Seite läuft in der Chromium-Sandbox, auch wenn ein Fenster es vergäße.
 app.enableSandbox();
 
+// Start-Selbstprüfung: Logbuch, Flags und – noch vor app.whenReady – die
+// Entscheidung über Software-Rendering, damit Julia nie wortlos verschwindet.
+const startpruefung = require('./startpruefung');
+const startLog = startpruefung.logbuchOeffnen(DATEN);
+const startFlaggen = startpruefung.flaggenPruefen(process.argv);
+startLog.schreiben('START', 'Julia startet', {
+  version: (() => { try { return app.getVersion(); } catch { return '?'; } })(),
+  electron: process.versions.electron,
+  flaggen: startFlaggen.flaggen,
+});
+for (const w of startFlaggen.warnungen) startLog.schreiben('WARN', w);
+if (startpruefung.softwareRendering(DATEN) || startFlaggen.konflikt) {
+  app.disableHardwareAcceleration();
+  startLog.schreiben('GPU', 'Software-Rendering aktiv (GPU-Rückfall oder Grafik-Flags).');
+}
+const startFatal = (text) => startpruefung.fehlerDialog({ app, dialog, shell, text, logDatei: startLog.datei, ordner: DATEN })
+  .then(() => { beendenLaeuft = true; app.exit(1); });
+
 const { Konfiguration } = require('./config');
 const { Gedaechtnis } = require('./gedaechtnis');
 const { Protokoll } = require('./protokoll');
@@ -2080,9 +2098,21 @@ async function start() {
   setInterval(() => updatesAutomatisch().catch(() => {}), 2 * 3600 * 1000);
 }
 
+// Läuft Julia schon? Dann bekommt die erste Instanz das 'second-instance'-
+// Ereignis und holt ihr Fenster nach vorn; diese hier verabschiedet sich – aber
+// mit einem Eintrag im Logbuch, nicht wortlos. Ist der frühere Vorgang wirklich
+// tot, gibt Electron den Lock frei und wir starten normal.
 if (!app.requestSingleInstanceLock()) {
+  startLog.schreiben('INFO', 'Julia läuft bereits – hole das vorhandene Fenster nach vorn und beende diesen Start.');
   app.quit();
 } else {
+  // Ohne beschreibbaren Datenordner kann Julia nicht arbeiten: sichtbar melden.
+  try {
+    startpruefung.schreibbarPruefen(DATEN);
+  } catch (e) {
+    startLog.schreiben('FATAL', e.message);
+    startFatal(e.message);
+  }
   app.on('web-contents-created', (_e, wc) => {
     sicherheit.fensterHaerten(wc, { rendererOrdner: RENDERER, oeffnen: (url) => shell.openExternal(url) });
   });
@@ -2103,8 +2133,17 @@ if (!app.requestSingleInstanceLock()) {
     if (weckwort) weckwort.stoppen();
     if (sprache) { sprache.stumm(); sprache.zuhoerenAbbrechen(); }
   });
+  // GPU-Abstürze abfangen: wiederholt sich es, weicht Julia beim nächsten Start
+  // auf Software-Rendering aus und sagt es einmal – statt still abzustürzen.
+  app.whenReady().then(() => {
+    startpruefung.gpuUeberwachen({
+      app, logbuch: startLog, datenOrdner: DATEN,
+      melden: () => melden('Julia', t('start.gpu_software')),
+      neustart: () => { app.relaunch(); },
+    });
+  }).catch(() => { /* Meldung folgt über start() */ });
   app.whenReady().then(start).catch((e) => {
-    dialog.showErrorBox('Julia', e.stack || e.message);
-    app.exit(1);
+    startLog.schreiben('FATAL', 'Start abgebrochen', { fehler: e.stack || e.message });
+    startFatal(`Julia konnte nicht starten.\n\n${e.message}`);
   });
 }
