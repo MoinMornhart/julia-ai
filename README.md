@@ -83,7 +83,7 @@ Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md).
 
 ## Inhalt
 
-[Was Julia ist](#was-julia-ist) · [Startseite, Verlauf, Routinen](#startseite-und-verlauf) · [Stimme und Sprache](#stimme-und-sprache) · [KI-Anbieter](#ki-anbieter) · [Die Ampel](#die-ampel) · [MCP-Server](#mcp-server) · [Gaming-Overlay](#gaming-overlay) · [Die Blase](#die-blase) · [Minecraft](#minecraft) · [Konten, Handy, mehrere PCs](#konten-verbinden) · [Design](#design) · [Installation](#installation) · [Bedienung](#bedienung) · [Updates](#updates) · [Für Entwickler](#für-entwickler) · [Grenzen](#grenzen) · [Lizenz](#lizenz)
+[Was Julia ist](#was-julia-ist) · [Startseite, Verlauf, Routinen](#startseite-und-verlauf) · [Stimme und Sprache](#stimme-und-sprache) · [KI-Anbieter](#ki-anbieter) · [Die Ampel](#die-ampel) · [MCP-Server](#mcp-server) · [Gaming-Overlay](#gaming-overlay) · [Die Blase](#die-blase) · [Minecraft](#minecraft) · [Konten, Handy, mehrere PCs](#konten-verbinden) · [Design](#design) · [Installation](#installation) · [Bedienung](#bedienung) · [Updates](#updates)<!-- privat --> · [Für Entwickler](#für-entwickler)<!-- /privat --> · [Grenzen](#grenzen) · [Lizenz](#lizenz)
 
 ## Was Julia ist
 
@@ -388,6 +388,7 @@ Beim ersten Start öffnet sich die Einrichtung: Vorname, KI-Anbieter mit Schlüs
 Ordner, in denen Julia ohne Rückfrage schreiben darf. Schlüssel werden mit Windows (DPAPI)
 verschlüsselt gespeichert.
 
+<!-- privat -->
 <details>
 <summary><b>Aus dem Quellcode</b></summary>
 
@@ -404,6 +405,7 @@ npm start
 Whisper liegt fertig in `vendor/whisper` (neu holen mit `node scripts/whisper-holen.js`). Falls
 `npm start` meldet, dass Electron fehlt: `node node_modules/electron/install.js` ausführen.
 </details>
+<!-- /privat -->
 
 ## Bedienung
 
@@ -444,6 +446,7 @@ Alles liegt in `%APPDATA%\Julia`. Updates fassen diesen Ordner nie an.
 | `whisper\` · `piper\` | Sprachmodell und natürliche Stimmen, einmal geladen |
 </details>
 
+<!-- privat -->
 ## Für Entwickler
 
 <details>
@@ -475,6 +478,7 @@ Die Screenshots dieser README entstehen im Vorführmodus mit Beispieldaten:
 $env:JULIA_DATEN = "$env:TEMP\julia-demo"; $env:JULIA_SCREENSHOTS = "docs\bilder"; npm start
 ```
 </details>
+<!-- /privat -->
 
 ## Grenzen
 
@@ -491,3 +495,9 @@ solange der Lizenz- und Urheberhinweis erhalten bleibt. Ohne Gewähr.
 Mitgeliefert: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT). Einmal geladen,
 nicht mitgeliefert: Whisper-Modelle, [Piper](https://github.com/rhasspy/piper) und die Stimmen
 Thorsten und Kerstin (CC0).
+<!-- oeffentlich
+
+In diesem Repository liegen die Webseite, die Anleitungen und die Installer. Prüfe den Download
+mit `Get-FileHash .\Julia-AI-Setup.exe` gegen die SHA-256-Summe auf der
+[Webseite](https://moinmornhart.github.io/julia-ai-web/).
+-->

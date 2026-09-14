@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.9.1 – 2026-09-14
+- Die Download-Seite auf GitHub zeigt jetzt die volle README mit Bildern, allen Funktionen und Anleitungen – nicht mehr nur ein paar Zeilen
+
 ## 3.9.0 – 2026-09-14
 - Minecraft-Panel: Sag Julia in eigenen Worten, was sie tun soll – sie plant und arbeitet es selbst ab; dazu Voice-Chat-Gruppen mit Passwort und Auto-Beitritt, Schmelzen, Hinstellen, Ausrüsten und Essen
 

@@ -18,25 +18,17 @@ const WURZEL = path.join(__dirname, '..');
 const WEB_REPO = 'MoinMornhart/julia-ai-web';
 const ORDNER = path.join(os.tmpdir(), 'julia-ai-web');
 
-const README = `# Julia AI
+const DOKUMENTE = ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md', 'outlook-einrichten.md', 'outlook-setup.en.md', 'unterwegs.md', 'unterwegs.en.md'];
 
-Persönliche KI für Windows – sieht deinen Bildschirm und fragt, bevor sie handelt.
-
-**Webseite:** https://moinmornhart.github.io/julia-ai-web/
-**Download:** [Julia-AI-Setup.exe](https://github.com/${WEB_REPO}/releases/latest/download/Julia-AI-Setup.exe) – alle Versionen unter [Releases](https://github.com/${WEB_REPO}/releases)
-
-**➜ [Installieren und loslegen – Schritt für Schritt, mit allem, was Julia kann](docs/installation.md)** · [English guide](docs/installation.en.md)
-
-Hier liegen nur die Webseite, die Anleitungen und die Installer. Prüfe den Download
-mit \`Get-FileHash .\\Julia-AI-Setup.exe\` gegen die SHA-256-Summe auf der Webseite.
-
----
-
-Personal AI for Windows – sees your screen and asks before it acts. This repository only
-holds the website, the guides and the installers.
-
-**Lizenz / License:** [MIT](LICENSE)
-`;
+// Das Download-Repo zeigt dieselbe README wie das private Repo, samt Bildern –
+// nur ohne die Teile zwischen <!-- privat --> und <!-- /privat --> (Quellcode,
+// Entwickler). Was nur dort erscheinen soll, steht als <!-- oeffentlich … -->.
+function readmeOeffentlich(text) {
+  return text
+    .replace(/<!-- privat -->[\s\S]*?<!-- \/privat -->\n?/g, '')
+    .replace(/<!-- oeffentlich\n([\s\S]*?)\n-->/g, '$1')
+    .replace(/\n{3,}/g, '\n\n');
+}
 
 function git(...args) {
   return execFileSync('git', args, { cwd: ORDNER, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -89,10 +81,16 @@ function main() {
     .split('__GROESSE__').join(groesse);
   fs.writeFileSync(path.join(ORDNER, 'index.html'), seite, 'utf8');
   fs.mkdirSync(path.join(ORDNER, 'docs'), { recursive: true });
-  for (const d of ['installation.md', 'installation.en.md', 'google-einrichten.md', 'google-setup.en.md', 'outlook-einrichten.md', 'outlook-setup.en.md', 'unterwegs.md', 'unterwegs.en.md']) {
+  for (const d of DOKUMENTE) {
     fs.copyFileSync(path.join(WURZEL, 'docs', d), path.join(ORDNER, 'docs', d));
   }
-  fs.writeFileSync(path.join(ORDNER, 'README.md'), README, 'utf8');
+  // Die Bilder der README; nicht mehr benutzte verschwinden mit.
+  fs.rmSync(path.join(ORDNER, 'docs', 'bilder'), { recursive: true, force: true });
+  fs.cpSync(path.join(WURZEL, 'docs', 'bilder'), path.join(ORDNER, 'docs', 'bilder'), { recursive: true });
+  for (const r of ['README.md', 'README.en.md']) {
+    fs.writeFileSync(path.join(ORDNER, r), readmeOeffentlich(fs.readFileSync(path.join(WURZEL, r), 'utf8')), 'utf8');
+  }
+  fs.copyFileSync(path.join(WURZEL, 'CHANGELOG.md'), path.join(ORDNER, 'CHANGELOG.md'));
   fs.copyFileSync(path.join(WURZEL, 'LICENSE'), path.join(ORDNER, 'LICENSE'));
   fs.writeFileSync(path.join(ORDNER, '.nojekyll'), '', 'utf8');
 
@@ -107,4 +105,6 @@ function main() {
   console.log(`Webseite für v${version} gepusht.`);
 }
 
-main();
+if (require.main === module) main();
+
+module.exports = { readmeOeffentlich, DOKUMENTE };

@@ -83,7 +83,7 @@ All changes are in the [CHANGELOG](CHANGELOG.md).
 
 ## Contents
 
-[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Accounts, phone, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates) · [For developers](#for-developers) · [Limits](#limits) · [License](#license)
+[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Accounts, phone, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates)<!-- privat --> · [For developers](#for-developers)<!-- /privat --> · [Limits](#limits) · [License](#license)
 
 ## What Julia is
 
@@ -374,6 +374,7 @@ Windows says “Windows protected your PC”, click “More info” and then “
 On first start the setup opens: first name, AI provider with key and the folders where Julia may
 write without asking. Keys are stored encrypted with Windows (DPAPI).
 
+<!-- privat -->
 <details>
 <summary><b>From source</b></summary>
 
@@ -390,6 +391,7 @@ npm start
 Whisper ships ready in `vendor/whisper` (refresh with `node scripts/whisper-holen.js`). If
 `npm start` says Electron is missing: run `node node_modules/electron/install.js`.
 </details>
+<!-- /privat -->
 
 ## Usage
 
@@ -430,6 +432,7 @@ Everything is in `%APPDATA%\Julia`. Updates never touch this folder.
 | `whisper\` · `piper\` | speech model and natural voices, downloaded once |
 </details>
 
+<!-- privat -->
 ## For developers
 
 <details>
@@ -461,6 +464,7 @@ The screenshots in this README come from the demo mode with example data:
 $env:JULIA_DATEN = "$env:TEMP\julia-demo"; $env:JULIA_SCREENSHOTS = "docs\bilder"; npm start
 ```
 </details>
+<!-- /privat -->
 
 ## Limits
 
@@ -477,3 +481,9 @@ license and copyright notice stay intact. No warranty.
 Shipped with Julia: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT). Downloaded
 once, not shipped: Whisper models, [Piper](https://github.com/rhasspy/piper) and the voices
 Thorsten and Kerstin (CC0).
+<!-- oeffentlich
+
+This repository holds the website, the guides and the installers. Check the download with
+`Get-FileHash .\Julia-AI-Setup.exe` against the SHA-256 checksum on the
+[website](https://moinmornhart.github.io/julia-ai-web/).
+-->
