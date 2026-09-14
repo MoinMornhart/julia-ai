@@ -81,6 +81,8 @@ contextBridge.exposeInMainWorld('julia', {
   blaseAbgelegt: () => ipcRenderer.send('blase:abgelegt'),
   blaseDoppelklick: () => ipcRenderer.send('blase:doppelklick'),
   blaseHoehe: (h) => ipcRenderer.send('blase:hoehe', Number(h) || 0),
+  overlayMaus: (drin) => ipcRenderer.send('overlay:maus', !!drin),
+  overlayAktivieren: () => ipcRenderer.send('overlay:aktivieren'),
   zugriffMaus: (ueber) => ipcRenderer.send('zugriff:maus', !!ueber),
   zugriffStopp: () => ipcRenderer.send('zugriff:stopp'),
   auswahlAktion: (aktion, frage) => ipcRenderer.invoke('auswahl:aktion', String(aktion), String(frage || '')),

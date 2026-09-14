@@ -443,6 +443,10 @@ function overlayErstellen() {
       overlayVerstecken();
     }
   });
+  // Zurück ins Spiel geklickt: Beim Spielen wird das Overlay wieder durchlässig.
+  overlayFenster.on('blur', () => {
+    if (!overlayPassiv && spielAktiv && overlaySichtbar()) overlayZeigen({ passiv: true });
+  });
   return overlayFenster;
 }
 
@@ -451,7 +455,10 @@ function overlayZeigen({ passiv = false } = {}) {
   clearTimeout(overlayTimer);
   overlayPassiv = passiv;
   const o = overlayFenster;
-  o.setIgnoreMouseEvents(passiv);
+  // Passiv: Klicks gehen ans Spiel, Mausbewegungen kommen trotzdem an – fährt
+  // die Maus über den Chat, schaltet overlay:maus ihn greifbar (scrollen, klicken).
+  if (passiv) o.setIgnoreMouseEvents(true, { forward: true });
+  else o.setIgnoreMouseEvents(false);
   o.setFocusable(!passiv);
   const zeigen = () => {
     o.webContents.send('overlay:modus', passiv ? 'passiv' : 'aktiv');
@@ -818,6 +825,18 @@ function ipcEinrichten() {
     config.set('blase.position', { x, y });
   });
   ipc.on('blase:doppelklick', () => chatZeigen('chat'));
+  // Overlay im Spiel: Über dem Chat reagiert die Maus (scrollen, klicken),
+  // daneben gehen Klicks weiter ans Spiel. Ein Klick hinein macht es aktiv.
+  ipc.on('overlay:maus', (e, drin) => {
+    if (!overlayFenster || overlayFenster.isDestroyed() || e.sender !== overlayFenster.webContents || !overlayPassiv) return;
+    overlayFenster.setIgnoreMouseEvents(!drin, { forward: true });
+    if (drin) clearTimeout(overlayTimer); // beim Lesen nicht wegblenden
+    else if (!spielAktiv) overlaySpaeterVerstecken(6000);
+  });
+  ipc.on('overlay:aktivieren', (e) => {
+    if (!overlayFenster || overlayFenster.isDestroyed() || e.sender !== overlayFenster.webContents) return;
+    overlayZeigen({ passiv: false });
+  });
   ipc.on('zugriff:maus', (e, ueber) => {
     const f = BrowserWindow.fromWebContents(e.sender);
     if (f && zugriffFenster.includes(f)) f.setIgnoreMouseEvents(!ueber, { forward: true });

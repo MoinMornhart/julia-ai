@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.2.0 – 2026-09-14
+- Im Spiel kannst du jetzt ins Overlay klicken, darin scrollen und direkt tippen – ein Klick zurück ins Spiel macht es wieder durchlässig
+
 ## 3.1.1 – 2026-09-14
 - Julia tritt Minecraft-Servern im installierten Programm wieder bei – der Fehler „Cannot find module … features.json“ ist behoben
 

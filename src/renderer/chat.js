@@ -54,9 +54,26 @@ function dateienHinzu(dateien) {
   $('text').focus();
 }
 
+// Passives Overlay im Spiel: Fährt die Maus über den Chat, wird er greifbar
+// (scrollen, klicken); ein Klick hinein macht ihn aktiv zum Tippen. Daneben
+// gehen Klicks weiter ans Spiel.
+let overlayDrin = false;
+
 function overlayModus(modus) {
   document.body.classList.toggle('passiv', modus === 'passiv');
+  overlayDrin = false;
   if (modus !== 'passiv') $('text').focus();
+}
+
+if (imOverlay) {
+  const passiv = () => document.body.classList.contains('passiv');
+  document.addEventListener('mousemove', () => {
+    if (passiv() && !overlayDrin) { overlayDrin = true; julia.overlayMaus(true); }
+  });
+  document.documentElement.addEventListener('mouseleave', () => {
+    if (overlayDrin) { overlayDrin = false; julia.overlayMaus(false); }
+  });
+  document.addEventListener('mousedown', () => { if (passiv()) julia.overlayAktivieren(); }, true);
 }
 
 function tx(k, werte) {

@@ -175,7 +175,7 @@ conversation.
   <img src="docs/bilder/overlay-en.png" width="300" alt="Overlay over the game">
 </p>
 
-**Automatically while gaming:** When you start a game, Julia shows the overlay by herself – passively, so clicks go through and the game keeps the focus; use the hotkey to type into it. Switch away or quit the game and it disappears again. Games from Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG and Xbox as well as Minecraft are recognised; add others as program names under *Settings → Gaming overlay*. You can switch it off there too.
+**Automatically while gaming:** When you start a game, Julia shows the overlay by herself – passively, so clicks go through and the game keeps the focus; use the hotkey to type into it. Switch away or quit the game and it disappears again. Hover over it with the mouse to scroll the history; click into it to type, click back into the game and the overlay lets clicks through again. Games from Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG and Xbox as well as Minecraft are recognised; add others as program names under *Settings → Gaming overlay*. You can switch it off there too.
 
 `Ctrl+Shift+Space` puts a small, translucent chat window over your game – in windowed or
 borderless fullscreen. Type, Enter, keep playing; `Esc` or the same hotkey hides it.

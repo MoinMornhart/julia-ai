@@ -36,8 +36,10 @@ body.overlay .leer-kugel { width: 58px; height: 58px; margin-bottom: 12px; }
 body.overlay .eingabe { padding: 6px 8px 10px; }
 body.overlay .eingabe-feld { box-shadow: none; backdrop-filter: none; }
 /* Passiv: nur anzeigen, keine Eingabe – Klicks gehen ohnehin durch */
-body.overlay.passiv .eingabe,
 body.overlay.passiv .aktionen { display: none; }
+/* Passiv bleibt das Eingabefeld sichtbar – ein Klick hinein macht das Overlay aktiv. */
+body.overlay.passiv .eingabe { opacity: 0.7; }
+body.overlay.passiv .eingabe-feld { cursor: text; }
 body.overlay.passiv::before { border-color: var(--linie-stark); }
 
 /* --- Kopf --- */
