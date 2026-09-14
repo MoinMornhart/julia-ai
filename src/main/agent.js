@@ -132,6 +132,7 @@ class Agent extends EventEmitter {
     if (this.beschaeftigt) throw new Error('BESCHAEFTIGT');
     this.beschaeftigt = true;
     this.aktiverKanal = kanal;
+    this.perSprache = perSprache;
     this.abbruch = new AbortController();
     this.emit('zustand', 'thinking');
     this.emit('start', { kanal });
@@ -282,7 +283,10 @@ class Agent extends EventEmitter {
     if (f.adaptiv) {
       p.thinking = { type: 'adaptive' };
       // Mitten in der Bildschirmsteuerung: kurz nachdenken, schnell weiterklicken.
-      p.output_config = { effort: this.uiRunde ? 'low' : this.config.get('aufwand') || 'high' };
+      // Per Sprache zählt Tempo: dann höchstens mittlere Denktiefe.
+      const aufwand = this.config.get('aufwand') || 'high';
+      const tief = ['high', 'xhigh', 'max'].includes(aufwand);
+      p.output_config = { effort: this.uiRunde ? 'low' : this.perSprache && tief ? 'medium' : aufwand };
     }
     return p;
   }

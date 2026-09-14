@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.7.1 – 2026-09-14
+- Julia antwortet per Sprache viel schneller: Whisper schreibt etwa fünfmal flotter auf, sie wartet kürzer auf das Satzende und spricht schon den ersten Satz, während der Rest noch entsteht
+
 ## 3.7.0 – 2026-09-14
 - Das Gaming-Overlay lässt sich anpassen: Größe, Schrift, durchsichtiger Hintergrund, frei verschiebbar, Kompakt-Modus, Ausblende-Zeit, Vorschau – und auf Wunsch ist es immer da
 

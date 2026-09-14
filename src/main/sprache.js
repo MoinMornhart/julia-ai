@@ -49,8 +49,8 @@ try {
   }
   if (-not $eingestellt) { try { $rec.SetInputToDefaultAudioDevice() } catch { Aus 'E KEIN_MIKROFON'; exit 3 } }
   $rec.InitialSilenceTimeout = [TimeSpan]::FromSeconds(8)
-  $rec.EndSilenceTimeout = [TimeSpan]::FromSeconds(1.0)
-  $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.5)
+  $rec.EndSilenceTimeout = [TimeSpan]::FromSeconds(0.7)
+  $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.0)
   $null = Register-ObjectEvent -InputObject $rec -EventName AudioLevelUpdated -SourceIdentifier pegel
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognitionRejected -SourceIdentifier abgelehnt
@@ -280,10 +280,11 @@ class Sprache extends EventEmitter {
     this.hoeren = null;
     this.sprechenProc = null;
     this.sprechNr = 0; // zählt bei jedem "Stopp" hoch
+    this.vorleserAktiv = 0; // satzweises Vorlesen läuft (auch zwischen zwei Sätzen)
   }
 
   get hoertZu() { return !!this.hoeren; }
-  get sprichtGerade() { return !!this.sprechenProc; }
+  get sprichtGerade() { return !!this.sprechenProc || this.vorleserAktiv > 0; }
 
   // Nimmt einen Satz auf. Liefert den erkannten Text ('' bei Stille oder Abbruch).
   // Fehlt das gewählte Mikrofon, hört Julia über das Windows-Standardgerät.
@@ -412,11 +413,62 @@ class Sprache extends EventEmitter {
     this.stumm();
     const sauber = fuerSprache(text, sprachcode);
     if (!sauber) return;
+    await this._sprechenEinzeln(sauber, { stimme, tempo, sprachcode, lautsprecher }, this.sprechNr);
+  }
+
+  // Satzweise vorlesen, während die Antwort noch entsteht: text(d) nimmt die
+  // gestreamten Stücke, fertig() liest den Rest und wartet, bis alles gesagt
+  // ist. Der Lautsprecher gilt die ganze Zeit als belegt – sonst liefe "Hey
+  // Julia" zwischen zwei Sätzen jedes Mal neu an.
+  vorleser(optionen = {}) {
+    this.stumm();
+    const nr = this.sprechNr;
+    const sc = optionen.sprachcode || 'de';
+    let puffer = '';
+    let erster = true;
+    let beendet = false;
+    let kette = Promise.resolve();
+    this.vorleserAktiv += 1;
+    this.emit('lautsprecher', true);
+    const sprich = (teil) => {
+      const sauber = fuerSprache(teil, sc);
+      if (!sauber) return;
+      kette = kette.then(() => this._sprechenEinzeln(sauber, optionen, nr, false)).catch(() => { /* weiter mit dem nächsten */ });
+    };
+    return {
+      text: (d) => {
+        if (beendet || nr !== this.sprechNr) return;
+        puffer += String(d || '');
+        // Der erste Satz darf kurz sein – Hauptsache, es geht schnell los.
+        const { saetze, rest } = saetzeAbtrennen(puffer, erster ? 12 : 40);
+        if (!saetze.length) return;
+        erster = false;
+        puffer = rest;
+        saetze.forEach(sprich);
+      },
+      fertig: async () => {
+        if (beendet) return;
+        beendet = true;
+        if (nr === this.sprechNr && puffer.trim()) sprich(puffer);
+        puffer = '';
+        await kette;
+        this.vorleserAktiv = Math.max(0, this.vorleserAktiv - 1);
+        this.emit('pegel', 0);
+        this.emit('lautsprecher', false);
+      },
+    };
+  }
+
+  // Einen fertig bereinigten Text sprechen – nur, solange niemand "Stopp"
+  // gesagt hat (nr). melden: den Lautsprecher selbst an- und abmelden.
+  async _sprechenEinzeln(sauber, { stimme, tempo = 0, sprachcode = 'de', lautsprecher = '' } = {}, nr = this.sprechNr, melden = true) {
+    if (nr !== this.sprechNr) return;
     if (String(stimme || '').startsWith('piper:')) {
-      if (await this._mitPiper(sauber, stimme.slice(6), { tempo, sprachcode, lautsprecher })) return;
+      if (await this._mitPiper(sauber, stimme.slice(6), { tempo, sprachcode, lautsprecher, nr, melden })) return;
       stimme = ''; // natürliche Stimme noch nicht da: solange die Windows-Stimme der Sprache
     }
     const dllPfad = lautsprecher ? await this.dll().catch(() => '') : '';
+    if (nr !== this.sprechNr) return;
     await new Promise((resolve) => {
       const p = powershell(SPRECHEN, {
         JULIA_TEXT: Buffer.from(sauber, 'utf8').toString('base64'),
@@ -427,7 +479,7 @@ class Sprache extends EventEmitter {
         JULIA_AUDIO_DLL: dllPfad,
       });
       this.sprechenProc = p;
-      this.emit('lautsprecher', true);
+      if (melden) this.emit('lautsprecher', true);
       let wippen = null;
       readline.createInterface({ input: p.stdout }).on('line', (z) => {
         // Eigener Lautsprecher: keine Viseme während der Wiedergabe – die Blase wippt trotzdem.
@@ -440,7 +492,7 @@ class Sprache extends EventEmitter {
         clearInterval(wippen);
         if (this.sprechenProc === p) this.sprechenProc = null;
         this.emit('pegel', 0);
-        this.emit('lautsprecher', false);
+        if (melden) this.emit('lautsprecher', false);
         resolve();
       });
     });
@@ -456,11 +508,10 @@ class Sprache extends EventEmitter {
 
   // Piper erzeugt die Antwort als WAV, danach wird sie abgespielt. false heißt:
   // ging nicht – dann spricht die Windows-Stimme.
-  async _mitPiper(text, id, { tempo, sprachcode, lautsprecher }) {
+  async _mitPiper(text, id, { tempo, sprachcode, lautsprecher, nr = this.sprechNr, melden = true }) {
     if (!this._piperStimme(id, sprachcode)) return false;
-    const nr = this.sprechNr;
     const datei = tempDatei('.wav');
-    this.emit('lautsprecher', true);
+    if (melden) this.emit('lautsprecher', true);
     try {
       await this.piper.erzeugen(text, id, { tempo, ziel: datei, beiStart: (p) => { this.sprechenProc = p; } });
       if (nr === this.sprechNr) await this._abspielen(datei, lautsprecher, nr);
@@ -472,7 +523,7 @@ class Sprache extends EventEmitter {
     } finally {
       if (nr === this.sprechNr) this.sprechenProc = null;
       this.emit('pegel', 0);
-      this.emit('lautsprecher', false);
+      if (melden) this.emit('lautsprecher', false);
       fs.rmSync(datei, { force: true });
     }
   }
@@ -581,6 +632,33 @@ class Sprache extends EventEmitter {
   }
 }
 
+// Aus dem bisher gestreamten Text die fertigen Sätze lösen – nie mitten in
+// einem Code-Block und nicht nach Abkürzungen wie "z. B.". Kurze Sätze werden
+// gebündelt (mindestens `mindestens` Zeichen), damit es flüssig klingt.
+function saetzeAbtrennen(text, mindestens = 40) {
+  const s = String(text || '');
+  const zaeune = [...s.matchAll(/```/g)].map((m) => m.index);
+  const bloecke = [];
+  for (let i = 0; i + 1 < zaeune.length; i += 2) bloecke.push([zaeune[i], zaeune[i + 1] + 3]);
+  const offen = zaeune.length % 2 ? zaeune[zaeune.length - 1] : s.length; // offener Code-Block: dort aufhören
+  const imCode = (i) => bloecke.some(([a, b]) => i >= a && i < b);
+  const bereich = s.slice(0, offen);
+  const grenze = /[.!?…]+["“”»)]*(?=\s)|\n+/g;
+  const saetze = [];
+  let start = 0;
+  let m;
+  while ((m = grenze.exec(bereich))) {
+    if (imCode(m.index)) continue;
+    if (m[0][0] === '.' && /(^|\s)[A-Za-zÄÖÜäöüß]{1,2}$/.test(bereich.slice(Math.max(0, m.index - 3), m.index))) continue;
+    const ende = m.index + m[0].length;
+    if (ende - start < mindestens) continue;
+    const satz = bereich.slice(start, ende).trim();
+    if (satz) saetze.push(satz);
+    start = ende;
+  }
+  return { saetze, rest: s.slice(start) };
+}
+
 // 16-Bit-Mono-PCM auf eine andere Abtastrate umrechnen (linear) – Piper
 // spricht mit 16 oder 22 kHz, der Minecraft-Voice-Chat will 48 kHz.
 function umrechnen(pcm, von, nach) {
@@ -621,4 +699,4 @@ function huellkurve(pcm, rate, schrittMs = SCHRITT_MS) {
   return werte.map((w) => Math.min(1, w / max));
 }
 
-module.exports = { Sprache, fuerSprache, wavBauen, wavLesen, herunter48auf16, umrechnen, huellkurve };
+module.exports = { Sprache, fuerSprache, wavBauen, wavLesen, herunter48auf16, umrechnen, huellkurve, saetzeAbtrennen };

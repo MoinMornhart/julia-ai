@@ -40,6 +40,30 @@ function textAufbereiten(roh) {
   return t;
 }
 
+// Wie lang ist die Aufnahme? Aus dem WAV-Kopf (Bytes pro Sekunde, Datenlänge).
+function wavSekunden(datei) {
+  try {
+    const b = fs.readFileSync(datei);
+    const proSekunde = b.readUInt32LE(28);
+    let pos = 12;
+    while (pos + 8 <= b.length) {
+      const id = b.toString('ascii', pos, pos + 4);
+      const laenge = b.readUInt32LE(pos + 4);
+      if (id === 'data') return proSekunde ? Math.min(laenge, b.length - pos - 8) / proSekunde : 0;
+      pos += 8 + laenge + (laenge % 2);
+    }
+  } catch { /* unbekannt: volles Fenster */ }
+  return 0;
+}
+
+// Whisper rechnet sonst immer ein 30-Sekunden-Fenster. Für einen kurzen Satz
+// reicht ein kleineres: 50 Schritte je Sekunde plus Reserve (gemessen: etwa
+// fünfmal schneller, derselbe Text). 0 heißt volles Fenster.
+function tonFenster(sekunden) {
+  if (!(sekunden > 0)) return 0;
+  return Math.min(1500, Math.max(256, Math.ceil(Math.round((sekunden + 1.5) * 50 * 1000) / 1000)));
+}
+
 // Genug Kerne fürs Tempo, aber Luft fürs Spiel daneben.
 function threads(kerne = os.cpus().length) {
   return Math.max(2, Math.min(8, kerne - 2));
@@ -123,7 +147,10 @@ class Whisper extends EventEmitter {
   erkennen(wav, { sprachcode = 'de', stufe = 'genau' } = {}) {
     const programm = this.programm;
     if (!programm || !this.bereit(stufe)) return Promise.reject(new Error('Whisper ist nicht bereit.'));
-    const args = ['-m', this.modellPfad(stufe), '-f', wav, '-l', sprachcode === 'en' ? 'en' : 'de', '-nt', '-np', '-sns', '-t', String(threads())];
+    // -bs 1 -bo 1: einfache Suche statt fünf Varianten – bei kurzen Sätzen gleich gut, viel schneller.
+    const args = ['-m', this.modellPfad(stufe), '-f', wav, '-l', sprachcode === 'en' ? 'en' : 'de', '-nt', '-np', '-sns', '-bs', '1', '-bo', '1', '-t', String(threads())];
+    const fenster = tonFenster(wavSekunden(wav));
+    if (fenster) args.push('-ac', String(fenster));
     return new Promise((resolve, reject) => {
       const p = this.starten(programm, args, { cwd: this.programmOrdner, windowsHide: true });
       const aus = [];
@@ -145,4 +172,4 @@ class Whisper extends EventEmitter {
   }
 }
 
-module.exports = { Whisper, MODELLE, textAufbereiten, threads };
+module.exports = { Whisper, MODELLE, textAufbereiten, threads, tonFenster, wavSekunden };

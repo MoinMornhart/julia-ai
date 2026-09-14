@@ -667,25 +667,37 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
     ? await anhaengeLesen(pfade, { anbieterArt: anbieterListe.anbieterVon(config).art, bildLesen, sc: config.get('sprachcode') })
     : { bloecke: [], namen: [] };
   anAlle('agent:nutzer', { text: anzeige || sauber, perSprache, anhaenge: [...anzeigeAnhaenge, ...a.namen] });
+  // Vorlesen satzweise, sobald die ersten Sätze da sind – nicht erst, wenn die
+  // ganze Antwort fertig ist.
+  const modus = config.get('sprache.vorlesen');
+  const leser = modus === 'immer' || (modus === 'bei-sprache' && perSprache)
+    ? sprache.vorleser({
+      stimme: config.get('sprache.stimme'),
+      tempo: config.get('sprache.tempo'),
+      sprachcode: config.get('sprachcode'),
+      lautsprecher: config.get('sprache.lautsprecher'),
+    })
+    : null;
+  const mitlesen = (d) => leser.text(d);
+  if (leser) agent.on('text', mitlesen);
   let antwort = null;
   try {
     antwort = await agent.senden(sauber, { perSprache, anhaenge: [...a.bloecke, ...bloecke] });
   } catch (e) {
     if (e.message === 'BESCHAEFTIGT') anAlle('agent:hinweis', { art: 'beschaeftigt' });
     else anAlle('agent:fehler', { art: 'text', text: e.message });
+    if (leser) {
+      agent.off('text', mitlesen);
+      sprache.stumm();
+      await leser.fertig();
+    }
     return;
   }
-  const modus = config.get('sprache.vorlesen');
-  if (antwort && (modus === 'immer' || (modus === 'bei-sprache' && perSprache))) {
-    zustandSetzen('speaking');
-    await sprache.sprechen(antwort, {
-      stimme: config.get('sprache.stimme'),
-      tempo: config.get('sprache.tempo'),
-      sprachcode: config.get('sprachcode'),
-      lautsprecher: config.get('sprache.lautsprecher'),
-    });
-    if (zustand === 'speaking') zustandSetzen('idle');
-  }
+  if (!leser) return;
+  agent.off('text', mitlesen);
+  if (antwort) zustandSetzen('speaking');
+  await leser.fertig();
+  if (zustand === 'speaking') zustandSetzen('idle');
 }
 
 // Natürliche Stimme (Piper): Wer sie auswählt, bekommt sie einmal geladen –

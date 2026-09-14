@@ -8,7 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
 const { spawnSync } = require('child_process');
-const { Whisper, MODELLE, textAufbereiten, threads } = require('../src/main/whisper');
+const { Whisper, MODELLE, textAufbereiten, threads, tonFenster, wavSekunden } = require('../src/main/whisper');
 
 const VENDOR = path.join(__dirname, '..', 'vendor', 'whisper');
 
@@ -37,6 +37,22 @@ test('Whisper: Stille, Geräusche und erfundene Untertitel zählen als nichts', 
   assert.equal(textAufbereiten('Vielen Dank fürs Zuschauen!'), '');
   assert.equal(textAufbereiten('Öffne (bitte) den Browser'), 'Öffne (bitte) den Browser', 'normale Klammern bleiben');
   assert.equal(textAufbereiten(' ... '), '');
+});
+
+test('Whisper: kurzes Tonfenster passend zur Aufnahme', () => {
+  assert.equal(tonFenster(0), 0, 'unbekannte Länge: volles Fenster');
+  assert.equal(tonFenster(1), 256, 'nie kleiner als 256');
+  assert.equal(tonFenster(6.8), 415);
+  assert.equal(tonFenster(40), 1500, 'höchstens das volle Fenster');
+  const ordner = fs.mkdtempSync(path.join(os.tmpdir(), 'julia-wav-'));
+  const kopf = Buffer.alloc(44);
+  kopf.write('RIFF', 0); kopf.write('WAVE', 8); kopf.write('fmt ', 12); kopf.writeUInt32LE(16, 16);
+  kopf.writeUInt16LE(1, 20); kopf.writeUInt16LE(1, 22); kopf.writeUInt32LE(16000, 24); kopf.writeUInt32LE(32000, 28);
+  kopf.writeUInt16LE(2, 32); kopf.writeUInt16LE(16, 34); kopf.write('data', 36); kopf.writeUInt32LE(32000 * 3, 40);
+  const datei = path.join(ordner, 'drei.wav');
+  fs.writeFileSync(datei, Buffer.concat([kopf, Buffer.alloc(32000 * 3)]));
+  assert.equal(wavSekunden(datei), 3);
+  assert.equal(wavSekunden(path.join(ordner, 'fehlt.wav')), 0);
 });
 
 test('Whisper: lässt dem Spiel Luft', () => {
@@ -97,6 +113,7 @@ test('Whisper: ruft whisper-cli richtig auf und liest den Text', async () => {
   assert.equal(a[a.indexOf('-f') + 1], 'C:\\tmp\\a.wav');
   assert.equal(a[a.indexOf('-m') + 1], w.modellPfad('klein'));
   for (const f of ['-nt', '-np', '-sns']) assert.ok(a.includes(f), f);
+  assert.equal(a[a.indexOf('-bs') + 1], '1', 'einfache Suche – schneller');
   assert.equal(aufruf.opts.windowsHide, true);
   await assert.rejects(w.erkennen('x.wav', { stufe: 'gibtsnicht' }), /nicht bereit/);
 });
