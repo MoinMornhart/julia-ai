@@ -1,38 +1,95 @@
 <p align="center">
-  <img src="docs/bilder/logo.png" width="96" alt="Julia">
+  <img src="docs/bilder/logo.png" width="104" alt="Julia">
 </p>
 
 <h1 align="center">Julia</h1>
 
 <p align="center">
-  Dein persönlicher Assistent für den Windows-PC.<br>
-  Läuft im Tray, sieht den Bildschirm, spricht mit dir – und fragt vorher bei allem, was sich nicht zurücknehmen lässt.
+  <b>Deine KI für den Windows-PC.</b><br>
+  Sieht deinen Bildschirm, spricht mit dir, spielt Minecraft mit – und fragt vorher bei allem, was sich nicht zurücknehmen lässt.
 </p>
 
 <p align="center">
-  <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://moinmornhart.github.io/julia-ai-web/">Webseite mit Vorführung und Download</a>
+  <a href="https://github.com/MoinMornhart/julia-ai-web/releases/latest"><img src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai-web?label=Version&color=ff7a1a&style=flat-square" alt="Neueste Version"></a>
+  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?style=flat-square" alt="Windows 10 und 11">
+  <img src="https://img.shields.io/badge/Sprache-lokal%3A%20Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square" alt="Spracherkennung und Stimmen laufen lokal">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/Lizenz-MIT-555555?style=flat-square" alt="MIT-Lizenz"></a>
 </p>
 
 <p align="center">
-  <a href="docs/installation.md"><b>➜ Installieren und loslegen – Schritt für Schritt, mit allem, was Julia kann</b></a>
+  <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://moinmornhart.github.io/julia-ai-web/">Webseite mit Vorführung</a>
 </p>
 
----
+<p align="center">
+  <a href="https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe"><b>⬇&nbsp; Julia-AI-Setup.exe herunterladen</b></a>
+  &nbsp;·&nbsp;
+  <a href="docs/installation.md"><b>Installieren und loslegen – Schritt für Schritt</b></a>
+</p>
 
 <p align="center">
   <img src="docs/bilder/start-de.png" width="860" alt="Hauptfenster mit Startseite: Begrüßung, Termine, Posteingang, Erinnerungen, PC-Zustand und Kosten">
 </p>
-<p align="center">
-  <img src="docs/bilder/chat-de.png" width="520" alt="Chat mit Freigabekarte">
-  &nbsp;
-  <img src="docs/bilder/einstellungen-de.png" width="330" alt="Einstellungen">
-</p>
+
+## Auf einen Blick
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/chat-de.png" alt="Chat mit Freigabekarte"><br>
+      <b>Fragt vorher</b><br>
+      <sub>Jede Aktion läuft durch die Ampel: grün einfach, gelb nur mit deinem Ja, rot nie.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/sprache-de.png" alt="Einstellungen: Spracherkennung mit Whisper und natürliche Stimme"><br>
+      <b>Hört zu und spricht</b><br>
+      <sub>Whisper versteht dich, eine natürliche Stimme antwortet – beides läuft auf deinem PC.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/overlay-de.png" alt="Gaming-Overlay über dem Spiel"><br>
+      <b>Im Spiel dabei</b><br>
+      <sub>Ein Overlay über deinem Spiel – durchlässig für Klicks, anpassbar bis ins Detail.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/minecraft-de.png" alt="Minecraft-Reiter mitten im Spiel"><br>
+      <b>Spielt Minecraft mit</b><br>
+      <sub>Als eigene Figur: folgt, beschützt, baut ab, jagt, craftet und bringt dir Sachen.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/mcp-de.png" alt="Einstellungen: angeschlossene MCP-Server"><br>
+      <b>Erweiterbar per MCP</b><br>
+      <sub>GitHub, Notion, Datenbanken, Ordner – MCP-Server bringen neue Werkzeuge mit.</sub>
+    </td>
+    <td width="33%" valign="top">
+      <img src="docs/bilder/handy-de.png" alt="Julia auf dem Handy mit Freigabekarte"><br>
+      <b>Auch vom Handy</b><br>
+      <sub>Im Browser, zu Hause oder unterwegs über dein VPN – ohne App und ohne Cloud.</sub>
+    </td>
+  </tr>
+</table>
+
+## Neu in Version 3
+
+- **Versteht dich wirklich** – [Whisper](#stimme-und-sprache) schreibt auf, was du sagst: genau, auf Deutsch, lokal auf deinem PC. Dein Ton verlässt ihn nie.
+- **Natürliche Stimmen** – Thorsten oder Kerstin statt der alten Windows-Stimme, neuronal und offline, auch im Minecraft-Voice-Chat.
+- **Schneller per Sprache** – Julia spricht schon den ersten Satz, während der Rest der Antwort noch entsteht.
+- **Mikrofon-Test** – misst, ob Ton ankommt und was verstanden wird, nennt die Ursache und liefert einen Bericht zum Kopieren.
+- **Minecraft kann viel mehr** – laufen, geben, einsammeln, jagen, craften, einräumen, schlafen. Fliegt Julia raus, zeigt ein Crash-Screen warum, und nach einem Verbindungsabbruch kommt sie selbst zurück.
+- **Overlay nach deinem Geschmack** – Größe, Schrift, durchsichtiger Hintergrund, frei verschiebbar, Kompakt-Modus – und auf Wunsch immer da.
+- **MCP-Server** – Julia nutzt die Werkzeuge beliebiger [MCP-Server](#mcp-server); jeder Aufruf fragt vorher.
+
+Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md).
+
+## Inhalt
+
+[Was Julia ist](#was-julia-ist) · [Startseite, Verlauf, Routinen](#startseite-und-verlauf) · [Stimme und Sprache](#stimme-und-sprache) · [KI-Anbieter](#ki-anbieter) · [Die Ampel](#die-ampel) · [MCP-Server](#mcp-server) · [Gaming-Overlay](#gaming-overlay) · [Die Blase](#die-blase) · [Minecraft](#minecraft) · [Konten, Handy, mehrere PCs](#konten-verbinden) · [Design](#design) · [Installation](#installation) · [Bedienung](#bedienung) · [Updates](#updates) · [Für Entwickler](#für-entwickler) · [Grenzen](#grenzen) · [Lizenz](#lizenz)
 
 ## Was Julia ist
 
 Julia ist kein allgemeiner Chatbot, sondern ein Programm, das dauerhaft auf deinem Rechner
-läuft und auf Anweisung wartet. Du schreibst ihr im Chat oder drückst einen Hotkey und
-sprichst. Sie schaut sich an, was los ist, und erledigt es – vom Umbenennen von 200 Dateien
+läuft und auf Anweisung wartet. Du schreibst ihr im Chat, drückst einen Hotkey oder sagst
+„Hey Julia“. Sie schaut sich an, was los ist, und erledigt es – vom Umbenennen von 200 Dateien
 bis zur Fehlersuche in einem Repo.
 
 - **Sieht den Bildschirm** – Screenshots aller Monitore, Fensterliste, Prozesse, Systemstatus.
@@ -41,9 +98,9 @@ bis zur Fehlersuche in einem Repo.
 - **Installiert sauber** – erst nachsehen, ob es schon da ist, dann `winget` oder die Herstellerseite, danach eine Versionsprüfung.
 - **Recherchiert** – Websuche und Seitenabruf für alles, was aktuell sein muss.
 - **Merkt sich Dauerhaftes** – Projekte, Arbeitsweisen, Geräte. Zugangsdaten nie.
-- **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf", „in 20 Minuten Pizza raus". Als Meldung, im Chat und auf Wunsch vorgelesen. Verpasste Erinnerungen kommen beim nächsten Start.
-- **Spricht** Deutsch oder Englisch, per Hotkey, offline über die Windows-Sprachausgabe – über das Mikrofon und die Lautsprecher, die du in den Einstellungen wählst. „Hey Julia“ läuft nach einem Aussetzer von selbst wieder an – und statt „Hey Julia“ kannst du eigene Aktivierungswörter festlegen, etwa „Computer, hör zu“.
-- **Aktualisiert sich** auf Wunsch selbst – nur auf getaggte Versionen, mit automatischem Rückweg.
+- **Erinnert dich** – „Erinner mich um 15 Uhr an den Anruf“, „in 20 Minuten Pizza raus“. Als Meldung, im Chat und auf Wunsch vorgelesen. Verpasste Erinnerungen kommen beim nächsten Start.
+- **Spricht** Deutsch oder Englisch – mit Whisper als Ohr und einer natürlichen Stimme, beides lokal. Mehr unter [Stimme und Sprache](#stimme-und-sprache).
+- **Aktualisiert sich** selbst – nur auf veröffentlichte Versionen, mit geprüfter Prüfsumme.
 
 ## Startseite und Verlauf
 
@@ -74,32 +131,34 @@ auch als Schnellaktionen auf der Startseite.
 – Texte, Bilder und (mit Claude) PDFs. Bilder werden verkleinert und neu kodiert, dabei fallen
 Metadaten wie GPS-Koordinaten weg. In jedem Programm markierst du Text und drückst
 `Strg+Alt+T`: Ein kleines Menü am Mauszeiger bietet Übersetzen, Zusammenfassen, Umformulieren,
-Erklären, Fehler korrigieren, Antwort entwerfen oder eine eigene Frage. Deine Zwischenablage stellt
-Julia danach wieder her. Angehängte Dateien und markierter Text gelten als fremde Inhalte – was
-darin steht, ist nie ein Auftrag, und der Schutz gegen Datenabfluss greift. Jede Antwort hat
-einen Kopieren-Knopf.
+Erklären, Fehler korrigieren, Antwort entwerfen oder eine eigene Frage. Angehängte Dateien und
+markierter Text gelten als fremde Inhalte – was darin steht, ist nie ein Auftrag.
 
-**Clips:** `Strg+Alt+C`, der Knopf in der Clip-Ansicht oder einfach „Clip das!“ speichert die
-letzten Sekunden deines Spiels. Julia nimmt dafür nicht selbst dauernd auf (das kostet Bilder pro
-Sekunde), sondern löst die Aufnahme deines Systems aus – Xbox Game Bar, NVIDIA oder AMD – und findet
-danach die Datei. In der Clip-Ansicht spielst du Clips ab, benennst sie um, zeigst sie im Ordner
-oder schiebst sie in den Papierkorb. Für die Game Bar muss in Windows *Spielen → Aufnahmen →
-„Aufzeichnen, was passiert ist“* an sein; ist es aus, zeigt Julia einen Knopf direkt dorthin.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src="docs/bilder/clips-de.png" alt="Clip-Ansicht mit Vorschaubildern"><br>
+      <b>Clips</b> – <code>Strg+Alt+C</code>, der Knopf oder „Clip das!“ speichert die letzten Sekunden deines Spiels. Julia löst dafür die Aufnahme deines Systems aus (Xbox Game Bar, NVIDIA oder AMD) und findet danach die Datei. Abspielen, umbenennen, im Ordner zeigen oder in den Papierkorb.
+    </td>
+    <td width="50%" valign="top">
+      <img src="docs/bilder/code-de.png" alt="Code-Reiter mit Änderungen und Commits"><br>
+      <b>Code</b> – deine Projekte mit Zweig, geänderten Dateien (Klick zeigt den Diff), Commits und Skripten. Knöpfe geben Julia einen Auftrag: <i>Projekt erklären</i>, <i>Änderungen prüfen</i>, <i>Tests laufen lassen</i>, <i>Fehler beheben</i>, <i>Commit-Text vorschlagen</i>. Geschrieben wird erst nach deinem Ja.
+    </td>
+  </tr>
+</table>
 
-<p align="center">
-  <img src="docs/bilder/clips-de.png" width="760" alt="Clip-Ansicht mit Vorschaubildern">
-</p>
-
-**Code:** Im Code-Reiter liegen deine Projekte. Rechts siehst du Zweig, voraus/zurück, geänderte
-Dateien (Klick zeigt den Diff in Farbe), die letzten Commits und die gefundenen Skripte wie
-`npm test`. Knöpfe geben Julia einen Auftrag im Chat: *Projekt erklären*, *Änderungen prüfen*,
-*Tests laufen lassen*, *Fehler beheben*, *Commit-Text vorschlagen*. Der Reiter selbst liest nur;
-ändern tut Julia im Chat, und dort gilt die Ampel – Vorschläge kommen als Diff, geschrieben wird
-erst nach deinem Ja.
+## Stimme und Sprache
 
 <p align="center">
-  <img src="docs/bilder/code-de.png" width="760" alt="Code-Reiter mit Änderungen und Commits">
+  <img src="docs/bilder/sprache-de.png" width="620" alt="Einstellungen: Mikrofon, Spracherkennung Whisper, natürliche Stimme und Mikrofon-Test">
 </p>
+
+- **Zuhören mit Whisper:** Windows merkt, wann du anfängst und aufhörst zu sprechen; aufgeschrieben wird mit [whisper.cpp](https://github.com/ggml-org/whisper.cpp) – genau, auch auf Deutsch, lokal auf deinem PC. Das Modell lädt Julia einmal selbst (*Genau*, 190 MB, oder *Schnell*, 60 MB) und benutzt es nur, wenn seine SHA-256-Summe stimmt. Julia rechnet nur so viel Tonfenster, wie du wirklich gesprochen hast – das macht es mehrfach schneller.
+- **Natürliche Stimmen:** In der Stimmenliste stehen oben die neuronalen Stimmen **Thorsten** und **Kerstin** ([Piper](https://github.com/rhasspy/piper), frei lizenziert). Wählst du eine aus, lädt Julia sie einmal – bis dahin spricht die Windows-Stimme. Auch im Minecraft-Voice-Chat klingt Julia dann so.
+- **Schnelle Antworten:** Julia wartet nicht, bis die Antwort fertig ist, sondern spricht Satz für Satz, sobald er da ist. Per Sprache denkt sie höchstens mittel tief – das bringt die erste Silbe früher.
+- **„Hey Julia“:** Auf Wunsch reagiert Julia auf ihr Aktivierungswort – mit ihrem Namen, also auch „Hey Rainer“ – oder auf eigene Wörter wie „Computer, hör zu“. Standardmäßig aus, weil das Mikrofon dafür offen bleibt; erkannt wird nur das Wort, nichts wird aufgenommen.
+- **Mikrofon-Test:** *Einstellungen → Sprache → Mikrofon testen* nimmt einen Satz auf, zeigt den Pegel und was verstanden wurde, prüft die Windows-Datenschutz-Sperren und nennt die Ursache, wenn etwas hakt – mit einem Bericht zum Kopieren.
+- Mikrofon und Lautsprecher wählst du frei; die Blase bewegt sich zur echten Lautstärke der Stimme.
 
 ## KI-Anbieter
 
@@ -111,21 +170,12 @@ Julia läuft mit dem Anbieter deiner Wahl – *Einstellungen → Allgemein → K
 | **OpenAI**, **Google Gemini**, **Mistral**, **Groq**, **OpenRouter** | API-Schlüssel des Anbieters |
 | **Ollama**, **LM Studio** | nichts – das Modell läuft kostenlos auf deinem PC |
 | **Eigene Adresse** | jede OpenAI-kompatible Schnittstelle (HTTPS, oder HTTP im Heimnetz) |
-| **Claude-Abo über Claude Code** | dein installiertes Claude Code mit Abo-Login – erscheint nur, wenn Claude Code gefunden wird; nur für den eigenen Gebrauch |
 
 Jeder Schlüssel wird einzeln mit Windows verschlüsselt gespeichert. *Modelle laden* holt die
 aktuelle Modellliste direkt beim Anbieter. Das Modell muss Werkzeuge aufrufen können, für
 Screenshots eines, das Bilder versteht. Ampel, Freigaben und Kostenbremse gelten bei jedem
 Anbieter gleich. Anbieter ohne eigene Websuche lesen Webseiten über Julias Werkzeug
 `webseite_abrufen`, das nie Adressen auf dem PC oder im Heimnetz abruft.
-
-**Claude-Abo:** Julia startet dein Claude Code im Hintergrund mit deinem Login – ohne
-API-Schlüssel und ohne API-Kosten. Die eingebauten Werkzeuge von Claude Code (Bash, Dateien,
-Web …) sind komplett abgeschaltet, fremde MCP-Server ausgeschlossen; Claude Code bekommt nur
-Julias Werkzeuge über einen lokalen MCP-Zugang mit Zufallsschlüssel, und jeder Aufruf läuft durch
-dieselbe Ampel. Meldet Claude Code doch eigene Werkzeuge, bricht Julia ab. Anthropic erlaubt
-nicht, Abo-Zugänge in fremden Produkten anzubieten – deshalb ist diese Option nur für dich selbst
-gedacht und wird auf der Webseite nicht beworben.
 
 ## Die Ampel
 
@@ -135,59 +185,72 @@ selbst, bevor etwas ausgeführt wird.
 | Stufe | Was passiert | Beispiele |
 |---|---|---|
 | 🟢 **GRÜN** | Julia macht es einfach. | Lesen, Screenshots, Programme öffnen, Dateien in deinen Arbeitsverzeichnissen, lesende Shell-Befehle, Tests |
-| 🟡 **GELB** | Julia sagt in einem Satz, was passiert, und wartet auf dein Ja. | Software installieren, Dateien außerhalb der Arbeitsverzeichnisse, Registry, Dienste, `git push`, Admin-Rechte, Papierkorb |
+| 🟡 **GELB** | Julia sagt in einem Satz, was passiert, und wartet auf dein Ja. | Software installieren, Dateien außerhalb der Arbeitsverzeichnisse, Registry, Dienste, `git push`, Admin-Rechte, Werkzeuge von MCP-Servern |
 | 🔴 **ROT** | Niemals, auch nicht auf ausdrückliche Anweisung. | Passwörter oder Kartendaten eintippen, Anmeldungen, Zahlungen, `rm -rf`, Papierkorb leeren, Virenschutz abschalten, Code aus dem Netz ausführen |
 
-Was die Software selbst durchsetzt:
+<details>
+<summary><b>Was die Software selbst durchsetzt</b></summary>
 
 - Shell-Befehle werden eingestuft. Nur eindeutig lesende Befehle sind GRÜN, alles Unklare wird GELB, endgültiges Löschen und das Aushebeln von Schutz sind gesperrt.
 - `tippen` prüft vorher über UI Automation, ob der Fokus in einem Passwortfeld liegt, und verweigert Terminals sowie Karten- und IBAN-Nummern.
-- `klick`, `tippen` und `taste` gehen nur mit einem frischen Screenshot („nie blind klicken") und liefern danach automatisch einen neuen.
-- Passwortfelder im Vordergrundfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt – soweit das Programm sie über UI Automation als Passwortfeld meldet.
-- Solange Julia deinen Bildschirm ansieht oder Maus und Tastatur steuert, steht oben in der Mitte jedes Bildschirms ein Hinweis in der Akzentfarbe – mit Stopp-Knopf. In Julias eigenen Screenshots taucht er nicht auf.
+- `klick`, `tippen` und `taste` gehen nur mit einem frischen Screenshot („nie blind klicken“) und liefern danach automatisch einen neuen.
+- Passwortfelder im Vordergrundfenster werden im Screenshot geschwärzt, bevor das Bild den PC verlässt – soweit das Programm sie als Passwortfeld meldet.
+- Solange Julia deinen Bildschirm ansieht oder Maus und Tastatur steuert, steht oben in der Mitte ein Hinweis mit Stopp-Knopf. In Julias eigenen Screenshots taucht er nicht auf.
 - Julias eigene Dateien (Konfiguration, API-Schlüssel, Gedächtnis) sind nie ohne Rückfrage beschreibbar.
 - Jede GELB-Aktion landet im Protokoll, überschriebene Dateien werden vorher gesichert. Das Protokoll ist eine Prüfsummen-Kette: Wird mittendrin etwas geändert oder gelöscht, meldet Julia das beim Start.
-- **Kostenbremse:** Julia rechnet die API-Kosten mit und stoppt, sobald das Tageslimit erreicht ist (Standard 10 US-$) – auch mitten in einem Auftrag. Bei 80 % kommt eine Warnung. So erzeugt weder eine Endlosschleife noch ein manipulierter Auftrag eine Rechnung.
-- **Schutz gegen Datenabfluss:** Sobald fremde Inhalte im Gespräch sind (Mails, Dateien, Webseiten, Bildschirm), fragt Julia auch vor dem Öffnen von Links und vor Netzwerk-Befehlen wie `ping` oder `nslookup` – über solche Wege ließen sich sonst Daten hinausschmuggeln. Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden, entfernt sie vorher. Auch dauerhaft merken darf sie sich dann nur mit deinem Ja – so kann keine Mail ihr Gedächtnis vergiften.
-- Aus dem Internet heruntergeladene Programme startet Julia nie (Mark-of-the-Web), und Updates spielen Pakete ohne deren Installationsskripte ein.
-- Eine Freigabe gilt für genau eine Aktion. Im Modus **zupackend** („zieh das durch") legt Julia den ganzen Auftrag einmal vor, danach laufen nur die dort genannten Kategorien ohne Einzelfrage.
-- Wer gar nicht mehr gefragt werden will, schaltet in den Einstellungen unter **Freigaben** „Allem zustimmen" ein – das geht nur von Hand und nach einer Rückfrage, Julia kann es nicht selbst. Danach laufen gelbe Aktionen ohne Nachfrage (und stehen im Protokoll). Rot bleibt gesperrt, und nach fremden Inhalten fragt Julia weiter, bevor etwas nach außen geht oder dauerhaft gemerkt wird. Wer auch das nicht will, schaltet zusätzlich „Auch nach fremden Inhalten nicht nachfragen" ein – mit eigener Warnung, denn dann könnte eine präparierte Webseite oder Mail Julia unbemerkt etwas hinausschicken lassen.
+- **Kostenbremse:** Julia rechnet die API-Kosten mit und stoppt, sobald das Tageslimit erreicht ist (Standard 10 US-$) – auch mitten in einem Auftrag.
+- **Schutz gegen Datenabfluss:** Sobald fremde Inhalte im Gespräch sind (Mails, Dateien, Webseiten, Bildschirm, MCP-Server), fragt Julia auch vor Links und Netzwerk-Befehlen. Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden, entfernt sie vorher. Dauerhaft merken darf sie sich dann nur mit deinem Ja.
+- Aus dem Internet heruntergeladene Programme startet Julia nie (Mark-of-the-Web).
+- Eine Freigabe gilt für genau eine Aktion. Im Modus **zupackend** („zieh das durch“) legt Julia den ganzen Auftrag einmal vor, danach laufen nur die genannten Kategorien ohne Einzelfrage.
+- **„Allem zustimmen“** gibt es unter *Einstellungen → Freigaben* – nur von Hand und nach einer Rückfrage, Julia kann es nicht selbst einschalten. Rot bleibt gesperrt, und nach fremden Inhalten fragt Julia weiter, bevor etwas nach außen geht – außer du schaltest auch das ausdrücklich ab.
 
 Was die Software **nicht** erkennen kann: dass ein bestimmter Klick eine Mail abschickt oder eine
 Bestellung auslöst. Dafür ist Julia selbst zuständig, sie fragt dann im Chat.
+</details>
 
-## Design
+## MCP-Server
 
-Standard ist **Dunkel im Gaming-Look**: tiefer Hintergrund mit feinem Raster, Leuchtakzente,
-Freigabekarten mit Warnstreifen, Werkzeugschritte im Terminal-Stil. Dazu gibt es **Hell** und
-**Wie Windows**. Sieben Akzentfarben stehen bereit (Glut, Neon, Cyber, Toxic, Magenta, Blut,
-Gold), dazu eine eigene aus dem Farbwähler. Die Leuchteffekte lassen sich abschalten, und ein
-Knopf passt die Blase an die Akzentfarbe an. Alles greift sofort, ohne Neustart.
+<p align="center">
+  <img src="docs/bilder/mcp-de.png" width="620" alt="Einstellungen: zwei angeschlossene MCP-Server mit Status und Werkzeugen">
+</p>
 
-**Deine KI, dein Name:** In den Einstellungen gibst du ihr einen eigenen Namen („Rainer"
-statt „Julia"), wählst ihre Form (Assistentin, Assistent oder neutral) und deine eigenen
-Pronomen – er, sie, nur dein Name oder eigene. Der Name erscheint überall: im Chat, im Tray,
-in den Meldungen und im Gespräch.
+Mit dem [Model Context Protocol](https://modelcontextprotocol.io) schließt du Julia an beliebige
+MCP-Server an – etwa für GitHub, Notion, eine Datenbank oder bestimmte Ordner. Deren Werkzeuge
+kommen zu Julias eigenen dazu. *Einstellungen → Verbindungen → MCP-Server → Server hinzufügen*:
+
+| Art | Beispiel |
+|---|---|
+| **Programm auf diesem PC** (stdio) | `npx -y @modelcontextprotocol/server-filesystem C:\Users\du\Dokumente` |
+| **Adresse** (Streamable HTTP) | `https://mcp.example.com/mcp` – unverschlüsselt nur auf diesem PC (`localhost`) |
+
+- **Fragt vorher:** Jeder Aufruf eines MCP-Werkzeugs ist GELB. Nur wenn du einen Server als *vertrauenswürdig* markierst, laufen seine reinen Lese-Werkzeuge ohne Rückfrage.
+- **Fremder Inhalt:** Was ein Server zurückgibt, behandelt Julia wie eine Webseite – nie als Auftrag, und der Schutz gegen Datenabfluss greift.
+- **Tokens verschlüsselt:** Umgebungsvariablen (etwa ein GitHub-Token) und HTTP-Kopfzeilen liegen verschlüsselt im Tresor, nie in der `config.json`, und werden nirgends angezeigt.
+- Für jeden Server siehst du Zustand und Werkzeuge, kannst ihn aus- und einschalten, neu starten oder entfernen.
+
+> Ein MCP-Server ist ein Programm mit eigenen Rechten. Füge nur Server hinzu, denen du vertraust.
 
 ## Gaming-Overlay
 
-<p align="center">
-  <img src="docs/bilder/overlay-de.png" width="300" alt="Overlay über dem Spiel">
-</p>
+<table>
+  <tr>
+    <td width="36%" valign="top"><img src="docs/bilder/overlay-de.png" alt="Overlay über dem Spiel"></td>
+    <td width="64%" valign="top"><img src="docs/bilder/overlay-einstellungen-de.png" alt="Einstellungen des Overlays: Größe, Schrift, Hintergrund, Kompakt-Modus, Vorschau"></td>
+  </tr>
+</table>
 
-**Von selbst beim Spielen:** Startest du ein Spiel, blendet Julia das Overlay automatisch ein – passiv, also gehen Klicks durch und das Spiel behält den Fokus; mit dem Hotkey schreibst du hinein. Wechselst du weg oder beendest das Spiel, verschwindet es wieder. Fährst du mit der Maus darüber, kannst du im Verlauf scrollen; ein Klick hinein öffnet das Eingabefeld zum Tippen, ein Klick zurück ins Spiel macht das Overlay wieder durchlässig. Erkannt werden Spiele von Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG und Xbox sowie Minecraft; weitere trägst du unter *Einstellungen → Gaming-Overlay* als Programmnamen ein. Abschaltbar ebenda.
+Mit `Strg+Umschalt+Leertaste` legt sich ein halbtransparentes Chatfenster über dein Spiel –
+im Fenstermodus oder randlosen Vollbild. Tippen, Enter, weiterspielen.
 
-Mit `Strg+Umschalt+Leertaste` legt sich ein kleines, halbtransparentes Chatfenster über dein
-Spiel – im Fenstermodus oder randlosen Vollbild. Tippen, Enter, weiterspielen; `Esc` oder
-derselbe Hotkey blendet es aus. Freigaben erscheinen dann im Overlay, statt das große
-Fenster über das Spiel zu legen.
-
-Auf Wunsch blendet Julia ihre Antwort auf **Sprachbefehle** kurz passiv ein: Klicks gehen
-durch, das Spiel behält den Fokus, nach ein paar Sekunden verschwindet sie wieder.
-Monitor, Ecke, Deckkraft und Hotkey stellst du in den Einstellungen ein.
+- **Von selbst beim Spielen:** Startest du ein Spiel, erscheint das Overlay automatisch – passiv, Klicks gehen durch, das Spiel behält den Fokus. Erkannt werden Spiele von Steam, Epic, Riot, Battle.net, EA, Ubisoft, GOG und Xbox sowie Minecraft; weitere trägst du als Programmnamen ein.
+- **Hineinklicken, scrollen, tippen:** Über dem Overlay scrollst du im Verlauf, ein Klick öffnet das Eingabefeld, ein Klick zurück ins Spiel macht es wieder durchlässig.
+- **Nach deinem Geschmack:** Breite, Höhe, Schriftgröße, Deckkraft des Hintergrunds (der Text bleibt klar), Kompakt-Modus mit nur den letzten drei Nachrichten, Ausblende-Zeit für Antworten – mit Vorschau-Knopf.
+- **Frei verschiebbar:** an der Kopfzeile ziehen, Julia merkt sich die Stelle.
+- **Immer da:** Auf Wunsch bleibt das Overlay dauerhaft sichtbar, auch ohne Spiel.
+- Freigaben erscheinen im Overlay, statt das große Fenster über das Spiel zu legen. Julia hängt sich nur in die Maus ein, solange der Zeiger über ihren Fenstern ist – das Spiel bleibt flüssig.
 
 > Bei *exklusivem* Vollbild zeigt Windows grundsätzlich keine Overlays – dann das Spiel auf
-> „Randloses Fenster" stellen.
+> „Randloses Fenster“ stellen.
 
 ## Die Blase
 
@@ -208,32 +271,56 @@ Wunsch Untertitel: was du sagst und was Julia antwortet.
 </p>
 
 Monitor, Ecke, Größe, Deckkraft, Tempo, Empfindlichkeit und beliebig viele Farben je Zustand
-lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz: „Mach sie grüner."
+lassen sich zur Laufzeit ändern – in den Einstellungen oder einfach per Satz: „Mach sie grüner.“
 
 ## Minecraft
 
-![Minecraft-Reiter](docs/bilder/minecraft-de.png)
+Julia spielt Minecraft (Java Edition) mit dir – als eigene Spielfigur auf deinem Server oder in
+deiner Welt. Im Reiter **Minecraft** trägst du nur die Adresse ein und klickst auf **Beitreten**.
+Julia findet den Server wie das Spiel selbst (auch über SRV-Einträge und Server-Schutz wie
+NeoProtect oder TCPShield).
 
-Julia spielt Minecraft (Java Edition) mit dir – als eigene Spielfigur auf deinem Server oder in deiner Welt. Im Reiter **Minecraft** trägst du nur die Adresse ein (IP oder IP:Port, bei „Im LAN öffnen“ steht der Port im Spielchat) und klickst auf **Beitreten**.
+<table>
+  <tr>
+    <td width="50%" valign="top"><img src="docs/bilder/minecraft-aufgaben-de.png" alt="Aufgaben: Folgen, Beschützen, Duell, Einsammeln, Jagen, Einräumen, Schlafen, Geben, Herstellen, Gehe zu"></td>
+    <td width="50%" valign="top"><img src="docs/bilder/minecraft-absturz-de.png" alt="Crash-Screen: Julia wurde vom Server geworfen, mit Grund, Zeit und Knopf zum Neu-Verbinden"></td>
+  </tr>
+</table>
 
-- **Aufgaben:** Folgen, Komm her, Beschützen (kämpft gegen Monster in deiner Nähe), Duell gegen dich, Blöcke abbauen, Stopp. Im Spiel geht das auch per Chat: `!folge`, `!komm`, `!beschütze mich`, `!duell`, `!stopp`.
-- **Echtzeit:** Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde direkt in Julia – die KI gibt nur die Aufgabe vor. Waffe und Rüstung legt die Figur selbst an, bei wenig Leben isst sie einen Goldapfel.
-- **Konto:** Ohne Konto geht es auf Servern mit `online-mode=false`. Mit **Konto verbinden** meldest du Julias eigenes Java-Konto an: Du gibst im Browser auf microsoft.com/link einen Code ein und meldest dich dort selbst an – Julia sieht kein Passwort, die Anmeldung liegt verschlüsselt auf deinem PC. Julia braucht ein eigenes gekauftes Konto; mit deinem würdet ihr euch gegenseitig rauswerfen.
-- **Reden:** Im Spielchat schreibst du „Julia, …“ oder „!…“ – die Antwort kommt kurz zurück in den Spielchat und steht auch im Julia-Chat. Mit dem Schalter „Hey Julia“ im Reiter sprichst du beim Spielen über dein Mikrofon mit ihr („Hey Julia, folge mir“). Fragen im Spielchat nimmt Julia nur von deinem eingetragenen Spielernamen an, und von dort handelt sie nur im Spiel – nie auf deinem PC.
-- **Voice-Chat (Testversion):** Läuft auf dem Server der Mod Simple Voice Chat (2.5 oder 2.6), hört Julia im Voice-Chat mit und antwortet mit Stimme im Spiel – sag „Hey Julia, …". Solange sie dort verbunden ist, ist „Hey Julia" am PC aus, damit sie nicht doppelt reagiert. Sie hört nur auf deinen Spielernamen; andere Stimmen werden verworfen, bevor sie zu Audio werden, gespeichert wird nichts. Der UDP-Port des Voice-Chats (Standard 24454) muss erreichbar sein.
-- **Grenzen:** Von sich aus tritt Julia nur Servern auf deinem PC oder im Heimnetz bei; einen Server im Internet trägst du selbst ein. Große öffentliche Netzwerke wie Hypixel sind gesperrt – dort sind Bots verboten. Im Spielchat steuern Befehle nur die Figur, nie etwas auf deinem PC.
+| Aufgabe | Im Spielchat | Was passiert |
+|---|---|---|
+| Folgen · Komm her | `!folge` · `!komm` | läuft dir nach oder einmal zu dir |
+| Beschützen · Duell | `!beschütze mich` · `!duell` | kämpft gegen Monster in deiner Nähe oder gegen dich |
+| Abbauen | `!bau ab holz 10` | baut Blöcke ab und sammelt sie ein |
+| Gehe zu | `!geh 100 64 -20` | läuft zu Koordinaten |
+| Geben | `!gib 5 brot` | bringt dir etwas aus dem Inventar |
+| Einsammeln | `!sammel` | hebt herumliegende Sachen auf |
+| Jagen | `!jag 3 kuh` | holt Essen von Tieren und sammelt es ein |
+| Herstellen | `!craft 4 fackel` | craftet im Inventar oder an der nächsten Werkbank |
+| Einräumen | `!verstau` | legt das Inventar in die nächste Truhe (Waffen, Werkzeug, Essen bleiben) |
+| Schlafen · Stopp | `!schlaf` · `!stopp` | geht ins Bett · hört sofort auf |
+
+`!hilfe` nennt alle Befehle im Spiel. Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde
+direkt in Julia – die KI gibt nur die Aufgabe vor. Waffe und Rüstung legt die Figur selbst an,
+bei wenig Leben isst sie einen Goldapfel.
+
+- **Crash-Screen:** Fliegt Julia vom Server, zeigt der Reiter warum – in klaren Worten, mit Zeit, Spieldauer und der Aufgabe, die gerade lief. Nach einem Verbindungsabbruch versucht sie es dreimal von selbst, nach einem Rauswurf nicht.
+- **Konto:** Ohne Konto geht es auf Servern mit `online-mode=false`. Mit **Konto verbinden** meldest du Julias eigenes Java-Konto an – im Browser auf microsoft.com/link, Julia sieht kein Passwort.
+- **Reden:** Im Spielchat schreibst du „Julia, …“ oder „!…“; die Antwort kommt zurück in den Spielchat. Mit „Hey Julia“ sprichst du beim Spielen über dein Mikrofon mit ihr. Fragen nimmt sie nur von deinem Spielernamen an, und von dort handelt sie nur im Spiel – nie auf deinem PC.
+- **Voice-Chat (Testversion):** Läuft auf dem Server Simple Voice Chat, hört Julia dort mit und antwortet mit Stimme im Spiel. Sie hört nur auf deinen Spielernamen; andere Stimmen werden sofort verworfen.
+- **Grenzen:** Von sich aus nur Server auf deinem PC oder im Heimnetz; einen Server im Internet trägst du selbst ein. Große öffentliche Netzwerke wie Hypixel sind gesperrt – dort sind Bots verboten.
 
 ## Konten verbinden
 
 <p align="center">
-  <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google">
+  <img src="docs/bilder/verbindungen-de.png" width="560" alt="Verbindungen: Google und Outlook">
 </p>
 
 Julia kann dein **Google-Konto** (Gmail, Kalender, Kontakte) und dein **Outlook-Konto**
 (Outlook.com, Hotmail oder Microsoft 365) nutzen – auch beide gleichzeitig:
 
-> „Hab ich neue Mails?" · „Was steht morgen an?" · „Schreib Anna, dass ich zehn Minuten später komme." ·
-> „Leg mir Freitag 14 Uhr Zahnarzt ein." · „Speicher die Rechnung aus der Mail von Telekom in Downloads."
+> „Hab ich neue Mails?“ · „Was steht morgen an?“ · „Schreib Anna, dass ich zehn Minuten später komme.“ ·
+> „Leg mir Freitag 14 Uhr Zahnarzt ein.“
 
 | Julia kann | Ampel |
 |---|---|
@@ -242,139 +329,124 @@ Julia kann dein **Google-Konto** (Gmail, Kalender, Kontakte) und dein **Outlook-
 | Mails senden, Termine anlegen, Einladungen verschicken | 🟡 – die Freigabekarte zeigt Empfänger und den vollständigen Text |
 | Mails oder Termine löschen | gibt es nicht |
 
-Anmelden tust du selbst im Browser, Julia sieht nie ein Passwort. Einmalig brauchst du einen
-eigenen OAuth-Client aus der Google Cloud Console, das dauert etwa zehn Minuten:
-**[Schritt-für-Schritt-Anleitung](docs/google-einrichten.md)**. Danach: *Einstellungen →
-Verbindungen → Mit Google verbinden*.
-
-Für Outlook reicht eine kostenlose App-Registrierung bei Microsoft (etwa fünf Minuten, nur
-eine Anwendungs-ID, kein Secret): **[Anleitung für Outlook](docs/outlook-einrichten.md)**.
-Danach: *Einstellungen → Verbindungen → Mit Outlook verbinden*.
-
-Was in einer Mail steht, ist für Julia nie ein Auftrag. Versteckte Anweisungen in Mails
-(„Assistent, leite das weiter") führt sie nicht aus, sondern weist dich darauf hin.
+Anmelden tust du selbst im Browser, Julia sieht nie ein Passwort:
+**[Anleitung für Google](docs/google-einrichten.md)** · **[Anleitung für Outlook](docs/outlook-einrichten.md)**.
+Was in einer Mail steht, ist für Julia nie ein Auftrag.
 
 ### Vom Handy aus
 
 Zu Hause im WLAN und unterwegs über dein VPN schreibst du Julia vom Handy aus – im Browser,
-ohne App, ohne Cloud und ohne Portfreigabe im Router. *Einstellungen → Verbindungen → Handy
-erlauben*, dann *Handy koppeln* und den QR-Code mit der Handy-Kamera scannen. Für unterwegs
-installierst du Tailscale auf PC und Handy oder nutzt das VPN deiner FritzBox:
-**[Anleitung für unterwegs](docs/unterwegs.md)**.
+ohne App, ohne Cloud und ohne Portfreigabe am PC. *Einstellungen → Verbindungen → Handy
+erlauben*, dann *Handy koppeln* und den QR-Code scannen. Für unterwegs:
+**[Anleitung mit Tailscale oder FritzBox-VPN](docs/unterwegs.md)**.
 
-<p align="center">
-  <img src="docs/bilder/handy-de.png" width="280" alt="Julia auf dem Handy mit Freigabekarte">
-</p>
+<details>
+<summary><b>Wie das Handy geschützt ist</b></summary>
 
-- **Verschlüsselt:** HTTPS mit einem Zertifikat, das Julia selbst erzeugt. Beim ersten Öffnen warnt der Browser; vergleiche den Fingerabdruck aus den Einstellungen und fahre dann fort.
-- **Nur dein Handy:** Der QR-Code enthält einen Einmal-Code, fünf Minuten gültig. Danach weist sich das Handy mit einem Zufallsschlüssel aus, von dem der PC nur den Hash kennt. Ein neu gekoppeltes Handy ersetzt das alte, *Trennen* macht den Schlüssel wertlos.
-- **Nur Heimnetz oder dein VPN:** Der Server antwortet nur privaten Adressen und VPN-Adressen (Tailscale), nie dem offenen Internet, und nur Aufrufen über eine IP-Adresse (Schutz gegen DNS-Rebinding). Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
+- **Verschlüsselt:** HTTPS mit einem Zertifikat, das Julia selbst erzeugt; beim ersten Öffnen vergleichst du den Fingerabdruck.
+- **Nur dein Handy:** Der QR-Code enthält einen Einmal-Code, fünf Minuten gültig. Danach weist sich das Handy mit einem Zufallsschlüssel aus, von dem der PC nur den Hash kennt.
+- **Nur Heimnetz oder dein VPN:** Der Server antwortet nur privaten Adressen und VPN-Adressen, nie dem offenen Internet. Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
 - **Ampel unverändert:** Freigaben kommen als Ja/Nein-Karte aufs Handy, ROT bleibt ROT, Stopp bricht sofort ab.
-- Standardmäßig **aus**. Fragt Windows nach der Firewall, erlaube nur „Private Netzwerke".
+</details>
 
 ### Mehrere PCs
 
 Hast du Julia auf mehreren PCs, gleichen sie **Gespräche, Gedächtnis, Routinen und
-Erinnerungen** direkt untereinander ab – im Heimnetz oder über dein VPN, ohne Cloud.
-*Einstellungen → Verbindungen → Geräte abgleichen* auf beiden PCs einschalten, auf dem einen
-*Code anzeigen*, auf dem anderen *Code eingeben* – fertig. Julia findet den anderen PC im
-Heimnetz von selbst; über ein VPN trägst du zusätzlich seine Adresse ein.
+Erinnerungen** direkt untereinander ab – im Heimnetz oder über dein VPN, ohne Cloud. Auf dem
+einen PC *Code anzeigen*, auf dem anderen *Code eingeben* – fertig. API-Schlüssel, Konten,
+Einstellungen und das Protokoll bleiben auf jedem PC für sich.
 
-- **Nur deine PCs:** Der Code gilt fünf Minuten und nur einmal. Beide Seiten beweisen sich damit gegenseitig, dass niemand dazwischensitzt, und merken sich danach das Zertifikat der anderen. Jede Anfrage trägt einen eigenen Zufallsschlüssel.
-- **Verschlüsselt, ohne Cloud:** HTTPS direkt von PC zu PC; der Server antwortet nur Adressen aus dem Heimnetz oder VPN. Nach zehn Fehlversuchen ist eine Adresse zehn Minuten gesperrt.
-- **Neueres gewinnt:** Geänderte Einträge wandern zum anderen PC, Gelöschtes wird auch dort gelöscht. Abgeglichen wird alle 30 Sekunden, sobald beide PCs laufen.
-- **Bleibt pro PC:** API-Schlüssel, Konten, Einstellungen und das Protokoll wandern nie mit. Auch über den Abgleich landen keine Zugangsdaten im Gedächtnis.
+## Design
+
+Standard ist **Dunkel im Gaming-Look**: tiefer Hintergrund mit feinem Raster, Leuchtakzente,
+Freigabekarten mit Warnstreifen, Werkzeugschritte im Terminal-Stil. Dazu gibt es **Hell** und
+**Wie Windows**, sieben Akzentfarben (Glut, Neon, Cyber, Toxic, Magenta, Blut, Gold) und eine
+eigene aus dem Farbwähler. Alles greift sofort, ohne Neustart.
+
+**Deine KI, dein Name:** Gib ihr einen eigenen Namen („Rainer“ statt „Julia“), wähle ihre Form
+(Assistentin, Assistent oder neutral) und deine eigenen Pronomen. Der Name erscheint überall –
+im Chat, im Tray, in den Meldungen und im Gespräch.
 
 ## Installation
 
 **Am einfachsten:** [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
 laden und doppelklicken – ohne Admin-Rechte, nur für dein Benutzerkonto. Die Webseite mit der
 Prüfsumme: **https://moinmornhart.github.io/julia-ai-web/**. Der Installer ist noch nicht
-signiert; meldet Windows „Der Computer wurde durch Windows geschützt", auf „Weitere
-Informationen" und dann „Trotzdem ausführen" klicken. Die installierte Julia holt Updates aus
-den Releases dort und startet einen Installer nur, wenn seine SHA-512-Summe stimmt.
+signiert; meldet Windows „Der Computer wurde durch Windows geschützt“, auf „Weitere
+Informationen“ und dann „Trotzdem ausführen“ klicken.
 
-### Aus dem Quellcode
+Beim ersten Start öffnet sich die Einrichtung: Vorname, KI-Anbieter mit Schlüssel und die
+Ordner, in denen Julia ohne Rückfrage schreiben darf. Schlüssel werden mit Windows (DPAPI)
+verschlüsselt gespeichert.
 
-**Voraussetzungen:** Windows 10 oder 11, [Node.js](https://nodejs.org) 20 oder neuer,
-[Git](https://git-scm.com) und ein API-Schlüssel von [Anthropic](https://console.anthropic.com).
+<details>
+<summary><b>Aus dem Quellcode</b></summary>
+
+**Voraussetzungen:** Windows 10 oder 11, [Node.js](https://nodejs.org) 20 oder neuer und
+[Git](https://git-scm.com).
 
 ```powershell
 git clone https://github.com/MoinMornhart/julia-ai.git
 cd julia-ai
-git checkout (git describe --tags --abbrev=0)   # auf die neueste Version
 npm install
 npm start
 ```
 
-Beim ersten Start öffnet sich die Einrichtung: Vorname, API-Schlüssel und die Ordner, in
-denen Julia ohne Rückfrage schreiben darf. Der Schlüssel wird mit Windows (DPAPI)
-verschlüsselt gespeichert.
-
-> Falls `npm start` meldet, dass Electron fehlt: `node node_modules/electron/install.js`
-> ausführen. Manche npm-Einstellungen überspringen den Download beim Installieren.
+Whisper liegt fertig in `vendor/whisper` (neu holen mit `node scripts/whisper-holen.js`). Falls
+`npm start` meldet, dass Electron fehlt: `node node_modules/electron/install.js` ausführen.
+</details>
 
 ## Bedienung
 
 | Was | Wie |
 |---|---|
 | Chat öffnen / schließen | `Strg+Alt+J` oder Klick aufs Tray-Symbol |
-| Sprechen | `Strg+Alt+Leertaste`, noch einmal drücken bricht ab |
+| Sprechen | `Strg+Alt+Leertaste` oder „Hey Julia“ – noch einmal drücken bricht ab |
+| Gaming-Overlay | `Strg+Umschalt+Leertaste` |
+| Markierten Text übernehmen | `Strg+Alt+T` |
+| Clip speichern | `Strg+Alt+C` |
 | Laufende Aufgabe stoppen | Stopp-Knopf oder `Esc` im Chat |
-| Neues Gespräch | Stift-Symbol im Chat oder Tray-Menü |
-| Einstellungen | Zahnrad im Chat oder Tray-Menü |
 
-Die Hotkeys lassen sich in den Einstellungen ändern. Antworten werden vorgelesen, wenn du
+Alle Hotkeys lassen sich in den Einstellungen ändern. Antworten werden vorgelesen, wenn du
 gesprochen hast (einstellbar: immer, nie, bei Sprache).
-
-**„Hey Julia":** Auf Wunsch reagiert Julia auf ihr Aktivierungswort – mit dem Namen, den du
-ihr gegeben hast, also auch „Hey Rainer". Standardmäßig ist das aus, weil das Mikrofon dafür
-offen bleibt. Erkannt wird nur das Wort, direkt auf dem PC; nichts wird aufgenommen oder
-verschickt. Das Tray zeigt an, wenn Julia lauscht, und solange sie selbst spricht, pausiert es.
-
-**Spracherkennung:** Julia nutzt die Windows-eigene Erkennung (System.Speech). Für Deutsch
-bzw. Englisch muss das passende Sprachpaket mit Spracherkennung installiert sein
-(Einstellungen → Zeit und Sprache → Sprache). Die Qualität ist ordentlich, aber nicht auf dem
-Niveau aktueller Cloud-Diktate.
-
-## Wo Julias Daten liegen
-
-Alles liegt in `%APPDATA%\Julia`, außerhalb des Repos. Updates fassen diesen Ordner nie an.
-
-| Datei | Inhalt |
-|---|---|
-| `config.json` | alle Einstellungen, der API-Schlüssel nur verschlüsselt |
-| `konten.json` | verbundene Konten; Secrets und Tokens nur verschlüsselt |
-| `gedaechtnis.json` | was Julia sich dauerhaft merkt |
-| `protokoll.jsonl` | jede Aktion über GRÜN hinaus |
-| `sicherungen\` | vorherige Fassungen überschriebener Dateien |
-| `vorgemerkt.json` | GELB-Aktionen aus unbeaufsichtigten Läufen |
-| `update.log` | Verlauf der Updates |
 
 ## Updates
 
-Tray-Menü → **Nach Updates suchen**. Julia holt die Tags von GitHub, zeigt Version und
-Changelog und fragt nach. Nach dem Ja wartet sie, bis die laufende Aufgabe fertig ist,
-checkt den Tag aus, zieht die Abhängigkeiten nach und startet neu. Startet die neue Fassung
-nicht sauber, geht es automatisch auf den vorherigen Stand zurück.
+Julia sieht beim Start und danach alle zwei Stunden nach, ob es eine neue Version gibt – nie
+mitten im Spiel. Sie lädt den Installer aus den Releases, prüft seine SHA-512-Summe und spielt
+ihn erst ein, wenn die laufende Aufgabe fertig ist. Von Hand: Tray-Menü → **Nach Updates
+suchen**. Ohne Rückfrage einspielen lässt sich unter *Einstellungen → System* einschalten.
 
-| Einstellung | Bedeutung | Standard |
-|---|---|---|
-| `update.pruefen` | beim Start nach neuen Tags sehen | an |
-| `update.automatisch` | ohne Rückfrage einspielen | aus |
-| `update.kanal` | `stabil` (nur Tags) oder `test` (auch Vorabversionen) | stabil |
+Julia zählt in Zehnerschritten: `3.7.9` → `3.8.0`, `3.9.9` → `4.0.0`.
 
-Julia zählt in Zehnerschritten: `0.0.9` → `0.1.0`, `0.9.9` → `1.0.0`.
+<details>
+<summary><b>Wo Julias Daten liegen</b></summary>
+
+Alles liegt in `%APPDATA%\Julia`. Updates fassen diesen Ordner nie an.
+
+| Datei / Ordner | Inhalt |
+|---|---|
+| `config.json` | alle Einstellungen, Schlüssel nur verschlüsselt |
+| `konten.json` | verbundene Konten und der Tresor – Tokens nur verschlüsselt |
+| `gedaechtnis.json` | was Julia sich dauerhaft merkt |
+| `gespraeche\` | Gespräche, mit Windows verschlüsselt |
+| `protokoll.jsonl` | jede Aktion über GRÜN hinaus, als Prüfsummen-Kette |
+| `sicherungen\` | vorherige Fassungen überschriebener Dateien |
+| `whisper\` · `piper\` | Sprachmodell und natürliche Stimmen, einmal geladen |
+</details>
 
 ## Für Entwickler
 
+<details>
+<summary><b>Aufbau, Tests, Releases</b></summary>
+
 ```
-prompt/            System-Prompt, Deutsch und Englisch, mit Platzhaltern
-src/main/          Hauptprozess: Agent, Werkzeuge, Ampel, Updater, Sprache, Bildschirm
-src/main/win/      PowerShell-Hilfsprozess für Fenster, Maus, Tastatur
-src/renderer/      Chat, Blase, Einstellungen
+prompt/            System-Prompt, Deutsch und Englisch
+src/main/          Hauptprozess: Agent, Werkzeuge, Ampel, Sprache, Whisper, Piper, MCP, Minecraft
+src/main/win/      PowerShell-Hilfsprozess für Fenster, Maus, Tastatur, Audio
+src/renderer/      Chat, Blase, Overlay, Einstellungen
 src/preload/       die einzige Brücke zwischen Oberfläche und Hauptprozess
-scripts/release.js neue Version veröffentlichen
+vendor/whisper/    whisper.cpp (MIT) samt Visual-C++-Laufzeit
 test/              node --test
 ```
 
@@ -382,26 +454,31 @@ test/              node --test
 npm test                                                   # Tests
 npm run release -- korrektur "Blase startet jetzt ausgeschaltet"
 npm run release -- funktion  "Julia liest jetzt Termine vor"
-npm run release -- bruch     "Neue Einstellungsdatei" --hinweis "Hotkeys neu setzen"
 ```
 
-Das Release-Skript lässt vorher die Tests und `npm audit` laufen und bricht ab, wenn Tests
-fehlschlagen oder Lücken ab Stufe „high" bekannt sind. Dann setzt es die Version, schreibt die
-Changelog-Zeile, committet mit `vX.Y.Z – <Zeile>`, setzt den Tag, pusht und legt ein
-GitHub-Release an. Ohne Tag kein Update.
+Das Release-Skript lässt vorher die Tests und `npm audit` laufen und bricht ab, wenn etwas
+schiefgeht. Dann setzt es die Version, schreibt die Changelog-Zeile, committet, setzt den Tag,
+pusht, baut den Installer und veröffentlicht ihn samt Webseite.
 
-Screenshots für diese README entstehen im Vorführmodus mit einem getrennten Datenordner:
+Die Screenshots dieser README entstehen im Vorführmodus mit Beispieldaten:
 
 ```powershell
 $env:JULIA_DATEN = "$env:TEMP\julia-demo"; $env:JULIA_SCREENSHOTS = "docs\bilder"; npm start
 ```
+</details>
 
 ## Grenzen
 
 - Julia ist ein Programm, kein Mensch – und kein Arzt, Anwalt oder Finanzberater.
-- Sie braucht eine Internetverbindung zur Anthropic-API. Die Nutzung kostet API-Guthaben.
-- Die Kanäle `mobile` und `auto` sind im Verhalten angelegt, eine Mobil-App und einen Zeitplaner gibt es noch nicht.
+- Für die Antworten braucht sie einen KI-Anbieter; mit Ollama oder LM Studio geht das auch ganz ohne Internet. Cloud-Anbieter kosten Guthaben.
+- Spracherkennung und Stimmen laufen lokal – auf älteren PCs dauert das Aufschreiben mit *Genau* etwas; dann *Schnell* wählen.
+- Der Minecraft-Voice-Chat ist eine Testversion.
 
 ## Lizenz
 
-Julia AI steht unter der [MIT-Lizenz](LICENSE): Du darfst sie nutzen, verändern und weitergeben, solange der Lizenz- und Urheberhinweis erhalten bleibt. Ohne Gewähr.
+Julia AI steht unter der [MIT-Lizenz](LICENSE): Du darfst sie nutzen, verändern und weitergeben,
+solange der Lizenz- und Urheberhinweis erhalten bleibt. Ohne Gewähr.
+
+Mitgeliefert: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT). Einmal geladen,
+nicht mitgeliefert: Whisper-Modelle, [Piper](https://github.com/rhasspy/piper) und die Stimmen
+Thorsten und Kerstin (CC0).

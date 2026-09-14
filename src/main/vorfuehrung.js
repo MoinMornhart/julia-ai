@@ -173,14 +173,22 @@ async function aufnehmen({ ziel, config, chatFenster, einstellungenOeffnen, zust
     overlayVerstecken();
   }
 
+  // Für die Einstellungen: eine natürliche Stimme ausgewählt (geladen wird im Vorführmodus nichts).
+  config.set('sprache.stimme', 'piper:thorsten');
   const einst = einstellungenOeffnen(false);
   await geladen(einst);
   einst.show();
   await warte(2500);
   await aufnehmenFenster(einst, path.join(ziel, `einstellungen-${sc}.png`), { mitRahmen: true });
-  await einst.webContents.executeJavaScript("document.getElementById('kontoGoogle').closest('section').scrollIntoView({ block: 'start' })");
-  await warte(500);
-  await aufnehmenFenster(einst, path.join(ziel, `verbindungen-${sc}.png`), { mitRahmen: true });
+  const zeigen = async (js, datei) => {
+    await einst.webContents.executeJavaScript(js);
+    await warte(500);
+    await aufnehmenFenster(einst, path.join(ziel, datei), { mitRahmen: true });
+  };
+  await zeigen("document.getElementById('kontoGoogle').closest('section').scrollIntoView({ block: 'start' })", `verbindungen-${sc}.png`);
+  await zeigen("document.getElementById('kontoMcp').scrollIntoView({ block: 'start' })", `mcp-${sc}.png`);
+  await zeigen("document.getElementById('stimme').closest('.zwei').scrollIntoView({ block: 'start' })", `sprache-${sc}.png`);
+  await zeigen("document.querySelector('[data-k=\"overlay.deckkraft\"]').closest('.regler').scrollIntoView({ block: 'start' })", `overlay-einstellungen-${sc}.png`);
   einst.destroy();
 
   if (sc === 'de') {
@@ -303,4 +311,30 @@ function beispielMinecraft() {
   };
 }
 
-module.exports = { aufnehmen, GESPRAECH, beispielUeberblick, beispielClips, beispielMinecraft };
+// Einstellungen für die Screenshots: Whisper und Thorsten bereit, zwei MCP-Server.
+function beispielWhisper() {
+  return {
+    programm: true, laedt: null, fehler: null, erkennung: 'whisper', stufe: 'genau',
+    modelle: { genau: { bereit: true, mb: 190 }, schnell: { bereit: false, mb: 60 } },
+  };
+}
+
+function beispielPiper() {
+  return {
+    laedt: null, fehler: null,
+    stimmen: [
+      { id: 'thorsten', name: 'Thorsten', sprache: 'de', geschlecht: 'm', bereit: true, mb: 0 },
+      { id: 'kerstin', name: 'Kerstin', sprache: 'de', geschlecht: 'w', bereit: false, mb: 86 },
+    ],
+  };
+}
+
+function beispielMcp() {
+  const s = (id, name, befehl, namen) => ({ id, name, art: 'stdio', an: true, vertraut: false, befehl, url: '', zustand: 'bereit', fehler: null, werkzeuge: namen.length, namen });
+  return [
+    s('beispiel-github', 'GitHub', 'npx -y @modelcontextprotocol/server-github', ['search_repositories', 'get_file_contents', 'list_issues', 'create_issue', 'list_pull_requests', 'create_pull_request', 'add_issue_comment', 'search_code']),
+    s('beispiel-dateien', 'Dokumente', 'npx -y @modelcontextprotocol/server-filesystem C:\\Users\\morni\\Dokumente', ['read_text_file', 'list_directory', 'search_files', 'get_file_info', 'write_file', 'edit_file', 'create_directory', 'move_file']),
+  ];
+}
+
+module.exports = { aufnehmen, GESPRAECH, beispielUeberblick, beispielClips, beispielMinecraft, beispielWhisper, beispielPiper, beispielMcp };

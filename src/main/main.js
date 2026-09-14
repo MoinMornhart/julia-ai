@@ -912,7 +912,7 @@ function ipcEinrichten() {
     try { return await audio.geraete(); } catch (e) { return { eingaenge: [], ausgaenge: [], fehler: e.message }; }
   });
   // MCP-Server verwalten. Tokens gehen direkt in den Tresor, nie in die config.json.
-  ipc.handle('mcp:status', () => mcp.status());
+  ipc.handle('mcp:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMcp() : mcp.status()));
   ipc.handle('mcp:hinzufuegen', (_e, d) => {
     try {
       const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });
@@ -934,14 +934,14 @@ function ipcEinrichten() {
     return mcp.status();
   });
   ipc.handle('mcp:neu', async (_e, id) => { await mcp.neuStarten(String(id)); return mcp.status(); });
-  ipc.handle('piper:status', () => piper.status());
+  ipc.handle('piper:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielPiper() : piper.status()));
   ipc.handle('piper:laden', () => {
     const s = String(config.get('sprache.stimme') || '');
     if (s.startsWith('piper:')) piperNachladen(s.slice(6), true);
     return piper.status();
   });
   ipc.handle('piper:abbrechen', () => { piper.abbrechen(); return piper.status(); });
-  ipc.handle('whisper:status', () => whisperStatus());
+  ipc.handle('whisper:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielWhisper() : whisperStatus()));
   ipc.handle('whisper:laden', () => {
     const stufe = config.get('sprache.whisper_modell');
     if (whisper) whisper.herunterladen(stufe).then(() => melden(assistentName(), t('whisper.bereit'))).catch(() => { /* Fehler steht im Status */ });

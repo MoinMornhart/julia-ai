@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 3.8.1 – 2026-09-14
+- Die README ist neu: Überblick mit Bildern, alle Neuigkeiten von Version 3, Whisper, natürliche Stimmen, MCP, Minecraft-Befehle und anpassbares Overlay
+
 ## 3.8.0 – 2026-09-14
 - MCP-Server anschließen: Julia nutzt jetzt auch Werkzeuge von MCP-Servern – etwa für GitHub, Notion oder Ordner; jeder Aufruf fragt vorher, Tokens liegen verschlüsselt
 
