@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Even more of your own apps** – alongside ToDoch, Streamo and VibeWork come **Patchfeld**, **Codewerk** and the **Content-Helper**: start learning sessions, check progress, plan posts and fetch ideas – all through your app's API. See [Works with your apps](#works-with-your-apps).
 - **VibeWork: run your projects** – on request Julia creates new projects, invites people to them and fetches the latest commit – via the VibeWork API (address + token in settings). See [Works with your apps](#works-with-your-apps).
 - **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request and boards boats. New: with `!spiel durch` she works her own way along a tech tree up to the Ender Dragon, a **daily logbook** survives crashes (open it from the panel), and she only listens to people you explicitly name. Plus a step-by-step [guide](docs/minecraft-spielen.md). See [Minecraft](#minecraft).
 - **Works together with your apps** – e.g. “Put milk on my ToDoch list” or “Add Iron Man to my Streamo list”. See [Works with your apps](#works-with-your-apps).
@@ -73,7 +74,6 @@
 - **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
 - **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
 - **Never dies silently on startup** – a self-check catches GPU crashes (falls back to software rendering) and shows a clear message with a log on startup problems.
-- **Natural voices & Whisper** – Thorsten or Kerstin and local speech recognition, both offline on your PC.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – try typing `jarvis` in the chat. 😉
 
@@ -171,6 +171,9 @@ directly through your app's API:
 | **ToDoch** – your tasks app | “Put milk on my ToDoch list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task. | Domain + API key |
 | **Streamo** – your movies/shows app | “Add Iron Man to my Streamo list” – Julia adds the title to your list; searching too. | Domain + API key |
 | **VibeWork** – your projects app | “Create a VibeWork project Website”, “Invite Anna to project Website”, “Get the latest commit of Website”. | Domain + API key |
+| **Patchfeld** – your learning app (IHK) | “Start my Patchfeld session”, “What's my progress?” | Domain + API key |
+| **Codewerk** – your learning app (code) | “Start a Codewerk session in Python”, check progress. | Domain + API key |
+| **Content-Helper** – your creator app | “Plan a post for Friday”, “Give me ideas about topic X”. | Domain + API key |
 
 Sending data to an app (create a task, add to a list, create a project, invite) is a **YELLOW**
 step of the traffic light – Julia asks first. Domain and key, like all accounts, are stored

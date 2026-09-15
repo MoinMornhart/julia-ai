@@ -116,6 +116,39 @@ test('VibeWork: Projekt anlegen, einladen, letzten Commit holen', async () => {
   assert.equal(c.author, 'Anna');
 });
 
+test('Patchfeld/Codewerk: Session starten und Fortschritt lesen', async () => {
+  const t = tresor();
+  verbunden(t, 'patchfeld', 'tokP');
+  const fetch = fakeFetch([
+    ['/sessions', { daten: { id: 's1', titel: 'Netzwerke' } }],
+    ['/progress', { daten: { level: 3, offen: 2 } }],
+  ]);
+  const apps = new Apps({ fetch, tresor: t });
+  const s = await apps.lernSession('patchfeld', { kurs: 'Netzwerke' });
+  assert.equal(s.titel, 'Netzwerke');
+  assert.equal(fetch.aufrufe[0].optionen.headers.Authorization, 'Bearer tokP');
+  assert.equal(fetch.aufrufe[0].body.kurs, 'Netzwerke');
+  const f = await apps.lernFortschritt('patchfeld');
+  assert.equal(f.level, 3);
+});
+
+test('Content-Helper: Beitrag planen und Ideen holen', async () => {
+  const t = tresor();
+  verbunden(t, 'content', 'tokC');
+  const fetch = fakeFetch([
+    ['/posts', { daten: { id: 'x1', date: 'Freitag', platform: 'YouTube' } }],
+    ['/ideas', { daten: { ideas: ['Kurz-Tutorial', 'Behind the Scenes'] } }],
+  ]);
+  const apps = new Apps({ fetch, tresor: t });
+  const p = await apps.contentBeitragPlanen({ text: 'Neues Video', datum: 'Freitag', plattform: 'YouTube' });
+  assert.equal(p.datum, 'Freitag');
+  const post = fetch.aufrufe[0];
+  assert.equal(post.body.text, 'Neues Video');
+  assert.equal(post.body.date, 'Freitag');
+  const ideen = await apps.contentIdeen('Coding');
+  assert.deepEqual(ideen, ['Kurz-Tutorial', 'Behind the Scenes']);
+});
+
 test('Apps: Trennen und Öffnen-Ziel', () => {
   const t = tresor();
   verbunden(t, 'vibework');

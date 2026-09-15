@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.0 – 2026-09-15
+- Julia arbeitet jetzt auch mit deinen Apps Patchfeld, Codewerk und dem Content-Helper zusammen – Lern-Sessions starten, Fortschritt abfragen, Beiträge planen und Ideen holen, alles über die API deiner App
+
 ## 0.9.1 – 2026-09-15
 - Deine eigenen Apps ToDoch, Streamo und VibeWork werden jetzt einheitlich mit Domain und Anmeldedaten/API-Key verbunden (vorher waren ToDoch und Streamo versehentlich an fremde Dienste angebunden)
 

@@ -342,6 +342,81 @@
             </div>
             <small class="konto-meldung" id="vibeworkMeldung"></small>
           </div>
+
+          <div class="app-dienst" id="dienstPatchfeld">
+            <div class="app-kopf">
+              <span class="app-logo patchfeld" aria-hidden="true">🎓</span>
+              <div class="app-titel">
+                <strong>Patchfeld <small class="hinweis" data-t="apps.patchfeld_zweck"></small></strong>
+                <small class="app-status" id="patchfeldStatus"></small>
+              </div>
+              <button class="zweit klein" id="patchfeldOeffnen" data-t="apps.oeffnen"></button>
+            </div>
+            <p class="hinweis" data-t="apps.patchfeld_hinweis"></p>
+            <div class="feld">
+              <label for="patchfeldUrl" data-t="apps.feld_domain"></label>
+              <input id="patchfeldUrl" type="url" maxlength="300" spellcheck="false" autocomplete="off" placeholder="https://patchfeld.example.de">
+            </div>
+            <div class="feld">
+              <label for="patchfeldToken" data-t="apps.feld_token"></label>
+              <input id="patchfeldToken" type="password" maxlength="200" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="zeile">
+              <button class="primaer klein" id="patchfeldVerbinden" data-t="apps.verbinden"></button>
+              <button class="zweit klein" id="patchfeldTrennen" data-t="konten.trennen" hidden></button>
+            </div>
+            <small class="konto-meldung" id="patchfeldMeldung"></small>
+          </div>
+
+          <div class="app-dienst" id="dienstCodewerk">
+            <div class="app-kopf">
+              <span class="app-logo codewerk" aria-hidden="true">&lt;/&gt;</span>
+              <div class="app-titel">
+                <strong>Codewerk <small class="hinweis" data-t="apps.codewerk_zweck"></small></strong>
+                <small class="app-status" id="codewerkStatus"></small>
+              </div>
+              <button class="zweit klein" id="codewerkOeffnen" data-t="apps.oeffnen"></button>
+            </div>
+            <p class="hinweis" data-t="apps.codewerk_hinweis"></p>
+            <div class="feld">
+              <label for="codewerkUrl" data-t="apps.feld_domain"></label>
+              <input id="codewerkUrl" type="url" maxlength="300" spellcheck="false" autocomplete="off" placeholder="https://codewerk.example.de">
+            </div>
+            <div class="feld">
+              <label for="codewerkToken" data-t="apps.feld_token"></label>
+              <input id="codewerkToken" type="password" maxlength="200" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="zeile">
+              <button class="primaer klein" id="codewerkVerbinden" data-t="apps.verbinden"></button>
+              <button class="zweit klein" id="codewerkTrennen" data-t="konten.trennen" hidden></button>
+            </div>
+            <small class="konto-meldung" id="codewerkMeldung"></small>
+          </div>
+
+          <div class="app-dienst" id="dienstContent">
+            <div class="app-kopf">
+              <span class="app-logo content" aria-hidden="true">📅</span>
+              <div class="app-titel">
+                <strong>Content-Helper <small class="hinweis" data-t="apps.content_zweck"></small></strong>
+                <small class="app-status" id="contentStatus"></small>
+              </div>
+              <button class="zweit klein" id="contentOeffnen" data-t="apps.oeffnen"></button>
+            </div>
+            <p class="hinweis" data-t="apps.content_hinweis"></p>
+            <div class="feld">
+              <label for="contentUrl" data-t="apps.feld_domain"></label>
+              <input id="contentUrl" type="url" maxlength="300" spellcheck="false" autocomplete="off" placeholder="https://content.example.de">
+            </div>
+            <div class="feld">
+              <label for="contentToken" data-t="apps.feld_token"></label>
+              <input id="contentToken" type="password" maxlength="200" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="zeile">
+              <button class="primaer klein" id="contentVerbinden" data-t="apps.verbinden"></button>
+              <button class="zweit klein" id="contentTrennen" data-t="konten.trennen" hidden></button>
+            </div>
+            <small class="konto-meldung" id="contentMeldung"></small>
+          </div>
         </div>
       </div>
 

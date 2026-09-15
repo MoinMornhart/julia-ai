@@ -206,15 +206,14 @@ function appVerbinden() {
 
 // --- Deine Apps (ToDoch, Streamo, VibeWork) – je Domain + Anmeldedaten/Token ---
 
-const APP_DIENSTE = [
-  { id: 'todoist', karte: 'dienstTodoist', status: 'todoistStatus', url: 'todoistUrl', token: 'todoistToken', verbinden: 'todoistVerbinden', trennen: 'todoistTrennen', oeffnen: 'todoistOeffnen', meldung: 'todoistMeldung' },
-  { id: 'stremio', karte: 'dienstStremio', status: 'stremioStatus', url: 'stremioUrl', token: 'stremioToken', verbinden: 'stremioVerbinden', trennen: 'stremioTrennen', oeffnen: 'stremioOeffnen', meldung: 'stremioMeldung' },
-  { id: 'vibework', karte: 'dienstVibework', status: 'vibeworkStatus', url: 'vibeworkUrl', token: 'vibeworkToken', verbinden: 'vibeworkVerbinden', trennen: 'vibeworkTrennen', oeffnen: 'vibeworkOeffnen', meldung: 'vibeworkMeldung' },
-];
+function appDienst(id) {
+  return { id, karte: `dienst${id[0].toUpperCase()}${id.slice(1)}`, status: `${id}Status`, url: `${id}Url`, token: `${id}Token`, verbinden: `${id}Verbinden`, trennen: `${id}Trennen`, oeffnen: `${id}Oeffnen`, meldung: `${id}Meldung` };
+}
+const APP_DIENSTE = ['todoist', 'stremio', 'vibework', 'patchfeld', 'codewerk', 'content'].map(appDienst);
 
 function appsZeigen(s) {
   s = s || {};
-  $('kontoApps').classList.toggle('verbunden', !!(s.todoist || s.stremio || s.vibework));
+  $('kontoApps').classList.toggle('verbunden', APP_DIENSTE.some((d) => s[d.id]));
   for (const d of APP_DIENSTE) {
     const an = !!s[d.id];
     $(d.karte).classList.toggle('verbunden', an);

@@ -26,10 +26,21 @@
 // (verschlüsselt). Julia selbst sieht die Token nie im Gespräch.
 
 // Deine Apps. „oeffnen" öffnet die hinterlegte Basis-URL (oder den Web-Link).
+//
+// Verträge der weiteren Apps (Auth wie oben, Bearer-Token):
+//   Patchfeld / Codewerk (Lern-Apps)
+//     • Session starten  POST {basis}/sessions          { "kurs": "…"? }   → { "id","titel"? }
+//     • Fortschritt      GET  {basis}/progress                              → { "level"?,"offen"?,"heute"? }
+//   Content-Helper
+//     • Beitrag planen   POST {basis}/posts   { "text":"…","date":"…"?,"platform":"…"? } → { "id" }
+//     • Ideen holen      GET  {basis}/ideas?thema=…                          → { "ideas":[ "…" ] }
 const APPS = {
   todoist: { name: 'ToDoch', zweck: 'Aufgaben', aktionen: ['oeffnen', 'aufgabe', 'status'] },
   stremio: { name: 'Streamo', zweck: 'Streaming', aktionen: ['oeffnen', 'liste_hinzufuegen', 'suchen', 'status'] },
   vibework: { name: 'VibeWork', zweck: 'Projekte', aktionen: ['oeffnen', 'projekt_anlegen', 'einladen', 'letzter_commit', 'status'] },
+  patchfeld: { name: 'Patchfeld', zweck: 'Lernen (IHK)', aktionen: ['oeffnen', 'session', 'fortschritt', 'status'] },
+  codewerk: { name: 'Codewerk', zweck: 'Lernen (Code)', aktionen: ['oeffnen', 'session', 'fortschritt', 'status'] },
+  content: { name: 'Content-Helper', zweck: 'Creator', aktionen: ['oeffnen', 'beitrag_planen', 'ideen', 'status'] },
 };
 
 function appInfo(app) {
@@ -178,6 +189,42 @@ class Apps {
       author: r && (r.author || r.autor || r.user),
       date: r && (r.date || r.datum || r.timestamp),
     };
+  }
+
+  // ---- Patchfeld / Codewerk (Lern-Apps) ---------------------------------
+  async lernSession(id, { kurs } = {}) {
+    const d = this._dienst(id);
+    const koerper = {};
+    if (kurs) koerper.kurs = String(kurs).slice(0, 80);
+    const r = await this._json(`${d.basisUrl}/sessions`, { method: 'POST', headers: this._kopf(d), body: JSON.stringify(koerper) }, appInfo(id).name);
+    return { id: r && (r.id || r._id), titel: r && (r.titel || r.title || r.name) };
+  }
+
+  async lernFortschritt(id) {
+    const d = this._dienst(id);
+    const r = await this._json(`${d.basisUrl}/progress`, { headers: this._kopf(d) }, appInfo(id).name);
+    return r || {};
+  }
+
+  // ---- Content-Helper (Creator) -----------------------------------------
+  async contentBeitragPlanen({ text, datum, plattform } = {}) {
+    const d = this._dienst('content');
+    const t = String(text || '').trim();
+    if (!t) throw new Error('Was soll der Beitrag sein? Der Text fehlt.');
+    const koerper = { text: t.slice(0, 2000) };
+    if (datum) koerper.date = String(datum).slice(0, 40);
+    if (plattform) koerper.platform = String(plattform).slice(0, 40);
+    const r = await this._json(`${d.basisUrl}/posts`, { method: 'POST', headers: this._kopf(d), body: JSON.stringify(koerper) }, 'Content-Helper');
+    return { id: r && (r.id || r._id), datum: (r && (r.date || r.datum)) || datum, plattform: (r && (r.platform || r.plattform)) || plattform };
+  }
+
+  async contentIdeen(thema) {
+    const d = this._dienst('content');
+    const url = new URL(`${d.basisUrl}/ideas`);
+    if (thema) url.searchParams.set('thema', String(thema).slice(0, 120));
+    const r = await this._json(url.toString(), { headers: this._kopf(d) }, 'Content-Helper');
+    const liste = (r && (r.ideas || r.ideen || r.results)) || [];
+    return liste.slice(0, 15).map((x) => (typeof x === 'string' ? x : (x && (x.text || x.title || x.titel)) || String(x)));
   }
 }
 

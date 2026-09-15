@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Noch mehr eigene Apps** – zu ToDoch, Streamo und VibeWork kommen **Patchfeld**, **Codewerk** und der **Content-Helper** dazu: Lern-Sessions starten, Fortschritt abfragen, Beiträge planen und Ideen holen – alles über die API deiner App. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **VibeWork: Projekte steuern** – Julia legt auf Ansage neue Projekte an, lädt Leute dazu ein und holt dir den letzten Commit – über die VibeWork-API (Adresse + Token in den Einstellungen). Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
 - **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
@@ -73,7 +74,6 @@
 - **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
 - **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
-- **Natürliche Stimmen & Whisper** – Thorsten oder Kerstin und lokale Spracherkennung, beides offline auf deinem PC.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe mal `jarvis` in den Chat. 😉
 
@@ -177,6 +177,9 @@ Julia arbeitet mit **deinen eigenen Apps** zusammen. Du trägst je App einmal un
 | **ToDoch** – deine Aufgaben-App | „Setz Milch auf meine ToDoch-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe an. | Domain + API-Key |
 | **Streamo** – deine Film-/Serien-App | „Füg Iron Man zu meiner Streamo-Liste hinzu“ – Julia nimmt den Titel in deine Liste auf; auch durchsuchen. | Domain + API-Key |
 | **VibeWork** – deine Projekt-App | „Leg ein VibeWork-Projekt Website an“, „Lad Anna zu Projekt Website ein“, „Hol den letzten Commit von Website“. | Domain + API-Key |
+| **Patchfeld** – deine Lern-App (IHK) | „Starte meine Patchfeld-Session“, „Wie ist mein Fortschritt?“ | Domain + API-Key |
+| **Codewerk** – deine Lern-App (Code) | „Starte eine Codewerk-Session in Python“, Fortschritt abfragen. | Domain + API-Key |
+| **Content-Helper** – deine Creator-App | „Plane einen Beitrag für Freitag“, „Gib mir Ideen zu Thema X“. | Domain + API-Key |
 
 Daten an eine App zu senden (Aufgabe anlegen, zur Liste hinzufügen, Projekt anlegen, einladen) ist
 ein **GELB**-Schritt der Ampel – Julia fragt vorher. Domain und Schlüssel liegen wie alle Konten

@@ -821,30 +821,34 @@ WERKZEUGE.push({
 // Dienst senden ist GELB.
 WERKZEUGE.push({
   name: 'apps',
-  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Projekte/Commits). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für ToDoch "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr"); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie) oder "suchen" (text = Titel); für VibeWork "projekt_anlegen" (text = Projektname), "einladen" (projekt = Projekt-ID/Name, person = E-Mail/Name) oder "letzter_commit" (projekt = Projekt-ID/Name). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
+  description: 'Mit deinen eigenen Apps zusammenarbeiten. app: "todoist" (ToDoch/Aufgaben), "stremio" (Streamo/Filme+Serien), "vibework" (Projekte/Commits), "patchfeld" (Lernen IHK), "codewerk" (Lernen Code) oder "content" (Content-Helper). aktion: "oeffnen", "status"; ToDoch "aufgabe" (text, optional faellig); Streamo "liste_hinzufuegen" (text=Titel, optional typ film|serie) / "suchen" (text); VibeWork "projekt_anlegen" (text=Name) / "einladen" (projekt, person) / "letzter_commit" (projekt); Patchfeld & Codewerk "session" (optional kurs) / "fortschritt"; Content-Helper "beitrag_planen" (text, optional datum, plattform) / "ideen" (optional thema). Verbunden wird in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag das.',
   input_schema: {
     type: 'object',
     properties: {
-      app: { type: 'string', enum: ['todoist', 'stremio', 'vibework'] },
-      aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit'] },
-      text: { type: 'string', description: 'Aufgabe (ToDoch), Titel (Streamo) oder Projektname (VibeWork projekt_anlegen).' },
+      app: { type: 'string', enum: ['todoist', 'stremio', 'vibework', 'patchfeld', 'codewerk', 'content'] },
+      aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit', 'session', 'fortschritt', 'beitrag_planen', 'ideen'] },
+      text: { type: 'string', description: 'Aufgabe (ToDoch), Titel (Streamo), Projektname (VibeWork) oder Beitragstext (Content-Helper).' },
       faellig: { type: 'string', description: 'nur ToDoch: Fälligkeit in natürlicher Sprache, z. B. "morgen 9 Uhr".' },
       typ: { type: 'string', enum: ['film', 'serie'], description: 'nur Streamo.' },
       projekt: { type: 'string', description: 'nur VibeWork: Projekt-ID oder -Name für einladen/letzter_commit.' },
       person: { type: 'string', description: 'nur VibeWork einladen: E-Mail oder Name der Person.' },
+      kurs: { type: 'string', description: 'nur Patchfeld/Codewerk session: gewünschter Kurs/Sprache (optional).' },
+      datum: { type: 'string', description: 'nur Content-Helper beitrag_planen: Datum (optional).' },
+      plattform: { type: 'string', description: 'nur Content-Helper beitrag_planen: Plattform (optional).' },
+      thema: { type: 'string', description: 'nur Content-Helper ideen: Thema (optional).' },
     },
     required: ['app', 'aktion'],
   },
   fremd: true,
-  // Etwas in eine App legen/anlegen oder dort suchen geht nach außen (an ToDoch/Streamo/VibeWork).
-  nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit'].includes(e.aktion),
+  // Etwas an eine App senden/anlegen oder dort abfragen geht nach außen.
+  nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit', 'session', 'fortschritt', 'beitrag_planen', 'ideen'].includes(e.aktion),
   einstufen(e) {
     const { APPS } = require('./apps');
     const name = (APPS[String(e.app || '').toLowerCase()] || {}).name || e.app;
-    const schreib = { aufgabe: 'Aufgabe anlegen', liste_hinzufuegen: 'zur Liste hinzufügen', projekt_anlegen: 'Projekt anlegen', einladen: 'Person einladen' };
+    const schreib = { aufgabe: 'Aufgabe anlegen', liste_hinzufuegen: 'zur Liste hinzufügen', projekt_anlegen: 'Projekt anlegen', einladen: 'Person einladen', beitrag_planen: 'Beitrag planen', session: 'Session starten' };
     if (schreib[e.aktion]) {
-      const was = e.aktion === 'einladen' ? `${e.person || ''} zu ${e.projekt || ''}` : (e.text || e.projekt || '');
-      return { stufe: GELB, kategorie: 'netz', grund: `Daten an ${name} senden`, beschreibung: `${name}: ${schreib[e.aktion]} – ${was}` };
+      const was = e.aktion === 'einladen' ? `${e.person || ''} zu ${e.projekt || ''}` : (e.text || e.projekt || e.kurs || '');
+      return { stufe: GELB, kategorie: 'netz', grund: `Daten an ${name} senden`, beschreibung: `${name}: ${schreib[e.aktion]}${was ? ` – ${was}` : ''}` };
     }
     return { ...gruen(), beschreibung: `${name}: ${e.aktion}` };
   },
@@ -888,6 +892,27 @@ WERKZEUGE.push({
         if (e.app !== 'vibework') throw new Error('„letzter_commit“ gibt es nur für VibeWork.');
         const c = await ctx.apps.vibeworkLetzterCommit(e.projekt);
         return fremd('VibeWork', `Letzter Commit in ${e.projekt}: ${c.message || '(keine Nachricht)'}${c.author ? ` – von ${c.author}` : ''}${c.date ? ` am ${c.date}` : ''}${c.sha ? ` [${String(c.sha).slice(0, 10)}]` : ''}.`);
+      }
+      case 'session': {
+        if (e.app !== 'patchfeld' && e.app !== 'codewerk') throw new Error('„session“ gibt es nur für Patchfeld und Codewerk.');
+        const r = await ctx.apps.lernSession(e.app, { kurs: e.kurs });
+        return `${info.name}: Lern-Session gestartet${r.titel ? ` – ${r.titel}` : ''}.`;
+      }
+      case 'fortschritt': {
+        if (e.app !== 'patchfeld' && e.app !== 'codewerk') throw new Error('„fortschritt“ gibt es nur für Patchfeld und Codewerk.');
+        const r = await ctx.apps.lernFortschritt(e.app);
+        return fremd(info.name, JSON.stringify(r));
+      }
+      case 'beitrag_planen': {
+        if (e.app !== 'content') throw new Error('„beitrag_planen“ gibt es nur für den Content-Helper.');
+        const r = await ctx.apps.contentBeitragPlanen({ text: e.text, datum: e.datum, plattform: e.plattform });
+        return `Beitrag im Content-Helper geplant${r.datum ? ` für ${r.datum}` : ''}${r.plattform ? ` (${r.plattform})` : ''}.`;
+      }
+      case 'ideen': {
+        if (e.app !== 'content') throw new Error('„ideen“ gibt es nur für den Content-Helper.');
+        const l = await ctx.apps.contentIdeen(e.thema);
+        if (!l.length) return `Keine Ideen${e.thema ? ` zu „${e.thema}“` : ''} bekommen.`;
+        return fremd('dem Content-Helper', l.map((x) => `- ${x}`).join('\n'));
       }
       default:
         throw new Error(`Unbekannte Aktion "${e.aktion}".`);
