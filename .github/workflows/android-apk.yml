@@ -92,6 +92,6 @@ jobs:
             gh release upload android-latest Julia.apk --clobber
           else
             gh release create android-latest Julia.apk \
-              --title "Julia für Android (aktuelle APK)" \
-              --notes "Automatisch gebaute, installierbare Android-APK der Handy-App. Auf dem Handy herunterladen, „Unbekannte Quellen/Diese App installieren" erlauben, dann öffnen. Diese Datei wird bei jedem Build hier aktualisiert."
+              --title 'Julia für Android (aktuelle APK)' \
+              --notes 'Automatisch gebaute, installierbare Android-APK der Handy-App. Auf dem Handy herunterladen, Installation aus unbekannter Quelle erlauben, dann öffnen. Diese Datei wird bei jedem Build hier aktualisiert.'
           fi
