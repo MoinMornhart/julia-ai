@@ -35,10 +35,6 @@ const STANDARD = {
   erinnerung: {
     vorlesen: true,
   },
-  handy: {
-    an: false, // Handy im WLAN – standardmäßig aus
-    port: 8765,
-  },
   verlauf: {
     speichern: true, // Gespräche verschlüsselt auf diesem PC behalten
   },
@@ -135,10 +131,6 @@ const STANDARD = {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
     port: 8766,
   },
-  relay: {
-    an: false, // Zugriff über ein eigenes Proxmox-Relay – standardmäßig aus
-    adresse: '', // eigene Domain, z. B. julia.meinname.duckdns.org
-  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -205,14 +197,12 @@ function pruefen(schluessel, wert) {
     case 'einrichtung_fertig':
     case 'design.glow':
     case 'erinnerung.vorlesen':
-    case 'handy.an':
     case 'verlauf.speichern':
     case 'blase.untertitel':
     case 'weckwort.an':
     case 'freigabe.immer':
     case 'freigabe.fremd':
     case 'sync.an':
-    case 'relay.an':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':
@@ -339,9 +329,7 @@ function pruefen(schluessel, wert) {
     case 'kosten.tageslimit_usd':
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
-    case 'handy.port':
     case 'sync.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
-    case 'relay.adresse': return require('./relay').adressePruefen(wert);
     case 'code.projekte': {
       if (!Array.isArray(wert)) throw new Error('Projekte sind eine Liste von Ordnern.');
       const liste = [...new Set(wert.map((p) => String(p || '').trim()).filter((p) => path.isAbsolute(p)).map((p) => path.resolve(p)))];

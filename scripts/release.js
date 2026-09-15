@@ -15,8 +15,8 @@
 // Setzt die Version in package.json (und package-lock.json), schreibt die
 // Changelog-Zeile, committet mit "vX.Y.Z – <Zeile>" als Nachricht, setzt den
 // Tag, pusht beides und legt ein GitHub-Release an (über die gh-CLI).
-// Danach baut es den Installer, aktualisiert die Webseite im öffentlichen Repo
-// julia-ai-web und hängt Julia-AI-Setup.exe samt latest.yml an ein Release dort.
+// Danach baut es den Installer und hängt Julia-AI-Setup.exe samt latest.yml an
+// dasselbe Release im öffentlichen Repo julia-ai. Julia holt Updates von dort.
 
 const fs = require('fs');
 const path = require('path');
@@ -24,7 +24,6 @@ const { execFileSync, execSync } = require('child_process');
 const version = require('../src/main/version');
 
 const WURZEL = path.join(__dirname, '..');
-const WEB_REPO = 'MoinMornhart/julia-ai-web';
 
 function git(...args) {
   return execFileSync('git', args, { cwd: WURZEL, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
@@ -157,8 +156,8 @@ function githubRelease(tag, a) {
   }
 }
 
-// Installer bauen, Webseite nachziehen, Setup und latest.yml ans öffentliche
-// Release hängen. Die installierte Julia holt ihre Updates genau von dort.
+// Installer bauen und Setup samt latest.yml an das Release im Repo hängen.
+// Die installierte Julia holt ihre Updates genau von dort.
 function installerVeroeffentlichen(tag, a) {
   const dist = path.join(WURZEL, 'dist');
   try {
@@ -174,13 +173,11 @@ function installerVeroeffentlichen(tag, a) {
     return;
   }
   try {
-    execFileSync(process.execPath, [path.join(__dirname, 'webseite.js'), ...a.trailer.flatMap((t) => ['--trailer', t])], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
-    console.log('Webseite aktualisiert.');
     const dateien = ['Julia-AI-Setup.exe', 'Julia-AI-Setup.exe.blockmap', 'latest.yml'].map((d) => path.join(dist, d)).filter((d) => fs.existsSync(d));
-    execFileSync('gh', ['release', 'create', tag, '--repo', WEB_REPO, '--target', 'main', '--title', `${tag} – ${a.text}`.slice(0, 120), '--notes', a.text, ...dateien], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
-    console.log(`Installer veröffentlicht: https://github.com/${WEB_REPO}/releases/tag/${tag}`);
+    execFileSync('gh', ['release', 'upload', tag, ...dateien, '--clobber'], { cwd: WURZEL, stdio: ['ignore', 'pipe', 'pipe'] });
+    console.log(`Installer veröffentlicht: an Release ${tag} angehängt.`);
   } catch (e) {
-    console.log(`Installer oder Webseite nicht veröffentlicht: ${String(e.stderr || e.message).trim().slice(0, 300)}`);
+    console.log(`Installer nicht veröffentlicht: ${String(e.stderr || e.message).trim().slice(0, 300)}`);
   }
 }
 

@@ -57,8 +57,6 @@ const { Konten } = require('./konten');
 const { Erinnerungen } = require('./erinnerungen');
 const { Kosten } = require('./kosten');
 const { Weckwort } = require('./weckwort');
-const { HandyServer, qrMatrix } = require('./handy/server');
-const { RelayKlient } = require('./relay');
 const { Gespraeche } = require('./gespraeche');
 const routinenModul = require('./routinen');
 const { anhaengeLesen } = require('./anhaenge');
@@ -95,14 +93,12 @@ let konten;
 let erinnerungen;
 let weckwort;
 let weckwortZuletzt = 0;
-let handy = null;
 let gespraeche = null;
 let routinen = null;
 let clips = null;
 let minecraft = null;
 let mcSpeicher = null;
 let sync = null;
-let relay = null;
 let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
@@ -1332,19 +1328,6 @@ function ipcEinrichten() {
     gespraech.id = null;
     return true;
   });
-  ipc.handle('handy:status', () => handy.status());
-  ipc.handle('handy:koppeln', async () => {
-    try {
-      // Erst das Zertifikat auf neue Adressen (z. B. eine frische VPN-IP) bringen,
-      // sonst schlägt das Öffnen über diese Adresse mit TLS-Fehler fehl.
-      await handy.adressenAktualisieren();
-      const k = handy.koppelnStarten();
-      return { ...k, qr: qrMatrix(k.url), status: handy.status() };
-    } catch (e) {
-      return { fehler: e.message === 'kein_netz' ? t('handy.kein_netz') : e.message, status: handy.status() };
-    }
-  });
-  ipc.handle('handy:trennen', () => { handy.trennen(); return handy.status(); });
   ipc.handle('sync:status', () => sync.status());
   ipc.handle('sync:code', () => {
     try { return { ...sync.codeAnbieten(), status: sync.status() }; } catch (e) { return { fehler: syncFehler(e), status: sync.status() }; }
@@ -1359,11 +1342,6 @@ function ipcEinrichten() {
   });
   ipc.handle('sync:entfernen', (_e, id) => { sync.entfernen(String(id || '')); return sync.status(); });
   ipc.handle('sync:jetzt', async () => { await sync.abgleichen().catch(() => {}); return sync.status(); });
-  ipc.handle('relay:status', () => relay.status());
-  ipc.handle('relay:koppeln', () => {
-    try { return { ...relay.koppelnStarten(), status: relay.status() }; } catch (e) { return { fehler: t(`relay.fehler_${e.message}`), status: relay.status() }; }
-  });
-  ipc.handle('relay:trennen', () => { relay.trennen(); return relay.status(); });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1376,9 +1354,7 @@ function ipcEinrichten() {
 
 // --- Start ---
 
-// --- Handy im WLAN ---
-// Das Handy sieht dasselbe Gespräch wie der Chat am PC. Alles, was an die
-// Fenster geht, landet auch im Gesprächsstand des Handy-Servers.
+// --- Gesprächsstand für Chat und Verlauf ---
 
 const HINWEIS_TEXT = {
   abgebrochen: 'chat.abgebrochen',
@@ -1389,7 +1365,7 @@ const HINWEIS_TEXT = {
   kosten_warnung: 'hinweis.kosten_warnung',
 };
 
-// Was an die Fenster geht, als Gesprächsereignis für Handy und Verlauf.
+// Was an die Fenster geht, als Gesprächsereignis für den Verlauf.
 function ereignisAus(kanal, d) {
   switch (kanal) {
     case 'agent:nutzer': return ['nutzer', d];
@@ -1412,7 +1388,6 @@ function ereignisAus(kanal, d) {
 function ereignisWeiterleiten(kanal, d) {
   const e = ereignisAus(kanal, d);
   if (!e) return;
-  if (handy) handy.ereignis(e[0], e[1]);
   if (e[0] === 'geleert') gespraech = { id: null, anzeige: [] };
   else if (e[0] !== 'zustand' && e[0] !== 'start') anzeige.anwenden(gespraech.anzeige, e[0], e[1]);
 }
@@ -1646,34 +1621,10 @@ function gespraechFortsetzen(id) {
   if (!g) return { fehler: t('vl.leer') };
   agent.verlaufLaden(g.verlauf, g.sitzung);
   gespraech = { id: g.id, anzeige: g.anzeige.map((e) => ({ ...e })) };
-  if (handy) handy.ereignis('geleert');
   const datum = new Date(g.geaendert).toLocaleString(config.get('sprachcode') === 'en' ? 'en-GB' : 'de-DE', { dateStyle: 'medium', timeStyle: 'short' });
   for (const w of [chatFenster, overlayFenster]) {
     if (w && !w.isDestroyed()) w.webContents.send('chat:laden', { eintraege: g.anzeige, hinweis: t('vl.fortgesetzt', { datum }) });
   }
-  return { ok: true };
-}
-
-function handyTexte() {
-  const sc = config.get('sprachcode');
-  const name = assistentName();
-  const texte = {};
-  for (const [k, v] of Object.entries({ ...TEXTE.de, ...TEXTE[sc] })) {
-    if (k.startsWith('mobil.')) texte[k] = v.split('{name}').join(name);
-  }
-  return { sprachcode: sc, name, akzent: config.get('design.akzent'), texte };
-}
-
-// Ein Auftrag vom gekoppelten Handy – wie vom Chat, nur mit Kanal "mobile".
-async function handyNachricht(text) {
-  if (agent.beschaeftigt) return { fehler: 'beschaeftigt' };
-  sprache.stumm();
-  protokoll.eintragen({ werkzeug: 'handy', stufe: 'INFO', eingabe: { text: text.slice(0, 300) }, ergebnis: 'Auftrag vom Handy' });
-  anAlle('agent:nutzer', { text, perSprache: false, handy: true });
-  agent.senden(text, { kanal: 'mobile' }).catch((e) => {
-    if (e.message === 'BESCHAEFTIGT') anAlle('agent:hinweis', { art: 'beschaeftigt' });
-    else anAlle('agent:fehler', { art: 'text', text: e.message });
-  });
   return { ok: true };
 }
 
@@ -1727,40 +1678,6 @@ async function minecraftSagen(text) {
   if (pcm.length) await minecraft.stimmeSprechen(pcm).catch(() => {});
 }
 
-function handyEinrichten() {
-  handy = new HandyServer({
-    tresor: konten.tresor,
-    texte: handyTexte,
-    beiNachricht: handyNachricht,
-    protokoll: (e) => protokoll.eintragen({ werkzeug: 'handy', ...e }),
-  });
-  handy.on('freigabe', ({ id, ja }) => {
-    protokoll.eintragen({ werkzeug: 'handy', stufe: 'INFO', eingabe: { id }, ergebnis: ja ? 'Freigabe am Handy erteilt' : 'Freigabe am Handy abgelehnt' });
-    agent.freigabeBeantworten(id, ja);
-  });
-  handy.on('stopp', () => {
-    agent.abbrechen();
-    sprache.stumm();
-  });
-  handy.on('neu', () => {
-    agent.neu();
-    anAlle('chat:geleert');
-  });
-  handy.on('status', () => anAlle('handy:status', handy.status()));
-  handyAnwenden();
-  // Kommt ein VPN (NetBird, Tailscale) erst später hoch, deckt das Zertifikat
-  // dessen neue Adresse nachträglich ab – sonst bricht die Verbindung ab.
-  if (!VORFUEHRUNG) {
-    setInterval(() => { if (handy && handy.laeuft) handy.adressenAktualisieren().catch(() => {}); }, 60000);
-  }
-}
-
-function handyAnwenden() {
-  if (!handy || VORFUEHRUNG) return;
-  if (config.get('handy.an')) handy.starten(config.get('handy.port')).catch(() => { /* Fehler steht im Status */ });
-  else handy.stoppen();
-}
-
 // --- Geräte-Abgleich (PC zu PC) ---
 
 function syncEinrichten() {
@@ -1788,23 +1705,6 @@ function syncFehler(e) {
   const k = `sync.fehler_${e.message}`;
   const text = t(k);
   return text && text !== k ? text : e.message;
-}
-
-// --- Proxmox-Relay (Zugriff von überall über den eigenen Server) ---
-
-function relayEinrichten() {
-  relay = new RelayKlient({
-    tresor: konten.tresor,
-    handy,
-    protokoll: (text) => protokoll.eintragen({ werkzeug: 'relay', stufe: 'INFO', ergebnis: text }),
-  });
-  relay.on('status', () => anAlle('relay:status', relay.status()));
-  relayAnwenden();
-}
-
-function relayAnwenden() {
-  if (!relay || VORFUEHRUNG) return;
-  relay.anwenden({ an: config.get('relay.an'), adresse: config.get('relay.adresse') });
 }
 
 // --- Erinnerungen ---
@@ -2024,9 +1924,7 @@ async function start() {
   ctx.updater = updater;
   agentVerdrahten();
   erinnerungenVerdrahten();
-  handyEinrichten();
   syncEinrichten();
-  relayEinrichten();
   weckwort = new Weckwort({ dll: audio.dll });
   weckwortVerdrahten();
   ipcEinrichten();
@@ -2049,9 +1947,7 @@ async function start() {
     }
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
-    if (k.startsWith('handy.')) handyAnwenden();
     if (k.startsWith('sync.')) syncAnwenden();
-    if (k.startsWith('relay.')) relayAnwenden();
     if (k === 'minecraft.jeder' && minecraft) minecraft.aufAlleHoeren(config.get('minecraft.jeder') === true);
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
@@ -2138,10 +2034,8 @@ if (!app.requestSingleInstanceLock()) {
     globalShortcut.unregisterAll();
     win.worker.beenden();
     if (erinnerungen) erinnerungen.stoppen();
-    if (handy) handy.stoppen();
     if (mcp) mcp.stoppenAlle();
     if (sync) sync.stoppen();
-    if (relay) relay.anwenden({ an: false });
     clearInterval(spielTimer);
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();

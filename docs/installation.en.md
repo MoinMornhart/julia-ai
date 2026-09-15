@@ -31,8 +31,8 @@ You don't need admin rights.
 
 Only download **Julia-AI-Setup.exe** from the official page:
 
-- Website: https://moinmornhart.github.io/julia-ai-web/
-- Direct: [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
+- Website: https://github.com/MoinMornhart/julia-ai
+- Direct: [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
 
 Never from download portals. To be sure, compare the checksum with the one on the website. In
 PowerShell, in your download folder:

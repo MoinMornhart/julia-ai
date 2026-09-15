@@ -21,7 +21,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | ✅ 0.4.0 | Eigener Name für die KI, ihre Form und deine Pronomen – Namen gegen Prompt-Tricks geprüft |
 | ✅ 0.5.0 | Gaming-Overlay: kleines Chatfenster über dem Spiel, Freigaben darin, Antworten auf Sprachbefehle passiv eingeblendet |
 | ✅ 0.6.0 | Erinnerungen und Timer: Meldung, Chat, Vorlesen; verpasste werden nachgeliefert |
-| ✅ – | Webseite mit Live-Vorführung, Ampel, Funktionen und Versionen ([live](https://moinmornhart.github.io/julia-ai-web/), Quelle in `site/index.html`) |
+| ✅ – | Webseite mit Live-Vorführung, Ampel, Funktionen und Versionen ([live](https://github.com/MoinMornhart/julia-ai), Quelle in `site/index.html`) |
 | ✅ 0.7.0 | Kostenbremse: Tageslimit für API-Kosten, Warnung bei 80 %, Stopp auch mitten im Auftrag |
 | ✅ 0.7.1 | Protokoll als Prüfsummen-Kette; Release nur mit grünen Tests und ohne bekannte Lücken ab Stufe „high" |
 | ✅ 0.8.0 | „Hey <Name>" als Aktivierungswort – standardmäßig aus, nur lokal, pausiert beim eigenen Sprechen |

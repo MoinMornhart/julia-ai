@@ -85,7 +85,8 @@ test('Start: erst nach mehreren GPU-Abstürzen der Rückfall, und nur einmal', (
     // Ein sauberer Renderer-Abgang zählt nicht als Absturz.
     app.feuern('render-process-gone', {}, { reason: 'clean-exit' });
     app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -2147483645 });
-    assert.equal(sp.softwareRendering(o), false, 'ein Absturz reicht noch nicht');
+    assert.equal(gemeldet, 0, 'ein Absturz meldet und startet noch nicht neu');
+    assert.equal(neugestartet, 0);
     app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -2147483645 });
     assert.equal(sp.softwareRendering(o), true, 'ab dem zweiten Absturz Software-Rendering');
     assert.equal(gemeldet, 1);
@@ -107,6 +108,35 @@ test('Start: ein sauberer GPU-Neustart löst keinen Rückfall aus', () => {
     app.feuern('child-process-gone', { type: 'GPU', reason: 'clean-exit', exitCode: 0 });
     app.feuern('child-process-gone', { type: 'GPU', reason: 'clean-exit', exitCode: 0 });
     assert.equal(sp.softwareRendering(o), false);
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
+test('Start: ein GPU-Absturz beim Start sichert sofort den nächsten Start ab (Issue #2)', () => {
+  const o = ordner();
+  try {
+    const app = { _h: {}, on(ev, fn) { (this._h[ev] = this._h[ev] || []).push(fn); }, removeListener() {}, feuern(ev, ...a) { for (const fn of this._h[ev] || []) fn({}, ...a); } };
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, schwelle: 2, jetzt: () => 1000, startFensterMs: 20000 });
+    assert.equal(sp.softwareRendering(o), false);
+    // Schon der ERSTE GPU-Absturz kurz nach dem Start setzt den Merker – auch
+    // wenn die Schwelle (2) für den Neustart noch nicht erreicht ist.
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -2147483645 });
+    assert.equal(sp.softwareRendering(o), true, 'nächster Start nutzt Software-Rendering');
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
+test('Start: ein späterer einzelner GPU-Absturz setzt den Merker nicht (kein Fehlalarm)', () => {
+  const o = ordner();
+  try {
+    let t = 1000;
+    const app = { _h: {}, on(ev, fn) { (this._h[ev] = this._h[ev] || []).push(fn); }, removeListener() {}, feuern(ev, ...a) { for (const fn of this._h[ev] || []) fn({}, ...a); } };
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, schwelle: 2, jetzt: () => t, startFensterMs: 20000 });
+    t = 60000; // lange nach dem Start
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
+    assert.equal(sp.softwareRendering(o), false, 'ein einzelner Absturz später greift nicht vor');
   } finally {
     fs.rmSync(o, { recursive: true, force: true });
   }

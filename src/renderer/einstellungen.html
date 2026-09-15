@@ -182,40 +182,6 @@
         </div>
       </div>
 
-      <div class="konto" id="kontoHandy">
-        <div class="konto-kopf">
-          <span class="konto-logo handy" aria-hidden="true">📱</span>
-          <div class="konto-name">
-            <strong data-t="handy.titel"></strong>
-            <small id="handyStatus"></small>
-          </div>
-          <button class="zweit" id="handyTrennen" data-t="konten.trennen" hidden></button>
-        </div>
-        <div class="konto-einrichten">
-          <p class="hinweis" data-t="handy.text"></p>
-          <p class="hinweis"><span id="handyUnterwegs"></span> <a id="handyUnterwegsAnleitung" target="_blank" rel="noreferrer" data-t="konten.anleitung"></a></p>
-          <label class="schalter"><input type="checkbox" id="handyAn" data-k="handy.an"><span data-t="handy.an"></span></label>
-          <div id="handyBereich" hidden>
-            <p class="hinweis" data-t="handy.firewall"></p>
-            <button class="primaer klein" id="handyKoppeln" data-t="handy.koppeln"></button>
-            <small class="konto-meldung" id="handyMeldung"></small>
-            <div class="kopplung" id="handyKopplung" hidden>
-              <canvas id="handyQr" width="240" height="240"></canvas>
-              <div class="kopplung-text">
-                <p class="hinweis" data-t="handy.qr_text"></p>
-                <code id="handyAdresse"></code>
-                <p class="hinweis" data-t="handy.warnung"></p>
-                <code id="handyFinger"></code>
-              </div>
-            </div>
-          </div>
-          <div class="feld schmal">
-            <label for="handyPort" data-t="handy.port"></label>
-            <input id="handyPort" data-k="handy.port" data-zahl inputmode="numeric" spellcheck="false" autocomplete="off">
-          </div>
-        </div>
-      </div>
-
       <div class="konto" id="kontoSync">
         <div class="konto-kopf">
           <span class="konto-logo" aria-hidden="true">⇄</span>
@@ -228,7 +194,7 @@
           <p class="hinweis" data-t="sync.text"></p>
           <label class="schalter"><input type="checkbox" id="syncAn" data-k="sync.an"><span data-t="sync.an"></span></label>
           <div id="syncBereich" hidden>
-            <p class="hinweis" data-t="handy.firewall"></p>
+            <p class="hinweis" data-t="sync.firewall"></p>
             <ul class="sync-geraete" id="syncGeraete"></ul>
             <div class="sync-knoepfe">
               <button class="primaer klein" id="syncCodeZeigen" data-t="sync.code_zeigen"></button>
@@ -258,34 +224,6 @@
           <div class="feld schmal">
             <label for="syncPort" data-t="sync.port"></label>
             <input id="syncPort" data-k="sync.port" data-zahl inputmode="numeric" spellcheck="false" autocomplete="off">
-          </div>
-        </div>
-      </div>
-
-      <div class="konto" id="kontoRelay">
-        <div class="konto-kopf">
-          <span class="konto-logo" aria-hidden="true">🌐</span>
-          <div class="konto-name">
-            <strong data-t="relay.titel"></strong>
-            <small id="relayStatus"></small>
-          </div>
-          <button class="zweit" id="relayTrennen" data-t="konten.trennen" hidden></button>
-        </div>
-        <div class="konto-einrichten">
-          <p class="hinweis" data-t="relay.text"></p>
-          <p class="hinweis"><a id="relayAnleitung" target="_blank" rel="noreferrer" data-t="relay.anleitung"></a></p>
-          <label class="schalter"><input type="checkbox" id="relayAn" data-k="relay.an"><span data-t="relay.an"></span></label>
-          <div id="relayBereich" hidden>
-            <div class="feld">
-              <label for="relayAdresse" data-t="relay.adresse"></label>
-              <input id="relayAdresse" data-k="relay.adresse" maxlength="253" spellcheck="false" autocomplete="off" placeholder="julia.meinname.duckdns.org">
-            </div>
-            <button class="primaer klein" id="relayKoppeln" data-t="relay.koppeln"></button>
-            <div class="sync-code" id="relayCodeBox" hidden>
-              <p class="hinweis" data-t="relay.code_hinweis"></p>
-              <strong id="relayCode"></strong>
-            </div>
-            <small class="konto-meldung" id="relayMeldung"></small>
           </div>
         </div>
       </div>

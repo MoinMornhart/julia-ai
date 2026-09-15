@@ -306,7 +306,7 @@
       <p class="lead" data-i18n="einstieg.lead">Julia läuft im Tray, hört auf einen Hotkey und erledigt, was an deinem PC anfällt – vom Umbenennen von 200 Dateien bis zur Mail an Anna. Alles, was sich nicht zurücknehmen lässt, legt sie dir vorher vor.</p>
       <div class="knoepfe">
         <a class="knopf primaer" href="#installieren" data-i18n="einstieg.installieren">Installieren</a>
-        <a class="knopf" href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="einstieg.github">Versionshinweise</a>
+        <a class="knopf" href="https://github.com/MoinMornhart/julia-ai/releases" data-i18n="einstieg.github">Versionshinweise</a>
       </div>
       <dl class="tasten">
         <div><dt data-i18n="taste.sprechen">Sprechen</dt><dd id="tasteSprechen"></dd></div>
@@ -385,7 +385,7 @@
       <ol class="schritte" id="schritte"></ol>
       <div class="download">
         <p class="etikett" data-i18n="dl.system">Windows 10 und 11 · 64 Bit</p>
-        <a class="knopf primaer gross" id="downloadKnopf" href="https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe" data-i18n="dl.knopf">Julia AI herunterladen</a>
+        <a class="knopf primaer gross" id="downloadKnopf" href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe" data-i18n="dl.knopf">Julia AI herunterladen</a>
         <dl class="datei">
           <div><dt data-i18n="dl.datei">Datei</dt><dd>Julia-AI-Setup.exe · __GROESSE__</dd></div>
           <div><dt>Version</dt><dd>__VERSION__</dd></div>
@@ -395,8 +395,8 @@
 <pre><span class="kommentar" data-i18n="dl.pruefen"># Prüfsumme vergleichen (PowerShell)</span>
 <span class="prompt">&gt; </span>Get-FileHash .\Julia-AI-Setup.exe</pre>
         </div>
-        <p class="klein"><a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation.md" id="anleitungLink2" data-i18n="dl.anleitung">Schritt-für-Schritt-Anleitung und was Julia kann</a></p>
-        <p class="klein"><span data-i18n="dl.alle_text">Ältere Versionen und Versionshinweise:</span> <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="dl.alle">alle Releases</a></p>
+        <p class="klein"><a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/installation.md" id="anleitungLink2" data-i18n="dl.anleitung">Schritt-für-Schritt-Anleitung und was Julia kann</a></p>
+        <p class="klein"><span data-i18n="dl.alle_text">Ältere Versionen und Versionshinweise:</span> <a href="https://github.com/MoinMornhart/julia-ai/releases" data-i18n="dl.alle">alle Releases</a></p>
       </div>
     </div>
   </section>
@@ -413,9 +413,9 @@
 
 <footer>
   <div class="rahmen">
-    <a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation.md" id="anleitungLink" data-i18n="fuss.anleitung">Anleitung</a>
-    <a href="https://github.com/MoinMornhart/julia-ai-web/releases" data-i18n="fuss.releases">Downloads</a>
-    <a href="https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/installation.md" id="anleitungLink" data-i18n="fuss.anleitung">Anleitung</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/releases" data-i18n="fuss.releases">Downloads</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md" data-i18n="fuss.google">Google verbinden</a>
     <span class="rechts" data-i18n="fuss.lokal">Läuft lokal auf deinem PC. Kein eigener Server, keine Cloud-Ablage.</span>
   </div>
 </footer>
@@ -739,7 +739,7 @@
     document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.dataset.i18n); });
     document.querySelectorAll('.ki-name').forEach((el) => { el.textContent = kiName; });
     for (const id of ['#anleitungLink', '#anleitungLink2']) {
-      $(id).href = `https://github.com/MoinMornhart/julia-ai-web/blob/main/docs/installation${sprache === 'en' ? '.en' : ''}.md`;
+      $(id).href = `https://github.com/MoinMornhart/julia-ai/blob/main/docs/installation${sprache === 'en' ? '.en' : ''}.md`;
     }
     $('#sprachKnopf').textContent = sprache === 'de' ? 'EN' : 'DE';
     $('#sprachKnopf').setAttribute('aria-label', sprache === 'de' ? 'Switch to English' : 'Auf Deutsch umschalten');

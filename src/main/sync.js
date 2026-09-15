@@ -8,8 +8,8 @@ const https = require('https');
 const dgram = require('dgram');
 const crypto = require('crypto');
 const { EventEmitter } = require('events');
-const zertifikat = require('./handy/zertifikat');
-const { privateAdresse, hostErlaubt, lanAdressen, unterwegsAdressen } = require('./handy/server');
+const zertifikat = require('./zertifikat');
+const { privateAdresse, hostErlaubt, lanAdressen, unterwegsAdressen } = require('./netz');
 
 // Geräte synchronisieren: Gespräche, Gedächtnis, Routinen und Erinnerungen
 // direkt von PC zu PC – im Heimnetz oder über das eigene VPN, ohne Cloud.

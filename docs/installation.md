@@ -31,8 +31,8 @@ Admin-Rechte brauchst du nicht.
 
 Lade **Julia-AI-Setup.exe** nur von der offiziellen Seite:
 
-- Webseite: https://moinmornhart.github.io/julia-ai-web/
-- Direkt: [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
+- Webseite: https://github.com/MoinMornhart/julia-ai
+- Direkt: [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
 
 Nie von Download-Portalen. Wenn du sichergehen willst, vergleiche die Prüfsumme mit der auf der
 Webseite. In PowerShell im Download-Ordner:

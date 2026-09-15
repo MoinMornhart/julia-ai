@@ -146,9 +146,16 @@ async function fehlerDialog({ app, dialog, shell, titel = 'Julia', text, logDate
 // Hört auf abgestürzte Kind- und Renderer-Prozesse. Stürzt der GPU-Prozess
 // wiederholt ab, merkt sich Julia Software-Rendering, sagt es dem Nutzer einmal
 // und bietet einen Neustart an. Gibt eine Funktion zum Abschalten zurück.
-function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, schwelle = GPU_SCHWELLE }) {
+//
+// Wichtig für den Fall, dass der GPU-Prozess schon beim Start in Serie abstürzt
+// und Chromium ganz aufgibt ("GPU process isn't usable. Goodbye."): Passiert der
+// erste GPU-Absturz kurz nach dem Start, wird der Software-Rendering-Merker
+// SOFORT gesetzt. So startet Julia beim nächsten Mal sicher, selbst wenn sie
+// diesmal noch abstürzt, bevor der Neustart greift.
+function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, schwelle = GPU_SCHWELLE, jetzt = Date.now, startFensterMs = 20000 }) {
   let gpuAbstuerze = 0;
   let gemeldet = false;
+  const start = jetzt();
 
   const ausweichen = () => {
     if (gemeldet) return;
@@ -163,6 +170,11 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, schwelle 
     logbuch.schreiben('CRASH', `Kindprozess weg: ${d.type}`, { grund: d.reason, code: d.exitCode });
     if (d.type === 'GPU' && d.reason !== 'clean-exit') {
       gpuAbstuerze += 1;
+      // GPU-Absturz gleich beim Start: den nächsten Start absichern, sofort.
+      if (jetzt() - start < startFensterMs && !softwareRendering(datenOrdner)) {
+        softwareRenderingSetzen(datenOrdner, true);
+        logbuch.schreiben('GPU', 'GPU-Absturz beim Start – Software-Rendering ist ab dem nächsten Start aktiv.');
+      }
       if (gpuAbstuerze >= schwelle) ausweichen();
     }
   };

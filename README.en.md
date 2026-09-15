@@ -10,18 +10,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai-web/releases/latest"><img src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai-web?label=version&color=ff7a1a&style=flat-square" alt="Latest version"></a>
+  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest"><img src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai?label=version&color=ff7a1a&style=flat-square" alt="Latest version"></a>
   <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?style=flat-square" alt="Windows 10 and 11">
   <img src="https://img.shields.io/badge/voice-local%3A%20Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square" alt="Speech recognition and voices run locally">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-555555?style=flat-square" alt="MIT license"></a>
 </p>
 
 <p align="center">
-  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://moinmornhart.github.io/julia-ai-web/">Website with demo</a>
+  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://github.com/MoinMornhart/julia-ai">Website with demo</a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe"><b>⬇&nbsp; Download Julia-AI-Setup.exe</b></a>
+  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe"><b>⬇&nbsp; Download Julia-AI-Setup.exe</b></a>
   &nbsp;·&nbsp;
   <a href="docs/installation.en.md"><b>Install and get started – step by step</b></a>
 </p>
@@ -62,9 +62,9 @@
       <sub>GitHub, Notion, databases, folders – MCP servers bring new tools.</sub>
     </td>
     <td width="33%" valign="top">
-      <img src="docs/bilder/handy-en.png" alt="Julia on the phone with an approval card"><br>
-      <b>From your phone too</b><br>
-      <sub>In the browser, at home or on the road through your VPN – no app, no cloud.</sub>
+      <img src="docs/bilder/overlay-einstellungen-en.png" alt="Tool settings"><br>
+      <b>Controls the PC</b><br>
+      <sub>Media and volume, window snapping, timer and stopwatch, calculate and convert.</sub>
     </td>
   </tr>
 </table>
@@ -83,7 +83,7 @@ All changes are in the [CHANGELOG](CHANGELOG.md).
 
 ## Contents
 
-[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Accounts, phone, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates)<!-- privat --> · [For developers](#for-developers)<!-- /privat --> · [Limits](#limits) · [License](#license)
+[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Accounts, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates) · [For developers](#for-developers) · [Limits](#limits) · [License](#license)
 
 ## What Julia is
 
@@ -331,39 +331,6 @@ You sign in yourself in the browser; Julia never sees a password:
 **[Guide for Google](docs/google-setup.en.md)** · **[Guide for Outlook](docs/outlook-setup.en.md)**.
 Whatever a mail says is never an instruction for Julia.
 
-### From your phone
-
-At home on Wi-Fi and on the road through your VPN you write to Julia from your phone – in the
-browser, no app, no cloud and no open port on your PC. *Settings → Connections → Allow phone*,
-then *Pair phone* and scan the QR code. For on the road:
-**[Guide with Tailscale or FritzBox VPN](docs/unterwegs.en.md)**.
-
-<details>
-<summary><b>How the phone is protected</b></summary>
-
-- **Encrypted:** HTTPS with a certificate Julia creates herself; the first time you compare the fingerprint.
-- **Only your phone:** The QR code contains a one-time code valid for five minutes. After that the phone identifies itself with a random key of which the PC only knows the hash.
-- **Only home network or your VPN:** The server only answers private and VPN addresses, never the open internet. After ten failed attempts an address is blocked for ten minutes.
-- **Traffic light unchanged:** Approvals arrive as yes/no cards on the phone, RED stays RED, stop cancels right away.
-</details>
-
-### From anywhere – through your Proxmox relay
-
-Instead of a VPN you can run your **own relay** on your Proxmox server: then you reach Julia from
-anywhere through a normal internet address, in your phone’s browser. Sign-in is **passkey only**
-(fingerprint, face or device PIN), your PC connects on its own – every port on your PC stays
-closed, only the small relay container is open.
-
-It installs with **one command** in the Proxmox shell, as easy as a community script:
-
-```bash
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/MoinMornhart/julia-ai-web/main/proxmox/julia-relay.sh)"
-```
-
-Then in Julia *Settings → Connections → Proxmox relay*: enter your domain, *Show code* and enter
-the code at the relay. The whole setup step by step:
-**[Proxmox relay guide](docs/proxmox.en.md)**.
-
 ### Several PCs
 
 If you run Julia on several PCs, they sync **conversations, memory, routines and reminders**
@@ -383,15 +350,14 @@ form (assistant, female, male or neutral) and your own pronouns. The name appear
 
 ## Installation
 
-**Easiest:** download [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai-web/releases/latest/download/Julia-AI-Setup.exe)
+**Easiest:** download [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
 and double-click it – no admin rights, just for your user account. The website with the
-checksum: **https://moinmornhart.github.io/julia-ai-web/**. The installer isn’t signed yet; if
+checksum: **https://github.com/MoinMornhart/julia-ai**. The installer isn’t signed yet; if
 Windows says “Windows protected your PC”, click “More info” and then “Run anyway”.
 
 On first start the setup opens: first name, AI provider with key and the folders where Julia may
 write without asking. Keys are stored encrypted with Windows (DPAPI).
 
-<!-- privat -->
 <details>
 <summary><b>From source</b></summary>
 
@@ -408,7 +374,6 @@ npm start
 Whisper ships ready in `vendor/whisper` (refresh with `node scripts/whisper-holen.js`). If
 `npm start` says Electron is missing: run `node node_modules/electron/install.js`.
 </details>
-<!-- /privat -->
 
 ## Usage
 
@@ -449,7 +414,6 @@ Everything is in `%APPDATA%\Julia`. Updates never touch this folder.
 | `whisper\` · `piper\` | speech model and natural voices, downloaded once |
 </details>
 
-<!-- privat -->
 ## For developers
 
 <details>
@@ -481,7 +445,6 @@ The screenshots in this README come from the demo mode with example data:
 $env:JULIA_DATEN = "$env:TEMP\julia-demo"; $env:JULIA_SCREENSHOTS = "docs\bilder"; npm start
 ```
 </details>
-<!-- /privat -->
 
 ## Limits
 
@@ -498,9 +461,3 @@ license and copyright notice stay intact. No warranty.
 Shipped with Julia: [whisper.cpp](https://github.com/ggml-org/whisper.cpp) (MIT). Downloaded
 once, not shipped: Whisper models, [Piper](https://github.com/rhasspy/piper) and the voices
 Thorsten and Kerstin (CC0).
-<!-- oeffentlich
-
-This repository holds the website, the guides and the installers. Check the download with
-`Get-FileHash .\Julia-AI-Setup.exe` against the SHA-256 checksum on the
-[website](https://moinmornhart.github.io/julia-ai-web/).
--->

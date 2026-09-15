@@ -8,11 +8,11 @@ const version = require('./version');
 const { Updater, hoechsterTag } = require('./updater');
 
 // Updates für die installierte Fassung (Julia-AI-Setup.exe). Statt Git-Tags
-// gelten hier die Releases im öffentlichen Repo julia-ai-web. Julia lädt den
+// gelten hier die Releases im öffentlichen Repo julia-ai. Julia lädt den
 // Installer erst nach deinem Ja und nach der laufenden Aufgabe, prüft ihn gegen
 // die SHA-512-Summe aus latest.yml und startet ihn nur, wenn sie stimmt.
 
-const REPO = 'MoinMornhart/julia-ai-web';
+const REPO = 'MoinMornhart/julia-ai';
 const API = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
 const DOWNLOAD = `https://github.com/${REPO}/releases/download/`;
 const MAX_GROESSE = 400 * 1024 * 1024;

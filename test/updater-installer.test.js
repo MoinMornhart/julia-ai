@@ -8,7 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { InstallerUpdater, latestYmlLesen } = require('../src/main/updater-installer');
 
-const DL = 'https://github.com/MoinMornhart/julia-ai-web/releases/download';
+const DL = 'https://github.com/MoinMornhart/julia-ai/releases/download';
 
 function aufbau({ exe = Buffer.from('MZ – Installer'), summe, urlExe } = {}) {
   const ordner = fs.mkdtempSync(path.join(os.tmpdir(), 'julia-upd-'));

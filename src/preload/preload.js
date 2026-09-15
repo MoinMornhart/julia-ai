@@ -8,7 +8,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
-  'zustand', 'pegel', 'sprache:hoert', 'sprache:teil', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'handy:status', 'sync:status', 'relay:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status', 'mcp:status',
+  'zustand', 'pegel', 'sprache:hoert', 'sprache:teil', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'sync:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status', 'mcp:status',
 ];
 
 contextBridge.exposeInMainWorld('julia', {
@@ -93,17 +93,11 @@ contextBridge.exposeInMainWorld('julia', {
   routineSpeichern: (r) => ipcRenderer.invoke('routinen:speichern', r),
   routineLoeschen: (id) => ipcRenderer.invoke('routinen:loeschen', String(id)),
   routineStarten: (id) => ipcRenderer.invoke('routinen:starten', String(id)),
-  handyStatus: () => ipcRenderer.invoke('handy:status'),
-  handyKoppeln: () => ipcRenderer.invoke('handy:koppeln'),
-  handyTrennen: () => ipcRenderer.invoke('handy:trennen'),
   syncStatus: () => ipcRenderer.invoke('sync:status'),
   syncCode: () => ipcRenderer.invoke('sync:code'),
   syncBeitreten: (d) => ipcRenderer.invoke('sync:beitreten', { code: String((d && d.code) || ''), adresse: String((d && d.adresse) || '') }),
   syncEntfernen: (id) => ipcRenderer.invoke('sync:entfernen', String(id || '')),
   syncJetzt: () => ipcRenderer.invoke('sync:jetzt'),
-  relayStatus: () => ipcRenderer.invoke('relay:status'),
-  relayKoppeln: () => ipcRenderer.invoke('relay:koppeln'),
-  relayTrennen: () => ipcRenderer.invoke('relay:trennen'),
   einrichtungFertig: () => ipcRenderer.invoke('einrichtung:fertig'),
   status: () => ipcRenderer.invoke('chat:status'),
   senden: (text, pfade) => ipcRenderer.invoke('chat:senden', text, Array.isArray(pfade) ? pfade : []),
