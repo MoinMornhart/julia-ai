@@ -491,6 +491,16 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'fenster_anordnen',
+    description: 'Ein Fenster auf seinem Monitor andocken oder anordnen (id aus fenster_auflisten). seite: links, rechts, oben, unten (Hälften), oben_links, oben_rechts, unten_links, unten_rechts (Viertel), mitte, maximieren, wiederherstellen.',
+    input_schema: { type: 'object', properties: { id: { type: 'integer' }, seite: { type: 'string', enum: win.FENSTER_SEITEN } }, required: ['id', 'seite'] },
+    einstufen: gruen,
+    async ausfuehren(e) {
+      const ok = await win.fensterAnordnen(e.id, e.seite);
+      return ok ? `Fenster ${e.seite === 'maximieren' ? 'maximiert' : e.seite === 'wiederherstellen' ? 'wiederhergestellt' : `nach ${e.seite} angedockt`}.` : 'Das Anordnen hat nicht geklappt (Fenster nicht gefunden?).';
+    },
+  },
+  {
     name: 'datei_schreiben',
     description: 'Datei anlegen oder überschreiben (UTF-8). Eine vorhandene Datei wird vorher automatisch gesichert. anhaengen=true hängt an.',
     input_schema: {

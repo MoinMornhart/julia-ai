@@ -27,3 +27,14 @@ test('Programm schließen ist GELB (kann ungespeicherte Arbeit betreffen)', () =
   assert.equal(e.kategorie, 'system');
   assert.match(e.beschreibung, /notepad/);
 });
+
+test('Fenster anordnen: Werkzeug ist GRÜN und kennt die Seiten', () => {
+  const w = finden('fenster_anordnen', {});
+  assert.equal(w.einstufen({ id: 1, seite: 'links' }).stufe, GRUEN);
+  const seiten = w.input_schema.properties.seite.enum;
+  for (const s of ['links', 'rechts', 'maximieren', 'oben_links', 'mitte', 'wiederherstellen']) assert.ok(seiten.includes(s), s);
+});
+
+test('Fenster anordnen: unbekannte Seite wird abgelehnt', async () => {
+  await assert.rejects(win.fensterAnordnen(1, 'quatsch'), /Unbekannte Anordnung/);
+});

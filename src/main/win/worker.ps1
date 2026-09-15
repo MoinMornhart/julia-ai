@@ -175,6 +175,37 @@ public static class JuliaWin {
     keybd_event(0x12, 0, 2, UIntPtr.Zero);
     return SetForegroundWindow(h);
   }
+
+  [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+  [DllImport("user32.dll")] static extern IntPtr MonitorFromWindow(IntPtr h, uint flags);
+  [StructLayout(LayoutKind.Sequential)] struct MONITORINFO { public int cbSize; public RECT rcMonitor; public RECT rcWork; public int dwFlags; }
+  [DllImport("user32.dll")] static extern bool GetMonitorInfo(IntPtr hMon, ref MONITORINFO mi);
+
+  // Fenster auf seinem Monitor andocken/maximieren. Gibt true zurück, wenn es klappte.
+  public static bool Anordnen(long id, string seite) {
+    var h = new IntPtr(id);
+    if (seite == "maximieren") { ShowWindow(h, 3); return true; }
+    if (seite == "wiederherstellen") { ShowWindow(h, 9); return true; }
+    if (IsIconic(h)) ShowWindow(h, 9);
+    var mi = new MONITORINFO(); mi.cbSize = Marshal.SizeOf(typeof(MONITORINFO));
+    if (!GetMonitorInfo(MonitorFromWindow(h, 2), ref mi)) return false;
+    int x0 = mi.rcWork.L, y0 = mi.rcWork.T, W = mi.rcWork.R - mi.rcWork.L, H = mi.rcWork.B - mi.rcWork.T;
+    int x = x0, y = y0, cx = W, cy = H;
+    switch (seite) {
+      case "links": cx = W / 2; break;
+      case "rechts": x = x0 + W / 2; cx = W - W / 2; break;
+      case "oben": cy = H / 2; break;
+      case "unten": y = y0 + H / 2; cy = H - H / 2; break;
+      case "oben_links": cx = W / 2; cy = H / 2; break;
+      case "oben_rechts": x = x0 + W / 2; cx = W - W / 2; cy = H / 2; break;
+      case "unten_links": y = y0 + H / 2; cx = W / 2; cy = H - H / 2; break;
+      case "unten_rechts": x = x0 + W / 2; y = y0 + H / 2; cx = W - W / 2; cy = H - H / 2; break;
+      case "mitte": cx = (int)(W * 0.6); cy = (int)(H * 0.7); x = x0 + (W - cx) / 2; y = y0 + (H - cy) / 2; break;
+      default: return false;
+    }
+    ShowWindow(h, 9); // erst wiederherstellen, sonst greift die Größe bei maximierten Fenstern nicht
+    return SetWindowPos(h, IntPtr.Zero, x, y, cx, cy, 0x4);
+  }
 }
 '@
 

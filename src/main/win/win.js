@@ -279,6 +279,12 @@ async function fokussieren(id) {
   return worker.ausfuehren(mitArgs({ id }, '[JuliaWin]::Fokus([int64]$a.id)'));
 }
 
+const FENSTER_SEITEN = ['links', 'rechts', 'oben', 'unten', 'oben_links', 'oben_rechts', 'unten_links', 'unten_rechts', 'mitte', 'maximieren', 'wiederherstellen'];
+async function fensterAnordnen(id, seite) {
+  if (!FENSTER_SEITEN.includes(seite)) throw new Error(`Unbekannte Anordnung "${seite}".`);
+  return worker.ausfuehren(mitArgs({ id, seite }, '[JuliaWin]::Anordnen([int64]$a.id, [string]$a.seite)'));
+}
+
 async function programmOeffnen(name, argumente) {
   await worker.ausfuehren(mitArgs({ name, argumente: argumente || '' }, `
 if ($a.argumente) { Start-Process -FilePath $a.name -ArgumentList $a.argumente } else { Start-Process -FilePath $a.name }
@@ -309,5 +315,5 @@ $z`), 15000);
 
 module.exports = {
   worker, aufwaermen, fensterAuflisten, vordergrund, vordergrundInfo, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
-  klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen, programmSchliessen, medien, kopierenNachHotkey,
+  klick, scrollen, tippen, taste, vkCodes, fokussieren, fensterAnordnen, FENSTER_SEITEN, programmOeffnen, programmSchliessen, medien, kopierenNachHotkey,
 };

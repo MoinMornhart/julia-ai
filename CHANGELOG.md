@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 5.2.0 – 2026-09-15
+- Julia ordnet jetzt Fenster an: links/rechts oder oben/unten andocken, in die vier Ecken, mittig, maximieren oder wiederherstellen
+
 ## 5.1.0 – 2026-09-15
 - Julia steuert jetzt Medien und Programme: Play/Pause, nächster/voriger Titel, lauter/leiser/stumm über die Systemtasten (für jeden Player) und schließt auf Wunsch ein Programm
 
