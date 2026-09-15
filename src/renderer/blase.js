@@ -25,6 +25,10 @@ let pegelZiel = 0;
 let zeit = 0;
 let oeffnung = 1;
 let letzte = performance.now();
+// Bildrate der Blase deckeln: 30 fps reichen für die ruhige Ambient-Animation
+// völlig und halbieren die CPU/GPU-Last gegenüber den vollen ~60 fps.
+const ZIEL_FPS = 30;
+let letzteZeichnung = 0;
 let farben = KLECKSE.map(() => [107, 92, 255]);
 
 function hex(h) {
@@ -188,6 +192,9 @@ function kreis(x, y, r) {
 }
 
 function zeichnen(jetzt) {
+  // Frames überspringen, bis das Bildraten-Fenster erreicht ist (spart CPU).
+  if (jetzt - letzteZeichnung < 1000 / ZIEL_FPS - 1) { requestAnimationFrame(zeichnen); return; }
+  letzteZeichnung = jetzt;
   const dt = Math.min(0.05, (jetzt - letzte) / 1000);
   letzte = jetzt;
   const tempo = blase ? blase.tempo : 1;

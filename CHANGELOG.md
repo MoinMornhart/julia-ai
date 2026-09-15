@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.3 – 2026-09-15
+- Weniger CPU-/GPU-Last durch die Blase: die animierte Kugel läuft jetzt mit gedeckelter Bildrate (30 statt rund 60 Bilder pro Sekunde) – sieht gleich aus, spart aber spürbar Rechenleistung, wenn die Blase an ist
+
 ## 1.4.2 – 2026-09-15
 - Klarere Meldung, wenn ein Modell ohne Bild-Unterstützung einen Screenshot bekommt: statt eines kryptischen Fehlers sagt Julia jetzt, dass das Modell keine Bilder versteht und man ein Bild-fähiges Modell wählen oder ohne Screenshots arbeiten soll
 
