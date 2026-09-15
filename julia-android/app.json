@@ -1,0 +1,19 @@
+{
+  "expo": {
+    "name": "Julia",
+    "slug": "julia-android",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "julia",
+    "userInterfaceStyle": "automatic",
+    "android": {
+      "package": "io.github.moinmornhart.julia",
+      "versionCode": 1
+    },
+    "ios": {
+      "bundleIdentifier": "io.github.moinmornhart.julia",
+      "supportsTablet": true
+    },
+    "plugins": ["expo-secure-store"]
+  }
+}

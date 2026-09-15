@@ -1,0 +1,303 @@
+import { useEffect, useRef, useState } from 'react';
+import {
+  ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable,
+  SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, useColorScheme, View,
+} from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import * as Speech from 'expo-speech';
+import { antwortStreamen, ANBIETER } from './src/anbieter';
+import {
+  einstellungenLesen, einstellungenSpeichern, gespraechLesen, gespraechSpeichern,
+  kostenAddieren, kostenLesen, schluesselLesen, schluesselSpeichern,
+} from './src/speicher';
+
+const sprache = (code) => (code === 'en' ? 'en-US' : 'de-DE');
+
+export default function App() {
+  const dunkel = useColorScheme() === 'dark';
+  const f = farben(dunkel);
+  const [ansicht, setAnsicht] = useState('chat');
+  const [einst, setEinst] = useState(null);
+  const [schluesselDa, setSchluesselDa] = useState(false);
+  const [nachrichten, setNachrichten] = useState([]);
+  const [kosten, setKosten] = useState({ usd: 0, anfragen: 0 });
+  const [bereit, setBereit] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const e = await einstellungenLesen();
+      setEinst(e);
+      setNachrichten(await gespraechLesen());
+      setSchluesselDa(!!(await schluesselLesen(e.anbieter)));
+      setKosten(await kostenLesen());
+      setBereit(true);
+    })();
+  }, []);
+
+  if (!bereit || !einst) {
+    return <View style={[s.mitte, { backgroundColor: f.grund }]}><ActivityIndicator color={f.akzent} /></View>;
+  }
+
+  return (
+    <SafeAreaView style={[s.flaeche, { backgroundColor: f.grund }]}>
+      <StatusBar style={dunkel ? 'light' : 'dark'} />
+      <View style={[s.kopf, { borderColor: f.linie }]}>
+        <Text style={[s.titel, { color: f.text }]}>{einst.name || 'Julia'}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
+          {kosten.anfragen > 0 && <Text style={{ color: f.schwach, fontSize: 12 }}>${kosten.usd.toFixed(3)} · {kosten.anfragen}</Text>}
+          {ansicht === 'chat' && nachrichten.length > 0 && (
+            <Pressable onPress={async () => { setNachrichten([]); await gespraechSpeichern([]); }} hitSlop={12}>
+              <Text style={[s.kopfKnopf, { color: f.akzent }]}>Neu</Text>
+            </Pressable>
+          )}
+          <Pressable onPress={() => setAnsicht(ansicht === 'chat' ? 'einstellungen' : 'chat')} hitSlop={12}>
+            <Text style={[s.kopfKnopf, { color: f.akzent }]}>{ansicht === 'chat' ? '⚙︎' : '‹ Chat'}</Text>
+          </Pressable>
+        </View>
+      </View>
+      {ansicht === 'chat'
+        ? (
+          <Chat
+            f={f} einst={einst} schluesselDa={schluesselDa} nachrichten={nachrichten}
+            setNachrichten={setNachrichten} setKosten={setKosten}
+            zuEinstellungen={() => setAnsicht('einstellungen')}
+          />
+        )
+        : (
+          <Einstellungen
+            f={f} einst={einst}
+            beiSpeichern={async (neu, neuerSchluessel) => {
+              setEinst(neu);
+              await einstellungenSpeichern(neu);
+              if (neuerSchluessel !== null) await schluesselSpeichern(neu.anbieter, neuerSchluessel);
+              setSchluesselDa(!!(await schluesselLesen(neu.anbieter)));
+              setAnsicht('chat');
+            }}
+          />
+        )}
+    </SafeAreaView>
+  );
+}
+
+function Chat({ f, einst, schluesselDa, nachrichten, setNachrichten, setKosten, zuEinstellungen }) {
+  const [text, setText] = useState('');
+  const [laeuft, setLaeuft] = useState(false);
+  const [fehler, setFehler] = useState('');
+  const liste = useRef(null);
+  const xhrRef = useRef(null);
+
+  function vorlesen(inhalt) {
+    try { Speech.stop(); Speech.speak(inhalt, { language: sprache(einst.sprachcode) }); } catch { /* TTS nicht verfügbar */ }
+  }
+
+  function stopp() {
+    if (xhrRef.current) { try { xhrRef.current.abort(); } catch { /* schon fertig */ } }
+    try { Speech.stop(); } catch { /* egal */ }
+  }
+
+  async function senden() {
+    const inhalt = text.trim();
+    if (!inhalt || laeuft) return;
+    setFehler('');
+    // Nutzer-Nachricht plus leere Assistenten-Blase, die sich beim Streamen füllt.
+    const basis = [...nachrichten, { rolle: 'user', text: inhalt }];
+    setNachrichten([...basis, { rolle: 'assistant', text: '' }]);
+    setText('');
+    setLaeuft(true);
+    const setzeAntwort = (t) => setNachrichten([...basis, { rolle: 'assistant', text: t }]);
+    try {
+      const schluessel = await schluesselLesen(einst.anbieter);
+      const r = await antwortStreamen({
+        anbieter: einst.anbieter, modell: einst.modell, schluessel, einstellungen: einst, verlauf: basis,
+        beiText: (t) => setzeAntwort(t),
+        beiXHR: (x) => { xhrRef.current = x; },
+      });
+      const neu = [...basis, { rolle: 'assistant', text: r.text }];
+      setNachrichten(neu);
+      await gespraechSpeichern(neu);
+      setKosten(await kostenAddieren(r.usd || 0));
+      if (einst.vorlesen) vorlesen(r.text);
+    } catch (e) {
+      if (e && e.abgebrochen) {
+        // Abgebrochen: das bereits Gestreamte behalten, wenn vorhanden.
+        setNachrichten((akt) => {
+          const letzte = akt[akt.length - 1];
+          const behalten = letzte && letzte.rolle === 'assistant' && letzte.text ? akt : basis;
+          gespraechSpeichern(behalten);
+          return behalten;
+        });
+      } else {
+        setNachrichten(basis);
+        await gespraechSpeichern(basis);
+        setFehler(e.message || 'Etwas ist schiefgelaufen.');
+      }
+    } finally {
+      xhrRef.current = null;
+      setLaeuft(false);
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView style={s.flaeche} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {!schluesselDa && (
+        <Pressable onPress={zuEinstellungen} style={[s.hinweis, { backgroundColor: f.hinweis }]}>
+          <Text style={{ color: f.text }}>Noch kein API-Schlüssel – hier eintragen, dann kann {einst.name} antworten.</Text>
+        </Pressable>
+      )}
+      <FlatList
+        ref={liste}
+        style={s.flaeche}
+        contentContainerStyle={{ padding: 12, gap: 8 }}
+        data={nachrichten}
+        keyExtractor={(_, i) => String(i)}
+        onContentSizeChange={() => liste.current && liste.current.scrollToEnd({ animated: true })}
+        ListEmptyComponent={<Text style={{ color: f.schwach, textAlign: 'center', marginTop: 40 }}>Schreib {einst.name} etwas.</Text>}
+        renderItem={({ item }) => {
+          const ich = item.rolle === 'user';
+          return (
+            <View style={[s.blase, ich ? { backgroundColor: f.akzent, alignSelf: 'flex-end' } : { backgroundColor: f.karte, alignSelf: 'flex-start' }]}>
+              <Text style={{ color: ich ? '#fff' : f.text }}>{item.text}</Text>
+              {!ich && (
+                <Pressable onPress={() => vorlesen(item.text)} hitSlop={8} style={{ marginTop: 4, alignSelf: 'flex-start' }}>
+                  <Text style={{ color: f.schwach, fontSize: 12 }}>🔊 vorlesen</Text>
+                </Pressable>
+              )}
+            </View>
+          );
+        }}
+      />
+      {laeuft && <ActivityIndicator style={{ marginBottom: 6 }} color={f.akzent} />}
+      {!!fehler && <Text style={{ color: '#e5484d', paddingHorizontal: 12, paddingBottom: 6 }}>{fehler}</Text>}
+      <View style={[s.eingabe, { borderColor: f.linie }]}>
+        <TextInput
+          style={[s.feld, { color: f.text }]}
+          placeholder={`${einst.name} etwas fragen …`}
+          placeholderTextColor={f.schwach}
+          value={text}
+          onChangeText={setText}
+          multiline
+        />
+        {laeuft
+          ? (
+            <Pressable onPress={stopp} style={[s.senden, { backgroundColor: '#e5484d' }]}>
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Stopp</Text>
+            </Pressable>
+          )
+          : (
+            <Pressable onPress={senden} disabled={!text.trim()} style={[s.senden, { backgroundColor: text.trim() ? f.akzent : f.karte }]}>
+              <Text style={{ color: text.trim() ? '#fff' : f.schwach, fontWeight: '600' }}>Senden</Text>
+            </Pressable>
+          )}
+      </View>
+    </KeyboardAvoidingView>
+  );
+}
+
+function Einstellungen({ f, einst, beiSpeichern }) {
+  const [name, setName] = useState(einst.name);
+  const [nutzer, setNutzer] = useState(einst.nutzer);
+  const [sprachcode, setSprachcode] = useState(einst.sprachcode);
+  const [anbieter, setAnbieter] = useState(einst.anbieter);
+  const [modell, setModell] = useState(einst.modell);
+  const [vorlesen, setVorlesen] = useState(einst.vorlesen !== false);
+  const [schluessel, setSchluessel] = useState('');
+  const [schluesselGeaendert, setSchluesselGeaendert] = useState(false);
+  const aktiv = ANBIETER.find((a) => a.id === anbieter) || ANBIETER[0];
+
+  // Anbieter gewechselt: den bisher gespeicherten Schlüssel dieses Anbieters laden (maskiert bleibt er leer).
+  useEffect(() => { setSchluessel(''); setSchluesselGeaendert(false); }, [anbieter]);
+
+  return (
+    <ScrollView style={s.flaeche} contentContainerStyle={{ padding: 16, gap: 16 }}>
+      <Feld f={f} label="Name der KI" wert={name} setWert={setName} platz="Julia" />
+      <Feld f={f} label="Dein Name (optional)" wert={nutzer} setWert={setNutzer} platz="z. B. Morni" />
+
+      <View style={{ gap: 6 }}>
+        <Text style={[s.label, { color: f.schwach }]}>Anbieter</Text>
+        <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+          {ANBIETER.map((a) => (
+            <Pressable key={a.id} onPress={() => { setAnbieter(a.id); setModell(a.standardModell); }} style={[s.wahl, { borderColor: f.linie }, anbieter === a.id && { backgroundColor: f.akzent, borderColor: f.akzent }]}>
+              <Text style={{ color: anbieter === a.id ? '#fff' : f.text }}>{a.name}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <Feld f={f} label="Modell" wert={modell} setWert={setModell} platz={aktiv.standardModell} />
+
+      <View style={{ gap: 6 }}>
+        <Text style={[s.label, { color: f.schwach }]}>Sprache</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {[['de', 'Deutsch'], ['en', 'English']].map(([code, t]) => (
+            <Pressable key={code} onPress={() => setSprachcode(code)} style={[s.wahl, { borderColor: f.linie }, sprachcode === code && { backgroundColor: f.akzent, borderColor: f.akzent }]}>
+              <Text style={{ color: sprachcode === code ? '#fff' : f.text }}>{t}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
+      <View style={[s.reihe, { borderColor: f.linie }]}>
+        <Text style={{ color: f.text, fontSize: 16 }}>Antworten vorlesen</Text>
+        <Switch value={vorlesen} onValueChange={setVorlesen} trackColor={{ true: f.akzent }} />
+      </View>
+
+      <View style={{ gap: 6 }}>
+        <Text style={[s.label, { color: f.schwach }]}>API-Schlüssel ({aktiv.name})</Text>
+        <TextInput
+          style={[s.feld1, { color: f.text, borderColor: f.linie }]}
+          placeholder={aktiv.schluesselHinweis}
+          placeholderTextColor={f.schwach}
+          value={schluessel}
+          onChangeText={(t) => { setSchluessel(t); setSchluesselGeaendert(true); }}
+          autoCapitalize="none"
+          autoCorrect={false}
+          secureTextEntry
+        />
+        <Text style={{ color: f.schwach, fontSize: 12 }}>Sicher im Android-Keystore, je Anbieter getrennt. Leer lassen ändert den gespeicherten Schlüssel nicht.</Text>
+      </View>
+
+      <Pressable
+        onPress={() => beiSpeichern(
+          { ...einst, name: name.trim() || 'Julia', nutzer: nutzer.trim(), sprachcode, anbieter, modell: modell.trim() || aktiv.standardModell, vorlesen },
+          schluesselGeaendert ? schluessel.trim() : null,
+        )}
+        style={[s.speichern, { backgroundColor: f.akzent }]}
+      >
+        <Text style={{ color: '#fff', fontWeight: '700' }}>Speichern</Text>
+      </Pressable>
+    </ScrollView>
+  );
+}
+
+function Feld({ f, label, wert, setWert, platz }) {
+  return (
+    <View style={{ gap: 6 }}>
+      <Text style={[s.label, { color: f.schwach }]}>{label}</Text>
+      <TextInput style={[s.feld1, { color: f.text, borderColor: f.linie }]} value={wert} onChangeText={setWert} placeholder={platz} placeholderTextColor={f.schwach} autoCapitalize="none" />
+    </View>
+  );
+}
+
+function farben(dunkel) {
+  return dunkel
+    ? { grund: '#0e0f13', karte: '#1b1d24', hinweis: '#2a2410', text: '#f2f3f5', schwach: '#8a8f98', linie: '#2a2d36', akzent: '#6b5cff' }
+    : { grund: '#f6f7f9', karte: '#ffffff', hinweis: '#fff7e0', text: '#14161a', schwach: '#6b7280', linie: '#e3e5ea', akzent: '#6b5cff' };
+}
+
+const s = StyleSheet.create({
+  flaeche: { flex: 1 },
+  mitte: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  kopf: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
+  titel: { fontSize: 18, fontWeight: '700' },
+  kopfKnopf: { fontSize: 16, fontWeight: '600' },
+  hinweis: { padding: 12, margin: 12, borderRadius: 10 },
+  blase: { maxWidth: '86%', padding: 10, borderRadius: 14 },
+  eingabe: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, padding: 8, borderTopWidth: StyleSheet.hairlineWidth },
+  feld: { flex: 1, maxHeight: 120, paddingHorizontal: 12, paddingVertical: 8, fontSize: 16 },
+  senden: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 },
+  label: { fontSize: 13, fontWeight: '600' },
+  feld1: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10, fontSize: 16 },
+  wahl: { borderWidth: 1, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 8 },
+  reihe: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderWidth: 1, borderRadius: 10, paddingHorizontal: 12, paddingVertical: 10 },
+  speichern: { padding: 14, borderRadius: 12, alignItems: 'center', marginTop: 8 },
+});
