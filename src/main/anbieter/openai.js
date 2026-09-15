@@ -102,7 +102,14 @@ function fehlerAus(status, text) {
     if (Array.isArray(j)) j = j[0];
     meldung = (j.error && (j.error.message || (typeof j.error === 'string' ? j.error : ''))) || j.message || j.detail || text;
   } catch { /* Klartext */ }
-  return Object.assign(new Error(String(meldung || `HTTP ${status}`).slice(0, 400)), { status });
+  meldung = String(meldung || `HTTP ${status}`);
+  // Häufiger Fall bei eigenen/anderen Anbietern: das gewählte Modell kann keine
+  // Bilder/Screenshots verarbeiten. Statt der kryptischen Anbieter-Meldung ein
+  // klarer Hinweis, was zu tun ist.
+  if (/\b(image|images|vision|multimodal|modalit|image_url)\b/i.test(meldung)) {
+    meldung = `Das gewählte Modell versteht offenbar keine Bilder/Screenshots. Wähle ein Modell mit Bild-Unterstützung, oder arbeite ohne Screenshots (z. B. „Seite abrufen“ für Webinhalte). Meldung des Dienstes: ${meldung}`;
+  }
+  return Object.assign(new Error(meldung.slice(0, 500)), { status, bildFehler: /versteht offenbar keine Bilder/.test(meldung) });
 }
 
 // Eine Runde: schickt den Verlauf, streamt den Text über beiText und liefert
@@ -208,4 +215,4 @@ async function modelleLaden({ url, schluessel, holen = (u, o) => globalThis.fetc
   return [...new Set(liste.map((m) => String(m.id || m.name || '').replace(/^models\//, '')).filter(Boolean))].sort();
 }
 
-module.exports = { runde, modelleLaden, verlaufUmwandeln, werkzeugeUmwandeln };
+module.exports = { runde, modelleLaden, verlaufUmwandeln, werkzeugeUmwandeln, fehlerAus };

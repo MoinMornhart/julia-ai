@@ -62,6 +62,20 @@ test('Eigene Adresse: HTTPS überall, HTTP nur lokal, nie mit Zugangsdaten', () 
   assert.throws(() => liste.urlPruefen('kein link'), /gültige/);
 });
 
+test('OpenAI-Fehler: Bild/Vision-Fehler wird zu einem klaren Hinweis', () => {
+  // Issue #18: „AI crasht, weil keine Vision" – ein Modell ohne Bild-Unterstützung
+  // liefert einen kryptischen Fehler; Julia macht daraus einen verständlichen Hinweis.
+  const e1 = openai.fehlerAus(400, JSON.stringify({ error: { message: 'This model does not support image input' } }));
+  assert.match(e1.message, /keine Bilder\/Screenshots|Bild-Unterstützung/);
+  assert.equal(e1.bildFehler, true);
+  const e2 = openai.fehlerAus(400, JSON.stringify({ error: { message: "invalid content type 'image_url'" } }));
+  assert.equal(e2.bildFehler, true);
+  // Normale Fehler bleiben unverändert (kein falscher Bild-Hinweis).
+  const e3 = openai.fehlerAus(401, JSON.stringify({ error: { message: 'Invalid API key' } }));
+  assert.match(e3.message, /Invalid API key/);
+  assert.notEqual(e3.bildFehler, true);
+});
+
 test('Eigene Adresse: voller Endpunkt wird auf die Basis gekürzt (kein doppeltes /chat/completions)', () => {
   // Issue #10: Nutzer gibt die volle Endpunkt-URL ein – Julia hängt selbst
   // /chat/completions an, also darf es hier nicht schon dranstehen.

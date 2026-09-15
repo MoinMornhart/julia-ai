@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.2 – 2026-09-15
+- Klarere Meldung, wenn ein Modell ohne Bild-Unterstützung einen Screenshot bekommt: statt eines kryptischen Fehlers sagt Julia jetzt, dass das Modell keine Bilder versteht und man ein Bild-fähiges Modell wählen oder ohne Screenshots arbeiten soll
+
 ## 1.4.1 – 2026-09-15
 - Abhängigkeiten aktualisiert: @anthropic-ai/sdk auf 0.126.0 und Electron auf 44.4.0 (kleinere, geprüfte Updates)
 
