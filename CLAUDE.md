@@ -43,6 +43,9 @@ Format: **Datum · Fehler · Ursache · Fix (welche Datei)**. Neueste oben.
 
 | Datum | Fehler | Ursache | Fix |
 |---|---|---|---|
+| 2026-09-15 | App startet mit schwarzem Fenster und crasht (Issue #7) | GPU-/Renderer-Absturz beim Start; Software-Rendering griff erst beim nächsten manuellen Start | Beim ersten Absturz im Startfenster sofort Software-Rendering setzen **und automatisch neu starten**; crasht es auch damit, klare Meldung statt Endlosschleife – [src/main/startpruefung.js](src/main/startpruefung.js) `gpuUeberwachen` |
+| 2026-09-15 | Minecraft: bleibt am Abgrund hängen, bis sie stirbt | Gefahrenwache fror das Vorwärts-Gehen auch während der Wegfindung ein → Livelock am Rand | Wache greift nur noch beim selbstgesteuerten Vorlaufen; bei aktiver Wegfindung weicht der Pathfinder selbst aus – [src/main/minecraft.js](src/main/minecraft.js) `_gefahrWache` |
+| 2026-09-15 | Minecraft: reißt beim Abbauen Truhen/Bauten ab | `_abbauen` grub jeden passenden Block im Umkreis, auch Wertvolles | Geschützte Blocktypen (Truhen, Öfen, Türen, Glas …) nur bei ausdrücklicher Nennung; kleinerer Suchradius – [src/main/minecraft.js](src/main/minecraft.js) `GESCHUETZT_ABBAU` |
 | 2026-09-15 | GitHub-Pages-Workflow bricht mit „Resource not accessible by integration" ab | `actions/configure-pages@v5` mit `enablement: true` darf Pages nicht selbst anlegen | Pages einmalig per API aktivieren (`gh api -X POST repos/…/pages -f build_type=workflow`), dann `enablement` aus dem Workflow entfernen – [.github/workflows/pages.yml](.github/workflows/pages.yml) |
 | 2026-09-15 | `git push` im Release-Skript abgelehnt („fetch first") | Remote hatte einen Commit voraus (parallel gepusht) | `git fetch` + `git rebase origin/main`, Tag mit `git tag -f` auf den neuen Commit verschieben, dann Commit **und** Tag pushen; danach GitHub-Release + Installer manuell nachholen |
 | 2026-09-15 | „Kann v0.7.0 nicht installieren" | Installer ist **nicht signiert** → Windows SmartScreen/Defender blockt eine unbekannte App | Workaround: Datei entsperren (Eigenschaften → Zulassen) bzw. „Weitere Informationen → Trotzdem ausführen". **Dauerhaft nur mit Code-Signing-Zertifikat** (kostenpflichtig); der Build signiert dann automatisch, sobald ein Zertifikat via `CSC_LINK`/`CSC_KEY_PASSWORD` bereitsteht |
@@ -58,11 +61,14 @@ Format: **Datum · Fehler · Ursache · Fix (welche Datei)**. Neueste oben.
 Immer wenn ein realer Fehler behoben wird: **hier eintragen** (welcher Fehler, wie gefixt),
 damit die Lösung dokumentiert ist und beim nächsten Mal sofort greift.
 
-## Offene Punkte aus Issue #3 (GPU/Diagnose)
+## Offene Punkte (Issues #3, #7 – GPU/Diagnose) & Roadmap
 
 - [x] GPU/Treiber beim Start ins Logbuch schreiben ([src/main/main.js](src/main/main.js), `GPU-INFO`).
 - [x] Fehler-Journal (diese Datei).
+- [x] Startcrash (schwarzes Fenster) selbst heilen: erster Absturz → Software-Rendering + Auto-Neustart (#7).
 - [ ] Opt-in-Diagnose: bereinigten Crash-Bericht auf Wunsch als Bug an VibeWork senden (mit Scrubber, ohne IP/Tokens).
 - [ ] Reparatur-/Diagnose-Start über Terminal mit Extra-Logging.
 - [ ] Wöchentliche, tokenschonende Selbstprüfung.
 - [ ] Treiber-/Abhängigkeitsprüfung im Installer.
+- [ ] **Multitasking** – mehrere Aufgaben/Aufträge gleichzeitig bzw. parallel verwalten (vom Nutzer gewünscht).
+- [ ] Bessere Android-Unterstützung (Issue #6): Shizuku/Termux-Ansatz, Bildschirmsteuerung ohne Root, tokensparend – großes Rechercheprojekt.

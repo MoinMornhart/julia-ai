@@ -152,10 +152,12 @@ async function fehlerDialog({ app, dialog, shell, titel = 'Julia', text, logDate
 // erste GPU-Absturz kurz nach dem Start, wird der Software-Rendering-Merker
 // SOFORT gesetzt. So startet Julia beim nächsten Mal sicher, selbst wenn sie
 // diesmal noch abstürzt, bevor der Neustart greift.
-function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, schwelle = GPU_SCHWELLE, jetzt = Date.now, startFensterMs = 20000 }) {
+function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, schwelle = GPU_SCHWELLE, jetzt = Date.now, startFensterMs = 20000 }) {
   let gpuAbstuerze = 0;
   let gemeldet = false;
+  let neugestartet = false;
   const start = jetzt();
+  const imStart = () => jetzt() - start < startFensterMs;
 
   const ausweichen = () => {
     if (gemeldet) return;
@@ -166,20 +168,37 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, schwelle 
     if (neustart) neustart();
   };
 
+  // Absturz gleich beim Start (schwarzes Fenster): einmal auf Software-Rendering
+  // umstellen und SOFORT neu starten, damit der Nutzer nicht auf ein totes Fenster
+  // starrt. Crasht es auch mit Software-Rendering, wird nicht endlos neu gestartet,
+  // sondern eine klare Meldung gezeigt.
+  const startAbsichern = (grund) => {
+    if (neugestartet || gemeldet) return;
+    if (!softwareRendering(datenOrdner)) {
+      neugestartet = true;
+      softwareRenderingSetzen(datenOrdner, true);
+      logbuch.schreiben('GPU', `${grund} beim Start – Software-Rendering ist ab jetzt aktiv, ich starte neu.`);
+      if (neustart) neustart();
+    } else {
+      gemeldet = true;
+      logbuch.schreiben('FATAL', `${grund} trotz Software-Rendering – Start abgesichert abgebrochen.`);
+      if (fatal) fatal(`${grund}: Julia startet nicht sauber, auch nicht mit Software-Grafik. Einzelheiten im Logbuch.`);
+    }
+  };
+
   const beiKind = (_e, d) => {
     logbuch.schreiben('CRASH', `Kindprozess weg: ${d.type}`, { grund: d.reason, code: d.exitCode });
     if (d.type === 'GPU' && d.reason !== 'clean-exit') {
       gpuAbstuerze += 1;
-      // GPU-Absturz gleich beim Start: den nächsten Start absichern, sofort.
-      if (jetzt() - start < startFensterMs && !softwareRendering(datenOrdner)) {
-        softwareRenderingSetzen(datenOrdner, true);
-        logbuch.schreiben('GPU', 'GPU-Absturz beim Start – Software-Rendering ist ab dem nächsten Start aktiv.');
-      }
+      if (imStart()) { startAbsichern('GPU-Absturz'); return; }
       if (gpuAbstuerze >= schwelle) ausweichen();
     }
   };
   const beiRenderer = (_e, _wc, d) => {
     logbuch.schreiben('CRASH', 'Renderer weg', { grund: d.reason, code: d.exitCode });
+    // Ein echter Renderer-Absturz beim Start (nicht sauber beendet/abgeschossen)
+    // führt zum schwarzen Fenster – gleich behandeln wie einen GPU-Absturz.
+    if (imStart() && /crashed|oom|launch-failed|integrity-failure|abnormal-exit/.test(String(d.reason || ''))) startAbsichern('Renderer-Absturz');
   };
 
   app.on('child-process-gone', beiKind);

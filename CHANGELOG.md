@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.2 – 2026-09-15
+- Julia heilt einen Grafik-Absturz beim Start jetzt selbst: statt schwarzem Fenster stellt sie automatisch auf Software-Grafik um und startet einmal neu; crasht es auch damit, kommt eine klare Meldung statt einer Endlosschleife
+
 ## 1.2.1 – 2026-09-15
 - Julia bleibt in Minecraft nicht mehr an Abgründen hängen: die Gefahrenwache friert sie nicht mehr mitten in der Wegfindung ein, sondern lässt den Pathfinder selbst um Lava und Abgründe herumlaufen
 

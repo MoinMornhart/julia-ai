@@ -2174,7 +2174,8 @@ if (!app.requestSingleInstanceLock()) {
     startpruefung.gpuUeberwachen({
       app, logbuch: startLog, datenOrdner: DATEN,
       melden: () => melden('Julia', t('start.gpu_software')),
-      neustart: () => { app.relaunch(); },
+      neustart: () => { beendenLaeuft = true; app.relaunch(); app.exit(0); },
+      fatal: (text) => startFatal(text),
     });
     // Grafikkarte und Treiber einmal ins Start-Logbuch schreiben (hilft bei
     // Grafikproblemen auf bestimmten PCs). Nur technische Werte, keine IP,

@@ -67,34 +67,74 @@ test('Start: Software-Rendering wird gemerkt und wieder vergessen', () => {
   }
 });
 
-test('Start: erst nach mehreren GPU-Abstürzen der Rückfall, und nur einmal', () => {
+function fakeApp() {
+  return {
+    _h: {},
+    on(ev, fn) { (this._h[ev] = this._h[ev] || []).push(fn); },
+    removeListener() {},
+    feuern(ev, ...a) { for (const fn of this._h[ev] || []) fn({}, ...a); },
+  };
+}
+
+test('Start: GPU-Absturz beim Start heilt sich sofort (Software-Rendering + ein Neustart)', () => {
   const o = ordner();
   try {
-    const zeilen = [];
-    const buch = { schreiben: (s, t) => zeilen.push(`${s} ${t}`) };
-    let gemeldet = 0;
-    let neugestartet = 0;
-    const app = {
-      _h: {},
-      on(ev, fn) { (this._h[ev] = this._h[ev] || []).push(fn); },
-      removeListener() {},
-      feuern(ev, ...a) { for (const fn of this._h[ev] || []) fn({}, ...a); },
-    };
-    sp.gpuUeberwachen({ app, logbuch: buch, datenOrdner: o, melden: () => gemeldet++, neustart: () => neugestartet++, schwelle: 2 });
+    let t = 1000;
+    let gemeldet = 0; let neugestartet = 0; let fatal = 0;
+    const app = fakeApp();
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, melden: () => gemeldet++, neustart: () => neugestartet++, fatal: () => fatal++, schwelle: 2, jetzt: () => t, startFensterMs: 20000 });
 
-    // Ein sauberer Renderer-Abgang zählt nicht als Absturz.
+    // Sauberer Abgang zählt nicht.
     app.feuern('render-process-gone', {}, { reason: 'clean-exit' });
-    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -2147483645 });
-    assert.equal(gemeldet, 0, 'ein Absturz meldet und startet noch nicht neu');
     assert.equal(neugestartet, 0);
-    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -2147483645 });
-    assert.equal(sp.softwareRendering(o), true, 'ab dem zweiten Absturz Software-Rendering');
+
+    // Erster GPU-Absturz im Startfenster: sofort Software-Rendering und einmal neu starten.
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
+    assert.equal(sp.softwareRendering(o), true);
+    assert.equal(neugestartet, 1);
+    assert.equal(gemeldet, 0);
+    // Kein endloses Neustarten bei weiteren Abstürzen.
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
+    app.feuern('render-process-gone', {}, { reason: 'crashed' });
+    assert.equal(neugestartet, 1);
+    assert.equal(fatal, 0);
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
+test('Start: Absturz trotz schon aktivem Software-Rendering meldet klar statt neu zu starten', () => {
+  const o = ordner();
+  try {
+    sp.softwareRenderingSetzen(o, true); // war schon aktiv
+    let neugestartet = 0; let fatal = 0;
+    const app = fakeApp();
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, neustart: () => neugestartet++, fatal: () => fatal++, jetzt: () => 1000, startFensterMs: 20000 });
+    app.feuern('render-process-gone', {}, { reason: 'crashed' });
+    assert.equal(neugestartet, 0, 'nicht in einer Schleife neu starten');
+    assert.equal(fatal, 1, 'stattdessen klare Fehlermeldung');
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
+test('Start: nach dem Startfenster erst ab der Schwelle der Software-Rückfall, und nur einmal', () => {
+  const o = ordner();
+  try {
+    let t = 1000; // Start des Startfensters …
+    let gemeldet = 0; let neugestartet = 0;
+    const app = fakeApp();
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, melden: () => gemeldet++, neustart: () => neugestartet++, schwelle: 2, jetzt: () => t, startFensterMs: 20000 });
+    t = 100000; // … jetzt weit danach
+
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
+    assert.equal(gemeldet, 0, 'ein Absturz reicht noch nicht');
+    app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
+    assert.equal(sp.softwareRendering(o), true);
     assert.equal(gemeldet, 1);
     assert.equal(neugestartet, 1);
-
-    // Weitere Abstürze melden nicht noch einmal.
     app.feuern('child-process-gone', { type: 'GPU', reason: 'crashed', exitCode: -1 });
-    assert.equal(gemeldet, 1);
+    assert.equal(gemeldet, 1, 'nur einmal');
   } finally {
     fs.rmSync(o, { recursive: true, force: true });
   }
