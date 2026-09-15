@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.2 – 2026-09-15
+- Besserer Installer: statt der stillen Ein-Klick-Installation führt jetzt ein Assistent durch die Einrichtung – mit Zielordner-Auswahl, Lizenz und Verknüpfungen (wie bei größeren Programmen)
+
 ## 1.3.1 – 2026-09-15
 - Reparatur-Start gegen schwarze Fenster: Julia lässt sich mit 'Julia AI.exe --reparatur' zwingend mit Software-Grafik starten, wenn die Grafikkarte beim Start Probleme macht
 

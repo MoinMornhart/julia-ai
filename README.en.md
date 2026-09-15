@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Starts more reliably & a better installer** – a setup wizard (choose the folder, license, shortcuts) instead of a silent one-click install; on a graphics crash Julia falls back to software rendering and restarts automatically (emergency start: `--reparatur`). See [Installation](#installation).
 - **Minecraft: more reliable & self-defending** – she now gets out of holes and up two blocks (placing blocks instead of tearing down your builds), **always defends herself** against mobs, and sleeps reliably – placing a bed from her inventory if needed. Plus, as before: `!spiel durch` up to the Ender Dragon, a daily logbook, and mining leaves chests, furnaces, doors and your builds untouched. See [Minecraft](#minecraft).
 - **Even more of your own apps** – alongside ToDoch, Streamo and VibeWork come **Patchfeld**, **Codewerk** and the **Content-Helper**: start learning sessions, check progress, plan posts and fetch ideas – all through your app's API. See [Works with your apps](#works-with-your-apps).
 - **VibeWork: run your projects** – on request Julia creates new projects, invites people to them and fetches the latest commit – via the VibeWork API (address + token in settings). See [Works with your apps](#works-with-your-apps).
@@ -73,7 +74,6 @@
 - **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
 - **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
 - **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
-- **Never dies silently on startup** – a self-check catches GPU crashes (falls back to software rendering) and shows a clear message with a log on startup problems.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 
