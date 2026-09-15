@@ -178,10 +178,18 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .konto.verbunden .konto-name small { color: var(--gruen); }
 .konto-einrichten { margin-top: 12px; }
 .konto + .konto { margin-top: 10px; }
-.app-dienst { padding: 12px 0; border-top: 1px solid var(--linie); }
-.app-dienst:first-of-type { border-top: none; }
-.app-dienst > strong { display: block; margin-bottom: 4px; }
-.app-dienst > strong small { font-weight: 400; }
+.app-dienst { padding: 14px 0; border-top: 1px solid var(--linie); }
+.app-dienst:first-of-type { border-top: none; padding-top: 4px; }
+.app-kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.app-logo { width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 17px; font-weight: 700; color: #fff; flex: none; }
+.app-logo.todoist { background: #e44332; }
+.app-logo.stremio { background: #7b5bbe; }
+.app-logo.vibework { background: #3a7afe; }
+.app-titel { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.app-titel strong { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.app-titel strong small { font-weight: 400; }
+.app-status { color: var(--text-3); font-size: 11px; }
+.app-dienst.verbunden .app-status { color: var(--gruen); font-weight: 600; }
 .zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 a.zweit { display: inline-block; color: var(--text); text-decoration: none; }
 .konto-logo.handy { background: linear-gradient(135deg, var(--akzent), color-mix(in srgb, var(--akzent) 55%, #000)); font-size: 15px; }

@@ -817,11 +817,11 @@ WERKZEUGE.push({
 });
 
 // Mit anderen Apps zusammenarbeiten: öffnen (GRÜN) und – wenn einmal verbunden –
-// direkt befüllen (Todoist-Aufgabe, Stremio-Bibliothek). Etwas nach außen an den
+// direkt befüllen (Todoist-Aufgabe, Streamo-Bibliothek). Etwas nach außen an den
 // Dienst senden ist GELB.
 WERKZEUGE.push({
   name: 'apps',
-  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Fokus). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für Todoist "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr" – Todoist versteht natürliche Sprache); für Stremio "liste_hinzufuegen" (text = Titel, optional typ film|serie – nimmt ihn in die Bibliothek/„Meine Liste“ auf) oder "suchen" (text = Titel). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
+  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Fokus). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für Todoist "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr" – Todoist versteht natürliche Sprache); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie – nimmt ihn in die Bibliothek/„Meine Liste“ auf) oder "suchen" (text = Titel). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
   input_schema: {
     type: 'object',
     properties: {
@@ -829,12 +829,12 @@ WERKZEUGE.push({
       aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen'] },
       text: { type: 'string' },
       faellig: { type: 'string', description: 'nur Todoist: Fälligkeit in natürlicher Sprache, z. B. "morgen 9 Uhr".' },
-      typ: { type: 'string', enum: ['film', 'serie'], description: 'nur Stremio.' },
+      typ: { type: 'string', enum: ['film', 'serie'], description: 'nur Streamo.' },
     },
     required: ['app', 'aktion'],
   },
   fremd: true,
-  // Etwas in eine App legen oder dort suchen geht nach außen (an Todoist/Stremio).
+  // Etwas in eine App legen oder dort suchen geht nach außen (an Todoist/Streamo).
   nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen'].includes(e.aktion),
   einstufen(e) {
     const { APPS } = require('./apps');
@@ -860,15 +860,15 @@ WERKZEUGE.push({
         return `In Todoist angelegt: „${r.inhalt}“${r.faellig ? ` (fällig ${r.faellig})` : ''}.`;
       }
       case 'suchen': {
-        if (e.app !== 'stremio') throw new Error('„suchen“ gibt es nur für Stremio.');
+        if (e.app !== 'stremio') throw new Error('„suchen“ gibt es nur für Streamo.');
         const l = await ctx.apps.stremioSuchen(e.text, { typ: e.typ });
         if (!l.length) return `Nichts zu „${e.text}“ gefunden.`;
-        return fremd('der Stremio-Suche', l.map((m) => `- ${m.name}${m.jahr ? ` (${m.jahr})` : ''} – ${m.typ === 'series' ? 'Serie' : 'Film'}`).join('\n'));
+        return fremd('der Streamo-Suche', l.map((m) => `- ${m.name}${m.jahr ? ` (${m.jahr})` : ''} – ${m.typ === 'series' ? 'Serie' : 'Film'}`).join('\n'));
       }
       case 'liste_hinzufuegen': {
-        if (e.app !== 'stremio') throw new Error('„liste_hinzufuegen“ gibt es nur für Stremio.');
+        if (e.app !== 'stremio') throw new Error('„liste_hinzufuegen“ gibt es nur für Streamo.');
         const r = await ctx.apps.stremioHinzufuegen(e.text, { typ: e.typ });
-        return `Zu deiner Stremio-Liste hinzugefügt: ${r.name}${r.jahr ? ` (${r.jahr})` : ''} – ${r.typ === 'series' ? 'Serie' : 'Film'}.`;
+        return `Zu deiner Streamo-Liste hinzugefügt: ${r.name}${r.jahr ? ` (${r.jahr})` : ''} – ${r.typ === 'series' ? 'Serie' : 'Film'}.`;
       }
       default:
         throw new Error(`Unbekannte Aktion "${e.aktion}".`);

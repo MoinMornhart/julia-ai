@@ -24,7 +24,7 @@ const APPS = {
     aktionen: ['oeffnen', 'aufgabe', 'status'],
   },
   stremio: {
-    name: 'Stremio',
+    name: 'Streamo',
     zweck: 'Streaming',
     oeffnen: 'stremio://',
     web: 'https://web.stremio.com',
@@ -135,27 +135,27 @@ class Apps {
   async stremioAnmelden({ email, passwort, authKey } = {}) {
     if (authKey) {
       const key = String(authKey).trim();
-      if (key.length < 20) throw new Error('Der Stremio-authKey ist zu kurz.');
+      if (key.length < 20) throw new Error('Der Streamo-authKey ist zu kurz.');
       this.tresor.schreiben('stremio', { token: key, email: String(email || '').trim() });
       return { email: String(email || '').trim() };
     }
     const mail = String(email || '').trim();
     const pw = String(passwort || '');
-    if (!mail || !pw) throw new Error('Für Stremio brauche ich deine E-Mail und dein Passwort (oder alternativ einen authKey).');
+    if (!mail || !pw) throw new Error('Für Streamo brauche ich deine E-Mail und dein Passwort (oder alternativ einen authKey).');
     const daten = await this._json(`${STREMIO_API}/login`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: 'Login', email: mail, password: pw, facebook: false }),
-    }, 'Stremio-Anmeldung');
+    }, 'Streamo-Anmeldung');
     const key = daten && daten.result && daten.result.authKey;
-    if (!key) throw new Error('Stremio hat keinen authKey zurückgegeben – E-Mail oder Passwort falsch?');
+    if (!key) throw new Error('Streamo hat keinen authKey zurückgegeben – E-Mail oder Passwort falsch?');
     this.tresor.schreiben('stremio', { token: key, email: mail });
     return { email: mail };
   }
 
   _stremioKey() {
     const key = (this.tresor.lesen('stremio') || {}).token;
-    if (!key) throw new Error('Stremio ist noch nicht verbunden. In den Einstellungen unter „Apps“ mit E-Mail und Passwort anmelden.');
+    if (!key) throw new Error('Streamo ist noch nicht verbunden. In den Einstellungen unter „Apps“ mit E-Mail und Passwort anmelden.');
     return key;
   }
 
@@ -166,7 +166,7 @@ class Apps {
     const typen = typ === 'film' ? ['movie'] : typ === 'serie' ? ['series'] : ['movie', 'series'];
     const treffer = [];
     for (const t of typen) {
-      const daten = await this._json(`${CINEMETA}/catalog/${t}/top/search=${encodeURIComponent(q)}.json`, {}, 'Stremio-Suche').catch(() => null);
+      const daten = await this._json(`${CINEMETA}/catalog/${t}/top/search=${encodeURIComponent(q)}.json`, {}, 'Streamo-Suche').catch(() => null);
       for (const m of (daten && daten.metas) || []) {
         treffer.push({ id: m.id, name: m.name, typ: m.type || t, jahr: m.releaseInfo || m.year || '', poster: m.poster || '' });
       }
@@ -179,7 +179,7 @@ class Apps {
   async stremioHinzufuegen(titel, { typ } = {}) {
     const key = this._stremioKey();
     const treffer = await this.stremioSuchen(titel, { typ });
-    if (!treffer.length) throw new Error(`In Stremio nichts zu „${titel}“ gefunden.`);
+    if (!treffer.length) throw new Error(`In Streamo nichts zu „${titel}“ gefunden.`);
     const m = treffer[0];
     const jetzt = new Date().toISOString();
     const eintrag = {
@@ -202,7 +202,7 @@ class Apps {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ authKey: key, collection: 'libraryItem', changes: [eintrag] }),
-    }, 'Stremio-Bibliothek');
+    }, 'Streamo-Bibliothek');
     return { name: m.name, typ: m.typ, jahr: m.jahr, id: m.id };
   }
 }

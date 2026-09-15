@@ -209,6 +209,10 @@ function appVerbinden() {
 function appsZeigen(s) {
   s = s || {};
   $('kontoApps').classList.toggle('verbunden', !!(s.todoist || s.stremio));
+  $('dienstTodoist').classList.toggle('verbunden', !!s.todoist);
+  $('dienstStremio').classList.toggle('verbunden', !!s.stremio);
+  $('todoistStatus').textContent = s.todoist ? tx('apps.verbunden') : tx('app.aus');
+  $('stremioStatus').textContent = s.stremio ? tx('apps.verbunden') : tx('app.aus');
   $('todoistTrennen').hidden = !s.todoist;
   $('todoistVerbinden').textContent = tx(s.todoist ? 'apps.neu_verbinden' : 'apps.verbinden');
   if (s.todoist) $('todoistToken').placeholder = tx('apps.verbunden');
@@ -241,6 +245,9 @@ function appsVerbinden() {
     else { $('stremioPw').value = ''; appsMeldung('stremioMeldung', tx('apps.verbunden')); }
   };
   $('stremioTrennen').onclick = async () => { const r = await julia.appsTrennen('stremio'); appsZeigen(r.status); appsMeldung('stremioMeldung', ''); };
+  $('todoistOeffnen').onclick = () => julia.appsOeffnen('todoist');
+  $('stremioOeffnen').onclick = () => julia.appsOeffnen('stremio');
+  $('vibeworkOeffnen').onclick = () => julia.appsOeffnen('vibework');
 }
 
 // --- Design ---

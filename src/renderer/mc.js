@@ -246,6 +246,7 @@
     laden();
   };
   $('mcZielStopp').onclick = async () => { await julia.mcZielStopp(); laden(); };
+  $('mcLogbuch').onclick = () => julia.minecraftLogbuchOeffnen();
   $('mcGruppeVergessen').onclick = async () => { await julia.mcGruppeVergessen(); laden(); };
   $('mcNeu').onclick = () => $('mcBeitreten').onclick();
   $('mcCrashWeg').onclick = async () => { await julia.mcTrennungWeg(); laden(); };

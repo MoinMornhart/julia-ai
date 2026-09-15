@@ -268,8 +268,15 @@
         <div class="konto-einrichten">
           <p class="hinweis" data-t="apps.text"></p>
 
-          <div class="app-dienst">
-            <strong>Todoist <small class="hinweis" data-t="apps.todoist_zweck"></small></strong>
+          <div class="app-dienst" id="dienstTodoist">
+            <div class="app-kopf">
+              <span class="app-logo todoist" aria-hidden="true">✓</span>
+              <div class="app-titel">
+                <strong>Todoist <small class="hinweis" data-t="apps.todoist_zweck"></small></strong>
+                <small class="app-status" id="todoistStatus"></small>
+              </div>
+              <button class="zweit klein" id="todoistOeffnen" data-t="apps.oeffnen"></button>
+            </div>
             <p class="hinweis" data-t="apps.todoist_hinweis"></p>
             <div class="feld">
               <label for="todoistToken" data-t="apps.todoist_token"></label>
@@ -282,8 +289,15 @@
             <small class="konto-meldung" id="todoistMeldung"></small>
           </div>
 
-          <div class="app-dienst">
-            <strong>Stremio <small class="hinweis" data-t="apps.stremio_zweck"></small></strong>
+          <div class="app-dienst" id="dienstStremio">
+            <div class="app-kopf">
+              <span class="app-logo stremio" aria-hidden="true">▶</span>
+              <div class="app-titel">
+                <strong>Streamo <small class="hinweis" data-t="apps.stremio_zweck"></small></strong>
+                <small class="app-status" id="stremioStatus"></small>
+              </div>
+              <button class="zweit klein" id="stremioOeffnen" data-t="apps.oeffnen"></button>
+            </div>
             <p class="hinweis" data-t="apps.stremio_hinweis"></p>
             <div class="zwei">
               <div class="feld">
@@ -302,8 +316,15 @@
             <small class="konto-meldung" id="stremioMeldung"></small>
           </div>
 
-          <div class="app-dienst">
-            <strong>VibeWork <small class="hinweis" data-t="apps.vibework_zweck"></small></strong>
+          <div class="app-dienst" id="dienstVibework">
+            <div class="app-kopf">
+              <span class="app-logo vibework" aria-hidden="true">🎧</span>
+              <div class="app-titel">
+                <strong>VibeWork <small class="hinweis" data-t="apps.vibework_zweck"></small></strong>
+                <small class="app-status" data-t="apps.vibework_frei"></small>
+              </div>
+              <button class="zweit klein" id="vibeworkOeffnen" data-t="apps.oeffnen"></button>
+            </div>
             <p class="hinweis" data-t="apps.vibework_hinweis"></p>
           </div>
         </div>

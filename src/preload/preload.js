@@ -106,6 +106,8 @@ contextBridge.exposeInMainWorld('julia', {
   appsTodoist: (token) => ipcRenderer.invoke('apps:todoist', String(token || '')),
   appsStremio: (daten) => ipcRenderer.invoke('apps:stremio', daten || {}),
   appsTrennen: (welche) => ipcRenderer.invoke('apps:trennen', String(welche || '')),
+  appsOeffnen: (welche) => ipcRenderer.invoke('apps:oeffnen', String(welche || '')),
+  minecraftLogbuchOeffnen: () => ipcRenderer.invoke('minecraft:logbuchOeffnen'),
   einrichtungFertig: () => ipcRenderer.invoke('einrichtung:fertig'),
   status: () => ipcRenderer.invoke('chat:status'),
   senden: (text, pfade) => ipcRenderer.invoke('chat:senden', text, Array.isArray(pfade) ? pfade : []),

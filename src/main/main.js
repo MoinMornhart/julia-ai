@@ -1373,6 +1373,15 @@ function ipcEinrichten() {
     if (welche === 'todoist' || welche === 'stremio') konten.tresor.loeschen(welche);
     return { status: agent.ctx.apps.verbunden() };
   });
+  ipc.handle('apps:oeffnen', async (_e, welche) => {
+    try { await win.programmOeffnen(require('./apps').zielZumOeffnen(welche)); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('minecraft:logbuchOeffnen', async () => {
+    const ordner = path.join(DATEN, 'minecraft-logbuch');
+    try { fs.mkdirSync(ordner, { recursive: true }); } catch { /* egal */ }
+    const fehler = await shell.openPath(ordner);
+    return { ok: !fehler, ordner, fehler: fehler || '' };
+  });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
