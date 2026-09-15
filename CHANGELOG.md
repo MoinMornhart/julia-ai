@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.9.0 – 2026-09-15
+- Julia baut in Minecraft auf Ansage einfache Strukturen aus vorhandenem Material – Turm, Mauer, Hütte oder Brücke, per Befehl wie '!bau turm 8' oder '!bau mauer 10 3'
+
 ## 4.8.1 – 2026-09-15
 - Das Proxmox-Relay installiert sich jetzt zuverlässig: Caddy wird über sein offizielles Paket-Repo geholt, weil es in Debian nicht vorinstalliert ist
 

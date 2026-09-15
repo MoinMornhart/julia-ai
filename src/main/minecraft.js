@@ -92,7 +92,7 @@ const TIERE = new Set(['cow', 'pig', 'chicken', 'sheep', 'rabbit', 'mooshroom'])
 const TIER_WOERTER = { kuh: 'cow', kuehe: 'cow', kühe: 'cow', schwein: 'pig', schweine: 'pig', huhn: 'chicken', huehner: 'chicken', hühner: 'chicken', schaf: 'sheep', schafe: 'sheep', hase: 'rabbit', hasen: 'rabbit', kaninchen: 'rabbit', pilzkuh: 'mooshroom' };
 // Das behält die Figur beim Einräumen: Waffen, Werkzeug, Rüstung, Essen, Fackeln.
 const BEHALTEN = /_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)$|^(shield|bow|crossbow|trident|arrow|torch)$/;
-const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf · !steig ein · !steig aus';
+const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !bau turm 8 · !bau mauer 10 3 · !bau hütte · !bau brücke 12 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf · !steig ein · !steig aus';
 // Brennstoff für den Ofen: Name (oder Endung) und wie viele Dinge eins schafft.
 const BRENNSTOFF = [['coal', 8], ['charcoal', 8], ['_planks', 1.5], ['_log', 1.5], ['stick', 0.5]];
 // Was die Figur beim Umsehen meldet.
@@ -326,6 +326,56 @@ function ortLesen({ x, y, z } = {}) {
 
 const ortText = (o) => (o.y == null ? `${o.x} / ${o.z}` : `${o.x} / ${o.y} / ${o.z}`);
 
+// Gängige Bausteine, in dieser Vorliebe – gebaut wird mit dem, wovon am meisten da ist.
+const BAUSTOFFE = ['cobblestone', 'cobbled_deepslate', 'dirt', 'stone', 'stone_bricks', 'netherrack', 'oak_planks', 'spruce_planks', 'birch_planks'];
+const BAU_NAMEN = { turm: 'einen Turm', mauer: 'eine Mauer', bruecke: 'eine Brücke', huette: 'eine Hütte' };
+const bauName = (b) => BAU_NAMEN[b] || 'etwas';
+
+// yaw → ganze Kardinalrichtung (vorne) und die Richtung nach rechts.
+function richtungAus(yaw) {
+  const sx = -Math.sin(yaw || 0);
+  const sz = -Math.cos(yaw || 0);
+  let fx = 0;
+  let fz = 0;
+  if (Math.abs(sx) >= Math.abs(sz)) fx = sx >= 0 ? 1 : -1;
+  else fz = sz >= 0 ? 1 : -1;
+  return { fx, fz, rx: -fz, rz: fx };
+}
+
+// Liste der zu setzenden Blockkoordinaten für eine Bauform, relativ zur Figur.
+// Immer von unten nach oben, damit jeder Block einen Nachbarn zum Anlehnen hat.
+function bauPlan(bau, dims, start, dir) {
+  const { fx, fz, rx, rz } = dir;
+  const L = Math.max(1, Math.min(64, Math.round(dims.laenge) || 5));
+  const H = Math.max(1, Math.min(16, Math.round(dims.hoehe) || 3));
+  const B = Math.max(1, Math.min(32, Math.round(dims.breite) || 5));
+  const cells = [];
+  const add = (x, y, z) => cells.push({ x, y, z });
+  const s = start;
+  if (bau === 'mauer') {
+    const off = Math.floor(L / 2);
+    for (let i = 0; i < L; i++) for (let h = 0; h < H; h++) add(s.x + fx + rx * (i - off), s.y + h, s.z + fz + rz * (i - off));
+  } else if (bau === 'bruecke') {
+    for (let i = 1; i <= L; i++) add(s.x + fx * i, s.y - 1, s.z + fz * i);
+  } else if (bau === 'huette') {
+    // Grundriss B breit × L tief, H hohe Wände, Türlücke vorn Mitte (auf vorhandenem Boden).
+    const offB = Math.floor(B / 2);
+    for (let h = 1; h <= H; h++) {
+      for (let d = 0; d < L; d++) {
+        for (let w = 0; w < B; w++) {
+          if (!(d === 0 || d === L - 1 || w === 0 || w === B - 1)) continue; // nur der Rand
+          if (d === 0 && w === offB && h <= 2) continue; // Türlücke
+          add(s.x + fx * d + rx * (w - offB), s.y - 1 + h, s.z + fz * d + rz * (w - offB));
+        }
+      }
+    }
+  }
+  const gesehen = new Set();
+  const out = [];
+  for (const c of cells) { const k = `${c.x},${c.y},${c.z}`; if (!gesehen.has(k)) { gesehen.add(k); out.push(c); } }
+  return out.slice(0, 512);
+}
+
 // "5 brot", "brot 5", "ein brot" → { anzahl, sache }
 function mengeLesen(roh) {
   const r = String(roh || '').trim().replace(/^(ein|eine|einen|a|an)\s+/i, '');
@@ -417,6 +467,12 @@ function befehlLesen(text, namen = []) {
   if (j) return { aufgabe: 'jagen', anzahl: Number(j[1] || j[3]) || null, tier: j[2] || null };
   const abbau = /^(?:bau(?:e)?\s+ab|abbauen|mine|hack(?:e)?)\s+(.+)$/.exec(s);
   if (abbau) { const m = mengeLesen(abbau[1]); return { aufgabe: 'abbauen', block: m.sache, anzahl: m.anzahl }; }
+  const bauen = /^(?:bau(?:e)?|build)\s+(?:mir\s+)?(?:ein(?:e|en)?\s+)?(turm|s(?:ä|ae)ule|mauer|wand|br(?:ü|ue)cke|h(?:ü|ue)tte|haus|raum|tower|pillar|wall|bridge|hut|house)(?:\s+(\d{1,3}))?(?:\s+(\d{1,3}))?(?:\s+(\d{1,3}))?$/.exec(s);
+  if (bauen) {
+    const art = { turm: 'turm', säule: 'turm', saeule: 'turm', tower: 'turm', pillar: 'turm', mauer: 'mauer', wand: 'mauer', wall: 'mauer', brücke: 'bruecke', bruecke: 'bruecke', bridge: 'bruecke', hütte: 'huette', huette: 'huette', haus: 'huette', raum: 'huette', hut: 'huette', house: 'huette' }[bauen[1]];
+    const n = [bauen[2], bauen[3], bauen[4]].map((x) => (x ? Number(x) : undefined));
+    return { aufgabe: 'bauen', bau: art, zahl1: n[0], zahl2: n[1], zahl3: n[2] };
+  }
   const gib = /^(?:gib|gebe|give)(?:\s+(?:mir|me))?\s+(.+)$/.exec(s);
   if (gib) { const m = mengeLesen(gib[1]); return { aufgabe: 'geben', item: m.sache, anzahl: m.anzahl }; }
   if (/^(ess|iss|essen|eat)( was| etwas)?$/.test(s)) return { aufgabe: 'essen' };
@@ -744,7 +800,7 @@ class Minecraft extends EventEmitter {
     return 'Gesendet.';
   }
 
-  aufgabe({ aufgabe: art, spieler, block, anzahl, item, x, y, z, tier } = {}) {
+  aufgabe({ aufgabe: art, spieler, block, anzahl, item, x, y, z, tier, bau, zahl1, zahl2, zahl3 } = {}) {
     if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
     if (art === 'hilfe') return HILFE; // hält nichts an
     const bot = this.bot;
@@ -817,6 +873,8 @@ class Minecraft extends EventEmitter {
         return this._einsteigen();
       case 'aussteigen':
         return this._aussteigen();
+      case 'bauen':
+        return this._bauen({ bau, zahl1, zahl2, zahl3, item });
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
@@ -1598,6 +1656,117 @@ class Minecraft extends EventEmitter {
     return `Ich stelle ${it.name} hin.`;
   }
 
+  // Welcher Block wird verbaut? Ein genannter, sonst der größte Stapel eines
+  // gängigen Baustoffs, den sie dabeihat.
+  _bauMaterial(item) {
+    const bot = this.bot;
+    const items = bot.inventory.items();
+    const platzierbar = (n) => !!bot.registry.blocksByName[n];
+    if (item) {
+      const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
+      const it = items.find((i) => namen.includes(i.name) && platzierbar(i.name));
+      return it ? it.name : null;
+    }
+    const zaehle = (n) => items.filter((i) => i.name === n).reduce((s, i) => s + i.count, 0);
+    for (const n of BAUSTOFFE) if (zaehle(n)) return n;
+    // Kein klassischer Baustoff? Dann der größte Blockstapel, aber nichts Wertvolles.
+    const bloecke = items.filter((i) => platzierbar(i.name) && !/diamond|emerald|gold|netherite|beacon|_ore$|spawner|shulker/.test(i.name));
+    bloecke.sort((a, b) => b.count - a.count);
+    return bloecke.length ? bloecke[0].name : null;
+  }
+
+  // Einen einzelnen Block an einer Weltposition setzen: hingehen, einen festen
+  // Nachbarn als Anlehnfläche finden, ausrüsten, platzieren.
+  async _setzeBlock(ort, itemName) {
+    const bot = this.bot;
+    const { Vec3 } = require('vec3');
+    const ziel = new Vec3(ort.x, ort.y, ort.z);
+    const da = bot.blockAt(ziel);
+    if (da && da.boundingBox === 'block') return true; // steht schon
+    if (bot.entity.position.distanceTo(ziel) > 4 && this.pf.goals && this.pf.goals.GoalNear) {
+      try { await bot.pathfinder.goto(new this.pf.goals.GoalNear(ort.x, ort.y, ort.z, 3)); } catch { /* nah genug versuchen */ }
+    }
+    const it = bot.inventory.items().find((i) => i.name === itemName);
+    if (!it) return false;
+    for (const [dx, dy, dz] of [[0, -1, 0], [0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) {
+      const ref = bot.blockAt(ziel.offset(dx, dy, dz));
+      if (ref && ref.boundingBox === 'block') {
+        try {
+          await bot.equip(it, 'hand');
+          await bot.placeBlock(ref, new Vec3(-dx, -dy, -dz));
+          return true;
+        } catch { return false; }
+      }
+    }
+    return false;
+  }
+
+  // Bauen nach Ansage: Turm, Mauer, Hütte oder Brücke aus vorhandenem Material.
+  _bauen({ bau, zahl1, zahl2, zahl3, item }) {
+    const bot = this.bot;
+    if (!bau) throw new Error('Diese Bauform kenne ich nicht. Ich kann Turm, Mauer, Hütte und Brücke.');
+    const material = this._bauMaterial(item);
+    if (!material) throw new Error(item ? `Ich habe kein ${item} zum Bauen dabei.` : 'Ich habe keine Bausteine dabei – gib mir z. B. Bruchstein, Holz oder Erde.');
+    if (bau === 'turm') return this._turm(Math.max(1, Math.min(64, zahl1 || 5)), material);
+    const dims = bau === 'mauer' ? { laenge: zahl1, hoehe: zahl2 }
+      : bau === 'bruecke' ? { laenge: zahl1 }
+        : { breite: zahl1, laenge: zahl2, hoehe: zahl3 }; // huette
+    const dir = richtungAus(bot.entity.yaw || 0);
+    const plan = bauPlan(bau, dims, bot.entity.position.floored(), dir);
+    if (!plan.length) throw new Error('Diese Bauform kenne ich nicht.');
+    const a = { art: 'bauen', bau, anzahl: plan.length, geschafft: 0 };
+    this.auftrag = a;
+    (async () => {
+      try {
+        for (const c of plan) {
+          if (this.auftrag !== a) return;
+          if (!this._bauMaterial(item)) break; // Material alle
+          if (await this._setzeBlock(c, material).catch(() => false)) a.geschafft += 1;
+        }
+        this._fertig(a, a.geschafft
+          ? `${bauName(bau)} gebaut – ${a.geschafft} von ${plan.length} Blöcken gesetzt${a.geschafft < plan.length ? ' (Rest ging nicht oder Material war alle)' : ''}.`
+          : 'Ich konnte hier keinen Block setzen – zu wenig Platz oder Material.');
+      } catch (e) {
+        this._fertig(a, `Bauen hat nicht geklappt: ${e.message}`);
+      } finally {
+        this._ausruesten();
+      }
+    })();
+    return `Ich baue ${bauName(bau)}.`;
+  }
+
+  // Turm: unter sich Block setzen und hochspringen, Schicht für Schicht.
+  _turm(hoehe, material) {
+    const bot = this.bot;
+    const { Vec3 } = require('vec3');
+    const a = { art: 'bauen', bau: 'turm', anzahl: hoehe, geschafft: 0 };
+    this.auftrag = a;
+    (async () => {
+      try {
+        for (let i = 0; i < hoehe; i++) {
+          if (this.auftrag !== a) return;
+          const it = bot.inventory.items().find((x) => x.name === material);
+          if (!it) break;
+          const unten = bot.blockAt(bot.entity.position.floored().offset(0, -1, 0));
+          if (!unten) break;
+          await bot.equip(it, 'hand');
+          bot.setControlState('jump', true);
+          await new Promise((r) => setTimeout(r, 130));
+          try { await bot.placeBlock(unten, new Vec3(0, 1, 0)); a.geschafft += 1; } catch { /* Sprung zu früh/spät */ }
+          bot.setControlState('jump', false);
+          await new Promise((r) => setTimeout(r, 180));
+        }
+        this._fertig(a, a.geschafft ? `Turm gebaut – ${a.geschafft} Blöcke hoch.` : 'Der Turm ging hier nicht – zu wenig Platz oder Material.');
+      } catch (e) {
+        this._fertig(a, `Bauen hat nicht geklappt: ${e.message}`);
+      } finally {
+        bot.setControlState('jump', false);
+        this._ausruesten();
+      }
+    })();
+    return 'Ich baue einen Turm.';
+  }
+
   // Etwas Bestimmtes in die Hand nehmen oder anziehen.
   _ausruestenMit(item) {
     const bot = this.bot;
@@ -1728,11 +1897,11 @@ const WERKZEUGE = [
   },
   {
     name: 'minecraft_aufgabe',
-    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit und meldet sich, wenn sie fertig ist. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). gehen: zu Koordinaten laufen (x, z, optional y). geben: dem Spieler etwas aus dem Inventar bringen (item, anzahl). sammeln: herumliegende Gegenstände aufheben. jagen: Tiere für Essen jagen (tier: kuh, schwein, huhn, schaf, hase; anzahl bis 10). herstellen: etwas craften (item z. B. fackel, werkbank, bretter, stock oder torch; anzahl) – im Inventar oder an einer Werkbank in der Nähe. verstauen: Inventar in die nächste Truhe legen (Waffen, Werkzeug, Essen bleiben). schlafen: ins nächste Bett. schmelzen: im Ofen in der Nähe schmelzen oder braten (item z. B. eisen, raw_iron, beef; anzahl) – Brennstoff nimmt die Figur selbst. platzieren: einen Block aus dem Inventar neben sich hinstellen (item z. B. werkbank, ofen, truhe). ausruesten: ein bestimmtes Teil in die Hand nehmen oder anziehen. essen: sofort etwas essen. stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen. Nach Aufgaben, die dauern, mit minecraft_warten auf das Ergebnis warten, bevor der nächste Schritt kommt.',
+    description: 'Der eigenen Spielfigur in Minecraft eine Aufgabe geben; sie läuft danach selbstständig in Echtzeit und meldet sich, wenn sie fertig ist. folgen: dem Spieler hinterher. kommen: zum Spieler laufen. beschuetzen: Monster in der Nähe des Spielers bekämpfen. kaempfen: Duell gegen einen Spieler – nur, wenn der Nutzer das will; Waffe und Rüstung legt die Figur selbst an. abbauen: Blöcke abbauen und einsammeln (block z. B. oak_log, stone, iron_ore oder holz, stein, eisen, kohle, diamant; anzahl bis 64). gehen: zu Koordinaten laufen (x, z, optional y). geben: dem Spieler etwas aus dem Inventar bringen (item, anzahl). sammeln: herumliegende Gegenstände aufheben. jagen: Tiere für Essen jagen (tier: kuh, schwein, huhn, schaf, hase; anzahl bis 10). herstellen: etwas craften (item z. B. fackel, werkbank, bretter, stock oder torch; anzahl) – im Inventar oder an einer Werkbank in der Nähe. verstauen: Inventar in die nächste Truhe legen (Waffen, Werkzeug, Essen bleiben). schlafen: ins nächste Bett. schmelzen: im Ofen in der Nähe schmelzen oder braten (item z. B. eisen, raw_iron, beef; anzahl) – Brennstoff nimmt die Figur selbst. platzieren: einen Block aus dem Inventar neben sich hinstellen (item z. B. werkbank, ofen, truhe). ausruesten: ein bestimmtes Teil in die Hand nehmen oder anziehen. essen: sofort etwas essen. einsteigen/aussteigen: in ein Boot, eine Lore oder auf ein Reittier in der Nähe steigen bzw. wieder aussteigen. bauen: eine einfache Struktur aus vorhandenem Material errichten (bau: turm, mauer, huette oder bruecke; Maße über zahl1/zahl2/zahl3 – turm: Höhe; mauer: Länge, Höhe; bruecke: Länge; huette: Breite, Tiefe, Höhe; optional item als Baustoff). stopp: alles anhalten. Ohne spieler gilt der Spielername aus den Einstellungen. Nach Aufgaben, die dauern, mit minecraft_warten auf das Ergebnis warten, bevor der nächste Schritt kommt.',
     input_schema: {
       type: 'object',
       properties: {
-        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'schmelzen', 'platzieren', 'ausruesten', 'essen', 'einsteigen', 'aussteigen', 'stopp'] },
+        aufgabe: { type: 'string', enum: ['folgen', 'kommen', 'beschuetzen', 'kaempfen', 'abbauen', 'gehen', 'geben', 'sammeln', 'jagen', 'herstellen', 'verstauen', 'schlafen', 'schmelzen', 'platzieren', 'ausruesten', 'essen', 'einsteigen', 'aussteigen', 'bauen', 'stopp'] },
         spieler: { type: 'string' },
         block: { type: 'string' },
         item: { type: 'string', description: 'für geben und herstellen, z. B. brot, fackel, diamant, oak_planks' },
@@ -1741,6 +1910,10 @@ const WERKZEUGE = [
         y: { type: 'number' },
         z: { type: 'number' },
         tier: { type: 'string', description: 'für jagen: kuh, schwein, huhn, schaf oder hase' },
+        bau: { type: 'string', enum: ['turm', 'mauer', 'huette', 'bruecke'], description: 'für bauen: die Bauform' },
+        zahl1: { type: 'number', description: 'für bauen: erstes Maß (turm=Höhe, mauer=Länge, bruecke=Länge, huette=Breite)' },
+        zahl2: { type: 'number', description: 'für bauen: zweites Maß (mauer=Höhe, huette=Tiefe)' },
+        zahl3: { type: 'number', description: 'für bauen: drittes Maß (huette=Höhe)' },
       },
       required: ['aufgabe'],
     },
@@ -1810,6 +1983,6 @@ module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile,
+  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile, richtungAus, bauPlan,
   itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };

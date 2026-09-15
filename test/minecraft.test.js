@@ -562,3 +562,65 @@ test('Minecraft: der Name darf irgendwo in der Nachricht stehen', () => {
   assert.deepEqual(mc.anrede('komm her, Julia', ['Julia']), { ok: true, rest: 'komm her' });
   assert.equal(mc.anrede('nichts hier', ['Julia']).ok, false);
 });
+
+test('Minecraft: Bau-Befehle und Maße', () => {
+  const b = (t) => mc.befehlLesen(t, ['Julia']);
+  assert.deepEqual(b('!bau turm 8'), { aufgabe: 'bauen', bau: 'turm', zahl1: 8, zahl2: undefined, zahl3: undefined });
+  assert.deepEqual(b('!bau eine mauer 10 3'), { aufgabe: 'bauen', bau: 'mauer', zahl1: 10, zahl2: 3, zahl3: undefined });
+  assert.deepEqual(b('bau mir eine hütte julia'), { aufgabe: 'bauen', bau: 'huette', zahl1: undefined, zahl2: undefined, zahl3: undefined });
+  assert.deepEqual(b('!bau brücke 12'), { aufgabe: 'bauen', bau: 'bruecke', zahl1: 12, zahl2: undefined, zahl3: undefined });
+  // "bau ab" bleibt Abbauen, nicht Bauen.
+  assert.deepEqual(b('!bau ab holz 10'), { aufgabe: 'abbauen', block: 'holz', anzahl: 10 });
+});
+
+test('Minecraft: Richtung und Bauplan-Geometrie', () => {
+  // yaw 0 blickt nach -Z (Norden); rechts ist +X.
+  assert.deepEqual(mc.richtungAus(0), { fx: 0, fz: -1, rx: 1, rz: 0 });
+  const dir = mc.richtungAus(0);
+  const start = { x: 10, y: 64, z: 10 };
+
+  // Mauer: Länge 3, Höhe 2 = 6 Blöcke, alle eins vor der Figur (z = 9).
+  const mauer = mc.bauPlan('mauer', { laenge: 3, hoehe: 2 }, start, dir);
+  assert.equal(mauer.length, 6);
+  assert.ok(mauer.every((c) => c.z === 9));
+  assert.ok(mauer.some((c) => c.y === 64) && mauer.some((c) => c.y === 65));
+
+  // Brücke: Länge 4 = 4 Blöcke, jeweils eins tiefer, nach vorn.
+  const bruecke = mc.bauPlan('bruecke', { laenge: 4 }, start, dir);
+  assert.equal(bruecke.length, 4);
+  assert.ok(bruecke.every((c) => c.y === 63));
+  assert.deepEqual(bruecke[0], { x: 10, y: 63, z: 9 });
+  assert.deepEqual(bruecke[3], { x: 10, y: 63, z: 6 });
+
+  // Hütte 3x3, Höhe 2: nur der Rand, Türlücke vorn – weniger als eine Vollwand.
+  const huette = mc.bauPlan('huette', { breite: 3, laenge: 3, hoehe: 2 }, start, dir);
+  assert.ok(huette.length > 0 && huette.length < 3 * 3 * 2);
+  assert.ok(huette.every((c) => c.y >= 64 && c.y <= 65));
+});
+
+test('Minecraft: bauen setzt Blöcke und meldet den Fortschritt', async () => {
+  const { Vec3 } = require('vec3');
+  const m = new mc.Minecraft();
+  m.pf = { goals: { GoalNear: class {} } };
+  const welt = {};
+  const key = (v) => `${v.x},${v.y},${v.z}`;
+  // Fester Boden auf y=63 rundherum, damit jeder Brückenblock einen Nachbarn hat.
+  const inv = [{ name: 'cobblestone', count: 64 }];
+  const meldungen = [];
+  m.on('ereignis', (e) => meldungen.push(e));
+  m.bot = {
+    entity: { position: new Vec3(10, 64, 10), yaw: 0 },
+    registry: { blocksByName: { cobblestone: { id: 1 } }, itemsByName: { cobblestone: { id: 1 } } },
+    inventory: { items: () => inv, slots: {} },
+    blockAt: (v) => welt[key(v)] || (v.y <= 63 ? { name: 'stone', boundingBox: 'block', position: v } : { name: 'air', boundingBox: 'empty', position: v }),
+    equip: async () => {},
+    placeBlock: async (ref, face) => { const p = { x: ref.position.x - face.x, y: ref.position.y - face.y, z: ref.position.z - face.z }; welt[key(p)] = { name: 'cobblestone', boundingBox: 'block', position: p }; },
+    pathfinder: { goto: async () => {}, setGoal: () => {} },
+    clearControlStates: () => {},
+    heldItem: null,
+  };
+  assert.equal(m.aufgabe({ aufgabe: 'bauen', bau: 'bruecke', zahl1: 3 }), 'Ich baue eine Brücke.');
+  await new Promise((r) => setTimeout(r, 40));
+  const fertig = meldungen.find((e) => e.art === 'fertig');
+  assert.ok(fertig && /Brücke gebaut/.test(fertig.text), fertig && fertig.text);
+});
