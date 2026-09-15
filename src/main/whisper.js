@@ -147,8 +147,9 @@ class Whisper extends EventEmitter {
   erkennen(wav, { sprachcode = 'de', stufe = 'genau' } = {}) {
     const programm = this.programm;
     if (!programm || !this.bereit(stufe)) return Promise.reject(new Error('Whisper ist nicht bereit.'));
-    // -bs 1 -bo 1: einfache Suche statt fünf Varianten – bei kurzen Sätzen gleich gut, viel schneller.
-    const args = ['-m', this.modellPfad(stufe), '-f', wav, '-l', sprachcode === 'en' ? 'en' : 'de', '-nt', '-np', '-sns', '-bs', '1', '-bo', '1', '-t', String(threads())];
+    // Beam-Suche (-bs 5 -bo 5) für die Genauigkeit – reines Greedy (1/1) verstand
+    // zu viel falsch. Das Tempo kommt vom kleineren Tonfenster (-ac) und den Threads.
+    const args = ['-m', this.modellPfad(stufe), '-f', wav, '-l', sprachcode === 'en' ? 'en' : 'de', '-nt', '-np', '-sns', '-bs', '5', '-bo', '5', '-t', String(threads())];
     const fenster = tonFenster(wavSekunden(wav));
     if (fenster) args.push('-ac', String(fenster));
     return new Promise((resolve, reject) => {

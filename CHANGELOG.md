@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.1 – 2026-09-15
+- Die Spracherkennung versteht wieder genau: Julia schreibt mit der präzisen Beam-Suche auf (statt der schnellen, aber ungenauen Variante) und wartet am Satzende wieder etwas länger, damit sie dich nicht mitten im Satz abschneidet
+
 ## 1.1.0 – 2026-09-15
 - Jarvis lässt sich jetzt auch per Sprache einschalten (sag einfach 'Jarvis', 'Julia' zurück); im Jarvis-Modus reicht 'Jarvis' als Weckwort und Julia spricht mit einer anderen, männlichen Stimme
 

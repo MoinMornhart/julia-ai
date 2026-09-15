@@ -49,8 +49,8 @@ try {
   }
   if (-not $eingestellt) { try { $rec.SetInputToDefaultAudioDevice() } catch { Aus 'E KEIN_MIKROFON'; exit 3 } }
   $rec.InitialSilenceTimeout = [TimeSpan]::FromSeconds(8)
-  $rec.EndSilenceTimeout = [TimeSpan]::FromSeconds(0.7)
-  $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.0)
+  $rec.EndSilenceTimeout = [TimeSpan]::FromSeconds(1.0)
+  $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.5)
   $null = Register-ObjectEvent -InputObject $rec -EventName AudioLevelUpdated -SourceIdentifier pegel
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechHypothesized -SourceIdentifier zwischen

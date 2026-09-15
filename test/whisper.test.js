@@ -113,7 +113,8 @@ test('Whisper: ruft whisper-cli richtig auf und liest den Text', async () => {
   assert.equal(a[a.indexOf('-f') + 1], 'C:\\tmp\\a.wav');
   assert.equal(a[a.indexOf('-m') + 1], w.modellPfad('klein'));
   for (const f of ['-nt', '-np', '-sns']) assert.ok(a.includes(f), f);
-  assert.equal(a[a.indexOf('-bs') + 1], '1', 'einfache Suche – schneller');
+  assert.equal(a[a.indexOf('-bs') + 1], '5', 'Beam-Suche – genauer');
+  assert.equal(a[a.indexOf('-bo') + 1], '5');
   assert.equal(aufruf.opts.windowsHide, true);
   await assert.rejects(w.erkennen('x.wav', { stufe: 'gibtsnicht' }), /nicht bereit/);
 });
