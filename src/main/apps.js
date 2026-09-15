@@ -178,6 +178,14 @@ class Apps {
     return { projekt: p, person: wer };
   }
 
+  // Einen (bereinigten) Bug/Diagnose-Bericht an VibeWork melden.
+  //   POST {basis}/bugs   { "title": "…", "body": "…" }   → { "id" }
+  async vibeworkBug(titel, text) {
+    const d = this._dienst('vibework');
+    const r = await this._json(`${d.basisUrl}/bugs`, { method: 'POST', headers: this._kopf(d), body: JSON.stringify({ title: String(titel || '').slice(0, 200), body: String(text || '').slice(0, 8000) }) }, 'VibeWork');
+    return { id: r && (r.id || r._id) };
+  }
+
   async vibeworkLetzterCommit(projekt) {
     const d = this._dienst('vibework');
     const p = String(projekt || '').trim();

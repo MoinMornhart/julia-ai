@@ -137,6 +137,9 @@ const STANDARD = {
     an: false, // Zugriff durch die Julia-Android-App im Heimnetz/VPN – standardmäßig aus
     port: 8770,
   },
+  diagnose: {
+    senden: false, // opt-in: bereinigte Diagnose-/Crash-Berichte an VibeWork melden dürfen (nie IP/Tokens)
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -211,6 +214,7 @@ function pruefen(schluessel, wert) {
     case 'freigabe.fremd':
     case 'sync.an':
     case 'appserver.an':
+    case 'diagnose.senden':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':

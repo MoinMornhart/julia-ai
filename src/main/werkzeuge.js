@@ -920,6 +920,30 @@ WERKZEUGE.push({
   },
 });
 
+// Diagnose: einen bereinigten technischen Bericht bauen (GRÜN, bleibt auf dem PC)
+// oder – nur wenn der Nutzer das eingeschaltet hat – an VibeWork melden (GELB,
+// nach außen). Es werden nie IP-Adressen, Tokens oder persönliche Daten gesendet.
+WERKZEUGE.push({
+  name: 'diagnose',
+  description: 'Technischen Diagnose-/Crash-Bericht erstellen. aktion "bericht": zeigt den bereinigten Bericht (Version, Windows, GPU/Treiber, bereinigte Logbuch-Zeilen – ohne IP, Tokens oder persönliche Daten). aktion "senden": meldet ihn als Bug an VibeWork – nur, wenn der Nutzer die Diagnose-Meldung in den Einstellungen eingeschaltet und VibeWork verbunden hat. Optional grund als kurzer Anlass.',
+  input_schema: { type: 'object', properties: { aktion: { type: 'string', enum: ['bericht', 'senden'] }, grund: { type: 'string' } }, required: ['aktion'] },
+  fremd: true,
+  nachAussen: (e) => e.aktion === 'senden',
+  einstufen(e) {
+    if (e.aktion === 'senden') return { stufe: GELB, kategorie: 'netz', grund: 'bereinigten Diagnose-Bericht an VibeWork senden', beschreibung: 'Diagnose-Bericht an VibeWork melden (bereinigt, ohne IP/Tokens)' };
+    return { ...gruen(), beschreibung: 'Diagnose-Bericht erstellen' };
+  },
+  async ausfuehren(e, ctx) {
+    if (!ctx.diagnoseBericht) throw new Error('Diagnose ist hier nicht verfügbar.');
+    const b = await ctx.diagnoseBericht(e.grund);
+    if (e.aktion === 'bericht') return fremd('der Diagnose', `${b.titel}\n\n${b.text}`);
+    if (!ctx.config.get('diagnose.senden')) throw new Error('Das Senden von Diagnose-Berichten ist aus. Der Nutzer kann es in den Einstellungen unter „System“ einschalten.');
+    if (!ctx.apps || !ctx.apps.verbunden().vibework) throw new Error('VibeWork ist nicht verbunden – dorthin kann ich den Bericht nicht melden.');
+    const r = await ctx.apps.vibeworkBug(b.titel, b.text);
+    return `Diagnose-Bericht an VibeWork gemeldet${r.id ? ` (Bug ${r.id})` : ''} – bereinigt, ohne IP oder Tokens.`;
+  },
+});
+
 // Gaming-Clip: löst die Aufnahme des Systems aus (Game Bar, NVIDIA, AMD). Die
 // Aufnahme bleibt auf dem PC, deshalb GRÜN.
 WERKZEUGE.push({

@@ -32,6 +32,8 @@ app.enableSandbox();
 // Start-Selbstprüfung: Logbuch, Flags und – noch vor app.whenReady – die
 // Entscheidung über Software-Rendering, damit Julia nie wortlos verschwindet.
 const startpruefung = require('./startpruefung');
+const diagnose = require('./diagnose');
+let letzteGpu = {}; // zuletzt erkannte GPU/Treiber, für den Diagnose-Bericht
 const startLog = startpruefung.logbuchOeffnen(DATEN);
 const startFlaggen = startpruefung.flaggenPruefen(process.argv);
 startLog.schreiben('START', 'Julia startet', {
@@ -2019,6 +2021,15 @@ async function start() {
     minecraftGruppe: () => mcGruppe(),
     stoppuhr: new (require('./zeit').Stoppuhr)(),
     apps: new (require('./apps').Apps)({ fetch: (u, o) => net.fetch(u, o), tresor: konten.tresor }),
+    // Bereinigter Diagnose-/Crash-Bericht (nie IP, Tokens oder persönliche Daten).
+    diagnoseBericht: (grund) => {
+      let logZeilen = [];
+      try { logZeilen = fs.readFileSync(startLog.datei, 'utf8').split(/\r?\n/).filter(Boolean).slice(-40); } catch { /* kein Logbuch */ }
+      return diagnose.bericht({
+        version: version(), windows: `${os.type()} ${os.release()}`, electron: process.versions.electron,
+        gpu: letzteGpu, software: startpruefung.softwareRendering(DATEN), logZeilen, grund: grund || '',
+      });
+    },
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),
@@ -2184,10 +2195,9 @@ if (!app.requestSingleInstanceLock()) {
       app.getGPUInfo('basic').then((g) => {
         const d = (g && g.auxAttributes) || {};
         const gpu = (g && g.gpuDevice && g.gpuDevice.find((x) => x && x.active)) || (g && g.gpuDevice && g.gpuDevice[0]) || {};
+        letzteGpu = { renderer: d.glRenderer || null, vendor: d.glVendor || null, treiber: d.driverVersion || d.driver_version || null };
         startLog.schreiben('GPU-INFO', 'Grafik erkannt', {
-          renderer: d.glRenderer || null, vendor: d.glVendor || null,
-          treiber: d.driverVersion || d.driver_version || null,
-          vendorId: gpu.vendorId || null, deviceId: gpu.deviceId || null,
+          ...letzteGpu, vendorId: gpu.vendorId || null, deviceId: gpu.deviceId || null,
           software: startpruefung.softwareRendering(DATEN) || null,
         });
       }).catch(() => { /* GPU-Info ist nur Diagnose, kein Starthindernis */ });

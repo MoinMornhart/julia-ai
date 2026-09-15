@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.0 – 2026-09-15
+- Neue opt-in Diagnose: Julia kann bei Grafik- oder Startproblemen einen rein technischen, bereinigten Bericht an VibeWork melden – niemals mit IP-Adressen, Tokens oder persönlichen Daten; einzuschalten unter Einstellungen → System, standardmäßig aus
+
 ## 1.2.2 – 2026-09-15
 - Julia heilt einen Grafik-Absturz beim Start jetzt selbst: statt schwarzem Fenster stellt sie automatisch auf Software-Grafik um und startet einmal neu; crasht es auch damit, kommt eine klare Meldung statt einer Endlosschleife
 

@@ -66,7 +66,7 @@ damit die Lösung dokumentiert ist und beim nächsten Mal sofort greift.
 - [x] GPU/Treiber beim Start ins Logbuch schreiben ([src/main/main.js](src/main/main.js), `GPU-INFO`).
 - [x] Fehler-Journal (diese Datei).
 - [x] Startcrash (schwarzes Fenster) selbst heilen: erster Absturz → Software-Rendering + Auto-Neustart (#7).
-- [ ] Opt-in-Diagnose: bereinigten Crash-Bericht auf Wunsch als Bug an VibeWork senden (mit Scrubber, ohne IP/Tokens).
+- [x] Opt-in-Diagnose: bereinigten Crash-/Diagnose-Bericht auf Wunsch als Bug an VibeWork senden ([src/main/diagnose.js](src/main/diagnose.js) mit Scrubber – nie IP/Tokens/PII; Werkzeug `diagnose`, Einstellung `diagnose.senden`, Standard aus).
 - [ ] Reparatur-/Diagnose-Start über Terminal mit Extra-Logging.
 - [ ] Wöchentliche, tokenschonende Selbstprüfung.
 - [ ] Treiber-/Abhängigkeitsprüfung im Installer.
