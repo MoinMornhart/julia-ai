@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 5.0.0 – 2026-09-15
+- Julia hat jetzt Schnell-Werkzeuge: rechnen, Einheiten umrechnen (Länge, Masse, Zeit, Daten, Temperatur und mehr), Text umwandeln (Groß/klein, Base64, JSON, zählen) und QR-Codes erzeugen – alles lokal
+
 ## 4.9.1 – 2026-09-15
 - Handy koppeln über ein VPN wie NetBird oder Tailscale klappt jetzt auch, wenn das VPN erst nach Julia startet: das HTTPS-Zertifikat deckt neue VPN-Adressen nachträglich ab, statt die Verbindung abzubrechen
 

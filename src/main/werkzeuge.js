@@ -727,6 +727,36 @@ const WERKZEUGE = [
   },
 ];
 
+// Schnell-Werkzeuge: rechnen, umrechnen, Text umwandeln, QR erzeugen – lokal, GRÜN.
+WERKZEUGE.push({
+  name: 'schnell',
+  description: 'Kleine Helfer, alles lokal: aktion "rechnen" (ausdruck z. B. "3*(4+5)", "200*15%", "2^10"), "umrechnen" (wert, von, nach – Länge, Masse, Zeit, Daten, Fläche, Geschwindigkeit, Temperatur, z. B. km→meile, kg→pfund, °C→°F, GB→MiB), "text" (text, art: gross, klein, titel, trim, umkehren, base64, base64_dekodieren, url, url_dekodieren, json, zaehlen), "qr" (text → QR-Code als Block-Grafik). Für Live-Währungskurse gibt es keine lokale Umrechnung – dafür die Websuche nutzen.',
+  input_schema: {
+    type: 'object',
+    properties: {
+      aktion: { type: 'string', enum: ['rechnen', 'umrechnen', 'text', 'qr'] },
+      ausdruck: { type: 'string' },
+      wert: { type: 'number' },
+      von: { type: 'string' },
+      nach: { type: 'string' },
+      text: { type: 'string' },
+      art: { type: 'string' },
+    },
+    required: ['aktion'],
+  },
+  einstufen: gruen,
+  async ausfuehren(e) {
+    const schnell = require('./schnell');
+    switch (e.aktion) {
+      case 'rechnen': return `${e.ausdruck} = ${schnell.rechnen(e.ausdruck)}`;
+      case 'umrechnen': return `${e.wert} ${e.von} = ${schnell.umrechnen(e.wert, e.von, e.nach)} ${e.nach}`;
+      case 'text': return schnell.textWandeln(e.text, e.art);
+      case 'qr': return `QR-Code für ${JSON.stringify(String(e.text || ''))}:\n${schnell.qrText(e.text)}`;
+      default: throw new Error(`Unbekannte Aktion "${e.aktion}".`);
+    }
+  },
+});
+
 // Gaming-Clip: löst die Aufnahme des Systems aus (Game Bar, NVIDIA, AMD). Die
 // Aufnahme bleibt auf dem PC, deshalb GRÜN.
 WERKZEUGE.push({
