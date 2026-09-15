@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Findet CPU-Fresser bei der PC-Steuerung** – Julia führt jetzt ein lokales Leistungs-Logbuch: pro Steuerungs-Aktion (Klick, Tippen, Screenshot …) hält sie nur Technisches fest – Dauer und ihren eigenen CPU-Verbrauch, **nie** Inhalte wie Text, Koordinaten oder Fenstertitel. So lässt sich eine CPU-Spitze einem Verursacher zuordnen. An den Entwickler geht davon höchstens eine bereinigte Zusammenfassung, und nur wenn du die Diagnose einschaltest.
 - **Handy-App als fertige APK zum Herunterladen** – du brauchst kein Expo-Konto mehr: GitHub baut die Android-App jetzt automatisch als installierbare `Julia.apk` (Release „[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Aufs Handy laden, Installation aus unbekannter Quelle erlauben, fertig. Siehe [Julia aufs Handy](#julia-aufs-handy).
 - **Startet zuverlässiger & besserer Installer** – ein Installations-Assistent (Zielordner wählbar, Lizenz, Verknüpfungen) statt stiller Ein-Klick-Installation; bei einem Grafik-Absturz stellt Julia automatisch auf Software-Grafik um und startet neu (Notfall-Start: `--reparatur`). Siehe [Installation](#installation).
 - **Minecraft: verlässlicher & wehrhaft** – sie kommt jetzt aus Löchern und zwei Blöcke hoch (setzt dafür Blöcke, statt deine Bauten abzureißen), **verteidigt sich immer selbst** gegen Monster und schläft zuverlässig – stellt notfalls ein Bett aus dem Inventar auf. Dazu wie gehabt: `!spiel durch` bis zum Enderdrachen, tägliches Logbuch, und beim Abbauen bleiben Truhen, Öfen, Türen und deine Bauten unangetastet. Siehe [Minecraft](#minecraft).
@@ -73,7 +74,6 @@
 - **VibeWork: Projekte steuern** – Julia legt auf Ansage neue Projekte an, lädt Leute dazu ein und holt dir den letzten Commit – über die VibeWork-API (Adresse + Token in den Einstellungen). Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
-- **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

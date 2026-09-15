@@ -5,6 +5,7 @@ const { EventEmitter } = require('events');
 const { Anthropic } = require('@anthropic-ai/sdk');
 const ampel = require('./ampel');
 const werkzeuge = require('./werkzeuge');
+const { PC_STEUERUNG } = require('./leistung');
 const anbieter = require('./anbieter/liste');
 const openai = require('./anbieter/openai');
 const { ClaudeCode, PRAEFIX } = require('./anbieter/claude-code');
@@ -446,7 +447,12 @@ class Agent extends EventEmitter {
         }
       }
 
-      const inhalt = await w.ausfuehren(e, this.ctx);
+      // PC-Steuerungs-Aktionen im Leistungs-Logbuch festhalten (nur Technik: Dauer
+      // und Julias eigener CPU-Verbrauch, kein Inhalt) – hilft, CPU-Spitzen zu
+      // finden, ohne beim Messen selbst Last zu erzeugen.
+      const inhalt = (this.ctx.leistung && PC_STEUERUNG.has(aufruf.name))
+        ? await this.ctx.leistung.messen(aufruf.name, () => w.ausfuehren(e, this.ctx))
+        : await w.ausfuehren(e, this.ctx);
       if (w.fremd) this.fremdKontakt = true;
       if (stufe.stufe === ampel.GELB) {
         const zusammenfassung = typeof inhalt === 'string' ? inhalt.slice(0, 500) : 'ok';

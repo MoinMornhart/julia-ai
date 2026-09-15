@@ -34,8 +34,15 @@ Wenn Logs oder Crash-Berichte den PC verlassen (nur **nach ausdrücklicher Zusti
   Fehlermeldung/Stacktrace (vorher von Pfaden/Namen bereinigt), ob Software-Rendering aktiv ist.
 - Vor dem Senden **bereinigen** (Scrubber): Benutzernamen aus Pfaden, alles, was wie Token/
   E-Mail/IP aussieht, ersetzen. Standard ist **aus**; der Nutzer wählt es bewusst.
-- Lokale Logbücher (`start.log`, Minecraft-Logbuch) bleiben auf dem PC und dürfen mehr enthalten;
-  sie werden nicht automatisch versendet.
+- Lokale Logbücher (`start.log`, Minecraft-Logbuch, PC-Steuerungs-Leistungslogbuch) bleiben auf
+  dem PC und dürfen mehr enthalten; sie werden nicht automatisch versendet.
+- **PC-Steuerung/Leistung (Issue #25):** Bei jeder Steuerungs-Aktion (Klick, Tippen, Screenshot,
+  Programm/Fenster) hält Julia lokal **nur Technisches** fest – Aktionsname (festes Vokabular),
+  Dauer und ihren **eigenen** CPU-Verbrauch (`process.cpuUsage()`, kein PowerShell → erzeugt beim
+  Messen keine Last) sowie ihren Speicher. **Nie** Inhalt: kein getippter Text, keine Koordinaten,
+  kein Fenstertitel, kein Screenshot-Inhalt. An den Dev geht davon nur eine **aggregierte,
+  bereinigte** Zusammenfassung, und nur bei eingeschalteter Diagnose (`diagnose.senden`, Standard
+  aus) – [src/main/leistung.js](src/main/leistung.js).
 
 ## Fehler-Journal
 

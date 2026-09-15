@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Finds CPU hogs during PC control** – Julia now keeps a local performance logbook: for each control action (click, type, screenshot …) it records only technical data – duration and its own CPU usage, **never** content like text, coordinates or window titles. That lets a CPU spike be traced to its cause. At most a scrubbed summary goes to the developer, and only if you turn diagnostics on.
 - **Phone app as a ready-to-install APK** – no Expo account needed anymore: GitHub now builds the Android app automatically as an installable `Julia.apk` (release "[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Download it on your phone, allow install from unknown sources, done. See [Julia on your phone](#julia-on-your-phone).
 - **Starts more reliably & a better installer** – a setup wizard (choose the folder, license, shortcuts) instead of a silent one-click install; on a graphics crash Julia falls back to software rendering and restarts automatically (emergency start: `--reparatur`). See [Installation](#installation).
 - **Minecraft: more reliable & self-defending** – she now gets out of holes and up two blocks (placing blocks instead of tearing down your builds), **always defends herself** against mobs, and sleeps reliably – placing a bed from her inventory if needed. Plus, as before: `!spiel durch` up to the Ender Dragon, a daily logbook, and mining leaves chests, furnaces, doors and your builds untouched. See [Minecraft](#minecraft).
@@ -73,7 +74,7 @@
 - **VibeWork: run your projects** – on request Julia creates new projects, invites people to them and fetches the latest commit – via the VibeWork API (address + token in settings). See [Works with your apps](#works-with-your-apps).
 - **Works together with your apps** – e.g. “Put milk on my ToDoch list” or “Add Iron Man to my Streamo list”. See [Works with your apps](#works-with-your-apps).
 - **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
-- **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
+
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 
 ## Contents

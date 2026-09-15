@@ -2052,14 +2052,25 @@ async function start() {
     minecraftGruppe: () => mcGruppe(),
     stoppuhr: new (require('./zeit').Stoppuhr)(),
     apps: new (require('./apps').Apps)({ fetch: (u, o) => net.fetch(u, o), tresor: konten.tresor }),
+    // Leistungs-Logbuch der PC-Steuerung: lokal, inhaltsfrei (nur Aktionsname,
+    // Dauer, Julias eigener CPU-Verbrauch). Bleibt auf dem PC; fließt nur als
+    // bereinigte Zusammenfassung in den opt-in-Diagnosebericht ein (siehe unten).
+    leistung: new (require('./leistung').Leistungslog)({ ordner: path.join(DATEN, 'leistung-logbuch') }),
     // Bereinigter Diagnose-/Crash-Bericht (nie IP, Tokens oder persönliche Daten).
     diagnoseBericht: (grund) => {
       let logZeilen = [];
       try { logZeilen = fs.readFileSync(startLog.datei, 'utf8').split(/\r?\n/).filter(Boolean).slice(-40); } catch { /* kein Logbuch */ }
-      return diagnose.bericht({
+      const b = diagnose.bericht({
         version: version(), windows: `${os.type()} ${os.release()}`, electron: process.versions.electron,
         gpu: letzteGpu, software: startpruefung.softwareRendering(DATEN), logZeilen, grund: grund || '',
       });
+      // Rein technische PC-Steuerungs-Kennzahlen anhängen (bereits bereinigt),
+      // damit CPU-Spitzen bei der Steuerung nachvollziehbar sind – ohne Inhalte.
+      try {
+        const l = ctx.leistung.berichtFuerDev();
+        if (l && !/keine Aktionen/.test(l)) b.text += `\n\n--- PC-Steuerung (Leistung, bereinigt) ---\n${l}`;
+      } catch { /* Leistungslog optional */ }
+      return b;
     },
   };
   agent = new Agent({

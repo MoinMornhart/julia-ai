@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.0 – 2026-09-16
+- PC-Steuerung: Julia führt jetzt ein lokales Leistungs-Logbuch (Dauer und eigener CPU-Verbrauch je Aktion, ohne Inhalte) – so lässt sich eine CPU-Spitze dem Verursacher zuordnen; an den Entwickler geht davon nur eine bereinigte Zusammenfassung, und nur bei eingeschalteter Diagnose
+
 ## 1.5.0 – 2026-09-16
 - Handy-App gibt es jetzt als fertige Android-APK zum direkten Herunterladen und Installieren – GitHub baut sie automatisch (kein Expo-Konto nötig), du findest sie beim Release android-latest
 
