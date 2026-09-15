@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.8.1 – 2026-09-15
+- Das Proxmox-Relay installiert sich jetzt zuverlässig: Caddy wird über sein offizielles Paket-Repo geholt, weil es in Debian nicht vorinstalliert ist
+
 ## 4.8.0 – 2026-09-14
 - Julia spielt Minecraft jetzt viel eigenständiger: sie schaut sich erst um, plant und arbeitet Schritt für Schritt ab – vom Holzschlagen über Werkzeuge, Essen, Eisen und Diamanten bis zum Nether und dem Enderdrachen, sodass du ihr auch sagen kannst 'spiel Minecraft durch'
 

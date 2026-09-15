@@ -73,7 +73,15 @@ DOMAIN="$1"
 QUELLE="$2"
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-apt-get install -y -qq --no-install-recommends ca-certificates curl nodejs npm caddy >/dev/null
+apt-get install -y -qq --no-install-recommends ca-certificates curl gnupg nodejs npm >/dev/null
+# Caddy liegt nicht in den Standard-Repos von Debian – das offizielle Repo einbinden
+# (die .deb.txt bringt die signed-by-Angabe schon mit).
+if ! command -v caddy >/dev/null 2>&1; then
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/gpg.key' | gpg --dearmor -o /usr/share/keyrings/caddy-stable-archive-keyring.gpg
+  curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' >/etc/apt/sources.list.d/caddy-stable.list
+  apt-get update -qq
+  apt-get install -y -qq caddy >/dev/null
+fi
 id julia-relay >/dev/null 2>&1 || useradd --system --home /var/lib/julia-relay --shell /usr/sbin/nologin julia-relay
 install -d -o julia-relay -g julia-relay -m 700 /var/lib/julia-relay
 printf 'JULIA_RELAY_DOMAIN=%s\n' "$DOMAIN" >/etc/julia-relay.env
