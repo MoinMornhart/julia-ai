@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.1 – 2026-09-15
+- Deine eigenen Apps ToDoch, Streamo und VibeWork werden jetzt einheitlich mit Domain und Anmeldedaten/API-Key verbunden (vorher waren ToDoch und Streamo versehentlich an fremde Dienste angebunden)
+
 ## 0.9.0 – 2026-09-15
 - Julia arbeitet jetzt auch mit VibeWork: sie legt auf Ansage Projekte an, lädt Leute zu einem Projekt ein und holt den letzten Commit – über die VibeWork-API, die du mit Adresse und Token in den Einstellungen verbindest
 

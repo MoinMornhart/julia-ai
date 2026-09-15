@@ -167,18 +167,20 @@ Besides the big tasks, Julia handles the small moves on the PC too – all local
 
 ## Works with your apps
 
-Julia works together with apps you already use. She can open any app by name (“Open Spotify”);
-for some, more is possible once you connect them under *Settings → Apps*:
+Julia works together with **your own apps**. For each app you enter its **domain (address)** and
+your **login or an API key** once under *Settings → Apps* – then Julia performs the actions
+directly through your app's API:
 
 | App | What Julia can do | Connect |
 |---|---|---|
-| **[ToDoch](https://todoist.com)** – tasks | “Put milk on my ToDoch list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task with its due date. | API token (ToDoch → Settings → Integrations → Developer) |
-| **[Streamo](https://www.stremio.com)** – movies & shows | “Add Iron Man to my Streamo list” – Julia looks up the title and adds it to your library; searching and opening too. | Sign in with your Streamo account (password not stored, only the access key, encrypted) |
-| **VibeWork** – projects & commits | “Create a VibeWork project Website”, “Invite Anna to project Website”, “Get the latest commit of Website” – via the VibeWork API. | API address + token |
+| **ToDoch** – your tasks app | “Put milk on my ToDoch list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task. | Domain + API key |
+| **Streamo** – your movies/shows app | “Add Iron Man to my Streamo list” – Julia adds the title to your list; searching too. | Domain + API key |
+| **VibeWork** – your projects app | “Create a VibeWork project Website”, “Invite Anna to project Website”, “Get the latest commit of Website”. | Domain + API key |
 
-Sending data to an app (create a task, add to a list) is a **YELLOW** step of the traffic light –
-Julia asks first. Credentials, like all accounts, are stored encrypted on your PC only and never
-appear in the conversation.
+Sending data to an app (create a task, add to a list, create a project, invite) is a **YELLOW**
+step of the traffic light – Julia asks first. Domain and key, like all accounts, are stored
+encrypted on your PC only and never appear in the conversation. The expected API endpoints per app
+are documented as a contract at the top of [`src/main/apps.js`](src/main/apps.js).
 
 ## AI providers
 

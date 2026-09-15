@@ -173,19 +173,20 @@ Neben den großen Aufgaben erledigt Julia auch die kleinen Handgriffe am PC – 
 
 ## Zusammen mit deinen Apps
 
-Julia arbeitet mit Apps zusammen, die du sowieso nutzt. Öffnen kann sie jede App per Name
-(„Öffne Spotify“); für einige klappt aber mehr, wenn du sie einmal unter *Einstellungen → Apps*
-verbindest:
+Julia arbeitet mit **deinen eigenen Apps** zusammen. Du trägst je App einmal unter
+*Einstellungen → Apps* die **Domain (Adresse)** und deine **Anmeldedaten bzw. einen API-Key** ein
+– danach erledigt Julia die Aktionen direkt über die API deiner App:
 
 | App | Was Julia kann | Verbinden |
 |---|---|---|
-| **[ToDoch](https://todoist.com)** – Aufgaben | „Setz Milch auf meine ToDoch-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe samt Fälligkeit an. | API-Token (ToDoch → Einstellungen → Integrationen → Entwickler) |
-| **[Streamo](https://www.stremio.com)** – Filme & Serien | „Füg Iron Man zu meiner Streamo-Liste hinzu“ – Julia sucht den Titel und nimmt ihn in deine Bibliothek auf; auch durchsuchen und öffnen. | Anmeldung mit deinem Streamo-Konto (Passwort wird nicht gespeichert, nur der Zugangs-Schlüssel, verschlüsselt) |
-| **VibeWork** – Projekte & Commits | „Leg ein VibeWork-Projekt Website an“, „Lad Anna zu Projekt Website ein“, „Hol den letzten Commit von Website“ – über die VibeWork-API. | API-Adresse + Token |
+| **ToDoch** – deine Aufgaben-App | „Setz Milch auf meine ToDoch-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe an. | Domain + API-Key |
+| **Streamo** – deine Film-/Serien-App | „Füg Iron Man zu meiner Streamo-Liste hinzu“ – Julia nimmt den Titel in deine Liste auf; auch durchsuchen. | Domain + API-Key |
+| **VibeWork** – deine Projekt-App | „Leg ein VibeWork-Projekt Website an“, „Lad Anna zu Projekt Website ein“, „Hol den letzten Commit von Website“. | Domain + API-Key |
 
-Daten an eine App zu senden (Aufgabe anlegen, zur Liste hinzufügen) ist ein **GELB**-Schritt der
-Ampel – Julia fragt vorher. Zugangsdaten liegen wie alle Konten nur verschlüsselt auf deinem PC
-und tauchen nie im Gespräch auf.
+Daten an eine App zu senden (Aufgabe anlegen, zur Liste hinzufügen, Projekt anlegen, einladen) ist
+ein **GELB**-Schritt der Ampel – Julia fragt vorher. Domain und Schlüssel liegen wie alle Konten
+nur verschlüsselt auf deinem PC und tauchen nie im Gespräch auf. Die erwarteten API-Endpunkte je
+App stehen als Vertrag oben in [`src/main/apps.js`](src/main/apps.js).
 
 ## KI-Anbieter
 

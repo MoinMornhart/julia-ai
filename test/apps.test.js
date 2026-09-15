@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { Apps, APPS, appInfo, zielZumOeffnen } = require('../src/main/apps');
+const { Apps, APPS, appInfo } = require('../src/main/apps');
 
 // Einfacher Tresor im Speicher (wie der echte: null löscht ein Feld).
 function tresor(anfang = {}) {
@@ -23,9 +23,9 @@ function tresor(anfang = {}) {
 function fakeFetch(routen) {
   const aufrufe = [];
   const fn = async (url, optionen = {}) => {
-    aufrufe.push({ url, optionen, body: optionen.body ? JSON.parse(optionen.body) : null });
+    aufrufe.push({ url: String(url), optionen, body: optionen.body ? JSON.parse(optionen.body) : null });
     for (const [muster, antwort] of routen) {
-      if (url.includes(muster)) {
+      if (String(url).includes(muster)) {
         const a = typeof antwort === 'function' ? antwort(url, optionen) : antwort;
         return { ok: a.ok !== false, status: a.status || 200, text: async () => JSON.stringify(a.daten ?? {}) };
       }
@@ -36,142 +36,91 @@ function fakeFetch(routen) {
   return fn;
 }
 
-test('Apps: Registry und Öffnen-Ziele', () => {
+function verbunden(t, id, token = 'tok') {
+  t.schreiben(id, { basisUrl: `https://${id}.example.de`, token });
+}
+
+test('Apps: Registry kennt die eigenen Apps', () => {
   assert.equal(appInfo('Todoist').name, 'ToDoch');
-  assert.equal(zielZumOeffnen('stremio'), 'stremio://');
+  assert.equal(appInfo('stremio').name, 'Streamo');
+  assert.equal(appInfo('vibework').name, 'VibeWork');
   assert.throws(() => appInfo('gibtsnicht'), /Unbekannte App/);
 });
 
-test('Apps: Status zeigt verbunden / nicht verbunden', () => {
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor({ todoist: { token_verschluesselt: 'x' } }) });
-  // Der echte Tresor entschlüsselt; hier prüfen wir nur verbunden() über token.
+test('Apps: Verbinden prüft die Domain und meldet Status', () => {
   const t = tresor();
-  t.schreiben('todoist', { token: 'abc' });
-  const apps2 = new Apps({ fetch: fakeFetch([]), tresor: t });
-  const v = apps2.verbunden();
+  const apps = new Apps({ fetch: fakeFetch([]), tresor: t });
+  assert.throws(() => apps.verbindenApp('todoist', { basisUrl: 'keine-url' }), /Adresse/);
+  apps.verbindenApp('todoist', { basisUrl: 'https://todoch.example.de/', token: 'abc' });
+  const v = apps.verbunden();
   assert.equal(v.todoist, true);
+  assert.equal(v.todoistUrl, 'https://todoch.example.de');
   assert.equal(v.stremio, false);
 });
 
-test('Todoist: Token wird geprüft', () => {
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
-  assert.throws(() => apps.todoistVerbinden('zu-kurz'), /Token/);
-  apps.todoistVerbinden('0123456789abcdef0123');
-  assert.equal(apps.verbunden().todoist, true);
-});
-
-test('Todoist: Aufgabe wird über die REST-API angelegt', async () => {
+test('ToDoch: Aufgabe wird an {basis}/tasks mit Bearer-Token gepostet', async () => {
   const t = tresor();
-  t.schreiben('todoist', { token: '0123456789abcdef0123' });
-  const fetch = fakeFetch([['/tasks', { daten: { id: '99', content: 'Milch kaufen', due: { string: 'morgen' } } }]]);
+  verbunden(t, 'todoist', 'tok123');
+  const fetch = fakeFetch([['/tasks', { daten: { id: '9', text: 'Milch kaufen', due: 'morgen' } }]]);
   const apps = new Apps({ fetch, tresor: t });
   const r = await apps.todoistAufgabe('Milch kaufen', { faellig: 'morgen' });
   assert.equal(r.inhalt, 'Milch kaufen');
-  const auf = fetch.aufrufe[0];
-  assert.match(auf.url, /api\.todoist\.com/);
-  assert.equal(auf.optionen.method, 'POST');
-  assert.equal(auf.optionen.headers.Authorization, 'Bearer 0123456789abcdef0123');
-  assert.equal(auf.body.content, 'Milch kaufen');
-  assert.equal(auf.body.due_string, 'morgen');
-});
-
-test('Todoist: ohne Verbindung klare Fehlermeldung', async () => {
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
-  await assert.rejects(() => apps.todoistAufgabe('irgendwas'), /nicht verbunden/);
-});
-
-test('Stremio: Anmeldung merkt sich nur den authKey, nicht das Passwort', async () => {
-  const t = tresor();
-  const fetch = fakeFetch([['/api/login', { daten: { result: { authKey: 'KEYKEYKEYKEYKEYKEYKEY' } } }]]);
-  const apps = new Apps({ fetch, tresor: t });
-  await apps.stremioAnmelden({ email: 'du@example.com', passwort: 'geheim' });
-  assert.equal(t.daten.stremio.token, 'KEYKEYKEYKEYKEYKEYKEY');
-  assert.equal(t.daten.stremio.email, 'du@example.com');
-  assert.equal(t.daten.stremio.passwort, undefined);
-  // Login-Aufruf enthielt das Passwort, aber gespeichert wird es nicht.
-  assert.equal(fetch.aufrufe[0].body.password, 'geheim');
-});
-
-test('Stremio: authKey darf auch direkt hinterlegt werden', async () => {
-  const t = tresor();
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: t });
-  await apps.stremioAnmelden({ authKey: 'DIREKTER-KEY-1234567890' });
-  assert.equal(t.daten.stremio.token, 'DIREKTER-KEY-1234567890');
-});
-
-test('Stremio: Titel wird gesucht und in die Bibliothek gelegt', async () => {
-  const t = tresor();
-  t.schreiben('stremio', { token: 'KEYKEYKEYKEYKEYKEYKEY' });
-  const fetch = fakeFetch([
-    ['cinemeta', { daten: { metas: [{ id: 'tt0371746', name: 'Iron Man', type: 'movie', releaseInfo: '2008', poster: 'p.jpg' }] } }],
-    ['datastorePut', { daten: { success: true } }],
-  ]);
-  const apps = new Apps({ fetch, tresor: t });
-  const r = await apps.stremioHinzufuegen('Iron Man', { typ: 'film' });
-  assert.equal(r.name, 'Iron Man');
-  assert.equal(r.id, 'tt0371746');
-  const put = fetch.aufrufe.find((a) => a.url.includes('datastorePut'));
-  assert.ok(put, 'datastorePut wurde aufgerufen');
-  assert.equal(put.body.authKey, 'KEYKEYKEYKEYKEYKEYKEY');
-  assert.equal(put.body.collection, 'libraryItem');
-  assert.equal(put.body.changes[0]._id, 'tt0371746');
-  assert.equal(put.body.changes[0].removed, false);
-});
-
-test('Stremio: nichts gefunden gibt eine klare Meldung', async () => {
-  const t = tresor();
-  t.schreiben('stremio', { token: 'KEYKEYKEYKEYKEYKEYKEY' });
-  const fetch = fakeFetch([['cinemeta', { daten: { metas: [] } }]]);
-  const apps = new Apps({ fetch, tresor: t });
-  await assert.rejects(() => apps.stremioHinzufuegen('gibtsnichtxyz'), /nichts/i);
-});
-
-test('VibeWork: Verbinden prüft die API-Adresse', () => {
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
-  assert.throws(() => apps.vibeworkVerbinden({ basisUrl: 'keine-url' }), /Adresse/);
-  apps.vibeworkVerbinden({ basisUrl: 'https://api.vibework.test/v1/', token: 'geheim' });
-  assert.equal(apps.verbunden().vibework, true);
-});
-
-test('VibeWork: Projekt anlegen ruft POST /projects mit Bearer-Token', async () => {
-  const t = tresor();
-  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
-  const fetch = fakeFetch([['/projects', { daten: { id: 'p7', name: 'Website' } }]]);
-  const apps = new Apps({ fetch, tresor: t });
-  const r = await apps.vibeworkProjektAnlegen('Website');
-  assert.equal(r.id, 'p7');
-  assert.equal(r.name, 'Website');
   const a = fetch.aufrufe[0];
-  assert.equal(a.url, 'https://api.vibework.test/v1/projects');
+  assert.equal(a.url, 'https://todoist.example.de/tasks');
   assert.equal(a.optionen.method, 'POST');
   assert.equal(a.optionen.headers.Authorization, 'Bearer tok123');
-  assert.equal(a.body.name, 'Website');
+  assert.equal(a.body.text, 'Milch kaufen');
+  assert.equal(a.body.due, 'morgen');
 });
 
-test('VibeWork: Einladen postet an /projects/{id}/invites', async () => {
-  const t = tresor();
-  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
-  const fetch = fakeFetch([['/invites', { daten: { ok: true } }]]);
-  const apps = new Apps({ fetch, tresor: t });
-  const r = await apps.vibeworkEinladen('p7', 'anna@example.com');
-  assert.equal(r.person, 'anna@example.com');
-  const a = fetch.aufrufe[0];
-  assert.match(a.url, /\/projects\/p7\/invites$/);
-  assert.equal(a.body.email, 'anna@example.com');
+test('ToDoch: ohne Verbindung klare Fehlermeldung', async () => {
+  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
+  await assert.rejects(() => apps.todoistAufgabe('x'), /nicht verbunden/);
 });
 
-test('VibeWork: letzten Commit holen liest gängige Feldnamen', async () => {
+test('Streamo: Suchen liest results, Hinzufügen postet an /list', async () => {
   const t = tresor();
-  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
-  const fetch = fakeFetch([['/commits/latest', { daten: { sha: 'abc123def456', message: 'Fix', author: 'Anna', date: '2026-09-15' } }]]);
+  verbunden(t, 'stremio');
+  const fetch = fakeFetch([
+    ['/search', { daten: { results: [{ id: '1', title: 'Iron Man', type: 'film', year: '2008' }] } }],
+    ['/list', { daten: { title: 'Iron Man', type: 'film' } }],
+  ]);
   const apps = new Apps({ fetch, tresor: t });
+  const gefunden = await apps.stremioSuchen('Iron Man');
+  assert.equal(gefunden[0].name, 'Iron Man');
+  const r = await apps.stremioHinzufuegen('Iron Man', { typ: 'film' });
+  assert.equal(r.name, 'Iron Man');
+  const put = fetch.aufrufe.find((a) => a.url.includes('/list'));
+  assert.equal(put.optionen.method, 'POST');
+  assert.equal(put.body.title, 'Iron Man');
+  assert.equal(put.body.type, 'film');
+});
+
+test('VibeWork: Projekt anlegen, einladen, letzten Commit holen', async () => {
+  const t = tresor();
+  verbunden(t, 'vibework', 'tokV');
+  const fetch = fakeFetch([
+    ['/projects/p7/invites', { daten: { ok: true } }],
+    ['/projects/p7/commits/latest', { daten: { sha: 'abc123def4', message: 'Fix', author: 'Anna', date: '2026-09-15' } }],
+    ['/projects', { daten: { id: 'p7', name: 'Website' } }],
+  ]);
+  const apps = new Apps({ fetch, tresor: t });
+  const p = await apps.vibeworkProjektAnlegen('Website');
+  assert.equal(p.id, 'p7');
+  const anlegen = fetch.aufrufe[0];
+  assert.equal(anlegen.optionen.headers.Authorization, 'Bearer tokV');
+  const ein = await apps.vibeworkEinladen('p7', 'anna@example.com');
+  assert.equal(ein.person, 'anna@example.com');
   const c = await apps.vibeworkLetzterCommit('p7');
-  assert.equal(c.sha, 'abc123def456');
-  assert.equal(c.message, 'Fix');
+  assert.equal(c.sha, 'abc123def4');
   assert.equal(c.author, 'Anna');
 });
 
-test('VibeWork: ohne Verbindung klare Fehlermeldung', async () => {
-  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
-  await assert.rejects(() => apps.vibeworkProjektAnlegen('X'), /nicht verbunden/);
+test('Apps: Trennen und Öffnen-Ziel', () => {
+  const t = tresor();
+  verbunden(t, 'vibework');
+  const apps = new Apps({ fetch: fakeFetch([]), tresor: t });
+  assert.equal(apps.zielZumOeffnen('vibework'), 'https://vibework.example.de');
+  t.loeschen('vibework');
+  assert.throws(() => apps.zielZumOeffnen('vibework'), /nicht verbunden/);
 });

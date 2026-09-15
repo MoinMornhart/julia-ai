@@ -1363,21 +1363,15 @@ function ipcEinrichten() {
   ipc.handle('appserver:trennen', () => { appserver.trennen(); return appserver.status(); });
   ipc.handle('jarvis:setzen', (_e, an) => { config.set('design.jarvis', !!an); return !!an; });
   ipc.handle('apps:status', () => agent.ctx.apps.verbunden());
-  ipc.handle('apps:todoist', (_e, token) => {
-    try { agent.ctx.apps.todoistVerbinden(token); return { ok: true, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
-  });
-  ipc.handle('apps:stremio', async (_e, daten) => {
-    try { const r = await agent.ctx.apps.stremioAnmelden(daten || {}); return { ok: true, email: r.email, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
-  });
-  ipc.handle('apps:vibework', (_e, daten) => {
-    try { agent.ctx.apps.vibeworkVerbinden(daten || {}); return { ok: true, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
+  ipc.handle('apps:verbinden', (_e, id, daten) => {
+    try { agent.ctx.apps.verbindenApp(String(id || ''), daten || {}); return { ok: true, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
   });
   ipc.handle('apps:trennen', (_e, welche) => {
     if (['todoist', 'stremio', 'vibework'].includes(welche)) konten.tresor.loeschen(welche);
     return { status: agent.ctx.apps.verbunden() };
   });
   ipc.handle('apps:oeffnen', async (_e, welche) => {
-    try { await win.programmOeffnen(require('./apps').zielZumOeffnen(welche)); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+    try { await win.programmOeffnen(agent.ctx.apps.zielZumOeffnen(String(welche || ''))); return { ok: true }; } catch (e) { return { fehler: e.message }; }
   });
   ipc.handle('minecraft:logbuchOeffnen', async () => {
     const ordner = path.join(DATEN, 'minecraft-logbuch');

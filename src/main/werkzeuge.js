@@ -850,13 +850,13 @@ WERKZEUGE.push({
   },
   async ausfuehren(e, ctx) {
     if (!ctx.apps) throw new Error('App-Zusammenarbeit ist hier nicht verfügbar.');
-    const { appInfo, zielZumOeffnen } = require('./apps');
+    const { appInfo } = require('./apps');
     const info = appInfo(e.app);
     switch (e.aktion) {
       case 'status':
         return ctx.apps.status();
       case 'oeffnen':
-        await win.programmOeffnen(zielZumOeffnen(e.app));
+        await win.programmOeffnen(ctx.apps.zielZumOeffnen(e.app));
         return `${info.name} geöffnet. Zum Prüfen einen Screenshot machen.`;
       case 'aufgabe': {
         if (e.app !== 'todoist') throw new Error('„aufgabe“ gibt es nur für ToDoch.');
