@@ -33,12 +33,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Node einrichten
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
 
       - name: Java (JDK 17) einrichten
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -48,6 +48,20 @@ jobs:
 
       - name: Natives Android-Projekt erzeugen (expo prebuild)
         run: npx expo prebuild --platform android --no-install
+
+      - name: Splash-Farbe absichern (fehlt sonst je nach Expo-Version)
+        # Das prebuild-Template verweist in res/drawable/splashscreen.xml auf
+        # @color/splashscreen_background, erzeugt die Farbe aber nicht immer –
+        # dann bricht der Ressourcen-Schritt ab. Wir legen sie sicher an.
+        run: |
+          farben=android/app/src/main/res/values/colors.xml
+          if [ -f "$farben" ]; then
+            grep -q 'splashscreen_background' "$farben" || \
+              sed -i 's|</resources>|    <color name="splashscreen_background">#ffffff</color>\n</resources>|' "$farben"
+          else
+            mkdir -p android/app/src/main/res/values
+            printf '<?xml version="1.0" encoding="utf-8"?>\n<resources>\n    <color name="splashscreen_background">#ffffff</color>\n</resources>\n' > "$farben"
+          fi
 
       - name: APK bauen (Gradle, debug-signiert = direkt installierbar)
         run: |
