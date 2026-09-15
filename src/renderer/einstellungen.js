@@ -51,6 +51,7 @@ function texteAnwenden(daten) {
   document.documentElement.lang = daten.sprachcode;
   document.title = tx('einst.titel');
   document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = tx(el.dataset.t); });
+  document.querySelectorAll('[data-tp]').forEach((el) => { el.placeholder = tx(el.dataset.tp); });
   $('speichern').textContent = tx(einrichtung ? 'einst.fertig' : 'einst.speichern');
   if (cfg) {
     monitoreFuellen();
@@ -898,6 +899,31 @@ function mikroTestVerbinden() {
   };
 }
 
+// Filtert die Einstellungs-Abschnitte live nach dem Suchtext. Es werden ganze
+// Gruppen ein-/ausgeblendet (nie einzelne Zeilen), damit komplexe Unterlisten
+// wie Konten oder Sprache unangetastet bleiben. In der Ersteinrichtung ist die
+// Suche aus (dort führt der Assistent).
+function sucheEinrichten() {
+  const feld = $('einstSuche');
+  const leiste = $('suchLeiste');
+  if (!feld || !leiste) return;
+  if (einrichtung) { leiste.hidden = true; return; }
+  const filtern = () => {
+    const q = feld.value;
+    let treffer = 0;
+    document.querySelectorAll('.huelle > section.gruppe').forEach((sec) => {
+      const zeigen = window.Suche.passt(sec.textContent, q);
+      sec.classList.toggle('such-weg', !zeigen);
+      if (zeigen) treffer += 1;
+    });
+    $('suchLeer').hidden = !q.trim() || treffer > 0;
+  };
+  feld.addEventListener('input', filtern);
+  feld.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && feld.value) { e.preventDefault(); feld.value = ''; filtern(); }
+  });
+}
+
 async function init() {
   cfg = await julia.config();
   texteAnwenden(await julia.texte());
@@ -975,6 +1001,7 @@ async function init() {
   mcpZeigen(await julia.mcpStatus());
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
+  sucheEinrichten();
   if (einrichtung) $('name').focus();
 }
 

@@ -18,6 +18,11 @@
   </header>
 
   <div class="huelle">
+    <div class="such-leiste" id="suchLeiste">
+      <input id="einstSuche" type="search" data-tp="einst.suche_platzhalter" autocomplete="off" spellcheck="false" aria-label="Einstellungen durchsuchen">
+    </div>
+    <p class="such-leer" id="suchLeer" data-t="einst.suche_leer" hidden></p>
+
     <section class="willkommen" id="willkommen" hidden>
       <h2 data-t="einst.einrichtung_titel"></h2>
       <p data-t="einst.einrichtung_text"></p>
@@ -748,6 +753,7 @@
     <button class="primaer" id="speichern"></button>
   </footer>
 
+  <script src="suche.js"></script>
   <script src="einstellungen.js"></script>
 </body>
 </html>

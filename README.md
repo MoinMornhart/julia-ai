@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Einstellungen durchsuchen** – oben in den Einstellungen gibt es jetzt ein Suchfeld: tippe z. B. „Stimme", „Blase" oder „Diagnose", und Julia zeigt nur noch die passenden Abschnitte. Umlaute egal, mehrere Wörter grenzen weiter ein. Siehe [Bedienung](#bedienung).
 - **Installer & Update laufen auch bei geöffneter Julia** – der Assistent schließt eine noch laufende Julia jetzt automatisch, bevor er installiert (erst sanft, dann notfalls hart). Damit ist Schluss mit „Datei in Benutzung"-Fehlern bei Installation und automatischem Update. Siehe [Installation](#installation).
 - **Findet CPU-Fresser bei der PC-Steuerung** – Julia führt jetzt ein lokales Leistungs-Logbuch: pro Steuerungs-Aktion (Klick, Tippen, Screenshot …) hält sie nur Technisches fest – Dauer und ihren eigenen CPU-Verbrauch, **nie** Inhalte wie Text, Koordinaten oder Fenstertitel. So lässt sich eine CPU-Spitze einem Verursacher zuordnen. An den Entwickler geht davon höchstens eine bereinigte Zusammenfassung, und nur wenn du die Diagnose einschaltest.
 - **Handy-App als fertige APK zum Herunterladen** – du brauchst kein Expo-Konto mehr: GitHub baut die Android-App jetzt automatisch als installierbare `Julia.apk` (Release „[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Aufs Handy laden, Installation aus unbekannter Quelle erlauben, fertig. Siehe [Julia aufs Handy](#julia-aufs-handy).
@@ -73,7 +74,6 @@
 - **Minecraft: verlässlicher & wehrhaft** – sie kommt jetzt aus Löchern und zwei Blöcke hoch (setzt dafür Blöcke, statt deine Bauten abzureißen), **verteidigt sich immer selbst** gegen Monster und schläft zuverlässig – stellt notfalls ein Bett aus dem Inventar auf. Dazu wie gehabt: `!spiel durch` bis zum Enderdrachen, tägliches Logbuch, und beim Abbauen bleiben Truhen, Öfen, Türen und deine Bauten unangetastet. Siehe [Minecraft](#minecraft).
 - **Noch mehr eigene Apps** – zu ToDoch, Streamo und VibeWork kommen **Patchfeld**, **Codewerk** und der **Content-Helper** dazu: Lern-Sessions starten, Fortschritt abfragen, Beiträge planen und Ideen holen – alles über die API deiner App. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **VibeWork: Projekte steuern** – Julia legt auf Ansage neue Projekte an, lädt Leute dazu ein und holt dir den letzten Commit – über die VibeWork-API (Adresse + Token in den Einstellungen). Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
-- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

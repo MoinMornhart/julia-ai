@@ -156,6 +156,8 @@ const TEXTE = {
     'hinweis.zu_viele_runden': 'Nach 60 Arbeitsschritten angehalten. Sag Bescheid, wenn ich weitermachen soll.',
 
     'einst.titel': '{name} – Einstellungen',
+    'einst.suche_platzhalter': 'Einstellungen durchsuchen … (z. B. Stimme, Blase, Diagnose)',
+    'einst.suche_leer': 'Keine passende Einstellung gefunden.',
     'einst.einrichtung_titel': 'Willkommen. Einmal kurz einrichten.',
     'einst.einrichtung_text': '{name} braucht deinen Vornamen, einen KI-Anbieter (API-Schlüssel oder lokales Modell) und die Ordner, in denen ohne Rückfrage Dateien angelegt und geändert werden dürfen. Alles lässt sich später ändern.',
     'einst.assistent_name': 'Name deiner KI',
@@ -844,6 +846,8 @@ const TEXTE = {
     'hinweis.zu_viele_runden': 'Stopped after 60 steps. Tell me if I should carry on.',
 
     'einst.titel': '{name} – Settings',
+    'einst.suche_platzhalter': 'Search settings … (e.g. voice, orb, diagnostics)',
+    'einst.suche_leer': 'No matching setting found.',
     'einst.einrichtung_titel': 'Welcome. Quick one-time setup.',
     'einst.einrichtung_text': '{name} needs your first name, an AI provider (API key or local model) and the folders where files may be created and changed without asking. Everything can be changed later.',
     'einst.assistent_name': "Your AI's name",

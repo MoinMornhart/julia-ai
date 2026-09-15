@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.7.0 – 2026-09-16
+- Einstellungen lassen sich jetzt durchsuchen: ein Suchfeld oben filtert die Abschnitte live nach Stichwort (z. B. Stimme, Blase, Diagnose), unabhängig von Groß-/Kleinschreibung und Umlauten
+
 ## 1.6.1 – 2026-09-16
 - Installer und automatisches Update laufen jetzt auch, wenn Julia gerade geöffnet ist: der Assistent schließt eine laufende Julia vorher automatisch (erst sanft, dann notfalls hart), statt mit einem Datei-in-Benutzung-Fehler abzubrechen
 
