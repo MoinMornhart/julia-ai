@@ -75,7 +75,7 @@
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
 - **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
 
-Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe mal `jarvis` in den Chat. 😉
+Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 
 ## Inhalt
 

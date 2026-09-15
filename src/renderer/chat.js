@@ -466,6 +466,7 @@ async function init() {
   julia.on('chat:geleert', leeren);
   julia.on('chat:laden', ({ eintraege, hinweis }) => { gespraechLaden(eintraege); if (hinweis) systemzeile(hinweis); });
   julia.on('erinnerung', ({ text }) => systemzeile(`⏰ ${text}`, 'erinnerung'));
+  julia.on('system:zeile', ({ text, art }) => systemzeile(text, art || ''));
 
   $('text').focus();
 }

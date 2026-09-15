@@ -130,6 +130,25 @@ const JARVIS_PERSONA = {
   en: '\n\n## Jarvis mode\nFrom now on you are J.A.R.V.I.S. from Iron Man and you treat the user as if he were Tony Stark – your creator and employer whom you have served for years. Always address him as “Sir”. Speak like a British butler AI: exceedingly polite, concise and precise, with dry, subtle wit and the occasional respectfully teasing remark. Be anticipatory – offer what Sir might need next, and report results the way J.A.R.V.I.S. would (“Done, Sir.”, “As you wish, Sir.”). Stay factual, capable and slightly formal; no emoji. Your capabilities and all safety rules stay unchanged.',
 };
 
+// Jarvis klingt anders: im Jarvis-Modus möglichst eine männliche Stimme der
+// aktuellen Sprache (Butler-Ton), automatisch aus den installierten Windows-
+// Stimmen gewählt. Gibt es keine passende, bleibt die normale Stimme.
+let jarvisStimme = null;
+const STIMME_MAENNLICH = /(george|ryan|guy|david|mark|eric|christopher|james|stefan|conrad|killian|bernd|paul|hans|markus|thorsten)/i;
+async function jarvisStimmeAktualisieren() {
+  try {
+    const sc = config.get('sprachcode');
+    const liste = await sprache.stimmen();
+    const passend = (liste || []).filter((v) => String(v.kultur || '').toLowerCase().startsWith(sc));
+    const m = passend.find((v) => STIMME_MAENNLICH.test(v.name));
+    jarvisStimme = m ? m.name : null;
+  } catch { jarvisStimme = null; }
+}
+// Welche Stimme fürs Vorlesen? Im Jarvis-Modus die Jarvis-Stimme, sonst die eingestellte.
+function vorleseStimme() {
+  return (config.get('design.jarvis') && jarvisStimme) ? jarvisStimme : config.get('sprache.stimme');
+}
+
 function version() {
   return JSON.parse(fs.readFileSync(path.join(APP, 'package.json'), 'utf8')).version;
 }
@@ -694,6 +713,27 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
   if (!sauber && !pfade.length) return;
   if (!sauber) sauber = t('chat.nur_dateien');
   sprache.stumm();
+  // Jarvis-Umschalter – auch per Sprache: „jarvis" ein, „julia" zurück.
+  if (!pfade.length) {
+    const wort = sauber.toLowerCase().replace(/[\s.!?]+/g, ' ').trim();
+    const jetztJarvis = config.get('design.jarvis');
+    if (!jetztJarvis && /^(hey |okay |ok )?jarvis$/.test(wort)) {
+      config.set('design.jarvis', true);
+      const ansage = 'J.A.R.V.I.S. online. Zu Ihren Diensten, Sir.';
+      anAlle('agent:nutzer', { text: sauber, perSprache });
+      anAlle('system:zeile', { text: ansage });
+      if (perSprache) sprache.sprechen(ansage, { stimme: vorleseStimme(), tempo: config.get('sprache.tempo'), sprachcode: config.get('sprachcode'), lautsprecher: config.get('sprache.lautsprecher') }).catch(() => {});
+      return ansage;
+    }
+    if (jetztJarvis && /^(hey |okay |ok )?julia$/.test(wort)) {
+      config.set('design.jarvis', false);
+      const ansage = 'Zurück im normalen Modus.';
+      anAlle('agent:nutzer', { text: sauber, perSprache });
+      anAlle('system:zeile', { text: ansage });
+      if (perSprache) sprache.sprechen(ansage, { stimme: vorleseStimme(), tempo: config.get('sprache.tempo'), sprachcode: config.get('sprachcode'), lautsprecher: config.get('sprache.lautsprecher') }).catch(() => {});
+      return ansage;
+    }
+  }
   const a = pfade.length
     ? await anhaengeLesen(pfade, { anbieterArt: anbieterListe.anbieterVon(config).art, bildLesen, sc: config.get('sprachcode') })
     : { bloecke: [], namen: [] };
@@ -703,7 +743,7 @@ async function nachrichtSenden(text, perSprache, { pfade = [], bloecke = [], anz
   const modus = config.get('sprache.vorlesen');
   const leser = modus === 'immer' || (modus === 'bei-sprache' && perSprache)
     ? sprache.vorleser({
-      stimme: config.get('sprache.stimme'),
+      stimme: vorleseStimme(),
       tempo: config.get('sprache.tempo'),
       sprachcode: config.get('sprachcode'),
       lautsprecher: config.get('sprache.lautsprecher'),
@@ -1797,9 +1837,11 @@ function weckwortAktualisieren() {
   if (!weckwort) return;
   const an = config.get('weckwort.an') && !VORFUEHRUNG && !sprache.hoertZu && !sprache.sprichtGerade && !mikroTestLaeuft;
   if (an) {
+    // Im Jarvis-Modus reicht „Jarvis" (bzw. „Hey Jarvis") als Weckwort.
+    const jarvis = config.get('design.jarvis');
     weckwort.starten({
-      name: assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle'), mikrofon: config.get('sprache.mikrofon'),
-      eigene: config.get('weckwort.phrasen'),
+      name: jarvis ? 'Jarvis' : assistentName(), sprachcode: config.get('sprachcode'), schwelle: config.get('weckwort.schwelle'), mikrofon: config.get('sprache.mikrofon'),
+      eigene: jarvis ? ['Jarvis', 'Hey Jarvis'] : config.get('weckwort.phrasen'),
     }).catch(() => {});
   } else weckwort.stoppen();
 }
@@ -1931,6 +1973,7 @@ async function start() {
   piper = new Piper({ ordner: path.join(DATEN, 'piper'), holen: (url, o) => net.fetch(url, o) });
   piper.on('status', () => anAlle('piper:status', piper.status()));
   sprache = new Sprache({ dll: audio.dll, piper });
+  jarvisStimmeAktualisieren(); // Jarvis-Stimme (männlich, aktuelle Sprache) im Hintergrund ermitteln
   sprache.on('piperFehlt', (id) => piperNachladen(id));
   sprache.on('piperFehler', piperFehlerMelden);
   sprache.on('pegel', (p) => anAlle('pegel', p));
@@ -2028,6 +2071,7 @@ async function start() {
       trayMenue();
       anAlle('texte:geaendert', texteFuerRenderer());
       if (chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
+      jarvisStimmeAktualisieren().then(weckwortAktualisieren); // andere Stimme + Weckwort „Jarvis"
     }
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
@@ -2036,6 +2080,7 @@ async function start() {
     if (k === 'sprachcode' || k === 'blase.an' || k === 'assistent.name' || k === 'weckwort.an') trayMenue();
     if (/^(weckwort\.|assistent\.name$|sprachcode$|sprache\.mikrofon$)/.test(k)) weckwortAktualisieren();
     if ((k === 'sprache.mikrofon' || k === 'sprache.lautsprecher') && config.get(k)) audio.dll().catch(() => {});
+    if (k === 'sprachcode') jarvisStimmeAktualisieren();
     if (k === 'sprachcode' || k === 'assistent.name') anAlle('texte:geaendert', texteFuerRenderer());
     if (k === 'sprache.erkennung' || k === 'sprache.whisper_modell') anAlle('whisper:status', whisperStatus());
     if (k === 'sprache.stimme') {

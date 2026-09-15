@@ -75,7 +75,7 @@
 - **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
 - **Never dies silently on startup** – a self-check catches GPU crashes (falls back to software rendering) and shows a clear message with a log on startup problems.
 
-All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – try typing `jarvis` in the chat. 😉
+All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 
 ## Contents
 

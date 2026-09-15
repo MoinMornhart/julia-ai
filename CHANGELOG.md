@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.1.0 – 2026-09-15
+- Jarvis lässt sich jetzt auch per Sprache einschalten (sag einfach 'Jarvis', 'Julia' zurück); im Jarvis-Modus reicht 'Jarvis' als Weckwort und Julia spricht mit einer anderen, männlichen Stimme
+
 ## 1.0.1 – 2026-09-15
 - Grafikkarte und Treiber werden beim Start ins Logbuch geschrieben, und es gibt jetzt eine CLAUDE.md mit Fehler-Journal und klaren Datenschutzregeln fürs Logging (nie IP oder Tokens)
 
