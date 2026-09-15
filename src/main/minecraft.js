@@ -1457,9 +1457,15 @@ class Minecraft extends EventEmitter {
   // direkt voraus, sofort bremsen und einmal warnen – schneller als über die KI.
   _gefahrWache() {
     const bot = this.bot;
-    const selbst = bot.getControlState && (bot.getControlState('forward') || bot.getControlState('sprint'));
+    // Während der Wegfindung NICHT eingreifen: der Pathfinder weicht Lava und
+    // Abgründen selbst aus. Griffe die Wache hier ein, würde sie das Vorwärts-
+    // Gehen des Pathfinders immer wieder abbrechen und sich am Rand endlos
+    // einfrieren (statt außenrum zu laufen). Sie gilt nur fürs selbstgesteuerte
+    // Vorlaufen aus der Wahrnehmung.
     const wegsuche = bot.pathfinder && bot.pathfinder.isMoving && bot.pathfinder.isMoving();
-    if (this.ticks % 5 === 0 && (selbst || wegsuche)) {
+    if (wegsuche) { this.gefahrStopp = 0; return; }
+    const selbst = bot.getControlState && (bot.getControlState('forward') || bot.getControlState('sprint'));
+    if (this.ticks % 5 === 0 && selbst) {
       const g = this._gefahrVoraus();
       if (g) {
         this.gefahrStopp = this.ticks + 15;

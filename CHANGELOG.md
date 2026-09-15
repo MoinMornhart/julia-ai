@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.1 – 2026-09-15
+- Julia bleibt in Minecraft nicht mehr an Abgründen hängen: die Gefahrenwache friert sie nicht mehr mitten in der Wegfindung ein, sondern lässt den Pathfinder selbst um Lava und Abgründe herumlaufen
+
 ## 1.2.0 – 2026-09-15
 - Julia kommt in Minecraft jetzt aus Löchern und zwei Blöcke hoch (sie setzt dafür Blöcke, statt deine Bauten abzureißen), verteidigt sich immer selbst gegen Monster und schläft zuverlässig – stellt notfalls ein Bett aus dem Inventar auf
 
