@@ -727,6 +727,41 @@ const WERKZEUGE = [
   },
 ];
 
+// Medien steuern (Play/Pause, Titel, Lautstärke) über die Medientasten – GRÜN.
+WERKZEUGE.push({
+  name: 'medien',
+  description: 'Medienwiedergabe und Lautstärke über die Systemtasten steuern (wirkt auf den gerade aktiven Player, egal ob Spotify, YouTube o. Ä.): aktion playpause, weiter, zurueck, stopp, lauter, leiser, stumm. Für „lauter/leiser“ optional schritte (Standard 1).',
+  input_schema: {
+    type: 'object',
+    properties: {
+      aktion: { type: 'string', enum: ['playpause', 'weiter', 'zurueck', 'stopp', 'lauter', 'leiser', 'stumm'] },
+      schritte: { type: 'integer', description: 'nur für lauter/leiser, 1–10' },
+    },
+    required: ['aktion'],
+  },
+  einstufen: gruen,
+  async ausfuehren(e) {
+    const n = (e.aktion === 'lauter' || e.aktion === 'leiser') ? Math.max(1, Math.min(10, e.schritte || 1)) : 1;
+    for (let i = 0; i < n; i++) { await win.medien(e.aktion); if (i < n - 1) await kurzWarten(40); }
+    const text = { playpause: 'Wiedergabe umgeschaltet', weiter: 'Nächster Titel', zurueck: 'Voriger Titel', stopp: 'Wiedergabe gestoppt', lauter: `${n}× lauter`, leiser: `${n}× leiser`, stumm: 'Stumm umgeschaltet' }[e.aktion];
+    return `${text}.`;
+  },
+});
+
+// Programm schließen: fragt vorher (könnte ungespeicherte Arbeit betreffen).
+WERKZEUGE.push({
+  name: 'programm_schliessen',
+  description: 'Ein Programm sauber schließen (schickt allen Fenstern das Schließen-Signal; das Programm kann noch nach dem Speichern fragen). name z. B. "notepad", "chrome", "spotify".',
+  input_schema: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+  einstufen(e) {
+    return { stufe: GELB, kategorie: 'system', grund: 'Programm schließen kann ungespeicherte Arbeit betreffen', beschreibung: `Programm schließen: ${e.name}` };
+  },
+  async ausfuehren(e) {
+    const n = await win.programmSchliessen(e.name);
+    return n ? `${n} Fenster von ${e.name} geschlossen.` : `Kein offenes Fenster von ${e.name} gefunden.`;
+  },
+});
+
 // Schnell-Werkzeuge: rechnen, umrechnen, Text umwandeln, QR erzeugen – lokal, GRÜN.
 WERKZEUGE.push({
   name: 'schnell',

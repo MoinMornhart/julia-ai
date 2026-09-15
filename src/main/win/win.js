@@ -247,6 +247,9 @@ const VK = {
   capslock: 0x14,
   menu: 0x5D, apps: 0x5D, kontextmenue: 0x5D,
   plus: 0xBB, komma: 0xBC, minus: 0xBD, punkt: 0xBE,
+  // Medientasten (Play/Pause, Titel, Lautstärke).
+  medien_playpause: 0xB3, medien_weiter: 0xB0, medien_zurueck: 0xB1, medien_stopp: 0xB2,
+  lauter: 0xAF, leiser: 0xAE, stumm: 0xAD,
 };
 
 function vkCodes(kombination) {
@@ -282,7 +285,29 @@ if ($a.argumente) { Start-Process -FilePath $a.name -ArgumentList $a.argumente }
 $true`), 30000);
 }
 
+// Eine Medientaste drücken (playpause, weiter, zurueck, stopp, lauter, leiser, stumm).
+async function medien(aktion) {
+  const name = `medien_${aktion}`;
+  const taste = { playpause: 'medien_playpause', weiter: 'medien_weiter', zurueck: 'medien_zurueck', stopp: 'medien_stopp', lauter: 'lauter', leiser: 'leiser', stumm: 'stumm' }[aktion];
+  if (!taste) throw new Error(`Unbekannte Medienaktion "${aktion}".`);
+  await worker.ausfuehren(mitArgs({ vk: VK[taste] }, '[JuliaWin]::Kombination([uint16[]]@([uint16]$a.vk))'));
+  return name;
+}
+
+// Ein Programm sauber schließen: an alle Fenster des Prozesses das Schließen-
+// Signal schicken (CloseMainWindow), damit es noch nach dem Speichern fragen kann.
+async function programmSchliessen(name) {
+  const roh = String(name || '').trim().replace(/\.exe$/i, '').replace(/[^\w.\-]/g, '');
+  if (!roh) throw new Error('Kein Programmname angegeben.');
+  const n = await worker.ausfuehren(mitArgs({ name: roh }, `
+$ps = Get-Process -Name $a.name -ErrorAction SilentlyContinue | Where-Object { $_.MainWindowHandle -ne 0 }
+$z = 0
+foreach ($p in $ps) { if ($p.CloseMainWindow()) { $z++ } }
+$z`), 15000);
+  return Number(n) || 0;
+}
+
 module.exports = {
   worker, aufwaermen, fensterAuflisten, vordergrund, vordergrundInfo, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
-  klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen, kopierenNachHotkey,
+  klick, scrollen, tippen, taste, vkCodes, fokussieren, programmOeffnen, programmSchliessen, medien, kopierenNachHotkey,
 };

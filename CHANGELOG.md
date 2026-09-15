@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 5.1.0 – 2026-09-15
+- Julia steuert jetzt Medien und Programme: Play/Pause, nächster/voriger Titel, lauter/leiser/stumm über die Systemtasten (für jeden Player) und schließt auf Wunsch ein Programm
+
 ## 5.0.0 – 2026-09-15
 - Julia hat jetzt Schnell-Werkzeuge: rechnen, Einheiten umrechnen (Länge, Masse, Zeit, Daten, Temperatur und mehr), Text umwandeln (Groß/klein, Base64, JSON, zählen) und QR-Codes erzeugen – alles lokal
 
