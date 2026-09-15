@@ -140,6 +140,10 @@ const STANDARD = {
   diagnose: {
     senden: false, // opt-in: bereinigte Diagnose-/Crash-Berichte an VibeWork melden dürfen (nie IP/Tokens)
   },
+  sandbox: {
+    an: false, // „Nur-in-diesem-Ordner"-Modus: Datei-Aktionen außerhalb sind ROT (gesperrt)
+    ordner: '', // der einzige Ordner, in dem gelesen/geschrieben/aufgelistet werden darf
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -215,6 +219,7 @@ function pruefen(schluessel, wert) {
     case 'sync.an':
     case 'appserver.an':
     case 'diagnose.senden':
+    case 'sandbox.an':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':
@@ -404,6 +409,8 @@ function pruefen(schluessel, wert) {
     case 'arbeitsverzeichnisse':
       if (!Array.isArray(wert)) throw new Error('Arbeitsverzeichnisse sind eine Liste von Ordnern.');
       return wert.map((p) => path.resolve(String(p)));
+    case 'sandbox.ordner':
+      return wert ? path.resolve(String(wert)) : '';
     case 'blase.farben':
       if (!istObjekt(wert)) throw new Error('blase.farben ist ein Objekt mit Farblisten je Zustand.');
       return Object.fromEntries(ZUSTAENDE.map((z) => [z, wert[z] ? pruefen(`blase.farben.${z}`, wert[z]) : STANDARD.blase.farben[z]]));

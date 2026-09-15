@@ -56,6 +56,7 @@ function texteAnwenden(daten) {
   if (cfg) {
     monitoreFuellen();
     ordnerZeigen();
+    sandboxZeigen();
     farbenZeigen();
     anbieterZeigen();
   }
@@ -394,6 +395,14 @@ function monitoreFuellen() {
     }
     sel.value = String(gewaehlt);
   }
+}
+
+function sandboxZeigen() {
+  const el = $('sandboxOrdner');
+  if (!el) return;
+  const o = cfg.sandbox && cfg.sandbox.ordner;
+  el.textContent = o || tx('einst.sandbox_kein_ordner');
+  el.title = o || '';
 }
 
 function ordnerZeigen() {
@@ -983,6 +992,7 @@ async function init() {
         if (el.value !== text) { el.value = text; if (el.type === 'range') ausgabe(el); }
       }
     });
+    sandboxZeigen();
   });
   julia.on('texte:geaendert', texteAnwenden);
 
@@ -1001,6 +1011,13 @@ async function init() {
   mcpZeigen(await julia.mcpStatus());
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
+  sandboxZeigen();
+  $('sandboxWaehlen').onclick = async () => {
+    const p = await julia.ordnerWaehlen();
+    if (!p) return;
+    const r = await setzen('sandbox.ordner', p);
+    if (!r.fehler) { cfg.sandbox = { ...cfg.sandbox, ordner: r.wert }; sandboxZeigen(); }
+  };
   sucheEinrichten();
   if (einrichtung) $('name').focus();
 }

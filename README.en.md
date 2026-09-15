@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **This-folder-only mode** – for focused work on a single project: turn the mode on in the settings and pick a folder, and Julia may read, write, move and list files **only there** – everything outside is blocked (red). Off by default. (Shell commands still need your approval; true shell isolation via WSL/Docker comes separately.) See [The traffic light](#the-traffic-light).
 - **Search the settings** – the settings window now has a search box at the top: type e.g. "voice", "orb" or "diagnostics" and Julia shows only the matching sections. Accents don't matter, and several words narrow it further. See [Usage](#usage).
 - **Installer & update work even while Julia is open** – the wizard now closes a running Julia automatically before installing (gently first, then forcefully if needed). No more "file in use" errors during installation or automatic updates. See [Installation](#installation).
 - **Finds CPU hogs during PC control** – Julia now keeps a local performance logbook: for each control action (click, type, screenshot …) it records only technical data – duration and its own CPU usage, **never** content like text, coordinates or window titles. That lets a CPU spike be traced to its cause. At most a scrubbed summary goes to the developer, and only if you turn diagnostics on.
@@ -73,7 +74,6 @@
 - **Starts more reliably & a better installer** – a setup wizard (choose the folder, license, shortcuts) instead of a silent one-click install; on a graphics crash Julia falls back to software rendering and restarts automatically (emergency start: `--reparatur`). See [Installation](#installation).
 - **Minecraft: more reliable & self-defending** – she now gets out of holes and up two blocks (placing blocks instead of tearing down your builds), **always defends herself** against mobs, and sleeps reliably – placing a bed from her inventory if needed. Plus, as before: `!spiel durch` up to the Ender Dragon, a daily logbook, and mining leaves chests, furnaces, doors and your builds untouched. See [Minecraft](#minecraft).
 - **Even more of your own apps** – alongside ToDoch, Streamo and VibeWork come **Patchfeld**, **Codewerk** and the **Content-Helper**: start learning sessions, check progress, plan posts and fetch ideas – all through your app's API. See [Works with your apps](#works-with-your-apps).
-- **VibeWork: run your projects** – on request Julia creates new projects, invites people to them and fetches the latest commit – via the VibeWork API (address + token in settings). See [Works with your apps](#works-with-your-apps).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

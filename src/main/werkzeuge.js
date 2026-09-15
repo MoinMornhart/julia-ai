@@ -150,6 +150,34 @@ function geschuetzt(ctx) {
   return [ctx.datenOrdner, ctx.appOrdner];
 }
 
+// Sandbox-Modus („nur in diesem Ordner"): Liegt einer der Pfade außerhalb des
+// festgelegten Ordners, ist die Aktion ROT (komplett gesperrt, nicht nur GELB).
+// Ist der Modus aus oder kein Ordner gesetzt, hat das keine Wirkung (gibt null).
+function sandboxRot(pfade, ctx) {
+  const s = ctx.config.get('sandbox');
+  if (!s || !s.an || !s.ordner) return null;
+  const aussen = pfade.filter((p) => !ampel.liegtIn(p, s.ordner));
+  if (!aussen.length) return null;
+  return { stufe: ampel.ROT, kategorie: null, grund: `Sandbox-Modus aktiv: erlaubt ist nur ${s.ordner}. Gesperrt: ${aussen.join(', ')}` };
+}
+
+// Für lesende Datei-Werkzeuge: im Sandbox-Modus außerhalb ROT, sonst GRÜN.
+// Scheitert die Pfadauflösung (z. B. leerer Pfad), lässt es das eigentliche
+// Ausführen den Fehler sauber melden.
+function sandboxLesen(pfad, ctx) {
+  let p;
+  try { p = pfadAbs(pfad, ctx); } catch { return gruen(); }
+  return sandboxRot([p], ctx) || gruen();
+}
+
+// Welche Ordner gelten als „drinnen“ (GRÜN beschreibbar)? Im Sandbox-Modus nur
+// der festgelegte Ordner, sonst die normalen Arbeitsverzeichnisse.
+function arbeitsDirs(ctx) {
+  const s = ctx.config.get('sandbox');
+  if (s && s.an && s.ordner) return [s.ordner];
+  return ctx.config.get('arbeitsverzeichnisse');
+}
+
 function programmOrte() {
   const e = process.env;
   return [e.ProgramFiles, e['ProgramFiles(x86)'], e.SystemRoot, e.LOCALAPPDATA && path.join(e.LOCALAPPDATA, 'Programs'), e.LOCALAPPDATA && path.join(e.LOCALAPPDATA, 'Microsoft', 'WindowsApps')].filter(Boolean);
@@ -292,7 +320,7 @@ const WERKZEUGE = [
       },
       required: ['pfad'],
     },
-    einstufen: gruen,
+    einstufen: (e, ctx) => sandboxLesen(e.pfad, ctx),
     async ausfuehren(e, ctx) {
       const p = pfadAbs(e.pfad, ctx);
       const s = await fsp.stat(p);
@@ -322,7 +350,7 @@ const WERKZEUGE = [
     fremd: true,
     description: 'Inhalt eines Ordners mit Größe und Änderungsdatum. rekursiv bis drei Ebenen tief, höchstens 500 Einträge.',
     input_schema: { type: 'object', properties: { pfad: { type: 'string' }, rekursiv: { type: 'boolean' } }, required: ['pfad'] },
-    einstufen: gruen,
+    einstufen: (e, ctx) => sandboxLesen(e.pfad, ctx),
     async ausfuehren(e, ctx) {
       const p = pfadAbs(e.pfad, ctx);
       return fremd(p, `${p}\n${await ordnerLesen(p, !!e.rekursiv)}`);
@@ -510,7 +538,10 @@ const WERKZEUGE = [
     },
     einstufen(e, ctx) {
       const p = pfadAbs(e.pfad, ctx);
-      return { ...ampel.einstufenPfade([p], ctx.config.get('arbeitsverzeichnisse'), geschuetzt(ctx)), beschreibung: `${e.anhaengen ? 'An Datei anhängen' : 'Datei schreiben'}: ${p}` };
+      const beschreibung = `${e.anhaengen ? 'An Datei anhängen' : 'Datei schreiben'}: ${p}`;
+      const rot = sandboxRot([p], ctx);
+      if (rot) return { ...rot, beschreibung };
+      return { ...ampel.einstufenPfade([p], arbeitsDirs(ctx), geschuetzt(ctx)), beschreibung };
     },
     async ausfuehren(e, ctx) {
       const p = pfadAbs(e.pfad, ctx);
@@ -528,7 +559,10 @@ const WERKZEUGE = [
     einstufen(e, ctx) {
       const von = pfadAbs(e.von, ctx);
       const nach = pfadAbs(e.nach, ctx);
-      return { ...ampel.einstufenPfade([von, nach], ctx.config.get('arbeitsverzeichnisse'), geschuetzt(ctx)), beschreibung: `Verschieben: ${von} → ${nach}` };
+      const beschreibung = `Verschieben: ${von} → ${nach}`;
+      const rot = sandboxRot([von, nach], ctx);
+      if (rot) return { ...rot, beschreibung };
+      return { ...ampel.einstufenPfade([von, nach], arbeitsDirs(ctx), geschuetzt(ctx)), beschreibung };
     },
     async ausfuehren(e, ctx) {
       const von = pfadAbs(e.von, ctx);

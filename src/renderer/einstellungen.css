@@ -248,3 +248,16 @@ textarea { resize: vertical; min-height: 68px; line-height: 1.45; font-family: i
 #einstSuche:focus { border-color: var(--akzent); box-shadow: var(--glow-klein); outline: none; }
 .such-leer { color: var(--text-2); text-align: center; padding: 22px 0; font-size: 14px; }
 .such-weg { display: none !important; }
+
+/* Sandbox-Ordner-Wähler (Issue #20) */
+.sandbox-ordner { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sandbox-ordner .pfad {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

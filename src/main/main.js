@@ -2042,7 +2042,13 @@ async function start() {
     kosten,
     datenOrdner: DATEN,
     appOrdner: APP,
-    arbeitsordner: () => config.get('arbeitsverzeichnisse')[0] || os.homedir(),
+    arbeitsordner: () => {
+      // Im Sandbox-Modus ist der festgelegte Ordner die Basis für relative Pfade
+      // und die Shell – so bleibt alles standardmäßig in diesem einen Ordner.
+      const sb = config.get('sandbox');
+      if (sb && sb.an && sb.ordner) return sb.ordner;
+      return config.get('arbeitsverzeichnisse')[0] || os.homedir();
+    },
     kontextGeaendert: () => {},
     // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
     eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.8.0 – 2026-09-16
+- Neuer Nur-in-diesem-Ordner-Modus: schaltest du ihn ein und wählst einen Ordner, darf Julia Dateien nur dort lesen, schreiben, verschieben und auflisten – alles außerhalb ist gesperrt (Standard aus)
+
 ## 1.7.0 – 2026-09-16
 - Einstellungen lassen sich jetzt durchsuchen: ein Suchfeld oben filtert die Abschnitte live nach Stichwort (z. B. Stimme, Blase, Diagnose), unabhängig von Groß-/Kleinschreibung und Umlauten
 
