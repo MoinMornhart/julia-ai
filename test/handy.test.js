@@ -233,3 +233,26 @@ test('Handy: neue VPN-Adresse bekommt ein neues Zertifikat, sonst bleibt es', ()
   assert.equal(s._zertifikat().cert, zweit, 'danach wieder stabil');
   assert.deepEqual(t.lesen('handy').zertifikat_adressen, ['192.168.1.5', '100.100.1.1']);
 });
+
+test('Handy: adressenAktualisieren erneuert das Zertifikat bei neuer VPN-Adresse und startet neu', async () => {
+  const t = tresor();
+  let vpn = [];
+  const s = new HandyServer({ tresor: t, texte: () => ({}), beiNachricht: async () => ({ ok: true }), adressen: () => ['192.168.1.5'], unterwegs: () => vpn });
+  await s.starten(0);
+  const port1 = s.port;
+  assert.deepEqual(t.lesen('handy').zertifikat_adressen, ['192.168.1.5']);
+
+  // Ohne neue Adresse passiert nichts.
+  assert.equal(await s.adressenAktualisieren(), false);
+
+  // VPN kommt hoch: Zertifikat deckt die neue Adresse jetzt ab.
+  vpn = ['100.90.0.7'];
+  assert.equal(await s.adressenAktualisieren(), true);
+  assert.deepEqual(t.lesen('handy').zertifikat_adressen, ['192.168.1.5', '100.90.0.7']);
+  assert.equal(s.laeuft, true);
+  assert.equal(s.port, port1, 'läuft auf demselben Port weiter');
+
+  // Danach wieder stabil.
+  assert.equal(await s.adressenAktualisieren(), false);
+  s.stoppen();
+});

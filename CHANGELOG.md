@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 4.9.1 – 2026-09-15
+- Handy koppeln über ein VPN wie NetBird oder Tailscale klappt jetzt auch, wenn das VPN erst nach Julia startet: das HTTPS-Zertifikat deckt neue VPN-Adressen nachträglich ab, statt die Verbindung abzubrechen
+
 ## 4.9.0 – 2026-09-15
 - Julia baut in Minecraft auf Ansage einfache Strukturen aus vorhandenem Material – Turm, Mauer, Hütte oder Brücke, per Befehl wie '!bau turm 8' oder '!bau mauer 10 3'
 

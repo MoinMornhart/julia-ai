@@ -1333,8 +1333,11 @@ function ipcEinrichten() {
     return true;
   });
   ipc.handle('handy:status', () => handy.status());
-  ipc.handle('handy:koppeln', () => {
+  ipc.handle('handy:koppeln', async () => {
     try {
+      // Erst das Zertifikat auf neue Adressen (z. B. eine frische VPN-IP) bringen,
+      // sonst schlägt das Öffnen über diese Adresse mit TLS-Fehler fehl.
+      await handy.adressenAktualisieren();
       const k = handy.koppelnStarten();
       return { ...k, qr: qrMatrix(k.url), status: handy.status() };
     } catch (e) {
@@ -1745,6 +1748,11 @@ function handyEinrichten() {
   });
   handy.on('status', () => anAlle('handy:status', handy.status()));
   handyAnwenden();
+  // Kommt ein VPN (NetBird, Tailscale) erst später hoch, deckt das Zertifikat
+  // dessen neue Adresse nachträglich ab – sonst bricht die Verbindung ab.
+  if (!VORFUEHRUNG) {
+    setInterval(() => { if (handy && handy.laeuft) handy.adressenAktualisieren().catch(() => {}); }, 60000);
+  }
 }
 
 function handyAnwenden() {

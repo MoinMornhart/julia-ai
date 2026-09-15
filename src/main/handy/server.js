@@ -243,6 +243,21 @@ class HandyServer extends EventEmitter {
     });
   }
 
+  // Ist eine neue Adresse dazugekommen (z. B. die VPN-IP, weil NetBird oder
+  // Tailscale erst nach dem Start hochkam)? Dann das Zertifikat neu erzeugen,
+  // damit es sie abdeckt – sonst bricht die TLS-Verbindung ab ("unterbrochen").
+  async adressenAktualisieren() {
+    if (!this.laeuft) return false;
+    const e = this.tresor.lesen('handy') || {};
+    const bekannt = new Set(Array.isArray(e.zertifikat_adressen) ? e.zertifikat_adressen : []);
+    const jetzt = [...this.adressenFinden(), ...this.unterwegsFinden()];
+    if (!jetzt.some((a) => !bekannt.has(a))) return false;
+    const port = this.port;
+    this.stoppen();
+    await this.starten(port);
+    return true;
+  }
+
   stoppen() {
     this.kopplung = null;
     for (const w of [...this.wartende]) w.fertig();
