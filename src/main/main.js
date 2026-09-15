@@ -42,9 +42,12 @@ startLog.schreiben('START', 'Julia startet', {
   flaggen: startFlaggen.flaggen,
 });
 for (const w of startFlaggen.warnungen) startLog.schreiben('WARN', w);
-if (startpruefung.softwareRendering(DATEN) || startFlaggen.konflikt) {
+// Reparatur-/Software-Start per Kommandozeile erzwingt Software-Grafik – ein
+// Rettungsanker, falls die GPU beim Start crasht: `Julia AI.exe --reparatur`.
+const reparatur = process.argv.includes('--reparatur') || process.argv.includes('--software') || process.argv.includes('--safe');
+if (startpruefung.softwareRendering(DATEN) || startFlaggen.konflikt || reparatur) {
   app.disableHardwareAcceleration();
-  startLog.schreiben('GPU', 'Software-Rendering aktiv (GPU-Rückfall oder Grafik-Flags).');
+  startLog.schreiben('GPU', reparatur ? 'Software-Rendering per --reparatur erzwungen.' : 'Software-Rendering aktiv (GPU-Rückfall oder Grafik-Flags).');
 }
 const startFatal = (text) => startpruefung.fehlerDialog({ app, dialog, shell, text, logDatei: startLog.datei, ordner: DATEN })
   .then(() => { beendenLaeuft = true; app.exit(1); });

@@ -436,6 +436,11 @@ Beim ersten Start öffnet sich die Einrichtung: Vorname, KI-Anbieter mit Schlüs
 Ordner, in denen Julia ohne Rückfrage schreiben darf. Schlüssel werden mit Windows (DPAPI)
 verschlüsselt gespeichert.
 
+> **Startet Julia nicht (schwarzes Fenster)?** Sie stellt sich bei einem Grafik-Absturz von selbst
+> auf Software-Grafik um und startet einmal neu. Bleibt es hängen, starte einmal mit
+> `"Julia AI.exe" --reparatur` (erzwingt Software-Grafik). Einzelheiten stehen in
+> `%APPDATA%\Julia\start.log`.
+
 <details>
 <summary><b>Aus dem Quellcode</b></summary>
 

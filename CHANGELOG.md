@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.1 – 2026-09-15
+- Reparatur-Start gegen schwarze Fenster: Julia lässt sich mit 'Julia AI.exe --reparatur' zwingend mit Software-Grafik starten, wenn die Grafikkarte beim Start Probleme macht
+
 ## 1.3.0 – 2026-09-15
 - Neue opt-in Diagnose: Julia kann bei Grafik- oder Startproblemen einen rein technischen, bereinigten Bericht an VibeWork melden – niemals mit IP-Adressen, Tokens oder persönlichen Daten; einzuschalten unter Einstellungen → System, standardmäßig aus
 

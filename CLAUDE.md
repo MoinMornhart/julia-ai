@@ -67,7 +67,7 @@ damit die Lösung dokumentiert ist und beim nächsten Mal sofort greift.
 - [x] Fehler-Journal (diese Datei).
 - [x] Startcrash (schwarzes Fenster) selbst heilen: erster Absturz → Software-Rendering + Auto-Neustart (#7).
 - [x] Opt-in-Diagnose: bereinigten Crash-/Diagnose-Bericht auf Wunsch als Bug an VibeWork senden ([src/main/diagnose.js](src/main/diagnose.js) mit Scrubber – nie IP/Tokens/PII; Werkzeug `diagnose`, Einstellung `diagnose.senden`, Standard aus).
-- [ ] Reparatur-/Diagnose-Start über Terminal mit Extra-Logging.
+- [x] Reparatur-Start: `Julia AI.exe --reparatur` (bzw. `--software`/`--safe`) erzwingt Software-Grafik, falls die GPU beim Start crasht ([src/main/main.js](src/main/main.js)).
 - [ ] Wöchentliche, tokenschonende Selbstprüfung.
 - [ ] Treiber-/Abhängigkeitsprüfung im Installer.
 - [ ] **Multitasking** – mehrere Aufgaben/Aufträge gleichzeitig bzw. parallel verwalten (vom Nutzer gewünscht).
