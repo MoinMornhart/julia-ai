@@ -1965,6 +1965,8 @@ async function start() {
   sprache.on('piperFehlt', (id) => piperNachladen(id));
   sprache.on('piperFehler', piperFehlerMelden);
   sprache.on('pegel', (p) => anAlle('pegel', p));
+  // Live-Untertitel: schon während des Sprechens zeigen, was verstanden wird.
+  sprache.on('teil', (t) => anAlle('sprache:teil', t));
   sprache.on('schreibt', (an) => { if (an && zustand === 'listening') zustandSetzen('thinking'); });
   sprache.on('whisperFehler', whisperFehlerMelden);
   whisper = new Whisper({

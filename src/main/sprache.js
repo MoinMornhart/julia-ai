@@ -53,6 +53,7 @@ try {
   $rec.EndSilenceTimeoutAmbiguous = [TimeSpan]::FromSeconds(1.0)
   $null = Register-ObjectEvent -InputObject $rec -EventName AudioLevelUpdated -SourceIdentifier pegel
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognized -SourceIdentifier erkannt
+  $null = Register-ObjectEvent -InputObject $rec -EventName SpeechHypothesized -SourceIdentifier zwischen
   $null = Register-ObjectEvent -InputObject $rec -EventName SpeechRecognitionRejected -SourceIdentifier abgelehnt
   $null = Register-ObjectEvent -InputObject $rec -EventName RecognizeCompleted -SourceIdentifier fertig
   $rec.RecognizeAsync([System.Speech.Recognition.RecognizeMode]::Single)
@@ -65,6 +66,7 @@ try {
     switch ($e.SourceIdentifier) {
       'pegel'     { Aus ('L ' + $e.SourceEventArgs.AudioLevel) }
       'erkannt'   { $text = $e.SourceEventArgs.Result.Text; Ton $e.SourceEventArgs.Result }
+      'zwischen'  { $t = $e.SourceEventArgs.Result.Text; if ($t) { Aus ('Z ' + ($t -replace '[\r\n]+',' ')) } }
       'abgelehnt' { Ton $e.SourceEventArgs.Result }
       'fertig'    { $ende = $true }
     }
@@ -304,6 +306,7 @@ class Sprache extends EventEmitter {
       readline.createInterface({ input: p.stdout }).on('line', (z) => {
         if (z.startsWith('L ')) this.emit('pegel', Math.min(1, Number(z.slice(2)) / 100));
         else if (z.startsWith('T ')) text = z.slice(2).trim();
+        else if (z.startsWith('Z ')) this.emit('teil', z.slice(2).trim()); // Zwischentext live
         else if (z.startsWith('E ')) fehler = z.slice(2).trim();
         else if (z.startsWith('H ')) this.emit('hinweis', z.slice(2).trim());
       });

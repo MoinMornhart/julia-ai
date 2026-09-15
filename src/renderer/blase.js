@@ -174,6 +174,8 @@ function untertitelVerdrahten() {
   julia.on('sprache:hoert', (an) => {
     if (an) { du(T['blase.hoert'] || '…'); antwort(''); antwortRoh = ''; } else spaeterAusblenden(6000);
   });
+  // Wie bei Siri: schon beim Sprechen mitschreiben, was verstanden wird.
+  julia.on('sprache:teil', (t) => { if (t) du(t); });
   julia.on('agent:nutzer', ({ text }) => { du(text); antwortRoh = ''; antwort(''); });
   julia.on('agent:text', (d) => { antwortRoh += String(d || ''); antwort(antwortRoh); });
   julia.on('agent:freigabe', () => antwort(T['blase.freigabe'] || '⚠', true));

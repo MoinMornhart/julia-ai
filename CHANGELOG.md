@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 5.4.0 – 2026-09-15
+- Live-Untertitel in der Blase wie bei Siri: schon während du sprichst, taucht in Echtzeit auf, was Julia versteht – am Satzende ersetzt die genaue Whisper-Fassung den Text
+
 ## 5.3.0 – 2026-09-15
 - Julia hat jetzt eine Stoppuhr (starten, stoppen, Zwischenzeiten, zurücksetzen), und Timer wie 'stell einen Timer auf 10 Minuten' sowie Wecker meldet sie zur richtigen Zeit
 
