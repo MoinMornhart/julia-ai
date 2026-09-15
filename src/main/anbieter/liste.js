@@ -131,7 +131,12 @@ function urlPruefen(roh) {
   if (u.protocol !== 'https:' && u.protocol !== 'http:') throw new Error('Nur http:// oder https://.');
   u.hash = '';
   u.search = '';
-  return u.toString().replace(/\/+$/, '');
+  let s = u.toString().replace(/\/+$/, '');
+  // Beide Eingaben zulassen: die Basis-Adresse (…/v1) oder der volle Endpunkt
+  // (…/v1/chat/completions). Julia hängt „/chat/completions" selbst an – ohne das
+  // Kürzen würde es sonst doppelt angehängt und der Aufruf schlüge fehl.
+  s = s.replace(/\/(?:chat\/)?completions$/i, '');
+  return s;
 }
 
 function anbieterVon(config) {

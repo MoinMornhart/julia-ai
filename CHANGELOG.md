@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.3.3 – 2026-09-15
+- Eigene KI-Adresse funktioniert jetzt auch, wenn du die volle Endpunkt-URL einträgst (…/v1/chat/completions): Julia kürzt sie automatisch auf die Basis, damit der Aufruf nicht doppelt zusammengesetzt wird
+
 ## 1.3.2 – 2026-09-15
 - Besserer Installer: statt der stillen Ein-Klick-Installation führt jetzt ein Assistent durch die Einrichtung – mit Zielordner-Auswahl, Lizenz und Verknüpfungen (wie bei größeren Programmen)
 

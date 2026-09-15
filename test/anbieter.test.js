@@ -62,6 +62,16 @@ test('Eigene Adresse: HTTPS überall, HTTP nur lokal, nie mit Zugangsdaten', () 
   assert.throws(() => liste.urlPruefen('kein link'), /gültige/);
 });
 
+test('Eigene Adresse: voller Endpunkt wird auf die Basis gekürzt (kein doppeltes /chat/completions)', () => {
+  // Issue #10: Nutzer gibt die volle Endpunkt-URL ein – Julia hängt selbst
+  // /chat/completions an, also darf es hier nicht schon dranstehen.
+  assert.equal(liste.urlPruefen('https://api.b.ai/v1/chat/completions'), 'https://api.b.ai/v1');
+  assert.equal(liste.urlPruefen('https://api.b.ai/v1/chat/completions/'), 'https://api.b.ai/v1');
+  assert.equal(liste.urlPruefen('https://api.example.com/completions'), 'https://api.example.com');
+  // Die Basis-Adresse bleibt unangetastet.
+  assert.equal(liste.urlPruefen('https://api.b.ai/v1'), 'https://api.b.ai/v1');
+});
+
 test('Konfiguration: Anbieter geprüft, Schlüssel je Anbieter überleben einen Neustart', () => {
   const ordner = fs.mkdtempSync(path.join(os.tmpdir(), 'julia-anb-'));
   const c = new Konfiguration(ordner);
