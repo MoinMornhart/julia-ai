@@ -654,8 +654,22 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'stoppuhr',
+    description: 'Stoppuhr am PC: aktion start, stopp, runde (Zwischenzeit), status oder zuruecksetzen. Für Timer und Wecker stattdessen erinnerung_setzen.',
+    input_schema: { type: 'object', properties: { aktion: { type: 'string', enum: ['start', 'stopp', 'runde', 'status', 'zuruecksetzen'] } }, required: ['aktion'] },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      const { zeitFormat } = require('./zeit');
+      const u = ctx.stoppuhr;
+      const s = u[{ start: 'start', stopp: 'stopp', runde: 'runde', status: 'status', zuruecksetzen: 'zuruecksetzen' }[e.aktion]]();
+      const runden = s.runden.length ? ` Runden: ${s.runden.map((r, i) => `${i + 1}) ${zeitFormat(r)}`).join(', ')}.` : '';
+      if (e.aktion === 'zuruecksetzen') return 'Stoppuhr zurückgesetzt.';
+      return `Stoppuhr ${s.laeuft ? 'läuft' : 'steht'} bei ${zeitFormat(s.ms)}.${runden}`;
+    },
+  },
+  {
     name: 'erinnerung_setzen',
-    description: 'Eine Erinnerung stellen, wenn der Nutzer darum bittet. zeitpunkt als 2026-09-14T15:00 (lokale Zeit) oder nur Uhrzeit "15:30" (heute bzw. morgen); für "in 20 Minuten" in_minuten nutzen. Zum Zeitpunkt erscheint nur der Text als Meldung – es wird nichts ausgeführt.',
+    description: 'Eine Erinnerung, einen Timer oder Wecker stellen, wenn der Nutzer darum bittet. Für "Timer auf 10 Minuten" oder "in 20 Minuten" in_minuten nutzen; für einen Wecker/festen Zeitpunkt zeitpunkt als 2026-09-14T15:00 (lokale Zeit) oder nur Uhrzeit "15:30" (heute bzw. morgen). Zum Zeitpunkt erscheint der Text als Meldung – es wird nichts ausgeführt.',
     input_schema: {
       type: 'object',
       properties: {

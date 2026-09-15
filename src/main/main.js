@@ -2003,6 +2003,7 @@ async function start() {
     minecraft,
     minecraftKonto: () => mcKonto(),
     minecraftGruppe: () => mcGruppe(),
+    stoppuhr: new (require('./zeit').Stoppuhr)(),
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),

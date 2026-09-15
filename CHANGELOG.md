@@ -2,6 +2,9 @@
 
 Jede Version in einer Zeile, so wie sie beim Update angezeigt wird.
 
+## 5.3.0 – 2026-09-15
+- Julia hat jetzt eine Stoppuhr (starten, stoppen, Zwischenzeiten, zurücksetzen), und Timer wie 'stell einen Timer auf 10 Minuten' sowie Wecker meldet sie zur richtigen Zeit
+
 ## 5.2.0 – 2026-09-15
 - Julia ordnet jetzt Fenster an: links/rechts oder oben/unten andocken, in die vier Ecken, mittig, maximieren oder wiederherstellen
 
