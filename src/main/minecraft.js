@@ -327,6 +327,12 @@ function ortLesen({ x, y, z } = {}) {
 const ortText = (o) => (o.y == null ? `${o.x} / ${o.z}` : `${o.x} / ${o.y} / ${o.z}`);
 
 // Gängige Bausteine, in dieser Vorliebe – gebaut wird mit dem, wovon am meisten da ist.
+// Blöcke, die Julia beim Abbauen in Ruhe lässt – außer der Nutzer nennt genau
+// diesen Block. So reißt sie beim Sammeln nichts Wertvolles oder deine Bauten
+// ab: Truhen, Öfen, Betten, Türen, Werkbänke, Spawner, Schilder, Glas, Wolle,
+// Fackeln, Blumentöpfe, Amboss, Braustand, Beacon und Ähnliches.
+const GESCHUETZT_ABBAU = /(chest|barrel|shulker_box|furnace|smoker|crafting_table|_bed$|_door$|_trapdoor$|spawner|beacon|conduit|enchanting_table|brewing_stand|anvil|lectern|grindstone|smithing_table|cartography_table|fletching_table|loom|hopper|dispenser|dropper|glass|_pane$|torch|lantern|_sign$|hanging_sign|item_frame|painting|_banner$|flower_pot|campfire|respawn_anchor|lodestone|bell|_wool$|_carpet$|jukebox|note_block|cake|beehive|bee_nest|end_portal_frame|bookshelf|glazed_terracotta|_glass$|target|composter|cauldron)/;
+
 const BAUSTOFFE = ['cobblestone', 'cobbled_deepslate', 'dirt', 'stone', 'stone_bricks', 'netherrack', 'oak_planks', 'spruce_planks', 'birch_planks'];
 const BAU_NAMEN = { turm: 'einen Turm', mauer: 'eine Mauer', bruecke: 'eine Brücke', huette: 'eine Hütte' };
 const bauName = (b) => BAU_NAMEN[b] || 'etwas';
@@ -1421,6 +1427,9 @@ class Minecraft extends EventEmitter {
     const namen = blockNamen(block, Object.keys(bot.registry.blocksByName));
     if (!namen.length) throw new Error(`Einen Block "${block}" kenne ich nicht. Englische Namen wie oak_log gehen immer.`);
     const ids = namen.map((n) => bot.registry.blocksByName[n].id);
+    // Nur wenn der Nutzer genau einen Blocktyp nennt, darf der auch geschützt sein
+    // (z. B. „bau ab truhe"); bei allgemeinen Wörtern bleiben geschützte Blöcke tabu.
+    const explizit = namen.length === 1;
     const ziel = Math.max(1, Math.min(64, Math.round(Number(anzahl) || 16)));
     const a = { art: 'abbauen', block, anzahl: ziel, geschafft: 0 };
     this.auftrag = a;
@@ -1428,13 +1437,20 @@ class Minecraft extends EventEmitter {
     const unerreichbar = new Set();
     (async () => {
       while (this.auftrag === a && a.geschafft < ziel) {
-        const pos = bot.findBlocks({ matching: ids, maxDistance: 48, count: 30 }).find((v) => !unerreichbar.has(v.toString()));
+        const pos = bot.findBlocks({ matching: ids, maxDistance: 32, count: 40 }).find((v) => {
+          if (unerreichbar.has(v.toString())) return false;
+          const bl = bot.blockAt(v);
+          // Geschützte Blöcke (Truhen, Öfen, Türen, deine Bauten …) nur, wenn ausdrücklich genannt.
+          if (bl && !explizit && GESCHUETZT_ABBAU.test(bl.name)) { unerreichbar.add(v.toString()); return false; }
+          return true;
+        });
         if (!pos) break;
         try {
           await bot.pathfinder.goto(new GoalNear(pos.x, pos.y, pos.z, 3));
           if (this.auftrag !== a) break;
           const b = bot.blockAt(pos);
           if (!b || !ids.includes(b.type)) continue;
+          if (!explizit && GESCHUETZT_ABBAU.test(b.name)) { unerreichbar.add(pos.toString()); continue; }
           const werkzeug = besteWerkzeug(bot.inventory.items(), werkzeugArt(b.name));
           if (werkzeug) await bot.equip(werkzeug, 'hand');
           await bot.dig(b);
@@ -2118,6 +2134,6 @@ module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan,
+  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
   itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };

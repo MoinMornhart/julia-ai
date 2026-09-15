@@ -576,6 +576,18 @@ test('Minecraft: nur genannte Spieler zusätzlich erlauben', () => {
   assert.equal(befehle.length, 1, 'Peter wird wieder ignoriert');
 });
 
+test('Minecraft: geschützte Blöcke werden beim Abbauen verschont', () => {
+  const g = mc.GESCHUETZT_ABBAU;
+  // Diese soll Julia beim allgemeinen Abbauen NICHT anrühren.
+  for (const n of ['chest', 'trapped_chest', 'furnace', 'blast_furnace', 'oak_door', 'oak_trapdoor', 'red_bed', 'crafting_table', 'glass', 'white_stained_glass', 'glass_pane', 'torch', 'lantern', 'oak_sign', 'white_wool', 'spawner', 'anvil', 'brewing_stand', 'beacon', 'hopper', 'shulker_box', 'flower_pot', 'bookshelf']) {
+    assert.ok(g.test(n), `${n} sollte geschützt sein`);
+  }
+  // Normales Abbaugut bleibt erlaubt.
+  for (const n of ['stone', 'cobblestone', 'deepslate', 'dirt', 'oak_log', 'iron_ore', 'diamond_ore', 'sand', 'gravel', 'netherrack']) {
+    assert.ok(!g.test(n), `${n} sollte abbaubar bleiben`);
+  }
+});
+
 test('Minecraft: „spiel durch“ wird als Durchspielen-Auftrag erkannt', () => {
   const b = (t) => mc.befehlLesen(t, ['Julia']);
   assert.deepEqual(b('Julia, spiel durch'), { aufgabe: 'durchspielen' });
