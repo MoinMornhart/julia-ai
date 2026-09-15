@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Julia – your AI for the Windows PC</title>
+<meta name="description" content="Julia is your personal AI for Windows: sees your screen, talks with you, plays Minecraft with you – and asks first before anything that can't be undone.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23ffd08a'/%3E%3Cstop offset='.5' stop-color='%23ff7a1a'/%3E%3Cstop offset='1' stop-color='%23ff3da5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Ccircle cx='50' cy='50' r='42' fill='url(%23g)'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --grund:#0a0a10; --grund2:#12111a; --flaeche:#16151f; --linie:rgba(255,255,255,.09);
+    --text:#f2f2f7; --text2:#b2b2c2; --text3:#7d7d90; --akzent:#ff7a1a; --akzent2:#ff3da5;
+    --max:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--grund);color:var(--text);
+    font-family:"Segoe UI Variable Text","Segoe UI",system-ui,-apple-system,sans-serif;line-height:1.6;
+    -webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 20px}
+  header{position:sticky;top:0;z-index:10;backdrop-filter:blur(10px);
+    background:rgba(10,10,16,.72);border-bottom:1px solid var(--linie)}
+  header .wrap{display:flex;align-items:center;gap:14px;height:60px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px}
+  .orb{width:26px;height:26px;border-radius:50%;flex:none;
+    background:radial-gradient(circle at 34% 30%,rgba(255,255,255,.7),transparent 45%),
+      linear-gradient(135deg,#ffd08a,var(--akzent) 55%,var(--akzent2));
+    box-shadow:0 0 16px rgba(255,122,26,.5)}
+  header nav{margin-left:auto;display:flex;gap:18px;align-items:center;font-size:14px;color:var(--text2)}
+  header nav a{text-decoration:none}
+  header nav a:hover{color:var(--text)}
+  .btn{display:inline-block;background:linear-gradient(135deg,var(--akzent),var(--akzent2));
+    color:#160a02;font-weight:700;padding:11px 20px;border-radius:11px;text-decoration:none;
+    box-shadow:0 6px 22px rgba(255,122,26,.32);white-space:nowrap}
+  .btn:hover{filter:brightness(1.06)}
+  .btn.zweit{background:transparent;color:var(--text);border:1px solid var(--linie);box-shadow:none}
+  .lang{font-size:13px;color:var(--text3);text-decoration:none}
+  .hero{position:relative;overflow:hidden;text-align:center;padding:76px 0 60px}
+  .hero::before{content:"";position:absolute;inset:0;z-index:-1;
+    background:radial-gradient(720px 420px at 50% -8%,rgba(255,122,26,.22),transparent 62%),
+      radial-gradient(500px 300px at 82% 12%,rgba(255,61,165,.14),transparent 60%)}
+  .hero .grossorb{width:120px;height:120px;border-radius:50%;margin:0 auto 26px;
+    background:radial-gradient(circle at 34% 28%,rgba(255,255,255,.72),transparent 44%),
+      radial-gradient(circle at 72% 78%,#ff3da5,transparent 58%),
+      linear-gradient(135deg,#ffd08a,var(--akzent));
+    box-shadow:0 0 60px rgba(255,122,26,.5),inset 0 0 0 1px rgba(255,255,255,.18);
+    animation:sch 6s ease-in-out infinite}
+  @keyframes sch{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+  @media (prefers-reduced-motion:reduce){.hero .grossorb{animation:none}}
+  h1{font-size:clamp(38px,7vw,68px);margin:.1em 0 .12em;letter-spacing:-.02em;line-height:1.05}
+  .hero p.lead{font-size:clamp(17px,2.4vw,21px);color:var(--text2);max-width:640px;margin:0 auto 30px}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .mini{margin-top:16px;font-size:13px;color:var(--text3)}
+  .shot{max-width:100%;width:900px;margin:44px auto 0;display:block;border-radius:14px;
+    border:1px solid var(--linie);box-shadow:0 24px 60px rgba(0,0,0,.5)}
+  section{padding:56px 0;border-top:1px solid var(--linie)}
+  h2{font-size:clamp(24px,3.4vw,32px);margin:0 0 6px;text-align:center}
+  .sub{text-align:center;color:var(--text3);max-width:620px;margin:0 auto 34px}
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media (max-width:860px){.grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:560px){.grid{grid-template-columns:1fr}header nav a:not(.btn):not(.lang){display:none}}
+  .karte{background:var(--flaeche);border:1px solid var(--linie);border-radius:14px;padding:20px}
+  .karte .ico{font-size:24px}
+  .karte h3{margin:10px 0 6px;font-size:17px}
+  .karte p{margin:0;color:var(--text2);font-size:14.5px}
+  .ampel{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:820px;margin:0 auto}
+  @media (max-width:560px){.ampel{grid-template-columns:1fr}}
+  .stufe{background:var(--flaeche);border:1px solid var(--linie);border-radius:14px;padding:18px;text-align:center}
+  .punkt{width:14px;height:14px;border-radius:50%;display:inline-block;margin-bottom:8px}
+  .g{background:#3ee08f;box-shadow:0 0 14px #3ee08f88}.ge{background:#ffb547;box-shadow:0 0 14px #ffb54788}
+  .r{background:#ff5a6e;box-shadow:0 0 14px #ff5a6e88}
+  .schluss{text-align:center}
+  footer{border-top:1px solid var(--linie);padding:30px 0;color:var(--text3);font-size:13px;text-align:center}
+  footer a{color:var(--text2);text-decoration:none;margin:0 8px}
+  footer a:hover{color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="orb"></span> Julia</a>
+    <nav>
+      <a href="#features">Features</a>
+      <a href="#minecraft">Minecraft</a>
+      <a href="#apps">Your apps</a>
+      <a href="https://github.com/MoinMornhart/julia-ai">GitHub</a>
+      <a class="lang" href="index.html">DE</a>
+      <a class="btn" href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe">Download</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" style="border-top:none">
+    <div class="wrap">
+      <div class="grossorb"></div>
+      <h1>Your AI for the Windows PC</h1>
+      <p class="lead">Julia sees your screen, talks with you, plays Minecraft with you – and asks first before anything that can't be undone.</p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe">⬇ Julia-AI-Setup.exe</a>
+        <a class="btn zweit" href="https://github.com/MoinMornhart/julia-ai">View on GitHub</a>
+      </div>
+      <p class="mini">For Windows 10 &amp; 11 · speech recognition and voices run locally · MIT license</p>
+      <img class="shot" src="https://raw.githubusercontent.com/MoinMornhart/julia-ai/main/docs/bilder/start-en.png" alt="Julia's home page with appointments, inbox, reminders and PC status" loading="lazy">
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>What Julia can do</h2>
+      <p class="sub">A program that keeps running on your computer and waits for instructions – via chat, hotkey or “Hey Julia”.</p>
+      <div class="grid">
+        <div class="karte"><div class="ico">🖥️</div><h3>Sees &amp; acts</h3><p>Screenshots of all monitors, clicks, types, opens programs, writes and moves files, runs PowerShell.</p></div>
+        <div class="karte"><div class="ico">🎙️</div><h3>Listens &amp; speaks</h3><p>Whisper understands you, a natural voice (Piper) replies – both offline on your PC.</p></div>
+        <div class="karte"><div class="ico">🚦</div><h3>Asks first</h3><p>Every action goes through the traffic light: green just happens, yellow needs your yes, red never.</p></div>
+        <div class="karte"><div class="ico">🧩</div><h3>Small helpers</h3><p>Media &amp; volume, snap windows, timer &amp; stopwatch, calculate, convert, QR codes.</p></div>
+        <div class="karte"><div class="ico">⧉</div><h3>Extensible via MCP</h3><p>Julia uses the tools of any MCP server – every call asks first.</p></div>
+        <div class="karte"><div class="ico">📱</div><h3>On your phone too</h3><p>Standalone Android and iOS app; optionally connects to your PC on your home network/VPN.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="minecraft">
+    <div class="wrap">
+      <h2>Plays Minecraft with you</h2>
+      <p class="sub">As a character of its own on your server: follows, protects, mines, hunts, crafts, builds – and on request plays its own way toward the Ender Dragon.</p>
+      <div class="grid">
+        <div class="karte"><div class="ico">🧠</div><h3>Thinks along</h3><p>Spots lava and drops, eats on its own, fights smart – retreats when low, keeps distance from creepers.</p></div>
+        <div class="karte"><div class="ico">🎯</div><h3>Plays through</h3><p>With <code>!spiel durch</code> she works her own way along a tech tree up to the Ender Dragon.</p></div>
+        <div class="karte"><div class="ico">📔</div><h3>Daily logbook</h3><p>Every step is written to disk immediately – survives crashes, so a play day is never lost.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="apps">
+    <div class="wrap">
+      <h2>Works with your apps</h2>
+      <p class="sub">Connect Julia to your own apps – enter the domain and your login, done.</p>
+      <div class="grid">
+        <div class="karte"><div class="ico">✓</div><h3>ToDoch</h3><p>“Put milk on my ToDoch list” – Julia creates the task.</p></div>
+        <div class="karte"><div class="ico">▶</div><h3>Streamo</h3><p>“Add Iron Man to my Streamo list” – find a title and add it.</p></div>
+        <div class="karte"><div class="ico">◆</div><h3>VibeWork</h3><p>Create projects, invite people and fetch the latest commit.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <h2>The traffic light</h2>
+      <p class="sub">Julia rates every action itself – you stay in control.</p>
+      <div class="ampel">
+        <div class="stufe"><span class="punkt g"></span><h3>Green</h3><p>Read, look, orb – just happens.</p></div>
+        <div class="stufe"><span class="punkt ge"></span><h3>Yellow</h3><p>Write, install, send – only with your yes.</p></div>
+        <div class="stufe"><span class="punkt r"></span><h3>Red</h3><p>Destructive things &amp; payment data – never.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="schluss">
+    <div class="wrap">
+      <h2>Get Julia</h2>
+      <p class="sub">No admin rights, just for your user account. Keys are stored encrypted with Windows.</p>
+      <div class="cta">
+        <a class="btn" href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe">⬇ Julia-AI-Setup.exe</a>
+        <a class="btn zweit" href="https://github.com/MoinMornhart/julia-ai/blob/main/README.en.md#installation">Step by step</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <a href="https://github.com/MoinMornhart/julia-ai">GitHub</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/releases">Releases</a>
+    <a href="https://github.com/MoinMornhart/julia-ai/blob/main/CHANGELOG.md">Changelog</a>
+    <a href="index.html">Deutsch</a>
+    <br><br>
+    <span>Julia · MIT license · runs locally on your PC</span>
+  </div>
+</footer>
+</body>
+</html>

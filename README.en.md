@@ -1,34 +1,29 @@
-<p align="center">
-  <img src="docs/bilder/logo.png" width="104" alt="Julia">
+<div align="center">
+
+<img src="docs/assets/banner.en.svg" alt="Julia – your AI for the Windows PC" width="100%">
+
+<p>
+  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai?label=version&color=ff7a1a&style=flat-square"></a>
+  <a href="https://github.com/MoinMornhart/julia-ai/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/MoinMornhart/julia-ai?label=last%20commit&color=ec4899&style=flat-square"></a>
+  <img alt="Windows 10 | 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white&style=flat-square">
+  <img alt="Electron" src="https://img.shields.io/badge/Electron-2c2e3b?logo=electron&logoColor=9feaf9&style=flat-square">
+  <img alt="Local: Whisper and Piper" src="https://img.shields.io/badge/local-Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square">
+  <a href="LICENSE"><img alt="License MIT" src="https://img.shields.io/github/license/MoinMornhart/julia-ai?label=license&color=22d3ee&style=flat-square"></a>
 </p>
 
-<h1 align="center">Julia</h1>
+<p><a href="README.md">🇩🇪 Deutsch</a> · <b>🇬🇧 English</b></p>
 
-<p align="center">
-  <b>Your AI for the Windows PC.</b><br>
-  Sees your screen, talks with you, plays Minecraft with you – and asks first before anything that can’t be undone.
-</p>
+**Sees your screen, talks with you, plays Minecraft with you – and asks first before anything that can’t be undone.**
 
-<p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest"><img src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai?label=version&color=ff7a1a&style=flat-square" alt="Latest version"></a>
-  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?style=flat-square" alt="Windows 10 and 11">
-  <img src="https://img.shields.io/badge/voice-local%3A%20Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square" alt="Speech recognition and voices run locally">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-555555?style=flat-square" alt="MIT license"></a>
-</p>
+🌐 **[Website](https://moinmornhart.github.io/julia-ai/)** · ⬇ **[Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)** · 📦 **[Install – step by step](docs/installation.en.md)**
 
-<p align="center">
-  <a href="README.md">Deutsch</a> · <b>English</b>
-</p>
+[What Julia is](#what-julia-is) · [Small helpers](#small-helpers) · [Your apps](#works-with-your-apps) · [Minecraft](#minecraft) · [On your phone](#julia-on-your-phone) · [Installation](#installation)
 
-<p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe"><b>⬇&nbsp; Download Julia-AI-Setup.exe</b></a>
-  &nbsp;·&nbsp;
-  <a href="docs/installation.en.md"><b>Install and get started – step by step</b></a>
-</p>
+<br>
 
-<p align="center">
-  <img src="docs/bilder/start-en.png" width="860" alt="Main window with the home page: greeting, appointments, inbox, reminders, PC status and costs">
-</p>
+<img src="docs/bilder/start-en.png" width="860" alt="Main window with the home page: greeting, appointments, inbox, reminders, PC status and costs">
+
+</div>
 
 ## At a glance
 

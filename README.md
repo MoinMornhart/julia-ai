@@ -1,34 +1,29 @@
-<p align="center">
-  <img src="docs/bilder/logo.png" width="104" alt="Julia">
+<div align="center">
+
+<img src="docs/assets/banner.svg" alt="Julia – deine KI für den Windows-PC" width="100%">
+
+<p>
+  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest"><img alt="Version" src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai?label=Version&color=ff7a1a&style=flat-square"></a>
+  <a href="https://github.com/MoinMornhart/julia-ai/commits/main"><img alt="Letzter Commit" src="https://img.shields.io/github/last-commit/MoinMornhart/julia-ai?label=Letzter%20Commit&color=ec4899&style=flat-square"></a>
+  <img alt="Windows 10 | 11" src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?logo=windows&logoColor=white&style=flat-square">
+  <img alt="Electron" src="https://img.shields.io/badge/Electron-2c2e3b?logo=electron&logoColor=9feaf9&style=flat-square">
+  <img alt="Lokal: Whisper und Piper" src="https://img.shields.io/badge/lokal-Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square">
+  <a href="LICENSE"><img alt="Lizenz MIT" src="https://img.shields.io/github/license/MoinMornhart/julia-ai?label=Lizenz&color=22d3ee&style=flat-square"></a>
 </p>
 
-<h1 align="center">Julia</h1>
+<p><b>🇩🇪 Deutsch</b> · <a href="README.en.md">🇬🇧 English</a></p>
 
-<p align="center">
-  <b>Deine KI für den Windows-PC.</b><br>
-  Sieht deinen Bildschirm, spricht mit dir, spielt Minecraft mit – und fragt vorher bei allem, was sich nicht zurücknehmen lässt.
-</p>
+**Sieht deinen Bildschirm, spricht mit dir, spielt Minecraft mit – und fragt vorher bei allem, was sich nicht zurücknehmen lässt.**
 
-<p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest"><img src="https://img.shields.io/github/v/release/MoinMornhart/julia-ai?label=Version&color=ff7a1a&style=flat-square" alt="Neueste Version"></a>
-  <img src="https://img.shields.io/badge/Windows-10%20%7C%2011-0078d4?style=flat-square" alt="Windows 10 und 11">
-  <img src="https://img.shields.io/badge/Sprache-lokal%3A%20Whisper%20%C2%B7%20Piper-2ea44f?style=flat-square" alt="Spracherkennung und Stimmen laufen lokal">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/Lizenz-MIT-555555?style=flat-square" alt="MIT-Lizenz"></a>
-</p>
+🌐 **[Webseite](https://moinmornhart.github.io/julia-ai/)** · ⬇ **[Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)** · 📦 **[Installieren – Schritt für Schritt](docs/installation.md)**
 
-<p align="center">
-  <b>Deutsch</b> · <a href="README.en.md">English</a>
-</p>
+[Was Julia ist](#was-julia-ist) · [Kleine Helfer](#kleine-helfer) · [Deine Apps](#zusammen-mit-deinen-apps) · [Minecraft](#minecraft) · [Aufs Handy](#julia-aufs-handy) · [Installation](#installation)
 
-<p align="center">
-  <a href="https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe"><b>⬇&nbsp; Julia-AI-Setup.exe herunterladen</b></a>
-  &nbsp;·&nbsp;
-  <a href="docs/installation.md"><b>Installieren und loslegen – Schritt für Schritt</b></a>
-</p>
+<br>
 
-<p align="center">
-  <img src="docs/bilder/start-de.png" width="860" alt="Hauptfenster mit Startseite: Begrüßung, Termine, Posteingang, Erinnerungen, PC-Zustand und Kosten">
-</p>
+<img src="docs/bilder/start-de.png" width="860" alt="Hauptfenster mit Startseite: Begrüßung, Termine, Posteingang, Erinnerungen, PC-Zustand und Kosten">
+
+</div>
 
 ## Auf einen Blick
 
