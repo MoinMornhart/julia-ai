@@ -125,3 +125,53 @@ test('Stremio: nichts gefunden gibt eine klare Meldung', async () => {
   const apps = new Apps({ fetch, tresor: t });
   await assert.rejects(() => apps.stremioHinzufuegen('gibtsnichtxyz'), /nichts/i);
 });
+
+test('VibeWork: Verbinden prüft die API-Adresse', () => {
+  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
+  assert.throws(() => apps.vibeworkVerbinden({ basisUrl: 'keine-url' }), /Adresse/);
+  apps.vibeworkVerbinden({ basisUrl: 'https://api.vibework.test/v1/', token: 'geheim' });
+  assert.equal(apps.verbunden().vibework, true);
+});
+
+test('VibeWork: Projekt anlegen ruft POST /projects mit Bearer-Token', async () => {
+  const t = tresor();
+  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
+  const fetch = fakeFetch([['/projects', { daten: { id: 'p7', name: 'Website' } }]]);
+  const apps = new Apps({ fetch, tresor: t });
+  const r = await apps.vibeworkProjektAnlegen('Website');
+  assert.equal(r.id, 'p7');
+  assert.equal(r.name, 'Website');
+  const a = fetch.aufrufe[0];
+  assert.equal(a.url, 'https://api.vibework.test/v1/projects');
+  assert.equal(a.optionen.method, 'POST');
+  assert.equal(a.optionen.headers.Authorization, 'Bearer tok123');
+  assert.equal(a.body.name, 'Website');
+});
+
+test('VibeWork: Einladen postet an /projects/{id}/invites', async () => {
+  const t = tresor();
+  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
+  const fetch = fakeFetch([['/invites', { daten: { ok: true } }]]);
+  const apps = new Apps({ fetch, tresor: t });
+  const r = await apps.vibeworkEinladen('p7', 'anna@example.com');
+  assert.equal(r.person, 'anna@example.com');
+  const a = fetch.aufrufe[0];
+  assert.match(a.url, /\/projects\/p7\/invites$/);
+  assert.equal(a.body.email, 'anna@example.com');
+});
+
+test('VibeWork: letzten Commit holen liest gängige Feldnamen', async () => {
+  const t = tresor();
+  t.schreiben('vibework', { basisUrl: 'https://api.vibework.test/v1', token: 'tok123' });
+  const fetch = fakeFetch([['/commits/latest', { daten: { sha: 'abc123def456', message: 'Fix', author: 'Anna', date: '2026-09-15' } }]]);
+  const apps = new Apps({ fetch, tresor: t });
+  const c = await apps.vibeworkLetzterCommit('p7');
+  assert.equal(c.sha, 'abc123def456');
+  assert.equal(c.message, 'Fix');
+  assert.equal(c.author, 'Anna');
+});
+
+test('VibeWork: ohne Verbindung klare Fehlermeldung', async () => {
+  const apps = new Apps({ fetch: fakeFetch([]), tresor: tresor() });
+  await assert.rejects(() => apps.vibeworkProjektAnlegen('X'), /nicht verbunden/);
+});

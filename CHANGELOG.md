@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.9.0 – 2026-09-15
+- Julia arbeitet jetzt auch mit VibeWork: sie legt auf Ansage Projekte an, lädt Leute zu einem Projekt ein und holt den letzten Commit – über die VibeWork-API, die du mit Adresse und Token in den Einstellungen verbindest
+
 ## 0.8.2 – 2026-09-15
 - Die Aufgaben-App heißt jetzt überall richtig ToDoch (Einstellungen, Julias Antworten, Anleitung)
 

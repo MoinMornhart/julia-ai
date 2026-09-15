@@ -208,17 +208,22 @@ function appVerbinden() {
 
 function appsZeigen(s) {
   s = s || {};
-  $('kontoApps').classList.toggle('verbunden', !!(s.todoist || s.stremio));
+  $('kontoApps').classList.toggle('verbunden', !!(s.todoist || s.stremio || s.vibework));
   $('dienstTodoist').classList.toggle('verbunden', !!s.todoist);
   $('dienstStremio').classList.toggle('verbunden', !!s.stremio);
+  $('dienstVibework').classList.toggle('verbunden', !!s.vibework);
   $('todoistStatus').textContent = s.todoist ? tx('apps.verbunden') : tx('app.aus');
   $('stremioStatus').textContent = s.stremio ? tx('apps.verbunden') : tx('app.aus');
+  $('vibeworkStatus').textContent = s.vibework ? tx('apps.verbunden') : tx('app.aus');
   $('todoistTrennen').hidden = !s.todoist;
   $('todoistVerbinden').textContent = tx(s.todoist ? 'apps.neu_verbinden' : 'apps.verbinden');
   if (s.todoist) $('todoistToken').placeholder = tx('apps.verbunden');
   $('stremioTrennen').hidden = !s.stremio;
   $('stremioVerbinden').textContent = tx(s.stremio ? 'apps.neu_verbinden' : 'apps.verbinden');
   if (s.stremioMail) $('stremioMail').value = $('stremioMail').value || s.stremioMail;
+  $('vibeworkTrennen').hidden = !s.vibework;
+  $('vibeworkVerbinden').textContent = tx(s.vibework ? 'apps.neu_verbinden' : 'apps.verbinden');
+  if (s.vibeworkUrl) $('vibeworkUrl').value = $('vibeworkUrl').value || s.vibeworkUrl;
 }
 
 function appsMeldung(id, text, fehler = false) {
@@ -245,6 +250,14 @@ function appsVerbinden() {
     else { $('stremioPw').value = ''; appsMeldung('stremioMeldung', tx('apps.verbunden')); }
   };
   $('stremioTrennen').onclick = async () => { const r = await julia.appsTrennen('stremio'); appsZeigen(r.status); appsMeldung('stremioMeldung', ''); };
+  $('vibeworkVerbinden').onclick = async () => {
+    appsMeldung('vibeworkMeldung', '');
+    const r = await julia.appsVibework({ basisUrl: $('vibeworkUrl').value, token: $('vibeworkToken').value });
+    appsZeigen(r.status);
+    if (r.fehler) appsMeldung('vibeworkMeldung', r.fehler, true);
+    else { $('vibeworkToken').value = ''; appsMeldung('vibeworkMeldung', tx('apps.verbunden')); }
+  };
+  $('vibeworkTrennen').onclick = async () => { const r = await julia.appsTrennen('vibework'); appsZeigen(r.status); appsMeldung('vibeworkMeldung', ''); };
   $('todoistOeffnen').onclick = () => julia.appsOeffnen('todoist');
   $('stremioOeffnen').onclick = () => julia.appsOeffnen('stremio');
   $('vibeworkOeffnen').onclick = () => julia.appsOeffnen('vibework');

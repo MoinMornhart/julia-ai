@@ -32,10 +32,10 @@ const APPS = {
   },
   vibework: {
     name: 'VibeWork',
-    zweck: 'Fokus',
+    zweck: 'Projekte',
     oeffnen: 'https://www.vibework.it/',
     web: 'https://www.vibework.it/',
-    aktionen: ['oeffnen', 'status'],
+    aktionen: ['oeffnen', 'projekt_anlegen', 'einladen', 'letzter_commit', 'status'],
   },
 };
 
@@ -62,10 +62,13 @@ class Apps {
 
   // Für die Einstellungen: welche Dienste sind verbunden (Zugangsdaten da)?
   verbunden() {
+    const vw = this.tresor.lesen('vibework') || {};
     return {
       todoist: !!(this.tresor.lesen('todoist') || {}).token,
       stremio: !!(this.tresor.lesen('stremio') || {}).token,
       stremioMail: (this.tresor.lesen('stremio') || {}).email || '',
+      vibework: !!vw.basisUrl,
+      vibeworkUrl: vw.basisUrl || '',
     };
   }
 
@@ -76,6 +79,7 @@ class Apps {
       let verbunden = false;
       if (id === 'todoist') verbunden = !!(this.tresor.lesen('todoist') || {}).token;
       else if (id === 'stremio') verbunden = !!(this.tresor.lesen('stremio') || {}).token;
+      else if (id === 'vibework') verbunden = !!(this.tresor.lesen('vibework') || {}).basisUrl;
       else verbunden = null; // braucht keine Verbindung
       const wie = verbunden === null ? 'zum Öffnen bereit' : verbunden ? 'verbunden' : 'noch nicht verbunden';
       zeilen.push(`${info.name} (${info.zweck}): ${wie}.`);
@@ -204,6 +208,67 @@ class Apps {
       body: JSON.stringify({ authKey: key, collection: 'libraryItem', changes: [eintrag] }),
     }, 'Streamo-Bibliothek');
     return { name: m.name, typ: m.typ, jahr: m.jahr, id: m.id };
+  }
+
+  // ---- VibeWork ----------------------------------------------------------
+  // Eigene REST-API (Basis-URL + Token hinterlegst du in den Einstellungen).
+  // Julia ruft genau diese Endpunkte auf, Auth per Bearer-Token im Header
+  // `Authorization: Bearer <token>` und `Content-Type: application/json`:
+  //
+  //   • Projekt anlegen   POST  {basis}/projects                   { "name": "…" }
+  //       → Antwort: { "id": "…", "name": "…" }
+  //   • Person einladen   POST  {basis}/projects/{id}/invites      { "email": "…" }
+  //       → Antwort: beliebig (2xx = ok)
+  //   • Letzter Commit    GET   {basis}/projects/{id}/commits/latest
+  //       → Antwort: { "sha": "…", "message": "…", "author": "…", "date": "…" }
+  //
+  // Alternative Feldnamen werden mitgelesen (id/_id, sha/id, message/nachricht …).
+  vibeworkVerbinden({ basisUrl, token } = {}) {
+    const url = String(basisUrl || '').trim().replace(/\/+$/, '');
+    if (!/^https?:\/\/.+/i.test(url)) throw new Error('Bitte eine gültige VibeWork-API-Adresse angeben (mit https://).');
+    this.tresor.schreiben('vibework', { basisUrl: url, token: String(token || '').trim() });
+  }
+
+  _vibework() {
+    const v = this.tresor.lesen('vibework') || {};
+    if (!v.basisUrl) throw new Error('VibeWork ist noch nicht verbunden. In den Einstellungen unter „Apps“ die API-Adresse und den Token hinterlegen.');
+    return v;
+  }
+
+  _vibeworkKopf(v) {
+    const h = { 'Content-Type': 'application/json' };
+    if (v.token) h.Authorization = `Bearer ${v.token}`;
+    return h;
+  }
+
+  async vibeworkProjektAnlegen(name) {
+    const v = this._vibework();
+    const n = String(name || '').trim();
+    if (!n) throw new Error('Wie soll das Projekt heißen?');
+    const r = await this._json(`${v.basisUrl}/projects`, { method: 'POST', headers: this._vibeworkKopf(v), body: JSON.stringify({ name: n }) }, 'VibeWork');
+    return { id: r && (r.id || r._id || r.projectId), name: (r && r.name) || n };
+  }
+
+  async vibeworkEinladen(projekt, person) {
+    const v = this._vibework();
+    const p = String(projekt || '').trim();
+    const wer = String(person || '').trim();
+    if (!p || !wer) throw new Error('Ich brauche das Projekt und wen ich einladen soll.');
+    await this._json(`${v.basisUrl}/projects/${encodeURIComponent(p)}/invites`, { method: 'POST', headers: this._vibeworkKopf(v), body: JSON.stringify({ email: wer }) }, 'VibeWork');
+    return { projekt: p, person: wer };
+  }
+
+  async vibeworkLetzterCommit(projekt) {
+    const v = this._vibework();
+    const p = String(projekt || '').trim();
+    if (!p) throw new Error('Von welchem Projekt soll ich den letzten Commit holen?');
+    const r = await this._json(`${v.basisUrl}/projects/${encodeURIComponent(p)}/commits/latest`, { headers: this._vibeworkKopf(v) }, 'VibeWork');
+    return {
+      sha: r && (r.sha || r.id || r.hash),
+      message: r && (r.message || r.nachricht || r.msg),
+      author: r && (r.author || r.autor || r.user),
+      date: r && (r.date || r.datum || r.timestamp),
+    };
   }
 }
 

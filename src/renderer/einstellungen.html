@@ -318,14 +318,27 @@
 
           <div class="app-dienst" id="dienstVibework">
             <div class="app-kopf">
-              <span class="app-logo vibework" aria-hidden="true">🎧</span>
+              <span class="app-logo vibework" aria-hidden="true">◆</span>
               <div class="app-titel">
                 <strong>VibeWork <small class="hinweis" data-t="apps.vibework_zweck"></small></strong>
-                <small class="app-status" data-t="apps.vibework_frei"></small>
+                <small class="app-status" id="vibeworkStatus"></small>
               </div>
               <button class="zweit klein" id="vibeworkOeffnen" data-t="apps.oeffnen"></button>
             </div>
             <p class="hinweis" data-t="apps.vibework_hinweis"></p>
+            <div class="feld">
+              <label for="vibeworkUrl" data-t="apps.vibework_url"></label>
+              <input id="vibeworkUrl" type="url" maxlength="300" spellcheck="false" autocomplete="off" placeholder="https://api.vibework.example/v1">
+            </div>
+            <div class="feld">
+              <label for="vibeworkToken" data-t="apps.vibework_token"></label>
+              <input id="vibeworkToken" type="password" maxlength="200" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="zeile">
+              <button class="primaer klein" id="vibeworkVerbinden" data-t="apps.verbinden"></button>
+              <button class="zweit klein" id="vibeworkTrennen" data-t="konten.trennen" hidden></button>
+            </div>
+            <small class="konto-meldung" id="vibeworkMeldung"></small>
           </div>
         </div>
       </div>

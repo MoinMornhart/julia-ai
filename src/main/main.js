@@ -1369,8 +1369,11 @@ function ipcEinrichten() {
   ipc.handle('apps:stremio', async (_e, daten) => {
     try { const r = await agent.ctx.apps.stremioAnmelden(daten || {}); return { ok: true, email: r.email, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
   });
+  ipc.handle('apps:vibework', (_e, daten) => {
+    try { agent.ctx.apps.vibeworkVerbinden(daten || {}); return { ok: true, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
+  });
   ipc.handle('apps:trennen', (_e, welche) => {
-    if (welche === 'todoist' || welche === 'stremio') konten.tresor.loeschen(welche);
+    if (['todoist', 'stremio', 'vibework'].includes(welche)) konten.tresor.loeschen(welche);
     return { status: agent.ctx.apps.verbunden() };
   });
   ipc.handle('apps:oeffnen', async (_e, welche) => {

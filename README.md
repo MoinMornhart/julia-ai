@@ -71,6 +71,7 @@
 
 ## Das ist neu
 
+- **VibeWork: Projekte steuern** – Julia legt auf Ansage neue Projekte an, lädt Leute dazu ein und holt dir den letzten Commit – über die VibeWork-API (Adresse + Token in den Einstellungen). Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
 - **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
@@ -78,7 +79,6 @@
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
 - **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
 - **Natürliche Stimmen & Whisper** – Thorsten oder Kerstin und lokale Spracherkennung, beides offline auf deinem PC.
-- **MCP-Server** – Julia nutzt die Werkzeuge beliebiger [MCP-Server](#mcp-server); jeder Aufruf fragt vorher.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe mal `jarvis` in den Chat. 😉
 
@@ -181,7 +181,7 @@ verbindest:
 |---|---|---|
 | **[ToDoch](https://todoist.com)** – Aufgaben | „Setz Milch auf meine ToDoch-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe samt Fälligkeit an. | API-Token (ToDoch → Einstellungen → Integrationen → Entwickler) |
 | **[Streamo](https://www.stremio.com)** – Filme & Serien | „Füg Iron Man zu meiner Streamo-Liste hinzu“ – Julia sucht den Titel und nimmt ihn in deine Bibliothek auf; auch durchsuchen und öffnen. | Anmeldung mit deinem Streamo-Konto (Passwort wird nicht gespeichert, nur der Zugangs-Schlüssel, verschlüsselt) |
-| **VibeWork** – Fokus-Timer | „Öffne VibeWork“ – die App lässt sich starten. | nichts nötig |
+| **VibeWork** – Projekte & Commits | „Leg ein VibeWork-Projekt Website an“, „Lad Anna zu Projekt Website ein“, „Hol den letzten Commit von Website“ – über die VibeWork-API. | API-Adresse + Token |
 
 Daten an eine App zu senden (Aufgabe anlegen, zur Liste hinzufügen) ist ein **GELB**-Schritt der
 Ampel – Julia fragt vorher. Zugangsdaten liegen wie alle Konten nur verschlüsselt auf deinem PC

@@ -821,26 +821,30 @@ WERKZEUGE.push({
 // Dienst senden ist GELB.
 WERKZEUGE.push({
   name: 'apps',
-  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Fokus). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für ToDoch "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr" – ToDoch versteht natürliche Sprache); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie – nimmt ihn in die Bibliothek/„Meine Liste“ auf) oder "suchen" (text = Titel). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
+  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Projekte/Commits). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für ToDoch "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr"); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie) oder "suchen" (text = Titel); für VibeWork "projekt_anlegen" (text = Projektname), "einladen" (projekt = Projekt-ID/Name, person = E-Mail/Name) oder "letzter_commit" (projekt = Projekt-ID/Name). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
   input_schema: {
     type: 'object',
     properties: {
       app: { type: 'string', enum: ['todoist', 'stremio', 'vibework'] },
-      aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen'] },
-      text: { type: 'string' },
+      aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit'] },
+      text: { type: 'string', description: 'Aufgabe (ToDoch), Titel (Streamo) oder Projektname (VibeWork projekt_anlegen).' },
       faellig: { type: 'string', description: 'nur ToDoch: Fälligkeit in natürlicher Sprache, z. B. "morgen 9 Uhr".' },
       typ: { type: 'string', enum: ['film', 'serie'], description: 'nur Streamo.' },
+      projekt: { type: 'string', description: 'nur VibeWork: Projekt-ID oder -Name für einladen/letzter_commit.' },
+      person: { type: 'string', description: 'nur VibeWork einladen: E-Mail oder Name der Person.' },
     },
     required: ['app', 'aktion'],
   },
   fremd: true,
-  // Etwas in eine App legen oder dort suchen geht nach außen (an ToDoch/Streamo).
-  nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen'].includes(e.aktion),
+  // Etwas in eine App legen/anlegen oder dort suchen geht nach außen (an ToDoch/Streamo/VibeWork).
+  nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen', 'projekt_anlegen', 'einladen', 'letzter_commit'].includes(e.aktion),
   einstufen(e) {
     const { APPS } = require('./apps');
     const name = (APPS[String(e.app || '').toLowerCase()] || {}).name || e.app;
-    if (e.aktion === 'aufgabe' || e.aktion === 'liste_hinzufuegen') {
-      return { stufe: GELB, kategorie: 'netz', grund: `Daten an ${name} senden`, beschreibung: `${name}: ${e.aktion === 'aufgabe' ? 'Aufgabe anlegen' : 'zur Liste hinzufügen'} – ${e.text || ''}` };
+    const schreib = { aufgabe: 'Aufgabe anlegen', liste_hinzufuegen: 'zur Liste hinzufügen', projekt_anlegen: 'Projekt anlegen', einladen: 'Person einladen' };
+    if (schreib[e.aktion]) {
+      const was = e.aktion === 'einladen' ? `${e.person || ''} zu ${e.projekt || ''}` : (e.text || e.projekt || '');
+      return { stufe: GELB, kategorie: 'netz', grund: `Daten an ${name} senden`, beschreibung: `${name}: ${schreib[e.aktion]} – ${was}` };
     }
     return { ...gruen(), beschreibung: `${name}: ${e.aktion}` };
   },
@@ -869,6 +873,21 @@ WERKZEUGE.push({
         if (e.app !== 'stremio') throw new Error('„liste_hinzufuegen“ gibt es nur für Streamo.');
         const r = await ctx.apps.stremioHinzufuegen(e.text, { typ: e.typ });
         return `Zu deiner Streamo-Liste hinzugefügt: ${r.name}${r.jahr ? ` (${r.jahr})` : ''} – ${r.typ === 'series' ? 'Serie' : 'Film'}.`;
+      }
+      case 'projekt_anlegen': {
+        if (e.app !== 'vibework') throw new Error('„projekt_anlegen“ gibt es nur für VibeWork.');
+        const r = await ctx.apps.vibeworkProjektAnlegen(e.text);
+        return `VibeWork-Projekt angelegt: ${r.name}${r.id ? ` (ID ${r.id})` : ''}.`;
+      }
+      case 'einladen': {
+        if (e.app !== 'vibework') throw new Error('„einladen“ gibt es nur für VibeWork.');
+        const r = await ctx.apps.vibeworkEinladen(e.projekt, e.person);
+        return `${r.person} wurde zum VibeWork-Projekt ${r.projekt} eingeladen.`;
+      }
+      case 'letzter_commit': {
+        if (e.app !== 'vibework') throw new Error('„letzter_commit“ gibt es nur für VibeWork.');
+        const c = await ctx.apps.vibeworkLetzterCommit(e.projekt);
+        return fremd('VibeWork', `Letzter Commit in ${e.projekt}: ${c.message || '(keine Nachricht)'}${c.author ? ` – von ${c.author}` : ''}${c.date ? ` am ${c.date}` : ''}${c.sha ? ` [${String(c.sha).slice(0, 10)}]` : ''}.`);
       }
       default:
         throw new Error(`Unbekannte Aktion "${e.aktion}".`);
