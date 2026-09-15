@@ -68,7 +68,7 @@ damit die Lösung dokumentiert ist und beim nächsten Mal sofort greift.
 - [x] Startcrash (schwarzes Fenster) selbst heilen: erster Absturz → Software-Rendering + Auto-Neustart (#7).
 - [x] Opt-in-Diagnose: bereinigten Crash-/Diagnose-Bericht auf Wunsch als Bug an VibeWork senden ([src/main/diagnose.js](src/main/diagnose.js) mit Scrubber – nie IP/Tokens/PII; Werkzeug `diagnose`, Einstellung `diagnose.senden`, Standard aus).
 - [x] Reparatur-Start: `Julia AI.exe --reparatur` (bzw. `--software`/`--safe`) erzwingt Software-Grafik, falls die GPU beim Start crasht ([src/main/main.js](src/main/main.js)).
-- [ ] Wöchentliche, tokenschonende Selbstprüfung.
+- [x] Wöchentliche, tokenschonende Selbstprüfung: schaut ohne KI ins Start-Logbuch nach Abstürzen; meldet nur mit Zustimmung (bereinigt) an VibeWork – [src/main/selbstpruefung.js](src/main/selbstpruefung.js).
 - [ ] Treiber-/Abhängigkeitsprüfung im Installer.
 - [ ] **Multitasking** – mehrere Aufgaben/Aufträge gleichzeitig bzw. parallel verwalten (vom Nutzer gewünscht).
 - [ ] Bessere Android-Unterstützung (Issue #6): Shizuku/Termux-Ansatz, Bildschirmsteuerung ohne Root, tokensparend – großes Rechercheprojekt.

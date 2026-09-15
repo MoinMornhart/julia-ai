@@ -33,7 +33,9 @@ app.enableSandbox();
 // Entscheidung über Software-Rendering, damit Julia nie wortlos verschwindet.
 const startpruefung = require('./startpruefung');
 const diagnose = require('./diagnose');
+const selbstpruefung = require('./selbstpruefung');
 let letzteGpu = {}; // zuletzt erkannte GPU/Treiber, für den Diagnose-Bericht
+let pruefTimer = null; // wöchentliche Selbstprüfung
 const startLog = startpruefung.logbuchOeffnen(DATEN);
 const startFlaggen = startpruefung.flaggenPruefen(process.argv);
 startLog.schreiben('START', 'Julia startet', {
@@ -156,6 +158,28 @@ function vorleseStimme() {
 
 function version() {
   return JSON.parse(fs.readFileSync(path.join(APP, 'package.json'), 'utf8')).version;
+}
+
+// Wöchentliche Selbstprüfung: ohne KI ins Start-Logbuch schauen, ob es zuletzt
+// Abstürze/Grafikprobleme gab. Nur mit ausdrücklicher Zustimmung (diagnose.senden)
+// und verbundenem VibeWork wird ein bereinigter Bericht gemeldet.
+async function wochenPruefung() {
+  try {
+    const datei = path.join(DATEN, 'selbstpruefung.json');
+    let letzte = 0;
+    try { letzte = JSON.parse(fs.readFileSync(datei, 'utf8')).letzte || 0; } catch { /* erste Prüfung */ }
+    if (!selbstpruefung.faellig(letzte, Date.now())) return;
+    let log = '';
+    try { log = fs.readFileSync(startLog.datei, 'utf8'); } catch { /* kein Logbuch */ }
+    const p = selbstpruefung.probleme(log);
+    try { fs.writeFileSync(datei, JSON.stringify({ letzte: Date.now() })); } catch { /* egal */ }
+    if (!p) { startLog.schreiben('SELBSTPRUEFUNG', 'Wöchentliche Prüfung: keine Auffälligkeiten.'); return; }
+    startLog.schreiben('SELBSTPRUEFUNG', `Wöchentliche Prüfung: ${p.anzahl} auffällige Einträge`, p.arten);
+    if (config.get('diagnose.senden') && agent && agent.ctx && agent.ctx.apps && agent.ctx.apps.verbunden().vibework) {
+      const b = agent.ctx.diagnoseBericht('Wöchentliche Selbstprüfung');
+      await agent.ctx.apps.vibeworkBug(b.titel, b.text).catch(() => {});
+    }
+  } catch { /* Selbstprüfung darf nie stören */ }
 }
 
 // --- API-Schlüssel: mit Windows (DPAPI) verschlüsselt in der config.json ---
@@ -1999,6 +2023,10 @@ async function start() {
   }, 20000);
   // Eigenes Mikrofon oder eigener Lautsprecher: Audio-Hilfe schon beim Start bereitlegen.
   if (config.get('sprache.mikrofon') || config.get('sprache.lautsprecher')) audio.dll().catch(() => {});
+  // Wöchentliche Selbstprüfung (tokenschonend, ohne KI): einmal kurz nach dem
+  // Start, dann täglich prüfen, ob wieder eine Woche um ist.
+  setTimeout(wochenPruefung, 60000);
+  pruefTimer = setInterval(wochenPruefung, 24 * 3600 * 1000);
 
   // MCP-Server: ihre Werkzeuge kommen zu Julias eigenen dazu.
   mcp = new McpVerwaltung({ config, tresor: konten.tresor, version: app.getVersion() });
@@ -2177,6 +2205,7 @@ if (!app.requestSingleInstanceLock()) {
     if (sync) sync.stoppen();
     if (appserver) appserver.stoppen();
     clearInterval(spielTimer);
+    clearInterval(pruefTimer);
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();
     if (weckwort) weckwort.stoppen();

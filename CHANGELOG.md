@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.0 – 2026-09-15
+- Julia prüft sich jetzt einmal pro Woche selbst: sie schaut ohne KI-Kosten ins Start-Logbuch, ob es zuletzt Abstürze oder Grafikprobleme gab, hält das fest und meldet es nur, wenn du die Diagnose-Meldung ausdrücklich eingeschaltet hast (bereinigt, ohne IP oder Tokens)
+
 ## 1.3.3 – 2026-09-15
 - Eigene KI-Adresse funktioniert jetzt auch, wenn du die volle Endpunkt-URL einträgst (…/v1/chat/completions): Julia kürzt sie automatisch auf die Basis, damit der Aufruf nicht doppelt zusammengesetzt wird
 
