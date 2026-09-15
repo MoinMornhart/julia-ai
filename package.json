@@ -1,7 +1,7 @@
 {
   "name": "julia-ai",
   "productName": "Julia",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
   "main": "src/main/main.js",
   "author": "MoinMornhart",
@@ -78,7 +78,8 @@
       "uninstallerIcon": "build/icon.ico",
       "installerHeaderIcon": "build/icon.ico",
       "uninstallDisplayName": "Julia ${version}",
-      "license": "LICENSE"
+      "license": "LICENSE",
+      "include": "build/installer.nsh"
     },
     "publish": [
       {

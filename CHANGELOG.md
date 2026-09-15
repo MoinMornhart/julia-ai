@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.6.1 – 2026-09-16
+- Installer und automatisches Update laufen jetzt auch, wenn Julia gerade geöffnet ist: der Assistent schließt eine laufende Julia vorher automatisch (erst sanft, dann notfalls hart), statt mit einem Datei-in-Benutzung-Fehler abzubrechen
+
 ## 1.6.0 – 2026-09-16
 - PC-Steuerung: Julia führt jetzt ein lokales Leistungs-Logbuch (Dauer und eigener CPU-Verbrauch je Aktion, ohne Inhalte) – so lässt sich eine CPU-Spitze dem Verursacher zuordnen; an den Entwickler geht davon nur eine bereinigte Zusammenfassung, und nur bei eingeschalteter Diagnose
 
