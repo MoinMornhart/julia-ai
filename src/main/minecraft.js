@@ -632,6 +632,7 @@ class Minecraft extends EventEmitter {
     this.pause = 5;
     this.jagt = null;
     this.isst = false;
+    this.selbstschutz = null; // id des Feindes, gegen den sie sich gerade selbst wehrt
     this.jeder = false; // auf alle Spieler hören statt nur auf den Besitzer
     this.erlaubte = new Map(); // zusätzlich erlaubte Spieler: kleingeschrieben → Anzeigename
   }
@@ -737,8 +738,22 @@ class Minecraft extends EventEmitter {
 
   _einrichten(bot) {
     const bewegung = new this.pf.Movements(bot);
-    bewegung.canDig = false; // beim Folgen und Kämpfen nichts von deinen Bauten abreißen
+    // Sie darf sich durch natürliches Gelände graben (aus Löchern klettern, Wege
+    // bahnen) und mit günstigen Blöcken hochklettern – aber NIE Wertvolles oder
+    // Gebautes anfassen. Der Pathfinder bevorzugt ohnehin Wege ohne Graben.
+    bewegung.canDig = true;
     bewegung.allowParkour = true;
+    bewegung.allow1by1towers = true;
+    const reg = bot.registry && bot.registry.blocksByName;
+    if (reg && bewegung.blocksCantBreak) {
+      // Alles, was typischerweise gebaut/wertvoll ist: nie abbauen (auch nicht zum Weg).
+      const schutz = /(chest|barrel|shulker_box|furnace|smoker|crafting_table|_bed$|_door$|_trapdoor$|_fence_gate$|spawner|beacon|conduit|enchanting_table|brewing_stand|anvil|lectern|grindstone|smithing_table|cartography_table|fletching_table|loom|hopper|dispenser|dropper|glass|_pane$|torch|lantern|_sign$|hanging_sign|item_frame|painting|_banner$|flower_pot|campfire|respawn_anchor|lodestone|bell|_wool$|_carpet$|jukebox|note_block|cake|beehive|bee_nest|end_portal_frame|bookshelf|glazed_terracotta|target|composter|cauldron|_stairs$|_slab$|_fence$|_wall$|_planks$|bricks|concrete|terracotta|iron_bars|chain|ladder|scaffolding|_button$|_pressure_plate$|_rail$|^rail$|obsidian|budding_amethyst|reinforced_deepslate|bedrock)/;
+      for (const name of Object.keys(reg)) if (schutz.test(name)) bewegung.blocksCantBreak.add(reg[name].id);
+      // Zum Hochklettern setzt sie günstige Blöcke, statt zu graben.
+      const gerust = ['dirt', 'cobblestone', 'cobbled_deepslate', 'netherrack', 'stone', 'andesite', 'diorite', 'granite', 'oak_planks', 'spruce_planks', 'birch_planks'];
+      const items = bot.registry.itemsByName || {};
+      if (Array.isArray(bewegung.scafoldingBlocks)) for (const n of gerust) if (items[n] && !bewegung.scafoldingBlocks.includes(items[n].id)) bewegung.scafoldingBlocks.push(items[n].id);
+    }
     bot.pathfinder.setMovements(bewegung);
     // Wegsuche in kleinen Happen (Standard: 40 ms je Tick) – sonst stockt
     // Julia neben dem Spiel.
@@ -1100,6 +1115,14 @@ class Minecraft extends EventEmitter {
     this._gefahrWache();
     const a = this.auftrag;
     const imDuell = a && a.art === 'kaempfen';
+    // Immer verteidigen: läuft gerade kein Kampfauftrag und ist ein Monster dicht
+    // dran, wehrt sich Julia selbst (bei wenig Leben zieht der Kampf sich zurück).
+    const kampfArt = a && (a.art === 'kaempfen' || a.art === 'beschuetzen' || a.art === 'jagen');
+    if (!kampfArt) {
+      const feind = this._naheGefahr();
+      if (feind) { this._selbstschutz(feind); return; }
+      if (this.selbstschutz != null) { this.selbstschutz = null; this._kampfPause(); this._aufgabeFortsetzen(); }
+    }
     // Hunger von selbst stillen, sobald der Balken sinkt – nur nicht mitten im
     // Duell (das regelt der Kampf). Ist das Leben knapp, hilft ein Goldapfel.
     if (!imDuell && this.ticks % 40 === 0) {
@@ -1147,6 +1170,36 @@ class Minecraft extends EventEmitter {
       }
       this._kampf(ziel);
     }
+  }
+
+  // Ein Monster ist so dicht dran, dass Julia sich wehren sollte (Creeper früher).
+  _naheGefahr() {
+    const bot = this.bot;
+    const p = bot.entity.position;
+    return bot.nearestEntity((e) => istFeind(e) && e.position && e.position.distanceTo(p) < (e.name === 'creeper' ? 8 : 5)) || null;
+  }
+
+  // Selbstverteidigung: Waffe/Rüstung an und den Feind bekämpfen (Kampf regelt
+  // Rückzug bei wenig Leben und Abstand zu Creepern selbst).
+  _selbstschutz(feind) {
+    if (this.selbstschutz == null) this._ausruesten();
+    this.selbstschutz = feind.id;
+    this._kampf(feind);
+  }
+
+  // Nach der Verteidigung die unterbrochene Aufgabe wieder aufnehmen.
+  _aufgabeFortsetzen() {
+    const a = this.auftrag;
+    if (!a || !this.bot) return;
+    const { GoalFollow, GoalNear } = this.pf.goals;
+    if (a.art === 'folgen') {
+      const e = this._spielerFigur(a.spieler);
+      if (e) { a.ziel = e; this.bot.pathfinder.setGoal(new GoalFollow(e, 2), true); }
+    } else if (a.art === 'kommen') {
+      const e = this._spielerFigur(a.spieler);
+      if (e) this.bot.pathfinder.setGoal(new GoalNear(e.position.x, e.position.y, e.position.z, 1.5));
+    }
+    // abbauen/gehen/bauen laufen über ihre eigenen Schleifen von selbst weiter.
   }
 
   // Wähle den gefährlichsten Feind in der Nähe (Creeper zuerst, dann der nächste).
@@ -1578,19 +1631,35 @@ class Minecraft extends EventEmitter {
   _schlafen() {
     const bot = this.bot;
     const ids = Object.keys(bot.registry.blocksByName).filter((n) => n.endsWith('_bed')).map((n) => bot.registry.blocksByName[n].id);
-    const bett = bot.findBlock({ matching: ids, maxDistance: 32 });
-    if (!bett) throw new Error('Hier in der Nähe ist kein Bett.');
     const { GoalNear } = this.pf.goals;
     const a = { art: 'schlafen' };
     this.auftrag = a;
     (async () => {
       try {
+        let bett = bot.findBlock({ matching: ids, maxDistance: 32 });
+        // Kein Bett da, aber eins im Inventar? Dann selbst hinstellen und darin schlafen.
+        if (!bett) {
+          const bettItem = bot.inventory.items().find((i) => i.name.endsWith('_bed'));
+          if (!bettItem) { this._fertig(a, 'Hier ist kein Bett – und ich habe auch keins dabei.'); return; }
+          const boden = bot.blockAt(bot.entity.position.offset(0, -1, 0));
+          const platz = boden ? boden.position.offset(0, 1, 0) : null;
+          if (platz && await this._setzeBlock({ x: platz.x, y: platz.y, z: platz.z }, bettItem.name).catch(() => false)) {
+            await new Promise((r) => setTimeout(r, 400));
+          }
+          bett = bot.findBlock({ matching: ids, maxDistance: 8 });
+          if (!bett) { this._fertig(a, 'Ich konnte hier kein Bett aufstellen (zu wenig Platz?).'); return; }
+        }
         await bot.pathfinder.goto(new GoalNear(bett.position.x, bett.position.y, bett.position.z, 2));
         if (this.auftrag !== a) return;
         await bot.sleep(bett);
         this._fertig(a, 'Gute Nacht – ich liege im Bett.');
       } catch (e) {
-        this._fertig(a, /night|thunder|nacht/i.test(e.message) ? 'Schlafen geht nur nachts oder bei Gewitter.' : `Schlafen klappt nicht: ${e.message}`);
+        const m = e.message || '';
+        this._fertig(a,
+          /night|thunder|nacht/i.test(m) ? 'Schlafen geht nur nachts oder bei Gewitter.'
+            : /monster|not safe|too far/i.test(m) ? 'Ich kann gerade nicht schlafen – Monster sind zu nah.'
+              : /occupied/i.test(m) ? 'Das Bett ist schon belegt.'
+                : `Schlafen klappt nicht: ${m}`);
       }
     })();
     return 'Ich gehe schlafen.';

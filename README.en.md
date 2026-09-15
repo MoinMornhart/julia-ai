@@ -66,9 +66,9 @@
 
 ## What's new
 
+- **Minecraft: more reliable & self-defending** – she now gets out of holes and up two blocks (placing blocks instead of tearing down your builds), **always defends herself** against mobs, and sleeps reliably – placing a bed from her inventory if needed. Plus, as before: `!spiel durch` up to the Ender Dragon, a daily logbook, and mining leaves chests, furnaces, doors and your builds untouched. See [Minecraft](#minecraft).
 - **Even more of your own apps** – alongside ToDoch, Streamo and VibeWork come **Patchfeld**, **Codewerk** and the **Content-Helper**: start learning sessions, check progress, plan posts and fetch ideas – all through your app's API. See [Works with your apps](#works-with-your-apps).
 - **VibeWork: run your projects** – on request Julia creates new projects, invites people to them and fetches the latest commit – via the VibeWork API (address + token in settings). See [Works with your apps](#works-with-your-apps).
-- **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request and boards boats. New: with `!spiel durch` she works her own way along a tech tree up to the Ender Dragon, a **daily logbook** survives crashes (open it from the panel), and she only listens to people you explicitly name. Plus a step-by-step [guide](docs/minecraft-spielen.md). See [Minecraft](#minecraft).
 - **Works together with your apps** – e.g. “Put milk on my ToDoch list” or “Add Iron Man to my Streamo list”. See [Works with your apps](#works-with-your-apps).
 - **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
 - **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.2.0 – 2026-09-15
+- Julia kommt in Minecraft jetzt aus Löchern und zwei Blöcke hoch (sie setzt dafür Blöcke, statt deine Bauten abzureißen), verteidigt sich immer selbst gegen Monster und schläft zuverlässig – stellt notfalls ein Bett aus dem Inventar auf
+
 ## 1.1.2 – 2026-09-15
 - Beim Abbauen lässt Julia jetzt Truhen, Öfen, Türen, Werkbänke, Betten, Glas, Fackeln und andere wertvolle oder gebaute Blöcke in Ruhe – sie reißt nicht mehr aus Versehen deine Bauten ab; nur wenn du genau diesen Block nennst, baut sie ihn ab, und sie sucht etwas näher statt quer durch die Basis
 

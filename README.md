@@ -66,9 +66,9 @@
 
 ## Das ist neu
 
+- **Minecraft: verlässlicher & wehrhaft** – sie kommt jetzt aus Löchern und zwei Blöcke hoch (setzt dafür Blöcke, statt deine Bauten abzureißen), **verteidigt sich immer selbst** gegen Monster und schläft zuverlässig – stellt notfalls ein Bett aus dem Inventar auf. Dazu wie gehabt: `!spiel durch` bis zum Enderdrachen, tägliches Logbuch, und beim Abbauen bleiben Truhen, Öfen, Türen und deine Bauten unangetastet. Siehe [Minecraft](#minecraft).
 - **Noch mehr eigene Apps** – zu ToDoch, Streamo und VibeWork kommen **Patchfeld**, **Codewerk** und der **Content-Helper** dazu: Lern-Sessions starten, Fortschritt abfragen, Beiträge planen und Ideen holen – alles über die API deiner App. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **VibeWork: Projekte steuern** – Julia legt auf Ansage neue Projekte an, lädt Leute dazu ein und holt dir den letzten Commit – über die VibeWork-API (Adresse + Token in den Einstellungen). Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
-- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
 - **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
 - **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
@@ -338,7 +338,10 @@ NeoProtect oder TCPShield).
 direkt in Julia – die KI gibt nur die Aufgabe vor. Sie **erkennt, was vor ihr liegt** (auch Lava
 oder ein Abgrund) und bremst von selbst, **isst**, sobald sie Hunger hat, und **kämpft klug**:
 Waffe und Rüstung legt sie selbst an, bei wenig Leben zieht sie sich zurück oder greift zum
-Goldapfel, und einen Creeper umarmt sie nicht, sondern hält Abstand.
+Goldapfel, und einen Creeper umarmt sie nicht, sondern hält Abstand. Sie **verteidigt sich immer
+selbst** – kommt ein Monster zu nah, wehrt sie sich, egal was sie gerade tut. Beim Laufen
+**klettert sie aus Löchern** und zwei Blöcke hoch, indem sie günstige Blöcke setzt; deine Bauten,
+Truhen und Wertsachen reißt sie dabei nie ab.
 
 - **Ansprechen:** Es reicht, wenn `Julia` irgendwo in der Nachricht steht (nicht nur am Anfang); `!` geht auch. Standardmäßig hört sie **nur auf dich**. Du kannst im Spiel einzelne Leute freigeben – „Julia, hör auch auf Peter und Anna“, „hör nicht mehr auf Peter“, „hör nur auf mich“ – oder im Panel grob „auf alle hören“ einschalten. Gehandelt wird immer nur im Spiel, nie am PC, und umstellen darf nur der Besitzer.
 
