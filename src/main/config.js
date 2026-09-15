@@ -131,6 +131,10 @@ const STANDARD = {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
     port: 8766,
   },
+  appserver: {
+    an: false, // Zugriff durch die Julia-Android-App im Heimnetz/VPN – standardmäßig aus
+    port: 8770,
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -203,6 +207,7 @@ function pruefen(schluessel, wert) {
     case 'freigabe.immer':
     case 'freigabe.fremd':
     case 'sync.an':
+    case 'appserver.an':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':
@@ -329,7 +334,8 @@ function pruefen(schluessel, wert) {
     case 'kosten.tageslimit_usd':
       return Math.round(zahl(wert, 0, 1000, 'Tageslimit') * 100) / 100;
     case 'overlay.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
-    case 'sync.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
+    case 'sync.port':
+    case 'appserver.port': return Math.round(zahl(wert, 1024, 65535, 'Port'));
     case 'code.projekte': {
       if (!Array.isArray(wert)) throw new Error('Projekte sind eine Liste von Ordnern.');
       const liste = [...new Set(wert.map((p) => String(p || '').trim()).filter((p) => path.isAbsolute(p)).map((p) => path.resolve(p)))];

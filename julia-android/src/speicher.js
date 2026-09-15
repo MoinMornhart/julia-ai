@@ -16,7 +16,19 @@ export const STANDARD_EINSTELLUNGEN = {
   anbieter: 'anthropic',
   modell: 'claude-sonnet-5',
   vorlesen: true,
+  pcAdresse: '', // z. B. 192.168.1.20:8770 oder 100.x.x.x:8770 (VPN)
+  pcModus: false, // true = Anfragen laufen über den PC statt direkt zum Anbieter
 };
+
+const PC_TOKEN = 'julia_pc_token';
+export async function pcTokenLesen() {
+  try { return (await SecureStore.getItemAsync(PC_TOKEN)) || ''; } catch { return ''; }
+}
+export async function pcTokenSpeichern(wert) {
+  const w = String(wert || '').trim();
+  if (w) await SecureStore.setItemAsync(PC_TOKEN, w);
+  else await SecureStore.deleteItemAsync(PC_TOKEN);
+}
 
 // SecureStore erlaubt nur [A-Za-z0-9._-] im Schlüsselnamen.
 const keyName = (anbieter) => `julia_api_key_${String(anbieter || 'anthropic').replace(/[^\w.-]/g, '')}`;

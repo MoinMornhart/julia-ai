@@ -62,6 +62,7 @@ function texteAnwenden(daten) {
   $('outlookAnleitung').href = ANLEITUNG_OUTLOOK[daten.sprachcode] || ANLEITUNG_OUTLOOK.de;
   if (kontenStand) kontenZeigen(kontenStand);
   if (syncStand) syncZeigen(syncStand);
+  if (appStand) appZeigen(appStand);
   if (whisperStand) whisperZeigen(whisperStand);
   if (piperStand) piperZeigen(piperStand);
   if (mcpStand) mcpZeigen(mcpStand);
@@ -161,6 +162,46 @@ function syncVerbinden() {
     syncZeigen(await julia.syncJetzt());
   };
   julia.on('sync:status', syncZeigen);
+}
+
+// --- PC-Verbindung für die Android-App ---
+
+let appStand = null;
+
+function appZeigen(s) {
+  appStand = s;
+  $('kontoApp').classList.toggle('verbunden', s.laeuft && s.gekoppelt);
+  let status = tx('app.aus');
+  if (s.fehler === 'port_belegt') status = tx('sync.fehler_port', { port: cfg ? cfg.appserver.port : '' });
+  else if (s.fehler) status = s.fehler;
+  else if (s.laeuft && s.gekoppelt) status = tx('app.gekoppelt');
+  else if (s.laeuft) status = tx('app.bereit');
+  $('appStatus').textContent = status;
+  $('appBereich').hidden = !s.laeuft;
+  $('appTrennen').hidden = !s.gekoppelt;
+  $('appKoppeln').textContent = tx(s.gekoppelt ? 'app.neu_koppeln' : 'app.koppeln');
+  $('appAdressen').textContent = s.adressen && s.adressen.length ? tx('app.adressen', { adressen: s.adressen.join('  ·  ') }) : '';
+  const codeOffen = s.koppelnBis && s.koppelnBis > Date.now();
+  $('appCodeBox').hidden = !codeOffen;
+}
+
+function appMeldung(text, fehler = false) {
+  const m = $('appMeldung');
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function appVerbinden() {
+  $('appKoppeln').onclick = async () => {
+    appMeldung('');
+    const r = await julia.appserverKoppeln();
+    appZeigen(r.status);
+    if (r.fehler) { appMeldung(r.fehler, true); return; }
+    $('appCode').textContent = r.code;
+    $('appCodeBox').hidden = false;
+  };
+  $('appTrennen').onclick = async () => { appZeigen(await julia.appserverTrennen()); appMeldung(''); };
+  julia.on('appserver:status', appZeigen);
 }
 
 // --- Design ---
@@ -852,6 +893,8 @@ async function init() {
   kontenZeigen(await julia.kontenStatus());
   syncVerbinden();
   syncZeigen(await julia.syncStatus());
+  appVerbinden();
+  appZeigen(await julia.appserverStatus());
   designVerbinden();
   designZeigen();
   kostenZeigen(await julia.kostenHeute());

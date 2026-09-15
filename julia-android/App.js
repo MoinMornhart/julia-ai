@@ -6,9 +6,10 @@ import {
 import { StatusBar } from 'expo-status-bar';
 import * as Speech from 'expo-speech';
 import { antwortStreamen, ANBIETER } from './src/anbieter';
+import { frage as pcFrage, koppeln as pcKoppeln } from './src/pc';
 import {
   einstellungenLesen, einstellungenSpeichern, gespraechLesen, gespraechSpeichern,
-  kostenAddieren, kostenLesen, schluesselLesen, schluesselSpeichern,
+  kostenAddieren, kostenLesen, pcTokenLesen, pcTokenSpeichern, schluesselLesen, schluesselSpeichern,
 } from './src/speicher';
 
 const sprache = (code) => (code === 'en' ? 'en-US' : 'de-DE');
@@ -106,17 +107,28 @@ function Chat({ f, einst, schluesselDa, nachrichten, setNachrichten, setKosten, 
     setLaeuft(true);
     const setzeAntwort = (t) => setNachrichten([...basis, { rolle: 'assistant', text: t }]);
     try {
-      const schluessel = await schluesselLesen(einst.anbieter);
-      const r = await antwortStreamen({
-        anbieter: einst.anbieter, modell: einst.modell, schluessel, einstellungen: einst, verlauf: basis,
-        beiText: (t) => setzeAntwort(t),
-        beiXHR: (x) => { xhrRef.current = x; },
-      });
-      const neu = [...basis, { rolle: 'assistant', text: r.text }];
+      let antwortText;
+      if (einst.pcModus) {
+        // Über den PC: die dortige Julia bearbeitet die Anfrage (samt Ampel am PC).
+        const token = await pcTokenLesen();
+        if (!token) throw new Error('Noch nicht mit dem PC gekoppelt – in den Einstellungen koppeln.');
+        antwortText = await pcFrage(einst.pcAdresse, token, inhalt);
+        setzeAntwort(antwortText);
+      } else {
+        const schluessel = await schluesselLesen(einst.anbieter);
+        const r = await antwortStreamen({
+          anbieter: einst.anbieter, modell: einst.modell, schluessel, einstellungen: einst, verlauf: basis,
+          beiText: (t) => setzeAntwort(t),
+          beiXHR: (x) => { xhrRef.current = x; },
+        });
+        antwortText = r.text;
+        setzeAntwort(antwortText);
+        setKosten(await kostenAddieren(r.usd || 0));
+      }
+      const neu = [...basis, { rolle: 'assistant', text: antwortText }];
       setNachrichten(neu);
       await gespraechSpeichern(neu);
-      setKosten(await kostenAddieren(r.usd || 0));
-      if (einst.vorlesen) vorlesen(r.text);
+      if (einst.vorlesen) vorlesen(antwortText);
     } catch (e) {
       if (e && e.abgebrochen) {
         // Abgebrochen: das bereits Gestreamte behalten, wenn vorhanden.
@@ -202,7 +214,23 @@ function Einstellungen({ f, einst, beiSpeichern }) {
   const [vorlesen, setVorlesen] = useState(einst.vorlesen !== false);
   const [schluessel, setSchluessel] = useState('');
   const [schluesselGeaendert, setSchluesselGeaendert] = useState(false);
+  const [pcAdresse, setPcAdresse] = useState(einst.pcAdresse || '');
+  const [pcModus, setPcModus] = useState(!!einst.pcModus);
+  const [pcCode, setPcCode] = useState('');
+  const [pcMeldung, setPcMeldung] = useState('');
   const aktiv = ANBIETER.find((a) => a.id === anbieter) || ANBIETER[0];
+
+  async function pcKoppelnTun() {
+    setPcMeldung('Verbinde …');
+    try {
+      const token = await pcKoppeln(pcAdresse.trim(), pcCode.trim());
+      await pcTokenSpeichern(token);
+      setPcCode('');
+      setPcMeldung('Gekoppelt ✓');
+    } catch (e) {
+      setPcMeldung(e.message || 'Koppeln fehlgeschlagen.');
+    }
+  }
 
   // Anbieter gewechselt: den bisher gespeicherten Schlüssel dieses Anbieters laden (maskiert bleibt er leer).
   useEffect(() => { setSchluessel(''); setSchluesselGeaendert(false); }, [anbieter]);
@@ -256,9 +284,26 @@ function Einstellungen({ f, einst, beiSpeichern }) {
         <Text style={{ color: f.schwach, fontSize: 12 }}>Sicher im Android-Keystore, je Anbieter getrennt. Leer lassen ändert den gespeicherten Schlüssel nicht.</Text>
       </View>
 
+      <View style={[s.reihe, { borderColor: f.linie }]}>
+        <Text style={{ color: f.text, fontSize: 16 }}>Über den PC statt direkt</Text>
+        <Switch value={pcModus} onValueChange={setPcModus} trackColor={{ true: f.akzent }} />
+      </View>
+      <View style={{ gap: 6 }}>
+        <Text style={[s.label, { color: f.schwach }]}>Mit PC verbinden</Text>
+        <TextInput style={[s.feld1, { color: f.text, borderColor: f.linie }]} value={pcAdresse} onChangeText={setPcAdresse} placeholder="192.168.1.20:8770 (oder VPN-IP)" placeholderTextColor={f.schwach} autoCapitalize="none" autoCorrect={false} />
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TextInput style={[s.feld1, { flex: 1, color: f.text, borderColor: f.linie }]} value={pcCode} onChangeText={setPcCode} placeholder="Code vom PC" placeholderTextColor={f.schwach} autoCapitalize="characters" autoCorrect={false} />
+          <Pressable onPress={pcKoppelnTun} disabled={!pcAdresse.trim() || !pcCode.trim()} style={[s.senden, { backgroundColor: pcAdresse.trim() && pcCode.trim() ? f.akzent : f.karte, justifyContent: 'center' }]}>
+            <Text style={{ color: pcAdresse.trim() && pcCode.trim() ? '#fff' : f.schwach, fontWeight: '600' }}>Koppeln</Text>
+          </Pressable>
+        </View>
+        {!!pcMeldung && <Text style={{ color: f.schwach, fontSize: 12 }}>{pcMeldung}</Text>}
+        <Text style={{ color: f.schwach, fontSize: 12 }}>Am PC: Einstellungen → Verbindungen → Android-App → Code anzeigen. Nur Heimnetz/VPN.</Text>
+      </View>
+
       <Pressable
         onPress={() => beiSpeichern(
-          { ...einst, name: name.trim() || 'Julia', nutzer: nutzer.trim(), sprachcode, anbieter, modell: modell.trim() || aktiv.standardModell, vorlesen },
+          { ...einst, name: name.trim() || 'Julia', nutzer: nutzer.trim(), sprachcode, anbieter, modell: modell.trim() || aktiv.standardModell, vorlesen, pcAdresse: pcAdresse.trim(), pcModus },
           schluesselGeaendert ? schluessel.trim() : null,
         )}
         style={[s.speichern, { backgroundColor: f.akzent }]}

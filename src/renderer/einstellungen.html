@@ -228,6 +228,35 @@
         </div>
       </div>
 
+      <div class="konto" id="kontoApp">
+        <div class="konto-kopf">
+          <span class="konto-logo" aria-hidden="true">📲</span>
+          <div class="konto-name">
+            <strong data-t="app.titel"></strong>
+            <small id="appStatus"></small>
+          </div>
+          <button class="zweit" id="appTrennen" data-t="konten.trennen" hidden></button>
+        </div>
+        <div class="konto-einrichten">
+          <p class="hinweis" data-t="app.text"></p>
+          <label class="schalter"><input type="checkbox" id="appAn" data-k="appserver.an"><span data-t="app.an"></span></label>
+          <div id="appBereich" hidden>
+            <p class="hinweis" data-t="handy.firewall" style="display:none"></p>
+            <small class="hinweis" id="appAdressen"></small>
+            <button class="primaer klein" id="appKoppeln" data-t="app.koppeln"></button>
+            <div class="sync-code" id="appCodeBox" hidden>
+              <p class="hinweis" data-t="app.code_hinweis"></p>
+              <strong id="appCode"></strong>
+            </div>
+            <small class="konto-meldung" id="appMeldung"></small>
+          </div>
+          <div class="feld schmal">
+            <label for="appPort" data-t="sync.port"></label>
+            <input id="appPort" data-k="appserver.port" data-zahl inputmode="numeric" spellcheck="false" autocomplete="off">
+          </div>
+        </div>
+      </div>
+
       <div class="konto" id="kontoMcp">
         <div class="konto-kopf">
           <span class="konto-logo" aria-hidden="true">⧉</span>

@@ -10,6 +10,7 @@ const {
 const sicherheit = require('./sicherheit');
 const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
 const { Sync } = require('./sync');
+const { AppServer } = require('./appserver');
 const mikrofonRecht = require('./mikrofon-recht');
 const { Whisper } = require('./whisper');
 const { Piper } = require('./piper');
@@ -99,6 +100,7 @@ let clips = null;
 let minecraft = null;
 let mcSpeicher = null;
 let sync = null;
+let appserver = null;
 let code = null;
 // Das laufende Gespräch in kompakter Form – wird nach jeder Antwort gespeichert.
 let gespraech = { id: null, anzeige: [] };
@@ -1342,6 +1344,11 @@ function ipcEinrichten() {
   });
   ipc.handle('sync:entfernen', (_e, id) => { sync.entfernen(String(id || '')); return sync.status(); });
   ipc.handle('sync:jetzt', async () => { await sync.abgleichen().catch(() => {}); return sync.status(); });
+  ipc.handle('appserver:status', () => appserver.status());
+  ipc.handle('appserver:koppeln', () => {
+    try { return { ...appserver.koppelnStarten(), status: appserver.status() }; } catch (e) { return { fehler: e.message === 'aus' ? t('appserver.fehler_aus') : e.message, status: appserver.status() }; }
+  });
+  ipc.handle('appserver:trennen', () => { appserver.trennen(); return appserver.status(); });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1701,6 +1708,32 @@ function syncAnwenden() {
   else sync.stoppen();
 }
 
+// --- App-Server: die Julia-Android-App bedient den PC (Heimnetz/VPN) ---
+
+async function appNachricht(text) {
+  if (agent.beschaeftigt) throw new Error('BESCHAEFTIGT');
+  anAlle('agent:nutzer', { text, perSprache: false });
+  protokoll.eintragen({ werkzeug: 'app', stufe: 'INFO', eingabe: { text: text.slice(0, 300) }, ergebnis: 'Auftrag aus der Android-App' });
+  return agent.senden(text, { kanal: 'mobile' });
+}
+
+function appServerEinrichten() {
+  appserver = new AppServer({
+    tresor: konten.tresor,
+    beiNachricht: appNachricht,
+    protokoll: (e) => protokoll.eintragen({ werkzeug: 'app', ...e }),
+  });
+  appserver.on('status', () => anAlle('appserver:status', appserver.status()));
+  appServerAnwenden();
+}
+
+function appServerAnwenden() {
+  if (!appserver || VORFUEHRUNG) return;
+  konten.tresor.schreiben('appserver', { name: assistentName() });
+  if (config.get('appserver.an')) appserver.starten(config.get('appserver.port')).catch(() => { /* Fehler steht im Status */ });
+  else appserver.stoppen();
+}
+
 function syncFehler(e) {
   const k = `sync.fehler_${e.message}`;
   const text = t(k);
@@ -1925,6 +1958,7 @@ async function start() {
   agentVerdrahten();
   erinnerungenVerdrahten();
   syncEinrichten();
+  appServerEinrichten();
   weckwort = new Weckwort({ dll: audio.dll });
   weckwortVerdrahten();
   ipcEinrichten();
@@ -1948,6 +1982,7 @@ async function start() {
     if (/^(nutzer\.|assistent\.|arbeitsverzeichnisse$|sprachcode$)/.test(k)) promptCache = null;
     if (k.startsWith('hotkey')) { hotkeysRegistrieren(); trayMenue(); }
     if (k.startsWith('sync.')) syncAnwenden();
+    if (k.startsWith('appserver.')) appServerAnwenden();
     if (k === 'minecraft.jeder' && minecraft) minecraft.aufAlleHoeren(config.get('minecraft.jeder') === true);
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
@@ -2036,6 +2071,7 @@ if (!app.requestSingleInstanceLock()) {
     if (erinnerungen) erinnerungen.stoppen();
     if (mcp) mcp.stoppenAlle();
     if (sync) sync.stoppen();
+    if (appserver) appserver.stoppen();
     clearInterval(spielTimer);
     if (minecraft) minecraft.trennen();
     if (agent) agent.stoppen();
