@@ -72,7 +72,7 @@
 ## What's new
 
 - **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request and boards boats. New: with `!spiel durch` she works her own way along a tech tree up to the Ender Dragon, a **daily logbook** survives crashes (open it from the panel), and she only listens to people you explicitly name. Plus a step-by-step [guide](docs/minecraft-spielen.md). See [Minecraft](#minecraft).
-- **Works together with your apps** – e.g. “Put milk on my Todoist list” or “Add Iron Man to my Streamo list”. See [Works with your apps](#works-with-your-apps).
+- **Works together with your apps** – e.g. “Put milk on my ToDoch list” or “Add Iron Man to my Streamo list”. See [Works with your apps](#works-with-your-apps).
 - **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
 - **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
 - **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
@@ -172,7 +172,7 @@ for some, more is possible once you connect them under *Settings → Apps*:
 
 | App | What Julia can do | Connect |
 |---|---|---|
-| **[Todoist](https://todoist.com)** – tasks | “Put milk on my Todoist list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task with its due date. | API token (Todoist → Settings → Integrations → Developer) |
+| **[ToDoch](https://todoist.com)** – tasks | “Put milk on my ToDoch list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task with its due date. | API token (ToDoch → Settings → Integrations → Developer) |
 | **[Streamo](https://www.stremio.com)** – movies & shows | “Add Iron Man to my Streamo list” – Julia looks up the title and adds it to your library; searching and opening too. | Sign in with your Streamo account (password not stored, only the access key, encrypted) |
 | **VibeWork** – focus timer | “Open VibeWork” – the app can be launched. | nothing needed |
 

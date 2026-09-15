@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.2 – 2026-09-15
+- Die Aufgaben-App heißt jetzt überall richtig ToDoch (Einstellungen, Julias Antworten, Anleitung)
+
 ## 0.8.1 – 2026-09-15
 - Die Streaming-App heißt jetzt überall richtig Streamo, die Apps-Karte in den Einstellungen ist übersichtlicher (Logos, Status, Öffnen-Knöpfe), es gibt einen Knopf zum direkten Öffnen des Minecraft-Logbuchs, und dazu eine Schritt-für-Schritt-Anleitung samt Entwickler-Erklärung, wie Julia Minecraft spielt
 

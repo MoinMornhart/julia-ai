@@ -72,7 +72,7 @@
 ## Das ist neu
 
 - **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
-- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine Todoist-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
+- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine ToDoch-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
 - **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
@@ -179,7 +179,7 @@ verbindest:
 
 | App | Was Julia kann | Verbinden |
 |---|---|---|
-| **[Todoist](https://todoist.com)** – Aufgaben | „Setz Milch auf meine Todoist-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe samt Fälligkeit an. | API-Token (Todoist → Einstellungen → Integrationen → Entwickler) |
+| **[ToDoch](https://todoist.com)** – Aufgaben | „Setz Milch auf meine ToDoch-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe samt Fälligkeit an. | API-Token (ToDoch → Einstellungen → Integrationen → Entwickler) |
 | **[Streamo](https://www.stremio.com)** – Filme & Serien | „Füg Iron Man zu meiner Streamo-Liste hinzu“ – Julia sucht den Titel und nimmt ihn in deine Bibliothek auf; auch durchsuchen und öffnen. | Anmeldung mit deinem Streamo-Konto (Passwort wird nicht gespeichert, nur der Zugangs-Schlüssel, verschlüsselt) |
 | **VibeWork** – Fokus-Timer | „Öffne VibeWork“ – die App lässt sich starten. | nichts nötig |
 

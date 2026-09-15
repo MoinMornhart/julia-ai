@@ -37,7 +37,7 @@ function fakeFetch(routen) {
 }
 
 test('Apps: Registry und Öffnen-Ziele', () => {
-  assert.equal(appInfo('Todoist').name, 'Todoist');
+  assert.equal(appInfo('Todoist').name, 'ToDoch');
   assert.equal(zielZumOeffnen('stremio'), 'stremio://');
   assert.throws(() => appInfo('gibtsnicht'), /Unbekannte App/);
 });

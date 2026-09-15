@@ -817,24 +817,24 @@ WERKZEUGE.push({
 });
 
 // Mit anderen Apps zusammenarbeiten: öffnen (GRÜN) und – wenn einmal verbunden –
-// direkt befüllen (Todoist-Aufgabe, Streamo-Bibliothek). Etwas nach außen an den
+// direkt befüllen (ToDoch-Aufgabe, Streamo-Bibliothek). Etwas nach außen an den
 // Dienst senden ist GELB.
 WERKZEUGE.push({
   name: 'apps',
-  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Fokus). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für Todoist "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr" – Todoist versteht natürliche Sprache); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie – nimmt ihn in die Bibliothek/„Meine Liste“ auf) oder "suchen" (text = Titel). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
+  description: 'Mit anderen Apps zusammenarbeiten. app: "todoist" (Aufgaben), "stremio" (Filme/Serien) oder "vibework" (Fokus). aktion: "oeffnen" (App starten), "status" (welche verbunden sind); für ToDoch "aufgabe" (text = Aufgabe, optional faellig wie "morgen 9 Uhr" – ToDoch versteht natürliche Sprache); für Streamo "liste_hinzufuegen" (text = Titel, optional typ film|serie – nimmt ihn in die Bibliothek/„Meine Liste“ auf) oder "suchen" (text = Titel). Verbunden wird einmalig in den Einstellungen unter „Apps“; ist eine App nicht verbunden, sag dem Nutzer das.',
   input_schema: {
     type: 'object',
     properties: {
       app: { type: 'string', enum: ['todoist', 'stremio', 'vibework'] },
       aktion: { type: 'string', enum: ['oeffnen', 'status', 'aufgabe', 'liste_hinzufuegen', 'suchen'] },
       text: { type: 'string' },
-      faellig: { type: 'string', description: 'nur Todoist: Fälligkeit in natürlicher Sprache, z. B. "morgen 9 Uhr".' },
+      faellig: { type: 'string', description: 'nur ToDoch: Fälligkeit in natürlicher Sprache, z. B. "morgen 9 Uhr".' },
       typ: { type: 'string', enum: ['film', 'serie'], description: 'nur Streamo.' },
     },
     required: ['app', 'aktion'],
   },
   fremd: true,
-  // Etwas in eine App legen oder dort suchen geht nach außen (an Todoist/Streamo).
+  // Etwas in eine App legen oder dort suchen geht nach außen (an ToDoch/Streamo).
   nachAussen: (e) => ['aufgabe', 'liste_hinzufuegen', 'suchen'].includes(e.aktion),
   einstufen(e) {
     const { APPS } = require('./apps');
@@ -855,9 +855,9 @@ WERKZEUGE.push({
         await win.programmOeffnen(zielZumOeffnen(e.app));
         return `${info.name} geöffnet. Zum Prüfen einen Screenshot machen.`;
       case 'aufgabe': {
-        if (e.app !== 'todoist') throw new Error('„aufgabe“ gibt es nur für Todoist.');
+        if (e.app !== 'todoist') throw new Error('„aufgabe“ gibt es nur für ToDoch.');
         const r = await ctx.apps.todoistAufgabe(e.text, { faellig: e.faellig });
-        return `In Todoist angelegt: „${r.inhalt}“${r.faellig ? ` (fällig ${r.faellig})` : ''}.`;
+        return `In ToDoch angelegt: „${r.inhalt}“${r.faellig ? ` (fällig ${r.faellig})` : ''}.`;
       }
       case 'suchen': {
         if (e.app !== 'stremio') throw new Error('„suchen“ gibt es nur für Streamo.');

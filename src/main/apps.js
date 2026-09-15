@@ -2,7 +2,7 @@
 
 // Zusammenarbeit mit anderen Apps. Julia kann sie öffnen und – wenn du sie
 // einmal verbunden hast – auch direkt etwas hineinlegen:
-//   • Todoist   – Aufgaben anlegen (offizielle REST-API v2).
+//   • ToDoch   – Aufgaben anlegen (offizielle REST-API v2).
 //   • Stremio   – Filme/Serien in deine Bibliothek ("Liste") aufnehmen und suchen.
 //   • VibeWork  – der Fokus-Timer; auf dem PC lässt er sich öffnen.
 // Reine Logik: HTTP läuft über ein eingereichtes fetch, Zugangsdaten kommen aus
@@ -17,7 +17,7 @@ const CINEMETA = 'https://v3-cinemeta.strem.io';
 // Web-Link tut es zur Not im Browser.
 const APPS = {
   todoist: {
-    name: 'Todoist',
+    name: 'ToDoch',
     zweck: 'Aufgaben',
     oeffnen: 'todoist://',
     web: 'https://app.todoist.com',
@@ -100,21 +100,21 @@ class Apps {
     return daten;
   }
 
-  // ---- Todoist -----------------------------------------------------------
+  // ---- ToDoch -----------------------------------------------------------
   todoistVerbinden(token) {
     const t = String(token || '').trim();
-    if (!/^[A-Za-z0-9]{20,80}$/.test(t)) throw new Error('Das sieht nicht nach einem Todoist-API-Token aus (in Todoist unter Einstellungen → Integrationen → Entwickler).');
+    if (!/^[A-Za-z0-9]{20,80}$/.test(t)) throw new Error('Das sieht nicht nach einem ToDoch-API-Token aus (in ToDoch unter Einstellungen → Integrationen → Entwickler).');
     this.tresor.schreiben('todoist', { token: t });
   }
 
   _todoistToken() {
     const token = (this.tresor.lesen('todoist') || {}).token;
-    if (!token) throw new Error('Todoist ist noch nicht verbunden. In den Einstellungen unter „Apps“ dein Todoist-API-Token hinterlegen.');
+    if (!token) throw new Error('ToDoch ist noch nicht verbunden. In den Einstellungen unter „Apps“ dein ToDoch-API-Token hinterlegen.');
     return token;
   }
 
   // Legt eine Aufgabe an. faellig: natürliche Sprache wie "morgen 9 Uhr",
-  // "jeden Montag" – Todoist versteht das selbst (deutsch geht auch).
+  // "jeden Montag" – ToDoch versteht das selbst (deutsch geht auch).
   async todoistAufgabe(inhalt, { faellig } = {}) {
     const text = String(inhalt || '').trim();
     if (!text) throw new Error('Was soll auf die Liste? Der Aufgabentext fehlt.');
@@ -124,7 +124,7 @@ class Apps {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${this._todoistToken()}` },
       body: JSON.stringify(koerper),
-    }, 'Todoist');
+    }, 'ToDoch');
     return { id: t && t.id, inhalt: (t && t.content) || text, faellig: t && t.due && t.due.string };
   }
 
