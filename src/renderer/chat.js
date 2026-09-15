@@ -9,6 +9,7 @@ const imOverlay = new URLSearchParams(location.search).get('overlay') === '1';
 if (imOverlay) document.body.classList.add('overlay');
 let T = {};
 let beschaeftigt = false;
+let jarvisAn = false;
 let hoert = false;
 let hotkey = '';
 let antwortEl = null;
@@ -330,6 +331,20 @@ function absenden() {
   const t = $('text');
   const text = t.value.trim();
   if (!text && !anhaenge.length) return;
+  // Easter-Egg: „jarvis" schaltet den Jarvis-Look samt Sprechweise ein, „julia" zurück.
+  const wort = text.toLowerCase().replace(/[\s.!?]+/g, ' ').trim();
+  if (!anhaenge.length && (wort === 'jarvis' || wort === 'hey jarvis')) {
+    t.value = ''; hoehe();
+    julia.jarvisSetzen(true).catch(() => {});
+    systemzeile('J.A.R.V.I.S. online. Zu Ihren Diensten, Sir. (Tippe „julia", um zurückzuschalten.)');
+    return;
+  }
+  if (!anhaenge.length && jarvisAn && (wort === 'julia' || wort === 'hey julia')) {
+    t.value = ''; hoehe();
+    julia.jarvisSetzen(false).catch(() => {});
+    systemzeile('Zurück im normalen Modus.');
+    return;
+  }
   if (beschaeftigt) { systemzeile(tx('chat.beschaeftigt')); return; }
   t.value = '';
   hoehe();
@@ -370,7 +385,7 @@ async function init() {
   $('btnEinst').innerHTML = ICON.einst;
   $('btnMikro').innerHTML = ICON.mikro;
   if (imOverlay) {
-    julia.config().then((c) => overlayStil(c && c.overlay)).catch(() => { /* Standard bleibt */ });
+    julia.config().then((c) => { jarvisAn = !!(c && c.design && c.design.jarvis); overlayStil(c && c.overlay); }).catch(() => { /* Standard bleibt */ });
     $('btnZu').hidden = false;
     $('btnZu').innerHTML = ICON.zu;
     $('btnZu').onclick = () => julia.schliessen();
@@ -441,6 +456,7 @@ async function init() {
   });
   julia.on('texte:geaendert', texteAnwenden);
   julia.on('config:geaendert', (c) => {
+    jarvisAn = !!(c && c.design && c.design.jarvis);
     overlayStil(c && c.overlay);
     if (c.hotkey && c.hotkey.sprechen !== hotkey) {
       hotkey = c.hotkey.sprechen;

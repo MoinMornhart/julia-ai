@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <b>Deutsch</b> · <a href="README.en.md">English</a> · <a href="https://github.com/MoinMornhart/julia-ai">Webseite mit Vorführung</a>
+  <b>Deutsch</b> · <a href="README.en.md">English</a>
 </p>
 
 <p align="center">
@@ -69,21 +69,21 @@
   </tr>
 </table>
 
-## Neu in Version 3
+## Das ist neu
 
-- **Versteht dich wirklich** – [Whisper](#stimme-und-sprache) schreibt auf, was du sagst: genau, auf Deutsch, lokal auf deinem PC. Dein Ton verlässt ihn nie.
-- **Natürliche Stimmen** – Thorsten oder Kerstin statt der alten Windows-Stimme, neuronal und offline, auch im Minecraft-Voice-Chat.
-- **Schneller per Sprache** – Julia spricht schon den ersten Satz, während der Rest der Antwort noch entsteht.
-- **Mikrofon-Test** – misst, ob Ton ankommt und was verstanden wird, nennt die Ursache und liefert einen Bericht zum Kopieren.
-- **Minecraft kann viel mehr** – laufen, geben, einsammeln, jagen, craften, einräumen, schlafen. Fliegt Julia raus, zeigt ein Crash-Screen warum, und nach einem Verbindungsabbruch kommt sie selbst zurück.
-- **Overlay nach deinem Geschmack** – Größe, Schrift, durchsichtiger Hintergrund, frei verschiebbar, Kompakt-Modus – und auf Wunsch immer da.
+- **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
+- **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
+- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage, steigt in Boote und plant große Ziele bis zum Enderdrachen. Siehe [Minecraft](#minecraft).
+- **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
+- **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
+- **Natürliche Stimmen & Whisper** – Thorsten oder Kerstin und lokale Spracherkennung, beides offline auf deinem PC.
 - **MCP-Server** – Julia nutzt die Werkzeuge beliebiger [MCP-Server](#mcp-server); jeder Aufruf fragt vorher.
 
-Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md).
+Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe mal `jarvis` in den Chat. 😉
 
 ## Inhalt
 
-[Was Julia ist](#was-julia-ist) · [Startseite, Verlauf, Routinen](#startseite-und-verlauf) · [Stimme und Sprache](#stimme-und-sprache) · [KI-Anbieter](#ki-anbieter) · [Die Ampel](#die-ampel) · [MCP-Server](#mcp-server) · [Gaming-Overlay](#gaming-overlay) · [Die Blase](#die-blase) · [Minecraft](#minecraft) · [Konten, mehrere PCs](#konten-verbinden) · [Design](#design) · [Installation](#installation) · [Bedienung](#bedienung) · [Updates](#updates) · [Für Entwickler](#für-entwickler) · [Grenzen](#grenzen) · [Lizenz](#lizenz)
+[Was Julia ist](#was-julia-ist) · [Startseite, Verlauf, Routinen](#startseite-und-verlauf) · [Stimme und Sprache](#stimme-und-sprache) · [Kleine Helfer](#kleine-helfer) · [KI-Anbieter](#ki-anbieter) · [Die Ampel](#die-ampel) · [MCP-Server](#mcp-server) · [Gaming-Overlay](#gaming-overlay) · [Die Blase](#die-blase) · [Minecraft](#minecraft) · [Julia aufs Handy](#julia-aufs-handy) · [Konten, mehrere PCs](#konten-verbinden) · [Design](#design) · [Installation](#installation) · [Bedienung](#bedienung) · [Updates](#updates) · [Für Entwickler](#für-entwickler) · [Grenzen](#grenzen) · [Lizenz](#lizenz)
 
 ## Was Julia ist
 
@@ -159,6 +159,16 @@ markierter Text gelten als fremde Inhalte – was darin steht, ist nie ein Auftr
 - **„Hey Julia“:** Auf Wunsch reagiert Julia auf ihr Aktivierungswort – mit ihrem Namen, also auch „Hey Rainer“ – oder auf eigene Wörter wie „Computer, hör zu“. Standardmäßig aus, weil das Mikrofon dafür offen bleibt; erkannt wird nur das Wort, nichts wird aufgenommen.
 - **Mikrofon-Test:** *Einstellungen → Sprache → Mikrofon testen* nimmt einen Satz auf, zeigt den Pegel und was verstanden wurde, prüft die Windows-Datenschutz-Sperren und nennt die Ursache, wenn etwas hakt – mit einem Bericht zum Kopieren.
 - Mikrofon und Lautsprecher wählst du frei; die Blase bewegt sich zur echten Lautstärke der Stimme.
+- **Live-Untertitel:** Schon während du sprichst, erscheint in der Blase Wort für Wort, was Julia versteht (wie bei Siri); am Satzende ersetzt die genaue Whisper-Fassung den Text.
+
+## Kleine Helfer
+
+Neben den großen Aufgaben erledigt Julia auch die kleinen Handgriffe am PC – alles lokal:
+
+- **Medien & Programme:** Play/Pause, nächster/voriger Titel, lauter/leiser/stumm über die Systemtasten (für jeden Player); Programme per Name starten und – nach Rückfrage – schließen.
+- **Fenster anordnen:** links/rechts oder oben/unten andocken, in die vier Ecken, mittig, maximieren oder wiederherstellen.
+- **Timer, Wecker & Stoppuhr:** „Stell einen Timer auf 10 Minuten“, Wecker zur Uhrzeit, dazu eine Stoppuhr mit Zwischenzeiten.
+- **Rechnen & Umwandeln:** rechnen, Einheiten umrechnen (Länge, Masse, Zeit, Daten, Temperatur …), Text umwandeln (Groß/klein, Base64, JSON, zählen) und QR-Codes erzeugen.
 
 ## KI-Anbieter
 
@@ -300,11 +310,17 @@ NeoProtect oder TCPShield).
 | Einräumen | `!verstau` | legt das Inventar in die nächste Truhe (Waffen, Werkzeug, Essen bleiben) |
 | Schmelzen | `!schmelz 8 eisen` | schmilzt oder brät im Ofen, Brennstoff nimmt sie selbst |
 | Hinstellen · Essen | `!stell werkbank hin` · `!ess` | stellt einen Block neben sich · isst etwas |
+| Bauen | `!bau turm 8` · `!bau mauer 10 3` · `!bau hütte` | baut Turm, Mauer, Hütte oder Brücke aus vorhandenem Material |
+| Boot & Reittier | `!steig ein` · `!steig aus` | steigt in Boot, Lore oder aufs Reittier – und wieder aus |
 | Schlafen · Stopp | `!schlaf` · `!stopp` | geht ins Bett · hört sofort auf |
 
 `!hilfe` nennt alle Befehle im Spiel. Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde
-direkt in Julia – die KI gibt nur die Aufgabe vor. Waffe und Rüstung legt die Figur selbst an,
-bei wenig Leben isst sie einen Goldapfel.
+direkt in Julia – die KI gibt nur die Aufgabe vor. Sie **erkennt, was vor ihr liegt** (auch Lava
+oder ein Abgrund) und bremst von selbst, **isst**, sobald sie Hunger hat, und **kämpft klug**:
+Waffe und Rüstung legt sie selbst an, bei wenig Leben zieht sie sich zurück oder greift zum
+Goldapfel, und einen Creeper umarmt sie nicht, sondern hält Abstand.
+
+- **Ansprechen:** Es reicht, wenn `Julia` irgendwo in der Nachricht steht (nicht nur am Anfang); `!` geht auch. Auf Wunsch reagiert sie **auf alle Spieler** statt nur auf dich – umschaltbar im Panel oder im Spiel mit „Julia, hör auf alle“ / „hör nur auf mich“. Gehandelt wird immer nur im Spiel, nie am PC.
 
 - **Auftrag an Julia:** Im Reiter schreibst du in deinen Worten, was sie tun soll – etwa „Hol Holz, bau eine Werkbank und mach dir eine Steinspitzhacke“. Sie sieht sich um, plant die Schritte und arbeitet sie mit ihren Fähigkeiten ab, wartet jeweils auf das Ergebnis und sagt am Ende, was geschafft ist. Große Ziele wie den Enderdrachen zerlegt sie in Etappen – ganz allein durchspielen schafft ein Bot aber nicht zuverlässig.
 - **Voice-Chat-Gruppen:** Julia listet die Gruppen aus dem Simple Voice Chat des Servers auf; du wählst, in welche sie geht. Bei einer geschützten Gruppe gibst du das Passwort ein – es geht nur an den Server, die KI sieht es nie. Mit „Immer beitreten“ geht Julia beim nächsten Mal von selbst hinein; das Passwort liegt dann verschlüsselt auf deinem PC.
@@ -318,6 +334,30 @@ bei wenig Leben isst sie einen Goldapfel.
 - **Reden:** Im Spielchat schreibst du „Julia, …“ oder „!…“; die Antwort kommt zurück in den Spielchat. Mit „Hey Julia“ sprichst du beim Spielen über dein Mikrofon mit ihr. Fragen nimmt sie nur von deinem Spielernamen an, und von dort handelt sie nur im Spiel – nie auf deinem PC.
 - **Voice-Chat (Testversion):** Läuft auf dem Server Simple Voice Chat, hört Julia dort mit und antwortet mit Stimme im Spiel. Sie hört nur auf deinen Spielernamen; andere Stimmen werden sofort verworfen.
 - **Grenzen:** Von sich aus nur Server auf deinem PC oder im Heimnetz; einen Server im Internet trägst du selbst ein. Große öffentliche Netzwerke wie Hypixel sind gesperrt – dort sind Bots verboten.
+
+## Julia aufs Handy
+
+Es gibt Julia auch als eigenständige **App für Android und iOS** – der Quellcode liegt im Ordner
+**[julia-android/](julia-android/)**, gebaut mit [Expo/React Native](https://expo.dev). Wie du sie
+startest, steht in **[julia-android/README.md](julia-android/README.md)**.
+
+In der App chattest du mit Julia direkt über deinen KI-Anbieter (**Claude** oder **OpenAI**) – mit
+Streaming, Vorlesen und Kosten-Anzeige; der API-Schlüssel liegt sicher im Schlüsselspeicher des Handys.
+Die App **funktioniert eigenständig – auch wenn dein PC aus ist**.
+
+Auf Wunsch verbindet sich die App im **Heimnetz oder über dein VPN** mit deinem PC und bedient
+die Julia dort: Am PC unter *Einstellungen → Verbindungen → Android-App* einen Code anzeigen, in
+der App die Adresse und den Code eingeben. Anfragen laufen dann durch die PC-Julia **samt Ampel**,
+Freigaben erscheinen am PC. Es wird nur im Heimnetz/VPN gesprochen, kein Port ins Internet.
+
+**Starten (auf deinem Rechner):**
+```bash
+cd julia-android
+npm install
+npx expo start
+```
+Dann in **Expo Go** (Android/iOS) den QR scannen oder den Emulator nutzen. Bauen und Testen läuft
+auf deinem Rechner – Android-/iOS-Werkzeuge bzw. Expo Go nötig.
 
 ## Konten verbinden
 
@@ -363,10 +403,10 @@ im Chat, im Tray, in den Meldungen und im Gespräch.
 ## Installation
 
 **Am einfachsten:** [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
-laden und doppelklicken – ohne Admin-Rechte, nur für dein Benutzerkonto. Die Webseite mit der
-Prüfsumme: **https://github.com/MoinMornhart/julia-ai**. Der Installer ist noch nicht
-signiert; meldet Windows „Der Computer wurde durch Windows geschützt“, auf „Weitere
-Informationen“ und dann „Trotzdem ausführen“ klicken.
+laden und doppelklicken – ohne Admin-Rechte, nur für dein Benutzerkonto. Alle Versionen und die
+Prüfsummen (`latest.yml`) stehen unter [Releases](https://github.com/MoinMornhart/julia-ai/releases).
+Der Installer ist noch nicht signiert; meldet Windows „Der Computer wurde durch Windows geschützt“,
+auf „Weitere Informationen“ und dann „Trotzdem ausführen“ klicken.
 
 Beim ersten Start öffnet sich die Einrichtung: Vorname, KI-Anbieter mit Schlüssel und die
 Ordner, in denen Julia ohne Rückfrage schreiben darf. Schlüssel werden mit Windows (DPAPI)
@@ -410,7 +450,7 @@ mitten im Spiel. Sie lädt den Installer aus den Releases, prüft seine SHA-512-
 ihn erst ein, wenn die laufende Aufgabe fertig ist. Von Hand: Tray-Menü → **Nach Updates
 suchen**. Ohne Rückfrage einspielen lässt sich unter *Einstellungen → System* einschalten.
 
-Julia zählt in Zehnerschritten: `3.7.9` → `3.8.0`, `3.9.9` → `4.0.0`.
+Julia zählt in Zehnerschritten: `0.5.9` → `0.6.0`, `0.9.9` → `1.0.0`.
 
 <details>
 <summary><b>Wo Julias Daten liegen</b></summary>
@@ -451,7 +491,7 @@ npm run release -- funktion  "Julia liest jetzt Termine vor"
 
 Das Release-Skript lässt vorher die Tests und `npm audit` laufen und bricht ab, wenn etwas
 schiefgeht. Dann setzt es die Version, schreibt die Changelog-Zeile, committet, setzt den Tag,
-pusht, baut den Installer und veröffentlicht ihn samt Webseite.
+pusht, baut den Installer und hängt ihn ans GitHub-Release.
 
 Die Screenshots dieser README entstehen im Vorführmodus mit Beispieldaten:
 

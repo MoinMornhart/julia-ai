@@ -106,24 +106,36 @@ function Chat({ f, einst, schluesselDa, nachrichten, setNachrichten, setKosten, 
     setText('');
     setLaeuft(true);
     const setzeAntwort = (t) => setNachrichten([...basis, { rolle: 'assistant', text: t }]);
+    // Direkt über den KI-Anbieter – geht immer, auch wenn der PC aus ist.
+    const direkt = async () => {
+      const schluessel = await schluesselLesen(einst.anbieter);
+      const r = await antwortStreamen({
+        anbieter: einst.anbieter, modell: einst.modell, schluessel, einstellungen: einst, verlauf: basis,
+        beiText: (t) => setzeAntwort(t),
+        beiXHR: (x) => { xhrRef.current = x; },
+      });
+      setKosten(await kostenAddieren(r.usd || 0));
+      return r.text;
+    };
     try {
       let antwortText;
       if (einst.pcModus) {
-        // Über den PC: die dortige Julia bearbeitet die Anfrage (samt Ampel am PC).
-        const token = await pcTokenLesen();
-        if (!token) throw new Error('Noch nicht mit dem PC gekoppelt – in den Einstellungen koppeln.');
-        antwortText = await pcFrage(einst.pcAdresse, token, inhalt);
-        setzeAntwort(antwortText);
+        // Erst über den PC (dortige Julia samt Ampel). Ist der PC aus oder nicht
+        // erreichbar, antwortet die App direkt weiter – so geht sie immer.
+        try {
+          const token = await pcTokenLesen();
+          if (!token) throw new Error('nicht gekoppelt');
+          antwortText = await pcFrage(einst.pcAdresse, token, inhalt);
+          setzeAntwort(antwortText);
+        } catch (pcErr) {
+          if (await schluesselLesen(einst.anbieter)) {
+            antwortText = await direkt(); // PC aus: nahtlos direkt weiter
+          } else {
+            throw new Error(`PC nicht erreichbar (${pcErr.message}) und kein API-Schlüssel hinterlegt.`);
+          }
+        }
       } else {
-        const schluessel = await schluesselLesen(einst.anbieter);
-        const r = await antwortStreamen({
-          anbieter: einst.anbieter, modell: einst.modell, schluessel, einstellungen: einst, verlauf: basis,
-          beiText: (t) => setzeAntwort(t),
-          beiXHR: (x) => { xhrRef.current = x; },
-        });
-        antwortText = r.text;
-        setzeAntwort(antwortText);
-        setKosten(await kostenAddieren(r.usd || 0));
+        antwortText = await direkt();
       }
       const neu = [...basis, { rolle: 'assistant', text: antwortText }];
       setNachrichten(neu);

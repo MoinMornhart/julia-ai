@@ -1,0 +1,16 @@
+{
+  "cli": { "version": ">= 5.9.0", "appVersionSource": "local" },
+  "build": {
+    "preview": {
+      "android": { "buildType": "apk" },
+      "ios": { "simulator": true },
+      "distribution": "internal",
+      "channel": "preview"
+    },
+    "production": {
+      "android": { "buildType": "apk" },
+      "channel": "production",
+      "autoIncrement": true
+    }
+  }
+}

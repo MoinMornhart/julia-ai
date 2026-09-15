@@ -70,6 +70,37 @@
   --glow-klein: none;
 }
 
+/* Easter-Egg: Jarvis-Modus. Überschreibt die komplette Palette zu einem
+   Arc-Reaktor-HUD in Cyan; die Akzentfarbe setzt design.js zusätzlich inline. */
+:root[data-jarvis="an"] {
+  --akzent: #22e6ff;
+  --akzent-text: #001318;
+  --grund: #01060b;
+  --grund-2: #04121b;
+  --flaeche: rgba(6, 26, 38, 0.72);
+  --flaeche-fest: #061a26;
+  --flaeche-2: #0a2634;
+  --linie: rgba(34, 230, 255, 0.16);
+  --linie-stark: rgba(34, 230, 255, 0.34);
+  --text: #d6fbff;
+  --text-2: #86c7d6;
+  --text-3: #4f8494;
+  --raster: rgba(34, 230, 255, 0.05);
+  --gruen: #38e0c8;
+  --schatten: 0 10px 40px rgba(0, 0, 0, 0.6);
+  --kopf-grund: rgba(1, 6, 11, 0.66);
+  --schrift-titel: var(--mono);
+  color-scheme: dark;
+}
+:root[data-jarvis="an"] body {
+  background:
+    linear-gradient(rgba(34, 230, 255, 0.035) 1px, transparent 1px) 0 0 / 100% 3px,
+    radial-gradient(900px 500px at 50% -12%, color-mix(in srgb, var(--akzent) 12%, transparent), transparent 70%),
+    var(--grund);
+}
+:root[data-jarvis="an"] h1,
+:root[data-jarvis="an"] h2 { letter-spacing: 0.06em; text-shadow: 0 0 12px color-mix(in srgb, var(--akzent) 45%, transparent); }
+
 * { box-sizing: border-box; }
 
 /* "hidden" muss immer gewinnen, auch gegen Regeln wie .feld { display: flex }. */

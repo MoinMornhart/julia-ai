@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">Deutsch</a> · <b>English</b> · <a href="https://github.com/MoinMornhart/julia-ai">Website with demo</a>
+  <a href="README.md">Deutsch</a> · <b>English</b>
 </p>
 
 <p align="center">
@@ -69,21 +69,21 @@
   </tr>
 </table>
 
-## New in version 3
+## What's new
 
-- **Really understands you** – [Whisper](#voice-and-speech) transcribes what you say: accurately, locally on your PC. Your audio never leaves it.
-- **Natural voices** – Thorsten or Kerstin instead of the old Windows voice, neural and offline, even in the Minecraft voice chat.
-- **Faster by voice** – Julia speaks the first sentence while the rest of the answer is still being written.
-- **Microphone test** – measures whether sound arrives and what is understood, names the cause and gives you a report to copy.
-- **Minecraft can do much more** – walk, give, collect, hunt, craft, store, sleep. If Julia gets kicked, a crash screen shows why, and after a lost connection she comes back on her own.
-- **Overlay your way** – size, font, see-through background, freely movable, compact mode – and always on if you like.
+- **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
+- **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
+- **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request, boards boats and plans big goals up to the Ender Dragon. See [Minecraft](#minecraft).
+- **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
+- **Never dies silently on startup** – a self-check catches GPU crashes (falls back to software rendering) and shows a clear message with a log on startup problems.
+- **Natural voices & Whisper** – Thorsten or Kerstin and local speech recognition, both offline on your PC.
 - **MCP servers** – Julia uses the tools of any [MCP server](#mcp-servers); every call asks first.
 
-All changes are in the [CHANGELOG](CHANGELOG.md).
+All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – try typing `jarvis` in the chat. 😉
 
 ## Contents
 
-[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Accounts, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates) · [For developers](#for-developers) · [Limits](#limits) · [License](#license)
+[What Julia is](#what-julia-is) · [Home, history, routines](#home-and-history) · [Voice and speech](#voice-and-speech) · [Small helpers](#small-helpers) · [AI providers](#ai-providers) · [The traffic light](#the-traffic-light) · [MCP servers](#mcp-servers) · [Gaming overlay](#gaming-overlay) · [The orb](#the-orb) · [Minecraft](#minecraft) · [Julia on your phone](#julia-on-your-phone) · [Accounts, several PCs](#connecting-accounts) · [Design](#design) · [Installation](#installation) · [Usage](#usage) · [Updates](#updates) · [For developers](#for-developers) · [Limits](#limits) · [License](#license)
 
 ## What Julia is
 
@@ -153,6 +153,16 @@ and selected text count as outside content – what they say is never an instruc
 - **“Hey Julia”:** If you like, Julia reacts to her wake word – with her name, so “Hey Rainer” works too – or to your own words like “Computer, listen”. Off by default because the microphone stays open for it; only the word is recognized, nothing is recorded.
 - **Microphone test:** *Settings → Speech → Test microphone* records a sentence, shows the level and what was understood, checks the Windows privacy blocks and names the cause if something is off – with a report to copy.
 - You pick microphone and speakers freely; the orb moves with the real loudness of the voice.
+- **Live subtitles:** While you speak, the orb shows what Julia understands word by word (like Siri); at the end of the sentence the accurate Whisper version replaces the text.
+
+## Small helpers
+
+Besides the big tasks, Julia handles the small moves on the PC too – all local:
+
+- **Media & programs:** play/pause, next/previous track, volume up/down/mute via the system keys (for any player); launch programs by name and – after asking – close them.
+- **Snap windows:** dock left/right or top/bottom, into the four corners, center, maximize or restore.
+- **Timer, alarm & stopwatch:** “set a timer for 10 minutes”, an alarm at a time, plus a stopwatch with laps.
+- **Calculate & convert:** calculate, convert units (length, mass, time, data, temperature …), transform text (upper/lower, Base64, JSON, count) and make QR codes.
 
 ## AI providers
 
@@ -289,11 +299,17 @@ NeoProtect or TCPShield).
 | Store | `!store` | puts her inventory into the nearest chest (weapons, tools, food stay) |
 | Smelt | `!smelt 8 raw_iron` | smelts or cooks in a furnace, takes fuel on her own |
 | Place · Eat | `!place crafting_table` · `!eat` | puts a block down next to her · eats something |
+| Build | `!build tower 8` · `!build wall 10 3` · `!build hut` | builds a tower, wall, hut or bridge from available material |
+| Boat & mount | `!board` · `!disembark` | gets into a boat, minecart or onto a mount – and out again |
 | Sleep · Stop | `!sleep` · `!stop` | goes to bed · stops right away |
 
 `!help` lists every command in the game. Fighting, following and dodging run 20 times a second
-directly in Julia – the AI only sets the task. The character equips weapon and armor on its own
-and eats a golden apple when low on health.
+directly in Julia – the AI only sets the task. She **sees what's in front of her** (lava or a drop
+too) and brakes on her own, **eats** when hungry, and **fights smart**: she equips weapon and
+armor herself, retreats or reaches for a golden apple when low on health, and doesn't hug a
+creeper but keeps her distance.
+
+- **Addressing her:** it's enough if `Julia` appears anywhere in the message (not just at the start); `!` works too. If you like, she reacts to **all players** instead of just you – switchable in the panel or in-game with “Julia, listen to everyone” / “listen to me only”. She only ever acts in the game, never on the PC.
 
 - **Task for Julia:** In the tab you write in your own words what she should do – say, “Get wood, build a crafting table and make yourself a stone pickaxe”. She looks around, plans the steps and works through them with her abilities, waits for each result and says at the end what she achieved. She breaks big goals like the Ender Dragon into stages – but no bot reliably beats the game on its own.
 - **Voice chat groups:** Julia lists the groups from the server’s Simple Voice Chat; you choose which one she joins. For a protected group you enter the password – it only goes to the server, the AI never sees it. With “Always join” Julia joins on her own next time; the password is then stored encrypted on your PC.
@@ -307,6 +323,30 @@ and eats a golden apple when low on health.
 - **Talking:** In the game chat write “Julia, …” or “!…”; the answer comes back into the game chat. With “Hey Julia” you talk to her through your microphone while playing. She only accepts questions from your player name, and from there she only acts in the game – never on your PC.
 - **Voice chat (preview):** If the server runs Simple Voice Chat, Julia listens there and answers by voice in the game. She only listens to your player name; other voices are dropped right away.
 - **Limits:** On her own, only servers on your PC or home network; you add a server on the internet yourself. Big public networks like Hypixel are blocked – bots are banned there.
+
+## Julia on your phone
+
+Julia also comes as a standalone **app for Android and iOS** – the source is in the
+**[julia-android/](julia-android/)** folder, built with [Expo/React Native](https://expo.dev). How to
+start it is in **[julia-android/README.md](julia-android/README.md)**.
+
+In the app you chat with Julia straight through your AI provider (**Claude** or **OpenAI**) – with
+streaming, read-aloud and a cost display; the API key is kept in the phone's secure keystore.
+The app **works on its own – even when your PC is off**.
+
+Optionally the app connects to your PC on your **home network or VPN** and drives the Julia there:
+on the PC under *Settings → Connections → Android app* show a code, then enter the address and code
+in the app. Requests run through the PC Julia **with the traffic light**, and approvals appear on the
+PC. It only talks on the home network/VPN, no port to the internet.
+
+**Start (on your computer):**
+```bash
+cd julia-android
+npm install
+npx expo start
+```
+Then scan the QR in **Expo Go** (Android/iOS) or use the emulator. Building and testing happens on
+your machine – Android/iOS tooling or Expo Go required.
 
 ## Connecting accounts
 
@@ -351,9 +391,9 @@ form (assistant, female, male or neutral) and your own pronouns. The name appear
 ## Installation
 
 **Easiest:** download [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
-and double-click it – no admin rights, just for your user account. The website with the
-checksum: **https://github.com/MoinMornhart/julia-ai**. The installer isn’t signed yet; if
-Windows says “Windows protected your PC”, click “More info” and then “Run anyway”.
+and double-click it – no admin rights, just for your user account. All versions and their
+checksums (`latest.yml`) are under [Releases](https://github.com/MoinMornhart/julia-ai/releases).
+The installer isn’t signed yet; if Windows says “Windows protected your PC”, click “More info” and then “Run anyway”.
 
 On first start the setup opens: first name, AI provider with key and the folders where Julia may
 write without asking. Keys are stored encrypted with Windows (DPAPI).
@@ -396,7 +436,7 @@ of a game. She downloads the installer from the releases, verifies its SHA-512 c
 installs it once the running task is done. By hand: tray menu → **Check for updates**.
 Installing without asking can be switched on under *Settings → System*.
 
-Julia counts in steps of ten: `3.7.9` → `3.8.0`, `3.9.9` → `4.0.0`.
+Julia counts in steps of ten: `0.5.9` → `0.6.0`, `0.9.9` → `1.0.0`.
 
 <details>
 <summary><b>Where Julia keeps her data</b></summary>
@@ -437,7 +477,7 @@ npm run release -- funktion  "Julia liest jetzt Termine vor"
 
 The release script runs the tests and `npm audit` first and stops if anything fails. Then it
 sets the version, writes the changelog line, commits, tags, pushes, builds the installer and
-publishes it together with the website.
+attaches it to the GitHub release.
 
 The screenshots in this README come from the demo mode with example data:
 

@@ -23,7 +23,7 @@ test('Blase ist standardmäßig aus, mit den vorgegebenen Werten', () => {
 });
 
 test('Design: dunkel mit Orange als Standard, Werte werden geprüft', () => {
-  assert.deepEqual(STANDARD.design, { modus: 'dunkel', akzent: '#FF7A1A', glow: true });
+  assert.deepEqual(STANDARD.design, { modus: 'dunkel', akzent: '#FF7A1A', glow: true, jarvis: false });
   assert.equal(pruefen('design.modus', 'hell'), 'hell');
   assert.equal(pruefen('design.modus', 'system'), 'system');
   assert.throws(() => pruefen('design.modus', 'bunt'), /Modus/);

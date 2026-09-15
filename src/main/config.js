@@ -58,6 +58,7 @@ const STANDARD = {
     modus: 'dunkel', // 'dunkel' | 'hell' | 'system'
     akzent: '#FF7A1A',
     glow: true,
+    jarvis: false, // Easter-Egg: „jarvis" im Chat → Jarvis-Look und -Sprechweise, „julia" zurück
   },
   hotkey: {
     sprechen: 'Control+Alt+Space',
@@ -200,6 +201,7 @@ function pruefen(schluessel, wert) {
     case 'autostart':
     case 'einrichtung_fertig':
     case 'design.glow':
+    case 'design.jarvis':
     case 'erinnerung.vorlesen':
     case 'verlauf.speichern':
     case 'blase.untertitel':

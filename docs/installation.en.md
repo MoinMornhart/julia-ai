@@ -29,13 +29,13 @@ You don't need admin rights.
 
 ## 2. Download
 
-Only download **Julia-AI-Setup.exe** from the official page:
+Only download **Julia-AI-Setup.exe** from the official GitHub repo:
 
-- Website: https://github.com/MoinMornhart/julia-ai
+- Releases: https://github.com/MoinMornhart/julia-ai/releases
 - Direct: [Julia-AI-Setup.exe](https://github.com/MoinMornhart/julia-ai/releases/latest/download/Julia-AI-Setup.exe)
 
-Never from download portals. To be sure, compare the checksum with the one on the website. In
-PowerShell, in your download folder:
+Never from download portals. To be sure, compare the checksum with the `latest.yml` on the
+release. In PowerShell, in your download folder:
 
 ```powershell
 Get-FileHash .\Julia-AI-Setup.exe

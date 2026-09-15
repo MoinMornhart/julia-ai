@@ -120,8 +120,15 @@ const t = (k, w) => tt(config.get('sprachcode'), k, { name: assistentName(), ...
 
 // Der Name, den der Nutzer seiner KI gegeben hat ("Julia" ist nur der Standard).
 function assistentName() {
+  if (config && config.get('design.jarvis')) return 'JARVIS';
   return (config && config.get('assistent.name')) || 'Julia';
 }
+
+// Persönlichkeit im Jarvis-Modus (Easter-Egg). Hängt sich hinten an den Prompt.
+const JARVIS_PERSONA = {
+  de: '\n\n## Jarvis-Modus\nAb jetzt bist du J.A.R.V.I.S. aus Iron Man. Sprich wie eine britische Butler-KI: äußerst höflich, knapp und präzise, mit trockenem, feinem Humor. Sprich den Nutzer mit „Sir" an. Bleib sachlich kompetent und leicht förmlich; keine Emojis. Deine Fähigkeiten und alle Sicherheitsregeln bleiben unverändert.',
+  en: '\n\n## Jarvis mode\nFrom now on you are J.A.R.V.I.S. from Iron Man. Speak like a British butler AI: exceedingly polite, concise and precise, with dry, subtle wit. Address the user as “Sir”. Stay factual, capable and slightly formal; no emoji. Your capabilities and all safety rules stay unchanged.',
+};
 
 function version() {
   return JSON.parse(fs.readFileSync(path.join(APP, 'package.json'), 'utf8')).version;
@@ -176,6 +183,7 @@ function systemPromptText() {
       pronomen: config.get('nutzer.pronomen'),
       pronomenEigen: config.get('nutzer.pronomen_eigen'),
     });
+    if (config.get('design.jarvis')) promptCache += JARVIS_PERSONA[config.get('sprachcode') === 'en' ? 'en' : 'de'];
   }
   return promptCache;
 }
@@ -211,6 +219,9 @@ function zustandSetzen(z) {
 function oeffentlicheConfig() {
   const c = JSON.parse(JSON.stringify(config.get()));
   delete c.api;
+  // Jarvis-Modus: den Look für alle Fenster überschreiben, ohne die gespeicherten
+  // Design-Einstellungen des Nutzers zu ändern.
+  if (c.design && c.design.jarvis) c.design = { ...c.design, modus: 'dunkel', akzent: '#22E6FF', glow: true };
   return {
     ...c,
     schluesselGesetzt: !!apiSchluessel(),
@@ -259,7 +270,7 @@ function fensterFarben() {
 }
 
 function designAnwenden() {
-  const modus = config.get('design.modus');
+  const modus = config.get('design.jarvis') ? 'dunkel' : config.get('design.modus');
   nativeTheme.themeSource = modus === 'hell' ? 'light' : modus === 'system' ? 'system' : 'dark';
   fensterFarben();
 }
@@ -1349,6 +1360,7 @@ function ipcEinrichten() {
     try { return { ...appserver.koppelnStarten(), status: appserver.status() }; } catch (e) { return { fehler: e.message === 'aus' ? t('appserver.fehler_aus') : e.message, status: appserver.status() }; }
   });
   ipc.handle('appserver:trennen', () => { appserver.trennen(); return appserver.status(); });
+  ipc.handle('jarvis:setzen', (_e, an) => { config.set('design.jarvis', !!an); return !!an; });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1984,6 +1996,13 @@ async function start() {
     if (k.startsWith('sync.')) syncAnwenden();
     if (k.startsWith('appserver.')) appServerAnwenden();
     if (k === 'minecraft.jeder' && minecraft) minecraft.aufAlleHoeren(config.get('minecraft.jeder') === true);
+    // Jarvis-Easter-Egg: Name, Prompt, Tray und Texte umstellen (Look macht designAnwenden + config:geaendert).
+    if (k === 'design.jarvis') {
+      promptCache = null;
+      trayMenue();
+      anAlle('texte:geaendert', texteFuerRenderer());
+      if (chatFenster && !chatFenster.isDestroyed()) chatFenster.setTitle(assistentName());
+    }
     if (k.startsWith('mcp.') && !VORFUEHRUNG) mcp.anwenden();
     // Neuer Anbieter: frisches Gespräch, der alte Verlauf passt nicht zum neuen Modell.
     if (k === 'anbieter' || k === 'anbieter_url') { agent.neu(); anAlle('chat:geleert'); }

@@ -98,6 +98,7 @@ contextBridge.exposeInMainWorld('julia', {
   syncBeitreten: (d) => ipcRenderer.invoke('sync:beitreten', { code: String((d && d.code) || ''), adresse: String((d && d.adresse) || '') }),
   syncEntfernen: (id) => ipcRenderer.invoke('sync:entfernen', String(id || '')),
   syncJetzt: () => ipcRenderer.invoke('sync:jetzt'),
+  jarvisSetzen: (an) => ipcRenderer.invoke('jarvis:setzen', !!an),
   appserverStatus: () => ipcRenderer.invoke('appserver:status'),
   appserverKoppeln: () => ipcRenderer.invoke('appserver:koppeln'),
   appserverTrennen: () => ipcRenderer.invoke('appserver:trennen'),

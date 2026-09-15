@@ -12,6 +12,7 @@
     },
     "ios": {
       "bundleIdentifier": "io.github.moinmornhart.julia",
+      "buildNumber": "1",
       "supportsTablet": true
     },
     "plugins": ["expo-secure-store"]

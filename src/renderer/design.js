@@ -21,6 +21,7 @@
     const modus = design.modus === 'system' ? (dunkelAbfrage.matches ? 'dunkel' : 'hell') : design.modus;
     wurzel.dataset.theme = modus === 'hell' ? 'hell' : 'dunkel';
     wurzel.dataset.glow = design.glow === false ? 'aus' : 'an';
+    if (design.jarvis) wurzel.dataset.jarvis = 'an'; else delete wurzel.dataset.jarvis;
     if (/^#[0-9a-f]{6}$/i.test(design.akzent)) {
       wurzel.style.setProperty('--akzent', design.akzent);
       // Lesbare Schrift auf der Akzentfarbe: dunkel auf hellen, weiß auf dunklen Tönen.
