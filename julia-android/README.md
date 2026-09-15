@@ -19,7 +19,19 @@ npx expo start
 ```
 Dann in Expo Go den QR-Code scannen (Handy und PC im selben WLAN) oder `a` für den Emulator drücken.
 
-## Echte App bauen (installierbare APK / iOS)
+## APK herunterladen (am einfachsten)
+Du brauchst **kein Expo-Konto und nichts zu bauen**: Eine fertige, installierbare APK
+baut GitHub automatisch. Du findest sie beim Release
+**[„android-latest"](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)**
+(Datei `Julia.apk`). Auf dem Handy herunterladen, beim Öffnen „Diese App installieren/Unbekannte
+Quellen" erlauben, fertig.
+
+Die APK baut der Workflow **[Android-APK bauen](../.github/workflows/android-apk.yml)**: Er
+erzeugt mit `expo prebuild` das native Android-Projekt und baut mit Gradle eine debug-signierte
+(= direkt installierbare) APK – komplett in GitHub Actions, ohne Expo-Cloud. Neu auslösen:
+Actions-Tab → „Android-APK bauen" → **Run workflow**, oder einen Tag `android-vX.Y.Z` pushen.
+
+## Selbst über die Expo-Cloud bauen (iOS / Store-fähig)
 Das erzeugt eine richtige `.apk` (Android) bzw. iOS-App über die Expo-Cloud – ohne lokales Android-SDK:
 ```bash
 npm install -g eas-cli

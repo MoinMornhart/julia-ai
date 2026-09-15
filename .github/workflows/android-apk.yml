@@ -1,0 +1,83 @@
+name: Android-APK bauen
+
+# Baut eine installierbare Android-APK für die Handy-App (julia-android) direkt in
+# GitHub Actions – komplett ohne Expo-Konto oder EAS-Cloud. Über `expo prebuild`
+# wird das native Android-Projekt erzeugt und mit Gradle eine debug-signierte APK
+# gebaut, die man direkt aufs Handy laden und installieren kann.
+#
+# Auslöser:
+#   - manuell (Actions-Tab → „Android-APK bauen" → Run workflow)
+#   - beim Pushen eines Tags, der mit `android-v` beginnt (z. B. android-v0.1.0)
+# Ergebnis:
+#   - die APK hängt als Artefakt am Lauf (immer herunterladbar)
+#   - zusätzlich wird das Release `android-latest` aktualisiert, damit es einen
+#     festen Download-Link gibt.
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'android-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: julia-android
+    steps:
+      - name: Quellcode holen
+        uses: actions/checkout@v4
+
+      - name: Node einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Java (JDK 17) einrichten
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Abhängigkeiten installieren
+        run: npm install
+
+      - name: Natives Android-Projekt erzeugen (expo prebuild)
+        run: npx expo prebuild --platform android --no-install
+
+      - name: APK bauen (Gradle, debug-signiert = direkt installierbar)
+        run: |
+          cd android
+          chmod +x ./gradlew
+          ./gradlew assembleRelease
+
+      - name: APK-Pfad bestimmen
+        id: apk
+        run: |
+          pfad=$(find android/app/build/outputs/apk -name '*.apk' | head -n1)
+          echo "Gefundene APK: $pfad"
+          cp "$pfad" "$GITHUB_WORKSPACE/Julia.apk"
+          echo "datei=$GITHUB_WORKSPACE/Julia.apk" >> "$GITHUB_OUTPUT"
+
+      - name: APK als Artefakt anhängen
+        uses: actions/upload-artifact@v4
+        with:
+          name: Julia-Android-APK
+          path: ${{ steps.apk.outputs.datei }}
+
+      - name: Release „android-latest" aktualisieren
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          if gh release view android-latest >/dev/null 2>&1; then
+            gh release upload android-latest Julia.apk --clobber
+          else
+            gh release create android-latest Julia.apk \
+              --title "Julia für Android (aktuelle APK)" \
+              --notes "Automatisch gebaute, installierbare Android-APK der Handy-App. Auf dem Handy herunterladen, „Unbekannte Quellen/Diese App installieren" erlauben, dann öffnen. Diese Datei wird bei jedem Build hier aktualisiert."
+          fi

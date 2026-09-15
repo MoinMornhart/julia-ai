@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.5.0 – 2026-09-16
+- Handy-App gibt es jetzt als fertige Android-APK zum direkten Herunterladen und Installieren – GitHub baut sie automatisch (kein Expo-Konto nötig), du findest sie beim Release android-latest
+
 ## 1.4.3 – 2026-09-15
 - Weniger CPU-/GPU-Last durch die Blase: die animierte Kugel läuft jetzt mit gedeckelter Bildrate (30 statt rund 60 Bilder pro Sekunde) – sieht gleich aus, spart aber spürbar Rechenleistung, wenn die Blase an ist
 
