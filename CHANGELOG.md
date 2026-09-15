@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.0.1 – 2026-09-15
+- Grafikkarte und Treiber werden beim Start ins Logbuch geschrieben, und es gibt jetzt eine CLAUDE.md mit Fehler-Journal und klaren Datenschutzregeln fürs Logging (nie IP oder Tokens)
+
 ## 1.0.0 – 2026-09-15
 - Julia arbeitet jetzt auch mit deinen Apps Patchfeld, Codewerk und dem Content-Helper zusammen – Lern-Sessions starten, Fortschritt abfragen, Beiträge planen und Ideen holen, alles über die API deiner App
 

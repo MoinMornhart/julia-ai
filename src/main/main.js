@@ -2131,6 +2131,21 @@ if (!app.requestSingleInstanceLock()) {
       melden: () => melden('Julia', t('start.gpu_software')),
       neustart: () => { app.relaunch(); },
     });
+    // Grafikkarte und Treiber einmal ins Start-Logbuch schreiben (hilft bei
+    // Grafikproblemen auf bestimmten PCs). Nur technische Werte, keine IP,
+    // keine Tokens, nichts Persönliches.
+    try {
+      app.getGPUInfo('basic').then((g) => {
+        const d = (g && g.auxAttributes) || {};
+        const gpu = (g && g.gpuDevice && g.gpuDevice.find((x) => x && x.active)) || (g && g.gpuDevice && g.gpuDevice[0]) || {};
+        startLog.schreiben('GPU-INFO', 'Grafik erkannt', {
+          renderer: d.glRenderer || null, vendor: d.glVendor || null,
+          treiber: d.driverVersion || d.driver_version || null,
+          vendorId: gpu.vendorId || null, deviceId: gpu.deviceId || null,
+          software: startpruefung.softwareRendering(DATEN) || null,
+        });
+      }).catch(() => { /* GPU-Info ist nur Diagnose, kein Starthindernis */ });
+    } catch { /* egal */ }
   }).catch(() => { /* Meldung folgt über start() */ });
   app.whenReady().then(start).catch((e) => {
     startLog.schreiben('FATAL', 'Start abgebrochen', { fehler: e.stack || e.message });
