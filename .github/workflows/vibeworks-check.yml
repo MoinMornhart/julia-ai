@@ -1,0 +1,128 @@
+# Von VibeWorks angelegt: kostenloser Repo-Check ohne KI – Geheimnisse (Gitleaks),
+# Sicherheitslücken (OSV-Scanner), Fehlermuster (Semgrep) und offene Stellen (TODO/FIXME).
+# Das Ergebnis liegt als Artefakt „vibeworks-check“ bereit, VibeWorks holt es selbst ab.
+# Datei löschen = Check aus.
+name: VibeWorks Repo-Check
+
+on:
+  push:
+    paths: [".github/workflows/vibeworks-check.yml"]
+  schedule:
+    - cron: "23 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vibeworks-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Die Prüf-Container sehen das Repository – aber nicht das Token in .git/config
+          persist-credentials: false
+
+      - name: Geheimnisse (Gitleaks)
+        continue-on-error: true
+        run: >-
+          docker run --rm -v "$PWD:/repo"
+          -e GIT_CONFIG_COUNT=1 -e GIT_CONFIG_KEY_0=safe.directory -e GIT_CONFIG_VALUE_0='*'
+          zricethezav/gitleaks:latest detect --source /repo --no-banner --redact
+          --report-format json --report-path /repo/.vw-gitleaks.json --exit-code 0
+
+      - name: Sicherheitslücken (OSV-Scanner)
+        continue-on-error: true
+        run: >-
+          docker run --rm -v "$PWD:/src" ghcr.io/google/osv-scanner:latest
+          scan source --recursive --format json --output-file /src/.vw-osv.json /src
+
+      - name: Fehlermuster (Semgrep)
+        continue-on-error: true
+        run: >-
+          docker run --rm -v "$PWD:/src" -w /src semgrep/semgrep
+          semgrep scan --config p/default --json --metrics off --quiet --output /src/.vw-semgrep.json
+
+      - name: Offene Stellen (TODO/FIXME)
+        continue-on-error: true
+        # Nur Kommentare (// # /* * -- <!--) – nicht jedes Wort „TODO“ im Code
+        run: |
+          git grep -n -I -E '(//|#|/\*|\*|--|<!--)[[:space:]]*(TODO|FIXME|HACK|XXX)\b' -- ':!*.lock' ':!package-lock.json' ':!.github/workflows/vibeworks-check.yml' > .vw-todos.txt || true
+
+      - name: Zusammenfassen
+        run: |
+          python3 - <<'PY'
+          import datetime, json, os
+
+          def load(path):
+              try:
+                  with open(path, encoding="utf-8") as f:
+                      return json.load(f)
+              except Exception:
+                  return None
+
+          out = {
+              "version": 1,
+              "commit": os.environ.get("GITHUB_SHA", ""),
+              "finishedAt": datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z"),
+              "tools": {},
+              "secrets": [],
+              "vulnerabilities": [],
+              "findings": [],
+              "todos": [],
+          }
+
+          leaks = load(".vw-gitleaks.json")
+          out["tools"]["gitleaks"] = leaks is not None
+          for x in (leaks or [])[:200]:
+              out["secrets"].append({"file": x.get("File"), "line": x.get("StartLine"), "rule": x.get("RuleID"), "description": x.get("Description"), "commit": (x.get("Commit") or "")[:12]})
+
+          osv = load(".vw-osv.json")
+          out["tools"]["osv"] = osv is not None
+          for result in (osv or {}).get("results") or []:
+              source = (result.get("source") or {}).get("path", "").replace("/src/", "", 1)
+              for p in result.get("packages") or []:
+                  pkg = p.get("package") or {}
+                  severity = {}
+                  for group in p.get("groups") or []:
+                      for vid in group.get("ids") or []:
+                          severity[vid] = group.get("max_severity") or ""
+                  for v in p.get("vulnerabilities") or []:
+                      out["vulnerabilities"].append({"package": pkg.get("name"), "version": pkg.get("version"), "ecosystem": pkg.get("ecosystem"), "id": v.get("id"), "summary": (v.get("summary") or "")[:200], "severity": severity.get(v.get("id"), ""), "source": source})
+          out["vulnerabilities"] = out["vulnerabilities"][:300]
+
+          semgrep = load(".vw-semgrep.json")
+          out["tools"]["semgrep"] = semgrep is not None
+          for x in ((semgrep or {}).get("results") or [])[:300]:
+              extra = x.get("extra") or {}
+              out["findings"].append({"file": x.get("path"), "line": (x.get("start") or {}).get("line"), "rule": x.get("check_id"), "severity": extra.get("severity"), "message": (extra.get("message") or "")[:300]})
+
+          try:
+              with open(".vw-todos.txt", encoding="utf-8", errors="replace") as f:
+                  for line in f:
+                      parts = line.rstrip("\n").split(":", 2)
+                      if len(parts) == 3 and parts[1].isdigit():
+                          out["todos"].append({"file": parts[0], "line": int(parts[1]), "text": parts[2].strip()[:200]})
+                      if len(out["todos"]) >= 300:
+                          break
+              out["tools"]["todos"] = True
+          except Exception:
+              out["tools"]["todos"] = False
+
+          out["counts"] = {k: len(out[k]) for k in ("secrets", "vulnerabilities", "findings", "todos")}
+          with open("vibeworks-check.json", "w", encoding="utf-8") as f:
+              json.dump(out, f)
+          print(json.dumps(out["counts"]))
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: vibeworks-check
+          path: vibeworks-check.json
+          retention-days: 14
