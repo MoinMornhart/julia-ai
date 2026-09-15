@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.4.1 – 2026-09-15
+- Abhängigkeiten aktualisiert: @anthropic-ai/sdk auf 0.126.0 und Electron auf 44.4.0 (kleinere, geprüfte Updates)
+
 ## 1.4.0 – 2026-09-15
 - Julia prüft sich jetzt einmal pro Woche selbst: sie schaut ohne KI-Kosten ins Start-Logbuch, ob es zuletzt Abstürze oder Grafikprobleme gab, hält das fest und meldet es nur, wenn du die Diagnose-Meldung ausdrücklich eingeschaltet hast (bereinigt, ohne IP oder Tokens)
 

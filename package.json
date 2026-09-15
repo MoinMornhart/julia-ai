@@ -1,7 +1,7 @@
 {
   "name": "julia-ai",
   "productName": "Julia",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
   "main": "src/main/main.js",
   "author": "MoinMornhart",
@@ -90,7 +90,7 @@
     ]
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.125.0",
+    "@anthropic-ai/sdk": "^0.126.0",
     "mineflayer": "4.39.0",
     "mineflayer-pathfinder": "2.4.5",
     "opusscript": "0.1.1",
@@ -98,7 +98,7 @@
     "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {
-    "electron": "^44.3.0",
+    "electron": "^44.4.0",
     "electron-builder": "^26.15.3"
   },
   "engines": {
