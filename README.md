@@ -71,10 +71,10 @@
 
 ## Das ist neu
 
+- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
+- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine Todoist-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
 - **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
-- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine Todoist-Liste“ oder „Füg Iron Man zu meiner Streamo-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
-- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze (Knopf zum Öffnen im Panel), und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Dazu eine Schritt-für-Schritt-[Anleitung](docs/minecraft-spielen.md). Siehe [Minecraft](#minecraft).
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
 - **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
 - **Natürliche Stimmen & Whisper** – Thorsten oder Kerstin und lokale Spracherkennung, beides offline auf deinem PC.
