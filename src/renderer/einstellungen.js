@@ -204,6 +204,45 @@ function appVerbinden() {
   julia.on('appserver:status', appZeigen);
 }
 
+// --- Andere Apps (Todoist, Stremio, VibeWork) ---
+
+function appsZeigen(s) {
+  s = s || {};
+  $('kontoApps').classList.toggle('verbunden', !!(s.todoist || s.stremio));
+  $('todoistTrennen').hidden = !s.todoist;
+  $('todoistVerbinden').textContent = tx(s.todoist ? 'apps.neu_verbinden' : 'apps.verbinden');
+  if (s.todoist) $('todoistToken').placeholder = tx('apps.verbunden');
+  $('stremioTrennen').hidden = !s.stremio;
+  $('stremioVerbinden').textContent = tx(s.stremio ? 'apps.neu_verbinden' : 'apps.verbinden');
+  if (s.stremioMail) $('stremioMail').value = $('stremioMail').value || s.stremioMail;
+}
+
+function appsMeldung(id, text, fehler = false) {
+  const m = $(id);
+  if (!m) return;
+  m.textContent = text || '';
+  m.classList.toggle('fehler', fehler);
+}
+
+function appsVerbinden() {
+  $('todoistVerbinden').onclick = async () => {
+    appsMeldung('todoistMeldung', '');
+    const r = await julia.appsTodoist($('todoistToken').value);
+    appsZeigen(r.status);
+    if (r.fehler) appsMeldung('todoistMeldung', r.fehler, true);
+    else { $('todoistToken').value = ''; appsMeldung('todoistMeldung', tx('apps.verbunden')); }
+  };
+  $('todoistTrennen').onclick = async () => { const r = await julia.appsTrennen('todoist'); appsZeigen(r.status); appsMeldung('todoistMeldung', ''); };
+  $('stremioVerbinden').onclick = async () => {
+    appsMeldung('stremioMeldung', tx('apps.melde_an'));
+    const r = await julia.appsStremio({ email: $('stremioMail').value, passwort: $('stremioPw').value });
+    appsZeigen(r.status);
+    if (r.fehler) appsMeldung('stremioMeldung', r.fehler, true);
+    else { $('stremioPw').value = ''; appsMeldung('stremioMeldung', tx('apps.verbunden')); }
+  };
+  $('stremioTrennen').onclick = async () => { const r = await julia.appsTrennen('stremio'); appsZeigen(r.status); appsMeldung('stremioMeldung', ''); };
+}
+
 // --- Design ---
 
 function mischen(hex, ziel, anteil) {
@@ -895,6 +934,8 @@ async function init() {
   syncZeigen(await julia.syncStatus());
   appVerbinden();
   appZeigen(await julia.appserverStatus());
+  appsVerbinden();
+  appsZeigen(await julia.appsStatus());
   designVerbinden();
   designZeigen();
   kostenZeigen(await julia.kostenHeute());

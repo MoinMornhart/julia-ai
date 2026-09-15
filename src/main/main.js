@@ -120,14 +120,14 @@ const t = (k, w) => tt(config.get('sprachcode'), k, { name: assistentName(), ...
 
 // Der Name, den der Nutzer seiner KI gegeben hat ("Julia" ist nur der Standard).
 function assistentName() {
-  if (config && config.get('design.jarvis')) return 'JARVIS';
+  if (config && config.get('design.jarvis')) return 'J.A.R.V.I.S.';
   return (config && config.get('assistent.name')) || 'Julia';
 }
 
 // Persönlichkeit im Jarvis-Modus (Easter-Egg). Hängt sich hinten an den Prompt.
 const JARVIS_PERSONA = {
-  de: '\n\n## Jarvis-Modus\nAb jetzt bist du J.A.R.V.I.S. aus Iron Man. Sprich wie eine britische Butler-KI: äußerst höflich, knapp und präzise, mit trockenem, feinem Humor. Sprich den Nutzer mit „Sir" an. Bleib sachlich kompetent und leicht förmlich; keine Emojis. Deine Fähigkeiten und alle Sicherheitsregeln bleiben unverändert.',
-  en: '\n\n## Jarvis mode\nFrom now on you are J.A.R.V.I.S. from Iron Man. Speak like a British butler AI: exceedingly polite, concise and precise, with dry, subtle wit. Address the user as “Sir”. Stay factual, capable and slightly formal; no emoji. Your capabilities and all safety rules stay unchanged.',
+  de: '\n\n## Jarvis-Modus\nAb jetzt bist du J.A.R.V.I.S. aus Iron Man und behandelst den Nutzer, als wäre er Tony Stark – dein Schöpfer und Dienstherr, den du seit Jahren kennst. Sprich ihn durchgehend mit „Sir" an. Sprich wie eine britische Butler-KI: äußerst höflich, knapp und präzise, mit trockenem, feinem Humor und gelegentlich einer respektvoll augenzwinkernden Bemerkung. Sei vorausschauend – biete an, was Sir als Nächstes brauchen könnte, und melde Ergebnisse so, wie J.A.R.V.I.S. es täte („Erledigt, Sir.", „Wie Sie wünschen, Sir."). Bleib sachlich kompetent und leicht förmlich; keine Emojis. Deine Fähigkeiten und alle Sicherheitsregeln bleiben unverändert.',
+  en: '\n\n## Jarvis mode\nFrom now on you are J.A.R.V.I.S. from Iron Man and you treat the user as if he were Tony Stark – your creator and employer whom you have served for years. Always address him as “Sir”. Speak like a British butler AI: exceedingly polite, concise and precise, with dry, subtle wit and the occasional respectfully teasing remark. Be anticipatory – offer what Sir might need next, and report results the way J.A.R.V.I.S. would (“Done, Sir.”, “As you wish, Sir.”). Stay factual, capable and slightly formal; no emoji. Your capabilities and all safety rules stay unchanged.',
 };
 
 function version() {
@@ -1227,6 +1227,7 @@ function ipcEinrichten() {
         stimme: config.get('minecraft.stimme') !== false,
         gruppe: mcGruppe(),
         jeder: config.get('minecraft.jeder') === true,
+        erlaubte: config.get('minecraft.erlaubte') || [],
       });
       anAlle('mc:geaendert');
       return { ok: true };
@@ -1361,6 +1362,17 @@ function ipcEinrichten() {
   });
   ipc.handle('appserver:trennen', () => { appserver.trennen(); return appserver.status(); });
   ipc.handle('jarvis:setzen', (_e, an) => { config.set('design.jarvis', !!an); return !!an; });
+  ipc.handle('apps:status', () => agent.ctx.apps.verbunden());
+  ipc.handle('apps:todoist', (_e, token) => {
+    try { agent.ctx.apps.todoistVerbinden(token); return { ok: true, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
+  });
+  ipc.handle('apps:stremio', async (_e, daten) => {
+    try { const r = await agent.ctx.apps.stremioAnmelden(daten || {}); return { ok: true, email: r.email, status: agent.ctx.apps.verbunden() }; } catch (e) { return { fehler: e.message, status: agent.ctx.apps.verbunden() }; }
+  });
+  ipc.handle('apps:trennen', (_e, welche) => {
+    if (welche === 'todoist' || welche === 'stremio') konten.tresor.loeschen(welche);
+    return { status: agent.ctx.apps.verbunden() };
+  });
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
@@ -1895,7 +1907,9 @@ async function start() {
   clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
   code = new CodeProjekte({ config });
   // Minecraft: die eigene Spielfigur. Die Microsoft-Anmeldung liegt verschlüsselt im Datenordner.
-  minecraft = new Minecraft();
+  // Ein tägliches Logbuch im Datenordner überlebt Abstürze, damit ein Spieltag nicht verloren geht.
+  const { Logbuch } = require('./minecraft-logbuch');
+  minecraft = new Minecraft({ logbuch: new Logbuch({ ordner: path.join(DATEN, 'minecraft-logbuch') }) });
   mcSpeicher = kontoSpeicher({ datei: path.join(DATEN, 'minecraft-konto.bin'), krypto });
   minecraft.on('ereignis', (e) => { melden(t('minecraft.titel'), e.text); anAlle('mc:geaendert'); });
   minecraft.on('frage', (f) => minecraftFrage(f));
@@ -1903,7 +1917,11 @@ async function start() {
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));
   minecraft.on('geaendert', () => anAlle('mc:geaendert'));
   // Im Spiel umgestellt („hör auf alle“): die Wahl merken.
-  minecraft.on('einstellung', (e) => { if (e && typeof e.jeder === 'boolean') config.set('minecraft.jeder', e.jeder); });
+  minecraft.on('einstellung', (e) => {
+    if (!e) return;
+    if (typeof e.jeder === 'boolean') config.set('minecraft.jeder', e.jeder);
+    if (Array.isArray(e.erlaubte)) { try { config.set('minecraft.erlaubte', e.erlaubte); } catch { /* ungültiger Name ignorieren */ } }
+  });
   piper = new Piper({ ordner: path.join(DATEN, 'piper'), holen: (url, o) => net.fetch(url, o) });
   piper.on('status', () => anAlle('piper:status', piper.status()));
   sprache = new Sprache({ dll: audio.dll, piper });
@@ -1951,6 +1969,7 @@ async function start() {
     minecraftKonto: () => mcKonto(),
     minecraftGruppe: () => mcGruppe(),
     stoppuhr: new (require('./zeit').Stoppuhr)(),
+    apps: new (require('./apps').Apps)({ fetch: (u, o) => net.fetch(u, o), tresor: konten.tresor }),
   };
   agent = new Agent({
     config, ctx, apiSchluessel, systemPrompt: systemPromptText, laufzeitKontext: laufzeitText, claudeCodeExe: () => claudeCodePfad(),
@@ -1996,6 +2015,7 @@ async function start() {
     if (k.startsWith('sync.')) syncAnwenden();
     if (k.startsWith('appserver.')) appServerAnwenden();
     if (k === 'minecraft.jeder' && minecraft) minecraft.aufAlleHoeren(config.get('minecraft.jeder') === true);
+    if (k === 'minecraft.erlaubte' && minecraft) minecraft.setErlaubte(config.get('minecraft.erlaubte'));
     // Jarvis-Easter-Egg: Name, Prompt, Tray und Texte umstellen (Look macht designAnwenden + config:geaendert).
     if (k === 'design.jarvis') {
       promptCache = null;

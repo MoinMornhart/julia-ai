@@ -178,6 +178,11 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .konto.verbunden .konto-name small { color: var(--gruen); }
 .konto-einrichten { margin-top: 12px; }
 .konto + .konto { margin-top: 10px; }
+.app-dienst { padding: 12px 0; border-top: 1px solid var(--linie); }
+.app-dienst:first-of-type { border-top: none; }
+.app-dienst > strong { display: block; margin-bottom: 4px; }
+.app-dienst > strong small { font-weight: 400; }
+.zeile { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 a.zweit { display: inline-block; color: var(--text); text-decoration: none; }
 .konto-logo.handy { background: linear-gradient(135deg, var(--akzent), color-mix(in srgb, var(--akzent) 55%, #000)); font-size: 15px; }
 .kopplung { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-top: 14px; }

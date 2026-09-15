@@ -73,7 +73,8 @@
 
 - **Auch als App fürs Handy** – Julia gibt es jetzt als eigenständige **Android- und iOS-App** (Chat mit Claude oder OpenAI, Vorlesen, Kosten, Streaming). Auf Wunsch verbindet sie sich im Heimnetz/VPN mit deinem PC und bedient die Julia dort. Mehr unter [Julia aufs Handy](#julia-aufs-handy).
 - **Steuert den PC noch mehr** – Medien und Lautstärke, Programme starten und schließen, Fenster anordnen, Timer und Stoppuhr, rechnen, Einheiten umrechnen, Text umwandeln und QR-Codes – alles lokal. Siehe [Kleine Helfer](#kleine-helfer).
-- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage, steigt in Boote und plant große Ziele bis zum Enderdrachen. Siehe [Minecraft](#minecraft).
+- **Arbeitet mit deinen Apps zusammen** – z. B. „Setz Milch auf meine Todoist-Liste“ oder „Füg Iron Man zu meiner Stremio-Liste hinzu“. Siehe [Zusammen mit deinen Apps](#zusammen-mit-deinen-apps).
+- **Minecraft spielt sie richtig** – sie erkennt, was vor ihr liegt (auch Lava/Abgrund), isst von selbst, kämpft klug (Rückzug bei wenig Leben, Creeper auf Abstand), baut auf Ansage und steigt in Boote. Neu: mit `!spiel durch` arbeitet sie sich selbst einen Tech-Baum bis zum Enderdrachen entlang, ein **tägliches Logbuch** übersteht Abstürze, und sie hört nur auf Leute, die du ihr ausdrücklich nennst. Siehe [Minecraft](#minecraft).
 - **Live-Untertitel wie bei Siri** – schon während du sprichst, steht in der Blase mit, was Julia versteht.
 - **Startet nie mehr wortlos** – eine Selbstprüfung fängt Grafikkarten-Abstürze ab (Rückfall auf Software-Grafik) und zeigt bei Startproblemen eine klare Meldung mit Logbuch.
 - **Natürliche Stimmen & Whisper** – Thorsten oder Kerstin und lokale Spracherkennung, beides offline auf deinem PC.
@@ -169,6 +170,22 @@ Neben den großen Aufgaben erledigt Julia auch die kleinen Handgriffe am PC – 
 - **Fenster anordnen:** links/rechts oder oben/unten andocken, in die vier Ecken, mittig, maximieren oder wiederherstellen.
 - **Timer, Wecker & Stoppuhr:** „Stell einen Timer auf 10 Minuten“, Wecker zur Uhrzeit, dazu eine Stoppuhr mit Zwischenzeiten.
 - **Rechnen & Umwandeln:** rechnen, Einheiten umrechnen (Länge, Masse, Zeit, Daten, Temperatur …), Text umwandeln (Groß/klein, Base64, JSON, zählen) und QR-Codes erzeugen.
+
+## Zusammen mit deinen Apps
+
+Julia arbeitet mit Apps zusammen, die du sowieso nutzt. Öffnen kann sie jede App per Name
+(„Öffne Spotify“); für einige klappt aber mehr, wenn du sie einmal unter *Einstellungen → Apps*
+verbindest:
+
+| App | Was Julia kann | Verbinden |
+|---|---|---|
+| **[Todoist](https://todoist.com)** – Aufgaben | „Setz Milch auf meine Todoist-Liste“, „Erinner mich morgen um 9 an den Zahnarzt“ – Julia legt die Aufgabe samt Fälligkeit an. | API-Token (Todoist → Einstellungen → Integrationen → Entwickler) |
+| **[Stremio](https://www.stremio.com)** – Filme & Serien | „Füg Iron Man zu meiner Stremio-Liste hinzu“ – Julia sucht den Titel und nimmt ihn in deine Bibliothek auf; auch durchsuchen und öffnen. | Anmeldung mit deinem Stremio-Konto (Passwort wird nicht gespeichert, nur der Zugangs-Schlüssel, verschlüsselt) |
+| **VibeWork** – Fokus-Timer | „Öffne VibeWork“ – die App lässt sich starten. | nichts nötig |
+
+Daten an eine App zu senden (Aufgabe anlegen, zur Liste hinzufügen) ist ein **GELB**-Schritt der
+Ampel – Julia fragt vorher. Zugangsdaten liegen wie alle Konten nur verschlüsselt auf deinem PC
+und tauchen nie im Gespräch auf.
 
 ## KI-Anbieter
 
@@ -312,6 +329,8 @@ NeoProtect oder TCPShield).
 | Hinstellen · Essen | `!stell werkbank hin` · `!ess` | stellt einen Block neben sich · isst etwas |
 | Bauen | `!bau turm 8` · `!bau mauer 10 3` · `!bau hütte` | baut Turm, Mauer, Hütte oder Brücke aus vorhandenem Material |
 | Boot & Reittier | `!steig ein` · `!steig aus` | steigt in Boot, Lore oder aufs Reittier – und wieder aus |
+| Durchspielen | `!spiel durch` | arbeitet sich selbst Etappe für Etappe Richtung Enderdrache |
+| Zuhören steuern | `!hör auch auf NAME` · `!hör nur auf mich` | erlaubt einzelne Spieler oder setzt zurück |
 | Schlafen · Stopp | `!schlaf` · `!stopp` | geht ins Bett · hört sofort auf |
 
 `!hilfe` nennt alle Befehle im Spiel. Kämpfen, Folgen und Ausweichen laufen 20-mal pro Sekunde
@@ -320,9 +339,10 @@ oder ein Abgrund) und bremst von selbst, **isst**, sobald sie Hunger hat, und **
 Waffe und Rüstung legt sie selbst an, bei wenig Leben zieht sie sich zurück oder greift zum
 Goldapfel, und einen Creeper umarmt sie nicht, sondern hält Abstand.
 
-- **Ansprechen:** Es reicht, wenn `Julia` irgendwo in der Nachricht steht (nicht nur am Anfang); `!` geht auch. Auf Wunsch reagiert sie **auf alle Spieler** statt nur auf dich – umschaltbar im Panel oder im Spiel mit „Julia, hör auf alle“ / „hör nur auf mich“. Gehandelt wird immer nur im Spiel, nie am PC.
+- **Ansprechen:** Es reicht, wenn `Julia` irgendwo in der Nachricht steht (nicht nur am Anfang); `!` geht auch. Standardmäßig hört sie **nur auf dich**. Du kannst im Spiel einzelne Leute freigeben – „Julia, hör auch auf Peter und Anna“, „hör nicht mehr auf Peter“, „hör nur auf mich“ – oder im Panel grob „auf alle hören“ einschalten. Gehandelt wird immer nur im Spiel, nie am PC, und umstellen darf nur der Besitzer.
 
-- **Auftrag an Julia:** Im Reiter schreibst du in deinen Worten, was sie tun soll – etwa „Hol Holz, bau eine Werkbank und mach dir eine Steinspitzhacke“. Sie sieht sich um, plant die Schritte und arbeitet sie mit ihren Fähigkeiten ab, wartet jeweils auf das Ergebnis und sagt am Ende, was geschafft ist. Große Ziele wie den Enderdrachen zerlegt sie in Etappen – ganz allein durchspielen schafft ein Bot aber nicht zuverlässig.
+- **Auftrag an Julia:** Im Reiter schreibst du in deinen Worten, was sie tun soll – etwa „Hol Holz, bau eine Werkbank und mach dir eine Steinspitzhacke“. Sie sieht sich um, plant die Schritte und arbeitet sie mit ihren Fähigkeiten ab, wartet jeweils auf das Ergebnis und sagt am Ende, was geschafft ist.
+- **Durchspielen & lernen:** Mit `!spiel durch` (oder „spiel weiter“) arbeitet sie sich eigenständig einen **Tech-Baum** entlang – vom ersten Holz über Stein, Eisen und Diamant bis zum Nether und zum Enderdrachen. Sie weiß dank der Fortschritts-Anzeige jederzeit, auf welcher Etappe sie steht und was als Nächstes dran ist. Alles hält ein **tägliches Logbuch** fest (eine Datei pro Tag im Datenordner, sofort auf die Platte geschrieben) – das überlebt einen Absturz, sodass ein Spieltag nie verloren ist und du hinterher genau siehst, was geklappt hat und wo sie hing. Ehrlich: ein garantiertes Solo-Durchspielen bis zum Drachen ist nicht sicher – aber sie versteht den Weg, macht echte Fortschritte und wird über das Logbuch nachvollziehbar besser.
 - **Voice-Chat-Gruppen:** Julia listet die Gruppen aus dem Simple Voice Chat des Servers auf; du wählst, in welche sie geht. Bei einer geschützten Gruppe gibst du das Passwort ein – es geht nur an den Server, die KI sieht es nie. Mit „Immer beitreten“ geht Julia beim nächsten Mal von selbst hinein; das Passwort liegt dann verschlüsselt auf deinem PC.
 
 <p align="center">

@@ -92,7 +92,7 @@ const TIERE = new Set(['cow', 'pig', 'chicken', 'sheep', 'rabbit', 'mooshroom'])
 const TIER_WOERTER = { kuh: 'cow', kuehe: 'cow', kühe: 'cow', schwein: 'pig', schweine: 'pig', huhn: 'chicken', huehner: 'chicken', hühner: 'chicken', schaf: 'sheep', schafe: 'sheep', hase: 'rabbit', hasen: 'rabbit', kaninchen: 'rabbit', pilzkuh: 'mooshroom' };
 // Das behält die Figur beim Einräumen: Waffen, Werkzeug, Rüstung, Essen, Fackeln.
 const BEHALTEN = /_(sword|axe|pickaxe|shovel|hoe|helmet|chestplate|leggings|boots)$|^(shield|bow|crossbow|trident|arrow|torch)$/;
-const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !bau turm 8 · !bau mauer 10 3 · !bau hütte · !bau brücke 12 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf · !steig ein · !steig aus';
+const HILFE = 'Befehle: !folge · !komm · !beschütze mich · !duell · !stopp · !geh X Y Z · !gib 5 brot · !sammel · !jag 3 kuh · !craft 4 fackel · !bau ab holz 10 · !bau turm 8 · !bau mauer 10 3 · !bau hütte · !bau brücke 12 · !schmelz 8 eisen · !stell werkbank hin · !ess · !verstau · !schlaf · !steig ein · !steig aus · !spiel durch · !hör auch auf NAME · !hör nur auf mich';
 // Brennstoff für den Ofen: Name (oder Endung) und wie viele Dinge eins schafft.
 const BRENNSTOFF = [['coal', 8], ['charcoal', 8], ['_planks', 1.5], ['_log', 1.5], ['stick', 0.5]];
 // Was die Figur beim Umsehen meldet.
@@ -458,6 +458,7 @@ function befehlLesen(text, namen = []) {
   const k = /^(?:duell|k(?:ä|ae)mpf(?:e)?|kampf|fight|duel|pvp|attack|greif(?:e)? an)(?:\s+(?:gegen|mit|against|with))?(?:\s+([A-Za-z0-9_]{3,16}))?$/i.exec(rest);
   if (k) return { aufgabe: 'kaempfen', spieler: k[1] && !/^(mich|me)$/i.test(k[1]) ? k[1] : null };
   if (/^(hilfe|help|befehle|commands|\?)$/.test(s)) return { aufgabe: 'hilfe' };
+  if (/^(durchspiel(e|en)?|spiel(e|en)?\s+(das\s+)?(spiel\s+|minecraft\s+|mc\s+)?(durch|weiter|allein(e)?|selbst(st)?(ä|ae)ndig|von allein(e)?)|play\s+(it\s+)?through|beat\s+the\s+game)$/.test(s)) return { aufgabe: 'durchspielen' };
   if (/^(sammel|sammle|einsammeln|aufheben|heb auf|pick ?up|collect)( alles| das| ein| auf)*$/.test(s)) return { aufgabe: 'sammeln' };
   if (/^(schlaf(en)?|geh schlafen|ins bett|sleep|bed)$/.test(s)) return { aufgabe: 'schlafen' };
   if (/^(verstau(e|en)?|r(ä|ae)um( das inventar)? ein|einr(ä|ae)umen|store|stash)( alles)?( in die truhe)?$/.test(s)) return { aufgabe: 'verstauen' };
@@ -505,6 +506,30 @@ function hoerModus(text, namen = []) {
   const s = a.rest.replace(/[.!?]+$/, '').toLowerCase();
   if (/^(h(ö|oe)r(e)? (auf )?(alle|jeden)|(auf )?alle h(ö|oe)ren|reagier(e)? auf alle|listen to (everyone|all))$/.test(s)) return 'alle';
   if (/^(h(ö|oe)r(e)? nur (auf )?mich|nur (auf )?mich( h(ö|oe)ren)?|listen (only )?to me( only)?)$/.test(s)) return 'nur';
+  return null;
+}
+
+// „Hör auch auf Peter und Anna“ / „hör nicht mehr auf Peter“ – nennt einzelne
+// Spieler, auf die Julia zusätzlich zum Besitzer hören soll. Gibt
+// { art: 'dazu'|'weg', namen: [...] } oder null zurück.
+function hoerName(text, namen = []) {
+  const a = anrede(text, namen);
+  if (!a.ok) return null;
+  const r = a.rest.replace(/[.!?]+$/, '').trim();
+  const teile = (s) => String(s || '')
+    .split(/\s*(?:,|&|\bund\b|\band\b)\s*|\s+/i)
+    .map((x) => x.trim())
+    .filter((x) => /^[A-Za-z0-9_]{2,16}$/.test(x) && !/^(auch|bitte|mehr|noch|dazu|auf|den|die|der|spieler|player)$/i.test(x));
+  const weg = /^(?:h(?:ö|oe)r(?:e)?|reagier(?:e)?)\s+(?:bitte\s+)?nicht(?:\s+mehr)?\s+auf\s+(.+)$/i.exec(r)
+    || /^(?:ignorier(?:e)?|blockier(?:e)?)\s+(.+)$/i.exec(r);
+  if (weg) { const ns = teile(weg[1]); return ns.length ? { art: 'weg', namen: ns } : null; }
+  const dazu = /^(?:h(?:ö|oe)r(?:e)?|reagier(?:e)?)\s+(?:bitte\s+)?(?:auch\s+)?auf\s+(.+)$/i.exec(r);
+  if (dazu) {
+    const ziel = dazu[1].trim();
+    if (/^(alle|jeden|everyone|all|mich|mir|me)$/i.test(ziel)) return null; // regelt hoerModus
+    const ns = teile(ziel);
+    return ns.length ? { art: 'dazu', namen: ns } : null;
+  }
   return null;
 }
 
@@ -585,9 +610,10 @@ function fehlerText(e, server) {
 
 class Minecraft extends EventEmitter {
   // wiederPausen: Wartezeiten vor den automatischen Wiederversuchen (ms).
-  constructor({ laden, aufloesen, srv, wiederPausen = [5000, 15000, 30000] } = {}) {
+  constructor({ laden, aufloesen, srv, logbuch = null, wiederPausen = [5000, 15000, 30000] } = {}) {
     super();
     this.wiederPausen = wiederPausen;
+    this.logbuch = logbuch; // tägliches Spiel-Logbuch (überlebt Abstürze); optional
     this.trennung = null; // warum die Figur zuletzt vom Server geflogen ist
     this.laden = laden || (() => ({ mineflayer: require('mineflayer'), pf: require('mineflayer-pathfinder') }));
     this.aufloesen = aufloesen;
@@ -601,6 +627,7 @@ class Minecraft extends EventEmitter {
     this.jagt = null;
     this.isst = false;
     this.jeder = false; // auf alle Spieler hören statt nur auf den Besitzer
+    this.erlaubte = new Map(); // zusätzlich erlaubte Spieler: kleingeschrieben → Anzeigename
   }
 
   get verbunden() {
@@ -608,12 +635,13 @@ class Minecraft extends EventEmitter {
   }
 
   // gruppe: { name, passwort } – dieser Voice-Chat-Gruppe von selbst beitreten.
-  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null, jeder = false } = {}) {
+  async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null, jeder = false, erlaubte = [] } = {}) {
     clearTimeout(this.wiederTimer);
     this._botWeg();
-    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe, jeder };
+    this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe, jeder, erlaubte };
     this.autoGruppe = gruppe;
     this.jeder = !!jeder;
+    this.setErlaubte(erlaubte);
     const p = Math.round(Number(port) || 25565);
     if (p < 1 || p > 65535) throw new Error('Der Port liegt zwischen 1 und 65535.');
     const ziel = await zielFinden(adresse, p, { aufloesen: this.aufloesen, srv: this.srv, oeffentlich });
@@ -655,6 +683,7 @@ class Minecraft extends EventEmitter {
     this.verbundenSeit = Date.now();
     this.letzterFehler = null;
     this._einrichten(bot);
+    if (this.logbuch) { try { this.logbuch.eintrag('start', `Auf ${this.server} eingeloggt als ${bot.username}.`); } catch { /* egal */ } }
     if (stimme) this._stimmeStarten(bot, ip);
     return this.status();
   }
@@ -875,6 +904,15 @@ class Minecraft extends EventEmitter {
         return this._aussteigen();
       case 'bauen':
         return this._bauen({ bau, zahl1, zahl2, zahl3, item });
+      case 'durchspielen': {
+        // Eigenständig weiterspielen: als Auftrag an die KI, die sich über
+        // minecraft_fortschritt und die Spiel-Werkzeuge Etappe für Etappe
+        // vorarbeitet. Das Logbuch hält den Weg fest (überlebt Abstürze).
+        const auftrag = 'Spiele Minecraft ab jetzt eigenständig weiter – Schritt für Schritt Richtung Enderdrache. Rufe zuerst minecraft_fortschritt auf, erfülle die dort genannte aktuelle Etappe mit den Minecraft-Werkzeugen (umsehen, abbauen, herstellen, schmelzen, jagen, bauen, warten), prüfe dann erneut den Fortschritt und mach weiter. Achte auf Leben und Hunger. Kommst du nicht weiter, sag kurz warum.';
+        this.emit('frage', { von: this.besitzer || 'Spieler', text: auftrag });
+        if (this.logbuch) { try { this.logbuch.eintrag('info', 'Auftrag: eigenständig weiterspielen.'); } catch { /* egal */ } }
+        return 'Alles klar – ich spiele selbstständig weiter und arbeite mich Etappe für Etappe zum Enderdrachen vor.';
+      }
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
@@ -904,6 +942,7 @@ class Minecraft extends EventEmitter {
       essbar: this._essbar(),
       faehrt: bot.vehicle ? (bot.vehicle.name || 'Fahrzeug') : null,
       jeder: this.jeder,
+      erlaubte: this.erlaubteListe(),
       position: { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) },
       spielmodus: bot.game && bot.game.gameMode,
       aufgabe: a ? { art: a.art, spieler: a.spieler, block: a.block || a.item, geschafft: a.geschafft, ziel: a.anzahl, ort: a.ort } : null,
@@ -919,7 +958,33 @@ class Minecraft extends EventEmitter {
 
   _melden(art, text) {
     this.letzteMeldung = { art, text, zeit: Date.now() };
+    // Ins Tagebuch, damit bei einem Absturz nichts verloren geht.
+    if (this.logbuch) {
+      const artLog = /gestorben|niederlage/.test(art) ? 'tod' : /fehler|getrennt/.test(art) ? 'fehler' : /fertig|sieg|erreicht/.test(art) ? 'ziel' : 'info';
+      try { this.logbuch.eintrag(artLog, text, { herkunft: art }); } catch { /* Logbuch darf nie das Spiel stören */ }
+    }
     this.emit('ereignis', { art, text });
+  }
+
+  // Normalisierter Zustand fürs Durchspielen: Inventar, Dimension, Drache.
+  spielZustand() {
+    if (!this.verbunden) return { items: {}, dimension: null };
+    const items = {};
+    for (const i of this.bot.inventory.items()) items[i.name] = (items[i.name] || 0) + i.count;
+    const dim = String(this.bot.game && this.bot.game.dimension || '');
+    const dimension = /nether/.test(dim) ? 'nether' : /end/.test(dim) ? 'end' : 'overworld';
+    return { items, dimension, dracheBesiegt: !!this.dracheBesiegt };
+  }
+
+  // Wo steht Julia im Spiel? Schreibt den Stand auch ins Logbuch.
+  fortschritt() {
+    const plan = require('./minecraft-plan');
+    const z = this.spielZustand();
+    const f = plan.fortschritt(z);
+    if (this.logbuch) {
+      try { this.logbuch.eintrag('fortschritt', plan.fortschrittText(z), { aktuell: f.aktuell ? f.aktuell.name : null, prozent: f.prozent, erreicht: f.erreicht.length }); } catch { /* egal */ }
+    }
+    return { ...f, text: plan.fortschrittText(z) };
   }
 
   _spielerFigur(name) {
@@ -942,6 +1007,29 @@ class Minecraft extends EventEmitter {
     this.jeder = !!an;
   }
 
+  // Einzelne Spieler zur Erlaubnisliste hinzufügen oder entfernen.
+  hoerenAuf(namen, an) {
+    for (const n of Array.isArray(namen) ? namen : [namen]) {
+      const k = String(n || '').trim().toLowerCase();
+      if (!k) continue;
+      if (an) this.erlaubte.set(k, String(n).trim()); else this.erlaubte.delete(k);
+    }
+  }
+
+  // Die ganze Erlaubnisliste setzen (z. B. beim Verbinden aus der Konfiguration).
+  setErlaubte(namen) {
+    this.erlaubte = new Map((namen || []).map((n) => [String(n).trim().toLowerCase(), String(n).trim()]).filter(([k]) => k));
+  }
+
+  erlaubteListe() {
+    return [...this.erlaubte.values()];
+  }
+
+  // Darf Julia auf diesen Spieler hören? Besitzer immer, sonst „alle“ oder Liste.
+  _darfHoeren(von, istBesitzer) {
+    return istBesitzer || this.jeder || this.erlaubte.has(String(von).toLowerCase());
+  }
+
   _chat(von, text) {
     if (!this.bot || von === this.bot.username) return;
     this.chatVerlauf.push({ von, text: String(text).slice(0, 200) });
@@ -952,12 +1040,25 @@ class Minecraft extends EventEmitter {
     const modus = hoerModus(text, namen);
     if (modus && istBesitzer) {
       this.jeder = modus === 'alle';
-      this.emit('einstellung', { jeder: this.jeder });
+      if (modus === 'nur') this.erlaubte.clear();
+      this.emit('einstellung', { jeder: this.jeder, erlaubte: this.erlaubteListe() });
       try { this.chat(this.jeder ? 'Ich höre jetzt auf alle Spieler.' : 'Ich höre nur noch auf dich.'); } catch { /* getrennt */ }
       return;
     }
-    // Sonst: nur der Besitzer – außer du hast „auf alle hören“ eingeschaltet.
-    if (!this.jeder && !istBesitzer) return;
+    // Einzelne Spieler erlauben oder wieder ausschließen – nur der Besitzer.
+    const liste = hoerName(text, namen);
+    if (liste && istBesitzer) {
+      this.hoerenAuf(liste.namen, liste.art === 'dazu');
+      this.emit('einstellung', { jeder: this.jeder, erlaubte: this.erlaubteListe() });
+      try {
+        this.chat(liste.art === 'dazu'
+          ? `Alles klar, ich höre jetzt auch auf ${liste.namen.join(', ')}.`
+          : `Okay, auf ${liste.namen.join(', ')} höre ich nicht mehr.`);
+      } catch { /* getrennt */ }
+      return;
+    }
+    // Sonst: nur der Besitzer und ausdrücklich erlaubte Spieler (oder „auf alle“).
+    if (!this._darfHoeren(von, istBesitzer)) return;
     const b = befehlLesen(text, namen);
     if (b) {
       try {
@@ -970,7 +1071,7 @@ class Minecraft extends EventEmitter {
     // Sonst eine Frage an Julia – höchstens alle vier Sekunden (Kosten, Spam).
     // Ohne eingetragenen Besitzer nur, wenn „auf alle hören“ an ist.
     const frage = frageLesen(text, namen);
-    if (!frage || (!this.besitzer && !this.jeder)) return;
+    if (!frage || (!this.besitzer && !this.jeder && this.erlaubte.size === 0)) return;
     if (Date.now() - (this.letzteFrage || 0) < 4000) return;
     this.letzteFrage = Date.now();
     this.emit('frage', { von, text: frage });
@@ -1153,6 +1254,11 @@ class Minecraft extends EventEmitter {
   }
 
   _tot(e) {
+    // Enderdrache besiegt – das große Ziel des Durchspielens.
+    if (e && (e.name === 'ender_dragon' || e.name === 'enderdragon')) {
+      this.dracheBesiegt = true;
+      this._melden('erreicht', 'Der Enderdrache ist besiegt – das Spiel ist durchgespielt! 🐉');
+    }
     const a = this.auftrag;
     if (a && a.art === 'jagen' && e && e.id === a.zielId) {
       a.geschafft += 1;
@@ -1977,12 +2083,41 @@ const WERKZEUGE = [
       return war ? 'Server verlassen.' : 'War mit keinem Server verbunden.';
     },
   },
+  {
+    name: 'minecraft_fortschritt',
+    description: 'Wo steht Julia beim Durchspielen? Liefert den Tech-Baum-Stand (erreichte Etappen, aktuelle Etappe mit konkretem nächsten Schritt, Prozent) vom ersten Holz bis zum Enderdrachen. Nutze das, um selbstständig weiterzuspielen: Etappe für Etappe die vorhandenen Minecraft-Werkzeuge (abbauen, herstellen, schmelzen, jagen, bauen, umsehen) einsetzen, bis die aktuelle Etappe erfüllt ist, dann erneut prüfen.',
+    input_schema: { type: 'object', properties: {} },
+    einstufen: () => gruen(),
+    async ausfuehren(_e, ctx) {
+      const mc = brauchtMinecraft(ctx);
+      if (!mc.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
+      const f = mc.fortschritt();
+      return fremd('dem Minecraft-Server', JSON.stringify(f));
+    },
+  },
+  {
+    name: 'minecraft_logbuch',
+    description: 'Das tägliche Spiel-Logbuch lesen (überlebt Abstürze, eine Datei pro Tag). Ohne datum die Zusammenfassung von heute; mit datum "JJJJ-MM-TT" ein anderer Tag; mit voll=true die vollständigen Einträge des Tages. Damit sieht man, was Julia geschafft hat und wo sie hängen blieb.',
+    input_schema: { type: 'object', properties: { datum: { type: 'string' }, voll: { type: 'boolean' } } },
+    einstufen: () => gruen(),
+    async ausfuehren(e, ctx) {
+      const mc = brauchtMinecraft(ctx);
+      if (!mc.logbuch) return 'Für Minecraft gibt es hier kein Logbuch.';
+      const datum = e.datum && /^\d{4}-\d{2}-\d{2}$/.test(e.datum) ? e.datum : undefined;
+      if (e.voll) {
+        const eintraege = mc.logbuch.lesen(datum);
+        return fremd('dem Minecraft-Logbuch', eintraege.length ? JSON.stringify(eintraege.slice(-200), null, 1) : 'Für diesen Tag gibt es kein Logbuch.');
+      }
+      const tage = mc.logbuch.tage();
+      return fremd('dem Minecraft-Logbuch', `${mc.logbuch.zusammenfassung(datum)}${tage.length ? `\n\nVorhandene Tage: ${tage.slice(0, 10).join(', ')}.` : ''}`);
+    },
+  },
 ];
 
 module.exports = {
   Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
-  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, chatTeile, richtungAus, bauPlan,
+  istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan,
   itemNamen, ortLesen, mengeLesen, endeText, HILFE,
 };

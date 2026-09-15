@@ -127,6 +127,7 @@ const STANDARD = {
     stimme: true, // Simple Voice Chat nutzen, wenn der Server ihn hat
     gruppe: '', // dieser Voice-Chat-Gruppe von selbst beitreten (Passwort verschlüsselt im Tresor)
     jeder: false, // auf alle Spieler im Chat reagieren statt nur auf den eingetragenen
+    erlaubte: [], // zusätzlich zum Besitzer erlaubte Spielernamen (im Spiel per „hör auch auf X“ pflegbar)
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -264,6 +265,18 @@ function pruefen(schluessel, wert) {
     }
     case 'minecraft.port': return Math.round(zahl(wert, 1, 65535, 'Port'));
     case 'minecraft.gruppe': return String(wert ?? '').replace(/[ -]/g, '').trim().slice(0, 64);
+    case 'minecraft.erlaubte': {
+      const roh = Array.isArray(wert) ? wert : String(wert ?? '').split(/[\n,;]/);
+      const liste = [];
+      for (const p of roh) {
+        const s = String(p).trim();
+        if (!s) continue;
+        if (!/^[A-Za-z0-9_]{3,16}$/.test(s)) throw new Error(`„${s.slice(0, 16)}“ ist kein Minecraft-Name (3 bis 16 Zeichen: Buchstaben, Ziffern, Unterstrich).`);
+        if (!liste.some((x) => x.toLowerCase() === s.toLowerCase())) liste.push(s);
+      }
+      if (liste.length > 20) throw new Error('Höchstens 20 erlaubte Spieler.');
+      return liste;
+    }
     case 'minecraft.spieler':
     case 'minecraft.botname':
     case 'minecraft.konto': {

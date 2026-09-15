@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.8.0 – 2026-09-15
+- Julia arbeitet jetzt mit Todoist und Stremio zusammen (z. B. 'Füg Iron Man zu meiner Stremio-Liste hinzu'), spielt Minecraft auf Ansage eigenständig durch – mit Tech-Baum bis zum Enderdrachen und täglichem Logbuch, das Abstürze übersteht – hört im Spiel nur auf Leute, die du ihr nennst, und der Jarvis-Modus fühlt sich mit echtem HUD-Look und 'Sir'-Anrede wie J.A.R.V.I.S. an
+
 ## 0.7.0 – 2026-09-15
 - Kleines Easter-Egg: Tippe 'jarvis' in den Chat für einen kompletten Jarvis-Look samt Sprechweise, 'julia' schaltet zurück; dazu aufgefrischte README mit sichtbarer Android-/iOS-App
 

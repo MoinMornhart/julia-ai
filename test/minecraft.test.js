@@ -536,7 +536,54 @@ test('Minecraft: reagiert nur auf den Besitzer – außer „auf alle“ ist an'
   assert.equal(c.m.jeder, false, 'ein Fremder darf das nicht');
   c.m._chat('Moin', 'Julia, hör auf alle');
   assert.equal(c.m.jeder, true);
-  assert.deepEqual(ereignisse.at(-1), { jeder: true });
+  assert.deepEqual(ereignisse.at(-1), { jeder: true, erlaubte: [] });
+});
+
+test('Minecraft: nur genannte Spieler zusätzlich erlauben', () => {
+  const mc2 = require('../src/main/minecraft');
+  // Parser: einzelne Namen hinzufügen und entfernen.
+  assert.deepEqual(mc2.hoerName('Julia, hör auch auf Peter', ['Julia']), { art: 'dazu', namen: ['Peter'] });
+  assert.deepEqual(mc2.hoerName('Julia hör auf Peter und Anna', ['Julia']), { art: 'dazu', namen: ['Peter', 'Anna'] });
+  assert.deepEqual(mc2.hoerName('Julia, hör nicht mehr auf Peter', ['Julia']), { art: 'weg', namen: ['Peter'] });
+  // „auf alle“ / „auf mich“ bleibt Sache von hoerModus.
+  assert.equal(mc2.hoerName('Julia hör auf alle', ['Julia']), null);
+  assert.equal(mc2.hoerName('Julia hör auf mich', ['Julia']), null);
+  // „hör auf“ ohne Namen ist der Stopp-Befehl, keine Liste.
+  assert.equal(mc2.hoerName('Julia hör auf', ['Julia']), null);
+
+  const m = new mc2.Minecraft();
+  m.pf = { goals: {} };
+  m.bot = { username: 'Julia', entity: { position: { x: 0, y: 64, z: 0 } }, pathfinder: { setGoal() {} }, clearControlStates() {}, chat() {} };
+  m.besitzer = 'Moin';
+  m.assistent = 'Julia';
+  const befehle = [];
+  m.aufgabe = (b) => { befehle.push(b); return 'ok'; };
+
+  // Fremder wird ignoriert, bis der Besitzer ihn erlaubt.
+  m._chat('Peter', 'Julia, folge mir');
+  assert.equal(befehle.length, 0);
+  m._chat('Moin', 'Julia, hör auch auf Peter');
+  assert.deepEqual(m.erlaubteListe(), ['Peter']);
+  m._chat('Peter', 'Julia, folge mir');
+  assert.equal(befehle.length, 1, 'jetzt hört sie auf Peter');
+  // Ein anderer Fremder bleibt weiterhin außen vor.
+  m._chat('Klaus', 'Julia, komm her');
+  assert.equal(befehle.length, 1);
+  // Und wieder entfernen.
+  m._chat('Moin', 'Julia hör nicht mehr auf Peter');
+  assert.deepEqual(m.erlaubteListe(), []);
+  m._chat('Peter', 'Julia, folge mir');
+  assert.equal(befehle.length, 1, 'Peter wird wieder ignoriert');
+});
+
+test('Minecraft: „spiel durch“ wird als Durchspielen-Auftrag erkannt', () => {
+  const b = (t) => mc.befehlLesen(t, ['Julia']);
+  assert.deepEqual(b('Julia, spiel durch'), { aufgabe: 'durchspielen' });
+  assert.deepEqual(b('!spiel minecraft durch'), { aufgabe: 'durchspielen' });
+  assert.deepEqual(b('julia spiel weiter'), { aufgabe: 'durchspielen' });
+  assert.deepEqual(b('!durchspielen'), { aufgabe: 'durchspielen' });
+  // „spiel mit mir“ o. Ä. ist kein Durchspielen.
+  assert.equal(b('julia spiel'), null);
 });
 
 test('Minecraft: der Name darf irgendwo in der Nachricht stehen', () => {

@@ -93,13 +93,59 @@
   color-scheme: dark;
 }
 :root[data-jarvis="an"] body {
+  font-family: var(--mono);
   background:
-    linear-gradient(rgba(34, 230, 255, 0.035) 1px, transparent 1px) 0 0 / 100% 3px,
-    radial-gradient(900px 500px at 50% -12%, color-mix(in srgb, var(--akzent) 12%, transparent), transparent 70%),
+    radial-gradient(1100px 620px at 50% -16%, color-mix(in srgb, var(--akzent) 12%, transparent), transparent 66%),
     var(--grund);
 }
+/* HUD-Schichten: rotierende konzentrische Ringe (Arc-Reaktor), Scanlines und ein
+   Eckrahmen. Alle liegen über allem, lassen aber Klicks durch. */
+:root[data-jarvis="an"] body::before {
+  content: "";
+  position: fixed;
+  left: 50%; top: 46%;
+  width: 150vmax; height: 150vmax;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.14;
+  background:
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 46px, color-mix(in srgb, var(--akzent) 60%, transparent) 46px 47px, transparent 47px 92px),
+    conic-gradient(from 0deg at 50% 50%, transparent 0 82deg, color-mix(in srgb, var(--akzent) 45%, transparent) 90deg, transparent 98deg 262deg, color-mix(in srgb, var(--akzent) 45%, transparent) 270deg, transparent 278deg 360deg);
+  -webkit-mask: radial-gradient(circle at 50% 50%, #000 0 42%, transparent 62%);
+          mask: radial-gradient(circle at 50% 50%, #000 0 42%, transparent 62%);
+  animation: jarvisDreh 48s linear infinite;
+}
+:root[data-jarvis="an"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  background:
+    repeating-linear-gradient(color-mix(in srgb, var(--akzent) 6%, transparent) 0 1px, transparent 1px 3px),
+    linear-gradient(90deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) left top / 26px 26px no-repeat,
+    linear-gradient(90deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) right top / 26px 26px no-repeat,
+    linear-gradient(0deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) left top / 26px 26px no-repeat,
+    linear-gradient(0deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) left bottom / 26px 26px no-repeat,
+    linear-gradient(0deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) right top / 26px 26px no-repeat,
+    linear-gradient(0deg, color-mix(in srgb, var(--akzent) 55%, transparent) 0 2px, transparent 2px) right bottom / 26px 26px no-repeat;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--akzent) 22%, transparent);
+}
+@keyframes jarvisDreh { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  :root[data-jarvis="an"] body::before { animation: none; }
+}
 :root[data-jarvis="an"] h1,
-:root[data-jarvis="an"] h2 { letter-spacing: 0.06em; text-shadow: 0 0 12px color-mix(in srgb, var(--akzent) 45%, transparent); }
+:root[data-jarvis="an"] h2,
+:root[data-jarvis="an"] h3 { letter-spacing: 0.08em; text-transform: uppercase; text-shadow: 0 0 12px color-mix(in srgb, var(--akzent) 45%, transparent); }
+/* Panels als schwach leuchtende HUD-Kacheln. */
+:root[data-jarvis="an"] .kachel,
+:root[data-jarvis="an"] .konto,
+:root[data-jarvis="an"] .karte {
+  border: 1px solid var(--linie-stark);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--akzent) 14%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--akzent) 8%, transparent);
+}
 
 * { box-sizing: border-box; }
 

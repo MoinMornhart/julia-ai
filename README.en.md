@@ -73,7 +73,8 @@
 
 - **Now a phone app too** – Julia comes as a standalone **Android and iOS app** (chat with Claude or OpenAI, read-aloud, cost display, streaming). Optionally it connects to your PC on your home network/VPN and drives the Julia there. See [Julia on your phone](#julia-on-your-phone).
 - **Controls the PC even more** – media and volume, launch and close programs, snap windows, timer and stopwatch, calculate, convert units, transform text and make QR codes – all local. See [Small helpers](#small-helpers).
-- **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request, boards boats and plans big goals up to the Ender Dragon. See [Minecraft](#minecraft).
+- **Works together with your apps** – e.g. “Put milk on my Todoist list” or “Add Iron Man to my Stremio list”. See [Works with your apps](#works-with-your-apps).
+- **Plays Minecraft for real** – she sees what's in front of her (lava/drops too), eats on her own, fights smart (retreats when low, keeps distance from creepers), builds on request and boards boats. New: with `!spiel durch` she works her own way along a tech tree up to the Ender Dragon, a **daily logbook** survives crashes, and she only listens to people you explicitly name. See [Minecraft](#minecraft).
 - **Live subtitles like Siri** – while you speak, the orb shows what Julia understands, word by word.
 - **Never dies silently on startup** – a self-check catches GPU crashes (falls back to software rendering) and shows a clear message with a log on startup problems.
 - **Natural voices & Whisper** – Thorsten or Kerstin and local speech recognition, both offline on your PC.
@@ -163,6 +164,21 @@ Besides the big tasks, Julia handles the small moves on the PC too – all local
 - **Snap windows:** dock left/right or top/bottom, into the four corners, center, maximize or restore.
 - **Timer, alarm & stopwatch:** “set a timer for 10 minutes”, an alarm at a time, plus a stopwatch with laps.
 - **Calculate & convert:** calculate, convert units (length, mass, time, data, temperature …), transform text (upper/lower, Base64, JSON, count) and make QR codes.
+
+## Works with your apps
+
+Julia works together with apps you already use. She can open any app by name (“Open Spotify”);
+for some, more is possible once you connect them under *Settings → Apps*:
+
+| App | What Julia can do | Connect |
+|---|---|---|
+| **[Todoist](https://todoist.com)** – tasks | “Put milk on my Todoist list”, “Remind me tomorrow at 9 about the dentist” – Julia creates the task with its due date. | API token (Todoist → Settings → Integrations → Developer) |
+| **[Stremio](https://www.stremio.com)** – movies & shows | “Add Iron Man to my Stremio list” – Julia looks up the title and adds it to your library; searching and opening too. | Sign in with your Stremio account (password not stored, only the access key, encrypted) |
+| **VibeWork** – focus timer | “Open VibeWork” – the app can be launched. | nothing needed |
+
+Sending data to an app (create a task, add to a list) is a **YELLOW** step of the traffic light –
+Julia asks first. Credentials, like all accounts, are stored encrypted on your PC only and never
+appear in the conversation.
 
 ## AI providers
 
@@ -301,6 +317,8 @@ NeoProtect or TCPShield).
 | Place · Eat | `!place crafting_table` · `!eat` | puts a block down next to her · eats something |
 | Build | `!build tower 8` · `!build wall 10 3` · `!build hut` | builds a tower, wall, hut or bridge from available material |
 | Boat & mount | `!board` · `!disembark` | gets into a boat, minecart or onto a mount – and out again |
+| Play through | `!spiel durch` | works her own way stage by stage toward the Ender Dragon |
+| Control listening | `!hör auch auf NAME` · `!hör nur auf mich` | allow individual players or reset |
 | Sleep · Stop | `!sleep` · `!stop` | goes to bed · stops right away |
 
 `!help` lists every command in the game. Fighting, following and dodging run 20 times a second
@@ -309,9 +327,10 @@ too) and brakes on her own, **eats** when hungry, and **fights smart**: she equi
 armor herself, retreats or reaches for a golden apple when low on health, and doesn't hug a
 creeper but keeps her distance.
 
-- **Addressing her:** it's enough if `Julia` appears anywhere in the message (not just at the start); `!` works too. If you like, she reacts to **all players** instead of just you – switchable in the panel or in-game with “Julia, listen to everyone” / “listen to me only”. She only ever acts in the game, never on the PC.
+- **Addressing her:** it's enough if `Julia` appears anywhere in the message (not just at the start); `!` works too. By default she listens **only to you**. You can allow individual people in-game – “Julia, also listen to Peter and Anna”, “stop listening to Peter”, “listen to me only” – or switch on the coarse “listen to everyone” in the panel. She only ever acts in the game, never on the PC, and only the owner can change it.
 
-- **Task for Julia:** In the tab you write in your own words what she should do – say, “Get wood, build a crafting table and make yourself a stone pickaxe”. She looks around, plans the steps and works through them with her abilities, waits for each result and says at the end what she achieved. She breaks big goals like the Ender Dragon into stages – but no bot reliably beats the game on its own.
+- **Task for Julia:** In the tab you write in your own words what she should do – say, “Get wood, build a crafting table and make yourself a stone pickaxe”. She looks around, plans the steps and works through them with her abilities, waits for each result and says at the end what she achieved.
+- **Playing through & learning:** With `!spiel durch` (or “play through”) she works her own way along a **tech tree** – from the first wood through stone, iron and diamond to the Nether and the Ender Dragon. Thanks to the progress view she always knows which stage she's on and what's next. A **daily logbook** records everything (one file per day in the data folder, written to disk immediately) – it survives a crash, so a play day is never lost and you can see afterwards what worked and where she got stuck. Honestly: a guaranteed solo run to the dragon isn't certain – but she understands the path, makes real progress, and gets measurably better via the logbook.
 - **Voice chat groups:** Julia lists the groups from the server’s Simple Voice Chat; you choose which one she joins. For a protected group you enter the password – it only goes to the server, the AI never sees it. With “Always join” Julia joins on her own next time; the password is then stored encrypted on your PC.
 
 <p align="center">
