@@ -9,6 +9,7 @@ const { clipboard, shell } = require('electron');
 const ampel = require('./ampel');
 const win = require('./win/win');
 const bildschirm = require('./bildschirm');
+const projektsuche = require('./projektsuche');
 
 // Julias Werkzeuge. Jedes Werkzeug stuft sich selbst in die Ampel ein
 // (einstufen) und führt dann aus (ausfuehren). Die Freigabe dazwischen holt
@@ -354,6 +355,38 @@ const WERKZEUGE = [
     async ausfuehren(e, ctx) {
       const p = pfadAbs(e.pfad, ctx);
       return fremd(p, `${p}\n${await ordnerLesen(p, !!e.rekursiv)}`);
+    },
+  },
+  {
+    name: 'projekt_suchen',
+    fremd: true,
+    description: 'Im Projekt nach Text suchen – schnell und tokensparend. Durchsucht die Textdateien unter einem Ordner (Standard: erstes Arbeitsverzeichnis) und gibt nur die Fundstellen als datei:zeile: Text zurück, statt viele Dateien einzeln zu lesen. Gut für „wo steht X?“ oder „wo wird Y benutzt?“. node_modules, .git, Build-Ordner sowie große/binäre Dateien werden übersprungen.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        text: { type: 'string', description: 'Suchtext oder – mit regex=true – ein regulärer Ausdruck.' },
+        ordner: { type: 'string', description: 'Standard: erstes Arbeitsverzeichnis.' },
+        endungen: { type: 'array', items: { type: 'string' }, description: 'Nur diese Dateiendungen, z. B. [".js", ".ts"].' },
+        regex: { type: 'boolean' },
+        gross_klein: { type: 'boolean', description: 'Groß-/Kleinschreibung beachten (Standard: egal).' },
+        max: { type: 'integer', description: 'Höchstens so viele Treffer (Standard 100, höchstens 300).' },
+      },
+      required: ['text'],
+    },
+    einstufen: (e, ctx) => sandboxLesen(e.ordner || '.', ctx),
+    async ausfuehren(e, ctx) {
+      const ordner = pfadAbs(e.ordner || '.', ctx);
+      const opt = {
+        maxTreffer: Math.min(300, Math.max(1, e.max || 100)),
+        regex: !!e.regex,
+        grossKlein: !!e.gross_klein,
+      };
+      if (Array.isArray(e.endungen) && e.endungen.length) opt.endungen = e.endungen;
+      const r = projektsuche.suchen(ordner, e.text, opt);
+      if (!r.treffer.length) return fremd('der Projektsuche', `Keine Treffer für ${JSON.stringify(e.text)} in ${ordner} (${r.geprueft} Dateien geprüft).`);
+      const zeilen = r.treffer.map((t) => `${t.datei}:${t.zeile}: ${t.text}`);
+      const kopf = `${r.treffer.length}${r.abgeschnitten ? '+' : ''} Treffer für ${JSON.stringify(e.text)} (${r.geprueft} Dateien geprüft):`;
+      return fremd('der Projektsuche', [kopf, ...zeilen].join('\n'));
     },
   },
   {

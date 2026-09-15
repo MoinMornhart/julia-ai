@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Fast project search** – Julia can now search a project for text ("where is X?", "where is Y used?") and gets back only the matches as `file:line`, instead of reading many files one by one. It saves time and tokens; `node_modules`, `.git`, build folders and large/binary files are skipped.
 - **This-folder-only mode** – for focused work on a single project: turn the mode on in the settings and pick a folder, and Julia may read, write, move and list files **only there** – everything outside is blocked (red). Off by default. (Shell commands still need your approval; true shell isolation via WSL/Docker comes separately.) See [The traffic light](#the-traffic-light).
 - **Search the settings** – the settings window now has a search box at the top: type e.g. "voice", "orb" or "diagnostics" and Julia shows only the matching sections. Accents don't matter, and several words narrow it further. See [Usage](#usage).
 - **Installer & update work even while Julia is open** – the wizard now closes a running Julia automatically before installing (gently first, then forcefully if needed). No more "file in use" errors during installation or automatic updates. See [Installation](#installation).
@@ -73,7 +74,6 @@
 - **Phone app as a ready-to-install APK** – no Expo account needed anymore: GitHub now builds the Android app automatically as an installable `Julia.apk` (release "[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Download it on your phone, allow install from unknown sources, done. See [Julia on your phone](#julia-on-your-phone).
 - **Starts more reliably & a better installer** – a setup wizard (choose the folder, license, shortcuts) instead of a silent one-click install; on a graphics crash Julia falls back to software rendering and restarts automatically (emergency start: `--reparatur`). See [Installation](#installation).
 - **Minecraft: more reliable & self-defending** – she now gets out of holes and up two blocks (placing blocks instead of tearing down your builds), **always defends herself** against mobs, and sleeps reliably – placing a bed from her inventory if needed. Plus, as before: `!spiel durch` up to the Ender Dragon, a daily logbook, and mining leaves chests, furnaces, doors and your builds untouched. See [Minecraft](#minecraft).
-- **Even more of your own apps** – alongside ToDoch, Streamo and VibeWork come **Patchfeld**, **Codewerk** and the **Content-Helper**: start learning sessions, check progress, plan posts and fetch ideas – all through your app's API. See [Works with your apps](#works-with-your-apps).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 1.9.0 – 2026-09-16
+- Julia kann jetzt schnell im Projekt nach Text suchen und bekommt nur die Fundstellen als datei:zeile zurück, statt viele Dateien einzeln zu lesen – das spart Zeit und Tokens (node_modules, .git und Build-Ordner werden übersprungen)
+
 ## 1.8.0 – 2026-09-16
 - Neuer Nur-in-diesem-Ordner-Modus: schaltest du ihn ein und wählst einen Ordner, darf Julia Dateien nur dort lesen, schreiben, verschieben und auflisten – alles außerhalb ist gesperrt (Standard aus)
 
