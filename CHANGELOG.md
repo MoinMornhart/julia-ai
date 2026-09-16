@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.2.0 – 2026-09-16
+- Bei eigenen (OpenAI-kompatiblen) Anbietern schickt Julia in langen Gespraechen nur noch die letzten Screenshots mit statt jedes Mal alle alten Bilder - das spart spuerbar Tokens und Kosten, ohne den Gespraechsfaden zu verlieren
+
 ## 4.1.0 – 2026-09-16
 - Julia kann beim Einrichten jetzt nach einem geheimen Wert fragen (z. B. fuer einen Dienst): eine Eingabe-Box holt ihn, der Wert wird verschluesselt gespeichert und die KI bekommt ihn nie zu sehen - nur die Bestaetigung, dass er hinterlegt wurde
 

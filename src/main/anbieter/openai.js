@@ -41,8 +41,29 @@ function werkzeugeUmwandeln(defs) {
   return { tools, ohneTyp };
 }
 
-function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false, ohneBild = false } = {}) {
+// Zählt, wie viele Bilder (direkt oder in Werkzeug-Ergebnissen) im Verlauf stehen.
+function bilderZaehlen(verlauf) {
+  let n = 0;
+  for (const m of verlauf || []) {
+    const bl = typeof m.content === 'string' ? [] : m.content || [];
+    for (const b of bl) {
+      if (b.type === 'image' && b.source) n++;
+      else if (b.type === 'tool_result') n += bilderVon(b.content).length;
+    }
+  }
+  return n;
+}
+
+// bildBehalten: nur die letzten N Screenshots mitschicken (ältere kosten bei jeder
+// Runde erneut Tokens – wie das serverseitige Clearing auf der Anthropic-Seite).
+// 0/false = alle behalten. ohneBild sticht (dann sind sowieso keine Bilder dabei).
+function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false, ohneBild = false, bildBehalten = 3 } = {}) {
   const out = [{ role: 'system', content: system }];
+  const gesamt = (!ohneBild && bildBehalten) ? bilderZaehlen(verlauf) : 0;
+  const abSchnitt = bildBehalten ? Math.max(0, gesamt - bildBehalten) : 0;
+  let bildNr = 0;
+  // true = dieses Bild ist ein älteres → weglassen (nur die letzten N bleiben).
+  const zuAlt = () => (!!bildBehalten && bildNr++ < abSchnitt);
   for (const m of verlauf || []) {
     const bloecke = typeof m.content === 'string' ? [{ type: 'text', text: m.content }] : m.content || [];
     if (m.role === 'assistant') {
@@ -59,16 +80,18 @@ function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false, ohneBild =
     for (const b of bloecke) {
       if (b.type === 'tool_result') {
         const roh = textVon(b.content);
-        const hatBild = bilderVon(b.content).length > 0;
+        const eigen = bilderVon(b.content);
+        const hatBild = eigen.length > 0;
         let t;
         if (ohneBild && hatBild) t = `${roh ? `${roh} ` : ''}[screenshot omitted: this model has no image support]`;
         else t = roh || (hatBild ? 'Bild folgt in der nächsten Nachricht.' : 'ok');
         out.push({ role: 'tool', tool_call_id: b.tool_use_id, content: b.is_error ? `FEHLER: ${t}` : t });
-        if (!ohneBild) bilder.push(...bilderVon(b.content));
+        if (!ohneBild) for (const bild of eigen) { if (!zuAlt()) bilder.push(bild); }
       } else if (b.type === 'text') {
         teile.push({ type: 'text', text: b.text });
       } else if (b.type === 'image' && b.source) {
         if (ohneBild) teile.push({ type: 'text', text: '[screenshot omitted: this model has no image support]' });
+        else if (zuAlt()) teile.push({ type: 'text', text: '[älterer Screenshot entfernt, um Tokens zu sparen]' });
         else teile.push(bildTeil(b));
       }
     }
