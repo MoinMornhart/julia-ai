@@ -152,6 +152,12 @@ const STANDARD = {
   brainstorming: {
     an: false, // Brainstorming-Modus: Antworten offener/ideenreicher (mehrere Optionen, Abwägungen) – Standard aus
   },
+  beta: {
+    // BETA/experimentell, sicherheitskritisch, Standard aus. Nur der Nutzer kann
+    // das in den Einstellungen (mit ausgeschriebener Bestätigung) einschalten –
+    // die KI kann es nicht selbst setzen (nicht in der einstellung_setzen-Freigabe).
+    selbstcode: false, // erlaubt Julia (später) im Sandbox-Ordner eigene Werkzeuge zu schreiben/auszuführen
+  },
   shell: {
     timeout_s: 60, // Standard-Zeitlimit für Shell-Befehle, wenn die KI keines nennt
     max_s: 600, // hartes Maximum: kein Shell-Befehl läuft länger, auch wenn die KI mehr will – hängende Befehle brechen so sicher ab
@@ -234,6 +240,7 @@ function pruefen(schluessel, wert) {
     case 'sandbox.an':
     case 'memos.an':
     case 'brainstorming.an':
+    case 'beta.selbstcode':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':

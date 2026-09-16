@@ -275,3 +275,7 @@ textarea { resize: vertical; min-height: 68px; line-height: 1.45; font-family: i
 .geheim-liste li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .geheim-neu { display: flex; gap: 8px; flex-wrap: wrap; }
 .geheim-neu input { flex: 1; min-width: 140px; }
+
+/* BETA-Abschnitt (Issue #31/#39): sicherheitskritisch, deutlich gekennzeichnet */
+.gruppe.beta { border-color: var(--warnung, #c8892a); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--warnung, #c8892a) 40%, transparent); }
+.hinweis.warnung { color: var(--warnung, #c8892a); font-weight: 600; }

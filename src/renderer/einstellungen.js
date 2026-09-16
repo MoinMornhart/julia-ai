@@ -397,6 +397,22 @@ function monitoreFuellen() {
   }
 }
 
+function betaEinrichten() {
+  const cb = $('betaSelbstcode');
+  const eingabe = $('betaBestaetigung');
+  if (!cb || !eingabe) return;
+  const phrase = () => tx('einst.beta_phrase');
+  const schonAn = !!(cfg.beta && cfg.beta.selbstcode);
+  // Ist es schon an, bleibt der Schalter bedienbar (zum Ausschalten). Sonst erst
+  // freigeben, wenn der Nutzer die Bestätigung exakt ausschreibt.
+  cb.disabled = !schonAn;
+  eingabe.placeholder = phrase();
+  eingabe.addEventListener('input', () => {
+    const passt = eingabe.value.trim() === phrase().trim();
+    cb.disabled = !passt && !cb.checked;
+  });
+}
+
 async function geheimZeigen() {
   const ul = $('geheimListe');
   if (!ul) return;
@@ -1077,6 +1093,7 @@ async function init() {
   sandboxZeigen();
   werkzeugeZeigen();
   geheimZeigen();
+  betaEinrichten();
   $('geheimSpeichern').onclick = geheimSpeichern;
   $('geheimWert').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geheimSpeichern(); } });
   $('sandboxWaehlen').onclick = async () => {

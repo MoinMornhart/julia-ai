@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.6.0 – 2026-09-16
+- Neuer BETA-Bereich in den Einstellungen für experimentelle Funktionen: freischalten nur durch genaues Ausschreiben einer Bestätigung, Standard aus, und die KI kann diese Schalter nicht selbst einschalten (erster Eintrag: Selbst-Programmieren, kommt schrittweise)
+
 ## 3.5.0 – 2026-09-16
 - Neuer Brainstorming-Modus in den Einstellungen: bei Ideen-, Optionen- und Planungsfragen antwortet Julia dann offener und ideenreicher (mehrere Vorschläge mit Abwägungen), bei einfachen Faktenfragen normal
 
