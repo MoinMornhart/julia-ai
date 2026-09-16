@@ -284,6 +284,22 @@ function besteWerkzeug(items, art) {
   return beste;
 }
 
+// Erkennt, ob die Figur „feststeckt": Sie will laufen, kommt seit einer Weile
+// aber kaum vom Fleck (klassisch: 1 Block hoch, ohne zu springen). Rein
+// rechnerisch, damit prüfbar. `anker` ist der zuletzt gemerkte Stand
+// { x, z, t(icks) }, `pos` die aktuelle Position. Rückgabe:
+//   { neu }            – neuen Anker merken (kommt voran oder erster Aufruf)
+//   { springen, neu }  – zu lange festgehangen → Sprung-Impuls, Anker neu
+//   {}                 – noch abwarten
+function haengerStatus(anker, pos, ticks, { minWeit = 0.35, minTicks = 12 } = {}) {
+  const stand = { x: pos.x, z: pos.z, t: ticks };
+  if (!anker) return { neu: stand };
+  const weit = Math.hypot(pos.x - anker.x, pos.z - anker.z);
+  if (weit > minWeit) return { neu: stand };
+  if (ticks - anker.t >= minTicks) return { springen: true, neu: stand };
+  return {};
+}
+
 function blockNamen(wort, alleNamen) {
   const w = String(wort || '').trim().toLowerCase().replace(/\s+/g, '_');
   if (!w) return [];
@@ -1113,6 +1129,7 @@ class Minecraft extends EventEmitter {
     const bot = this.bot;
     if (!bot || !bot.entity || this.isst) return;
     this._gefahrWache();
+    this._antiHaenger();
     const a = this.auftrag;
     const imDuell = a && a.art === 'kaempfen';
     // Immer verteidigen: läuft gerade kein Kampfauftrag und ist ein Monster dicht
@@ -1455,6 +1472,24 @@ class Minecraft extends EventEmitter {
 
   // Läuft die Figur selbst (Kampf) oder per Wegsuche vorwärts und liegt Gefahr
   // direkt voraus, sofort bremsen und einmal warnen – schneller als über die KI.
+  // Anti-Hänger: Will die Figur laufen (Wegfindung aktiv oder selbst vorwärts),
+  // steht sie aber am Boden fest, gibt es einen kurzen Sprung-Impuls – so kommt
+  // sie über 1 Block hohe Kanten, statt endlos davorzukleben. Springt sie gerade
+  // ohnehin (nicht am Boden), passiert nichts.
+  _antiHaenger() {
+    const bot = this.bot;
+    if (!bot.entity) return;
+    const wegsuche = bot.pathfinder && bot.pathfinder.isMoving && bot.pathfinder.isMoving();
+    const selbst = bot.getControlState && (bot.getControlState('forward') || bot.getControlState('sprint'));
+    if ((!wegsuche && !selbst) || !bot.entity.onGround) { this._haenger = null; return; }
+    const s = haengerStatus(this._haenger, bot.entity.position, this.ticks);
+    if (s.neu) this._haenger = s.neu;
+    if (s.springen && bot.setControlState) {
+      bot.setControlState('jump', true);
+      setTimeout(() => { try { bot.setControlState('jump', false); } catch { /* getrennt */ } }, 350);
+    }
+  }
+
   _gefahrWache() {
     const bot = this.bot;
     // Während der Wegfindung NICHT eingreifen: der Pathfinder weicht Lava und
@@ -2210,5 +2245,5 @@ module.exports = {
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
-  itemNamen, ortLesen, mengeLesen, endeText, HILFE,
+  itemNamen, ortLesen, mengeLesen, endeText, HILFE, haengerStatus,
 };

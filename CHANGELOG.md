@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.1 – 2026-09-16
+- Julia bleibt in Minecraft nicht mehr an einer Stufe hängen – will sie laufen, kommt aber nicht vom Fleck, springt sie jetzt automatisch drüber und kommt beim Erkunden und Durchspielen flüssiger voran
+
 ## 2.0.0 – 2026-09-16
 - Julia kann jetzt auch Dateien nach Namen finden – als Teiltext (config → config.js) oder als Muster mit Sternchen und Fragezeichen (z. B. *.test.js); ergänzt die Projekt-Textsuche
 
