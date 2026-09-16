@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.4.0 – 2026-09-16
+- Die Anweisungen und der System-Prompt der KI laufen jetzt intern einheitlich auf Englisch; für dich bleibt alles gleich, Julia antwortet weiter in deiner App-Sprache
+
 ## 2.3.1 – 2026-09-16
 - Update installiert jetzt zuverlässig über eine laufende Version: der Installer beendet eine geöffnete Julia samt Hintergrundprozessen hart und zeigt keinen hängenden Bitte-schliessen-Dialog mehr, damit auch das automatische Update durchläuft
 

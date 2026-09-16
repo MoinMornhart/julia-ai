@@ -97,15 +97,20 @@ function ausfuellen(vorlage, werte) {
 }
 
 function systemPrompt(opts) {
-  const code = opts.sprachcode === 'en' ? 'en' : 'de';
-  const vorlage = fs.readFileSync(path.join(PROMPT_ORDNER, `julia.${code}.md`), 'utf8');
-  return ausfuellen(vorlage, platzhalterWerte({ ...opts, sprachcode: code }));
+  // Die KI-Instruktionen sind bewusst immer auf Englisch (einheitliche Anweisungen
+  // für das Modell), unabhängig von der App-Sprache. Julia antwortet dem Nutzer
+  // aber weiter in dessen Sprache – dafür sorgt der Platzhalter ANTWORTSPRACHE.
+  const vorlage = fs.readFileSync(path.join(PROMPT_ORDNER, 'julia.en.md'), 'utf8');
+  const werte = platzhalterWerte({ ...opts, sprachcode: 'en' });
+  werte.ANTWORTSPRACHE = opts.sprachcode === 'en' ? 'English' : 'German';
+  return ausfuellen(vorlage, werte);
 }
 
 // Der zweite Block im System-Prompt: ändert sich selten (Gedächtnis, Kanal),
 // deshalb getrennt vom großen, gecachten ersten Block.
-function laufzeitKontext({ sprachcode, kanal, version, monitore, gedaechtnis, vorgemerkt, konten, minecraft }) {
-  const en = sprachcode === 'en';
+function laufzeitKontext({ kanal, version, monitore, gedaechtnis, vorgemerkt, konten, minecraft }) {
+  // Wie der System-Prompt: der KI-seitige Laufzeit-Block ist immer auf Englisch.
+  const en = true;
   const mon = (monitore || [])
     .map((m) => `${m.index}${m.haupt ? (en ? ' (primary)' : ' (Hauptmonitor)') : ''}: ${m.breite}x${m.hoehe}`)
     .join(', ');

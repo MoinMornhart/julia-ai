@@ -2,11 +2,21 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const fs = require('fs');
+const path = require('path');
 const prompt = require('../src/main/prompt');
 const { TEXTE } = require('../src/shared/texte');
 
 function reste(text) {
   return [...new Set(text.match(/\{\{\w+\}\}/g) || [])];
+}
+
+// Der System-Prompt ist seit der Englisch-Umstellung immer englisch; die deutsche
+// Grammatik-Maschinerie (Pronomen/Genitiv/Form) prüfen wir deshalb direkt gegen
+// die deutsche Prompt-Datei, die weiterhin gepflegt wird.
+const deVorlage = fs.readFileSync(path.join(__dirname, '..', 'prompt', 'julia.de.md'), 'utf8');
+function deutscherPrompt(opts) {
+  return prompt.ausfuellen(deVorlage, prompt.platzhalterWerte({ sprachcode: 'de', ...opts }));
 }
 
 const FORMEN = ['weiblich', 'maennlich', 'neutral'];
@@ -29,7 +39,7 @@ test('Jede Kombination aus Sprache, Form und Pronomen füllt alle Platzhalter', 
 });
 
 test('Deutsch: Pronomen und Form landen grammatisch richtig im Text', () => {
-  const mit = (pronomen, form = 'weiblich') => prompt.systemPrompt({ sprachcode: 'de', name: 'Morni', arbeitsverzeichnisse: [], assistent: { name: 'Julia', form }, pronomen });
+  const mit = (pronomen, form = 'weiblich') => deutscherPrompt({ name: 'Morni', arbeitsverzeichnisse: [], assistent: { name: 'Julia', form }, pronomen });
   assert.match(mit('er'), /auf seinem Windows-PC läuft/);
   assert.match(mit('er'), /wartest auf sein Ja/);
   assert.match(mit('sie'), /auf ihrem Windows-PC läuft/);
@@ -44,13 +54,25 @@ test('Deutsch: Pronomen und Form landen grammatisch richtig im Text', () => {
 });
 
 test('Genitiv für Namen auf s', () => {
-  const text = prompt.systemPrompt({ sprachcode: 'de', name: 'Hans', arbeitsverzeichnisse: [], pronomen: 'neutral' });
+  const text = deutscherPrompt({ name: 'Hans', arbeitsverzeichnisse: [], pronomen: 'neutral' });
   assert.match(text, /auf Hans' Windows-PC/);
 });
 
 test('Englisch: eigene Pronomen stehen in der Hinweiszeile', () => {
   const text = prompt.systemPrompt({ sprachcode: 'en', name: 'Sam', arbeitsverzeichnisse: [], pronomen: 'eigene', pronomenEigen: 'ze/zir' });
   assert.match(text, /Sam uses the pronouns "ze\/zir"/);
+});
+
+test('KI-Instruktionen sind immer englisch, Antwortsprache folgt dem Nutzer', () => {
+  const de = prompt.systemPrompt({ sprachcode: 'de', name: 'Morni', arbeitsverzeichnisse: [] });
+  const en = prompt.systemPrompt({ sprachcode: 'en', name: 'Morni', arbeitsverzeichnisse: [] });
+  // Beide bekommen den englischen Instruktionstext …
+  assert.match(de, /SYSTEM PROMPT/);
+  assert.match(de, /Who you are/);
+  // … aber die Antwortsprache richtet sich nach der App-Sprache.
+  assert.match(de, /\*\*always speak German\*\*/);
+  assert.match(en, /\*\*always speak English\*\*/);
+  assert.deepEqual(reste(de), []);
 });
 
 test('Namen können keine Anweisungen in den Prompt schmuggeln', () => {
@@ -70,7 +92,7 @@ test('Namen können keine Anweisungen in den Prompt schmuggeln', () => {
 
 test('Ohne Namen und Ordner entsteht trotzdem ein lesbarer Prompt', () => {
   const text = prompt.systemPrompt({ sprachcode: 'de', name: '', arbeitsverzeichnisse: [] });
-  assert.match(text, /noch keine festgelegt/);
+  assert.match(text, /none set yet/); // Instruktionen sind englisch
   assert.match(text, /\*\*Julia\*\*/);
   assert.deepEqual(reste(text), []);
 });

@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Unified AI instructions (internally in English)** – the instructions and system prompt that steer Julia's AI are now consistently in English. Nothing changes for you language-wise: Julia still speaks and writes in your app language. It just makes the internal steering more consistent and easier to maintain.
 - **Updates now install reliably over a running version** – the installer now hard-closes an open Julia (including its background processes) and no longer gets stuck on a "please close" dialog. So a new version installs cleanly over the old one and the automatic update goes through. See [Installation](#installation).
 - **Minecraft: detects freezes and reconnects** – if the character freezes (still connected but unresponsive), Julia now notices it herself and does an automatic relog instead of standing still forever. Her state is saved for the logbook first. See [Minecraft](#minecraft).
 - **Julia learns and remembers things** – on request she keeps lasting notes (hidden `.julia-memos` folder in her working folder): preferences, project facts, learned solutions. Stays local, toggled under "Learning" in the settings.
@@ -73,7 +74,6 @@
 - **Minecraft: no more getting stuck on ledges** – when Julia wants to move but sticks on a one-block step, she now jumps over it automatically instead of standing there. She gets around much more smoothly while exploring and playing through. See [Minecraft](#minecraft).
 - **Find files by name** – on top of text search, Julia can now find files by their name: as a substring (`config` → `config.js`) or as a pattern with `*` and `?` (e.g. `*.test.js`). That gets her to the right place in a project even faster.
 - **Fast project search** – Julia can now search a project for text ("where is X?", "where is Y used?") and gets back only the matches as `file:line`, instead of reading many files one by one. It saves time and tokens; `node_modules`, `.git`, build folders and large/binary files are skipped.
-- **This-folder-only mode** – for focused work on a single project: turn the mode on in the settings and pick a folder, and Julia may read, write, move and list files **only there** – everything outside is blocked (red). Off by default. (Shell commands still need your approval; true shell isolation via WSL/Docker comes separately.) See [The traffic light](#the-traffic-light).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 
