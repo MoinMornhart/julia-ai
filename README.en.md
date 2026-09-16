@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Token protection for secrets** – Julia now recognizes real access keys/tokens (GitHub, OpenAI, Google, AWS, Stripe, VibeWorks and many more, plus generally very long, random keys). If you accidentally enter a real token as the **name** of a secret, Julia rejects it – so no key can end up where the AI only sees the name. The value itself stays encrypted on the PC as before.
 - **Connect VibeWorks (sign-in box)** – in the settings you can now connect Julia to VibeWorks: "Create a key" opens your account, you paste your API key (`vw_…`) and sign in – the VibeWorks tools then become available (every call goes through the traffic light). The key is stored **encrypted only** on the PC and is **never** shown to the AI; if a key is invalid or revoked you get a clear hint.
 - **Throttle CPU hogs on purpose** – in the Boost tab you can tap "Throttle" on a program that's maxing out the CPU: Julia lowers its priority (it only runs when nothing else needs the CPU) and "Reset" undoes it. **Built safely:** only on your click, system and Julia's own processes are locked, nothing is hard-frozen, and the AI cannot trigger it itself.
 - **Minecraft: gets out of the water again** – if she got stuck in water with a block above her head (a known case), Julia now notices and swims up herself instead of being trapped.
@@ -73,7 +74,6 @@
 - **The interface stays usable even if something hangs** – if the startup ever waits on a background reply that never arrives, the window used to stay completely empty (no buttons/text) – with nothing in the logbook. Now there's a time limit: Julia shows the interface anyway, records the hang in the logbook and reloads once if needed. This ends the "I see no elements even though everything looks error-free".
 - **BETA area with a safety switch** – new, experimental features get their own clearly marked BETA section in the settings. Unlocking one requires typing a confirmation exactly; it's off by default, and the **AI cannot turn these switches on itself**. First entry: self-programming (only in the chosen folder, rolling out step by step).
 - **Brainstorming mode** – switchable in the settings: for idea, option and planning questions Julia then answers more openly and idea-rich (several suggestions with trade-offs), and normally for simple factual questions. Off by default.
-- **Manage secrets securely** – under "Secrets" in the settings you can store passwords/keys. They are kept **encrypted only** on your PC (Windows encryption), are no longer shown after saving, and the **AI never sees the values**.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

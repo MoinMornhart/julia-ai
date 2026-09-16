@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.0 – 2026-09-16
+- Julia erkennt jetzt echte Zugangs-Tokens vieler Anbieter (und generell sehr lange, zufaellige Schluessel) und laesst keinen Token als Namen eines Geheimnisses zu - so kann kein Schluessel dort landen, wo die KI nur den Namen sieht
+
 ## 3.9.0 – 2026-09-16
 - VibeWorks laesst sich jetzt in den Einstellungen anbinden: mit deinem API-Schluessel anmelden, danach stehen die VibeWorks-Werkzeuge bereit - der Schluessel liegt nur verschluesselt auf dem PC und wird der KI nie gezeigt
 

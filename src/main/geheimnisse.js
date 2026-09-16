@@ -3,6 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { jsonLesen } = require('./hilfen');
+const { istToken } = require('./token-erkennung');
 
 // Nutzer-verwaltete Geheimnisse (Passwörter, API-Schlüssel, Zugangsdaten) – Issue
 // #26/#21. Die Werte liegen NUR verschlüsselt auf der Platte (Windows DPAPI über
@@ -42,6 +43,9 @@ class Geheimnisse {
   setzen(name, wert) {
     const n = String(name == null ? '' : name).trim().slice(0, 80);
     if (!n) throw new Error('Der Name darf nicht leer sein.');
+    // Der Name ist sichtbar (auch die KI könnte ihn sehen); ein echter Token darf
+    // deshalb nicht als Name landen. Der Wert gehört ins Wert-Feld (Issue #51).
+    if (istToken(n)) throw new Error('Das sieht wie ein echter Schlüssel/Token aus. Im Namen bitte nur eine Bezeichnung (z. B. „GitHub"), den Wert selbst trägst du ins Wert-Feld ein.');
     const daten = this._laden();
     daten[n] = this.krypto.verschluesseln(String(wert == null ? '' : wert));
     this._speichern(daten);
