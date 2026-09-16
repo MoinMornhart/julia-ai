@@ -1023,6 +1023,17 @@ function ipcEinrichten() {
   });
   // MCP-Server verwalten. Tokens gehen direkt in den Tresor, nie in die config.json.
   ipc.handle('mcp:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMcp() : mcp.status()));
+  // Liste der eingebauten Werkzeuge (Name + kurze Beschreibung) für die
+  // Einstellungen – dort lassen sich einzelne Werkzeuge abschalten (werkzeuge_aus).
+  ipc.handle('werkzeuge:liste', () => {
+    const { WERKZEUGE } = require('./werkzeuge');
+    const aus = config.get('werkzeuge_aus') || [];
+    return WERKZEUGE.map((w) => ({
+      name: w.name,
+      beschreibung: String(w.description || '').split(/\.\s|\. /)[0].slice(0, 120),
+      an: !aus.includes(w.name),
+    }));
+  });
   ipc.handle('mcp:hinzufuegen', (_e, d) => {
     try {
       const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });

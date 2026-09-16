@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Turn individual tools off** – under "Tools" in the settings you can now switch each tool on or off. The AI may no longer use a disabled tool (it gets a clear note that it's off). Everything is on by default. See [The traffic light](#the-traffic-light).
 - **Interface self-check** – if a window comes up empty or without layout (buttons missing) after starting, Julia now notices it, records it in the logbook and reloads the interface once automatically. Usually it's back to normal afterwards.
 - **Launching reliably brings the window forward** – if Julia is already running in the background/tray, launching again now always opens the window (recreating it if needed) instead of seeming to "do nothing". See [Usage](#usage).
 - **Expandable tool calls** – in the chat you can tap "{ }" on any tool or MCP call to see exactly what Julia called and with which parameters (as readable JSON). So it's clear what happens behind the scenes.
@@ -73,7 +74,6 @@
 - **Security update of a dependency** – a reported vulnerability in the `uuid` package is fixed (raised to a checked, safe version) with no change for you. `npm audit` now reports no vulnerabilities.
 - **Interface errors get logged** – if a window opens but stays blank (UI doesn't load), the underlying error now goes into the start logbook. So such a problem can finally be traced instead of being a mystery. Stays local on your PC.
 - **Recovers from repeated graphics crashes on its own** – if the display (renderer) crashes several times, Julia now switches to software graphics and restarts automatically, instead of getting stuck with a dead window. Previously this only kicked in for crashes right at startup. See [Installation](#installation).
-- **Tables in the chat** – Julia can now render answers as real tables (Markdown tables with `|`), including column alignment. Before, tables showed up as plain text lines; now they render cleanly.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

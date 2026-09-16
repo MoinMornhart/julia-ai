@@ -397,6 +397,31 @@ function monitoreFuellen() {
   }
 }
 
+async function werkzeugeZeigen() {
+  const box = $('werkzeugeListe');
+  if (!box) return;
+  let liste;
+  try { liste = await julia.werkzeuge(); } catch { return; }
+  box.innerHTML = '';
+  for (const w of liste) {
+    const l = document.createElement('label');
+    l.className = 'schalter werkzeug-schalter';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = w.an !== false;
+    cb.dataset.name = w.name;
+    const span = document.createElement('span');
+    span.innerHTML = `<code>${w.name}</code>${w.beschreibung ? ` – ${w.beschreibung}` : ''}`;
+    cb.addEventListener('change', async () => {
+      const aus = [...box.querySelectorAll('input[type="checkbox"]')].filter((c) => !c.checked).map((c) => c.dataset.name);
+      const r = await setzen('werkzeuge_aus', aus);
+      if (r.fehler) cb.checked = !cb.checked; // bei Fehler zurückdrehen
+    });
+    l.append(cb, span);
+    box.appendChild(l);
+  }
+}
+
 function sandboxZeigen() {
   const el = $('sandboxOrdner');
   if (!el) return;
@@ -1012,6 +1037,7 @@ async function init() {
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   sandboxZeigen();
+  werkzeugeZeigen();
   $('sandboxWaehlen').onclick = async () => {
     const p = await julia.ordnerWaehlen();
     if (!p) return;

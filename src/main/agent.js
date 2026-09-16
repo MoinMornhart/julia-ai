@@ -460,6 +460,11 @@ class Agent extends EventEmitter {
       this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
       return ergebnis(`Unknown tool "${aufruf.name}": it does not exist or is disabled here. Only use the tools listed above.`, true);
     }
+    // Vom Nutzer in den Einstellungen abgeschaltete Werkzeuge: nicht ausführen.
+    if ((this.config.get('werkzeuge_aus') || []).includes(aufruf.name)) {
+      this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
+      return ergebnis(`Tool "${aufruf.name}" is switched off by the user. Do not use it; if it is needed, tell the user it is disabled in the settings.`, true);
+    }
     try {
       if (aufruf.name === 'auftrag_vorlegen') {
         const text = await this._auftragVorlegen(aufruf.input || {});

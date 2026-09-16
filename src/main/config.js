@@ -148,6 +148,7 @@ const STANDARD = {
   memos: {
     an: true, // Julia darf sich dauerhafte Lern-Notizen in einem versteckten Ordner (.julia-memos) im Arbeitsordner anlegen
   },
+  werkzeuge_aus: [], // Namen abgeschalteter Werkzeuge: die KI darf sie nicht nutzen (rein einschränkend; in den Einstellungen wählbar)
   shell: {
     timeout_s: 60, // Standard-Zeitlimit für Shell-Befehle, wenn die KI keines nennt
     max_s: 600, // hartes Maximum: kein Shell-Befehl läuft länger, auch wenn die KI mehr will – hängende Befehle brechen so sicher ab
@@ -424,6 +425,9 @@ function pruefen(schluessel, wert) {
       return wert ? path.resolve(String(wert)) : '';
     case 'modelle_ohne_bild':
       if (!Array.isArray(wert)) throw new Error('modelle_ohne_bild ist eine Liste von Modellnamen.');
+      return [...new Set(wert.map((m) => String(m).trim()).filter(Boolean))];
+    case 'werkzeuge_aus':
+      if (!Array.isArray(wert)) throw new Error('werkzeuge_aus ist eine Liste von Werkzeugnamen.');
       return [...new Set(wert.map((m) => String(m).trim()).filter(Boolean))];
     case 'blase.farben':
       if (!istObjekt(wert)) throw new Error('blase.farben ist ein Objekt mit Farblisten je Zustand.');

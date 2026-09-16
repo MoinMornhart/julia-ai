@@ -20,6 +20,7 @@ contextBridge.exposeInMainWorld('julia', {
   schluesselSetzen: (s) => ipcRenderer.invoke('schluessel:setzen', s),
   anbieterSetzen: (id) => ipcRenderer.invoke('anbieter:setzen', id),
   modelleLaden: () => ipcRenderer.invoke('anbieter:modelle'),
+  werkzeuge: () => ipcRenderer.invoke('werkzeuge:liste'),
   ordnerWaehlen: () => ipcRenderer.invoke('ordner:waehlen'),
   stimmen: () => ipcRenderer.invoke('stimmen'),
   audioGeraete: () => ipcRenderer.invoke('audio:geraete'),

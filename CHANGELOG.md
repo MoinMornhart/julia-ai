@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.2.0 – 2026-09-16
+- Werkzeuge lassen sich jetzt in den Einstellungen einzeln abschalten: ein abgeschaltetes Werkzeug darf die KI nicht mehr benutzen und bekommt einen klaren Hinweis, dass es aus ist (Standard: alles an)
+
 ## 3.1.0 – 2026-09-16
 - Neuer Selbstcheck der Oberfläche: bleibt ein Fenster nach dem Start leer oder ohne Layout, merkt Julia das, hält es im Logbuch fest und lädt die Oberfläche einmal automatisch neu
 
