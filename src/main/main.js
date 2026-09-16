@@ -2050,6 +2050,13 @@ async function start() {
       return config.get('arbeitsverzeichnisse')[0] || os.homedir();
     },
     kontextGeaendert: () => {},
+    // Lern-Notizen: versteckter Ordner .julia-memos im aktuellen Arbeitsordner.
+    notizen: () => {
+      const { Notizen, ORDNER_NAME } = require('./notizen');
+      const basis = (config.get('sandbox').an && config.get('sandbox').ordner) || config.get('arbeitsverzeichnisse')[0] || os.homedir();
+      return new Notizen({ ordner: path.join(basis, ORDNER_NAME) });
+    },
+    memosAn: () => !!config.get('memos').an,
     // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
     eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',
     clipJetzt: () => clipJetzt(),

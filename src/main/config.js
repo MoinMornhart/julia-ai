@@ -144,6 +144,9 @@ const STANDARD = {
     an: false, // „Nur-in-diesem-Ordner"-Modus: Datei-Aktionen außerhalb sind ROT (gesperrt)
     ordner: '', // der einzige Ordner, in dem gelesen/geschrieben/aufgelistet werden darf
   },
+  memos: {
+    an: true, // Julia darf sich dauerhafte Lern-Notizen in einem versteckten Ordner (.julia-memos) im Arbeitsordner anlegen
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -220,6 +223,7 @@ function pruefen(schluessel, wert) {
     case 'appserver.an':
     case 'diagnose.senden':
     case 'sandbox.an':
+    case 'memos.an':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':

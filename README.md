@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Julia lernt dazu und merkt sich Dinge** – auf Wunsch legt sie sich dauerhafte Notizen an (versteckter Ordner `.julia-memos` in ihrem Arbeitsordner): Vorlieben, Projekt-Fakten, gelernte Lösungen. Bleibt lokal, in den Einstellungen unter „Lernen" an-/abschaltbar.
 - **Doppelte Dateien aufspüren** – Julia findet auf Wunsch inhaltsgleiche Dateien in einem Ordner und zeigt, wie viel Platz die Kopien unnötig belegen. Rein lesend – gelöscht wird nichts, du entscheidest. (Erster Baustein der geplanten „Boost"-Seite.)
 - **Minecraft: bleibt nicht mehr an Kanten hängen** – wenn Julia laufen will, aber an einer Stufe festklebt, springt sie jetzt automatisch drüber, statt davor stehen zu bleiben. Damit kommt sie beim Erkunden und Durchspielen deutlich flüssiger voran. Siehe [Minecraft](#minecraft).
 - **Dateien nach Namen finden** – ergänzend zur Textsuche findet Julia jetzt auch Dateien über ihren Namen: als Teiltext (`config` → `config.js`) oder als Muster mit `*` und `?` (z. B. `*.test.js`). So springt sie noch schneller an die richtige Stelle im Projekt.
@@ -73,7 +74,6 @@
 - **Nur-in-diesem-Ordner-Modus** – für konzentriertes Arbeiten an einem Projekt: Schaltest du den Modus in den Einstellungen ein und wählst einen Ordner, darf Julia Dateien **nur dort** lesen, schreiben, verschieben und auflisten – alles außerhalb ist gesperrt (rot). Standard aus. (Shell-Befehle brauchen weiterhin deine Freigabe; eine echte Shell-Abschottung über WSL/Docker kommt separat.) Siehe [Die Ampel](#die-ampel).
 - **Einstellungen durchsuchen** – oben in den Einstellungen gibt es jetzt ein Suchfeld: tippe z. B. „Stimme", „Blase" oder „Diagnose", und Julia zeigt nur noch die passenden Abschnitte. Umlaute egal, mehrere Wörter grenzen weiter ein. Siehe [Bedienung](#bedienung).
 - **Installer & Update laufen auch bei geöffneter Julia** – der Assistent schließt eine noch laufende Julia jetzt automatisch, bevor er installiert (erst sanft, dann notfalls hart). Damit ist Schluss mit „Datei in Benutzung"-Fehlern bei Installation und automatischem Update. Siehe [Installation](#installation).
-- **Findet CPU-Fresser bei der PC-Steuerung** – Julia führt jetzt ein lokales Leistungs-Logbuch: pro Steuerungs-Aktion (Klick, Tippen, Screenshot …) hält sie nur Technisches fest – Dauer und ihren eigenen CPU-Verbrauch, **nie** Inhalte wie Text, Koordinaten oder Fenstertitel. So lässt sich eine CPU-Spitze einem Verursacher zuordnen. An den Entwickler geht davon höchstens eine bereinigte Zusammenfassung, und nur wenn du die Diagnose einschaltest.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

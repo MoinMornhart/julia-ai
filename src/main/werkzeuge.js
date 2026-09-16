@@ -435,6 +435,54 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'memo_schreiben',
+    description: 'Eine dauerhafte Lern-Notiz für dich selbst anlegen (versteckter Ordner .julia-memos im Arbeitsordner) – für Dinge, die du dir über die Zeit merken willst (z. B. Vorlieben, Projekt-Fakten, gelernte Lösungen). name = kurzer Titel, text = Inhalt. anhaengen=true ergänzt eine vorhandene Notiz unten, sonst wird sie überschrieben.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Kurzer Titel der Notiz.' },
+        text: { type: 'string' },
+        anhaengen: { type: 'boolean' },
+      },
+      required: ['name', 'text'],
+    },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus. Der Nutzer kann sie in den Einstellungen unter „Lernen“ einschalten.');
+      const name = ctx.notizen().schreiben(e.name, e.text, { anhaengen: !!e.anhaengen });
+      return `Notiz „${name}“ ${e.anhaengen ? 'ergänzt' : 'gespeichert'}.`;
+    },
+  },
+  {
+    name: 'memo_lesen',
+    fremd: true,
+    description: 'Deine Lern-Notizen lesen. Ohne name kommt die Liste aller Notizen (neueste zuerst); mit name der Inhalt dieser Notiz. Nutze das, um dich an früher Gemerktes zu erinnern.',
+    input_schema: { type: 'object', properties: { name: { type: 'string' } } },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus.');
+      const n = ctx.notizen();
+      if (e.name) {
+        const inhalt = n.lesen(e.name);
+        if (inhalt == null) return `Es gibt keine Notiz „${e.name}“.`;
+        return fremd('deiner Notiz', inhalt);
+      }
+      const liste = n.liste();
+      if (!liste.length) return 'Noch keine Lern-Notizen vorhanden.';
+      return fremd('deinen Notizen', ['Deine Notizen (neueste zuerst):', ...liste.map((x) => `• ${x.name} (${formatGroesse(x.groesse)})`)].join('\n'));
+    },
+  },
+  {
+    name: 'memo_loeschen',
+    description: 'Eine deiner Lern-Notizen löschen (name = Titel der Notiz).',
+    input_schema: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
+    einstufen: gruen,
+    async ausfuehren(e, ctx) {
+      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus.');
+      return ctx.notizen().loeschen(e.name) ? `Notiz „${e.name}“ gelöscht.` : `Es gibt keine Notiz „${e.name}“.`;
+    },
+  },
+  {
     name: 'zwischenablage_lesen',
     fremd: true,
     description: 'Text aus der Zwischenablage lesen.',

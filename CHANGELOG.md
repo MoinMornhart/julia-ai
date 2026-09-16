@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.2.0 – 2026-09-16
+- Julia kann sich jetzt dauerhafte Lern-Notizen anlegen – als versteckte Dateien im Ordner .julia-memos in ihrem Arbeitsordner, damit sie sich Vorlieben, Projekt-Fakten und Lösungen merkt; in den Einstellungen unter Lernen an- und abschaltbar
+
 ## 2.1.0 – 2026-09-16
 - Julia kann jetzt doppelte (inhaltsgleiche) Dateien in einem Ordner aufspüren und zeigen, wie viel Platz die Kopien unnötig belegen – rein lesend, gelöscht wird nichts
 
