@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.3.0 – 2026-09-16
+- Neuer Boost-Tab mit System-Überblick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien – rein informativ, es wird nichts verändert oder gelöscht
+
 ## 3.2.0 – 2026-09-16
 - Werkzeuge lassen sich jetzt in den Einstellungen einzeln abschalten: ein abgeschaltetes Werkzeug darf die KI nicht mehr benutzen und bekommt einen klaren Hinweis, dass es aus ist (Standard: alles an)
 

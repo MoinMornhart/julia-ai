@@ -34,6 +34,7 @@
       <button class="nav-punkt" data-ansicht="clips" id="navClips"><span class="nav-ico" data-ico="film"></span><span class="nav-text" data-nav="nav.clips"></span></button>
       <button class="nav-punkt" data-ansicht="code" id="navCode"><span class="nav-ico" data-ico="code"></span><span class="nav-text" data-nav="nav.code"></span></button>
       <button class="nav-punkt" data-ansicht="minecraft" id="navMinecraft"><span class="nav-ico" data-ico="wuerfel"></span><span class="nav-text" data-nav="nav.minecraft"></span></button>
+      <button class="nav-punkt" data-ansicht="boost" id="navBoost"><span class="nav-ico" data-ico="blitz"></span><span class="nav-text" data-nav="nav.boost"></span></button>
       <div class="leiste-fuss">
         <div class="chip-modell" id="chipModell"><b id="chipAnbieter"></b><span id="chipName"></span></div>
         <button class="nav-punkt" id="navEinst"><span class="nav-ico" data-ico="einst"></span><span class="nav-text" data-nav="nav.einstellungen"></span></button>
@@ -356,6 +357,33 @@
         </div>
       </section>
 
+      <section class="ansicht boost" id="ansichtBoost" hidden>
+        <div class="boost-kopf">
+          <h2 data-nav="nav.boost"></h2>
+          <button class="zweit" id="boostAktualisieren" data-t="boost.aktualisieren"></button>
+        </div>
+        <p class="hinweis" data-t="boost.hinweis"></p>
+        <div class="boost-status" id="boostStatus"></div>
+        <div class="boost-block">
+          <div class="boost-block-kopf">
+            <h3 data-t="boost.prozesse"></h3>
+            <div class="segment" id="boostSort">
+              <button data-wert="ram" class="aktiv" data-t="boost.nach_ram"></button>
+              <button data-wert="cpu" data-t="boost.nach_cpu"></button>
+            </div>
+          </div>
+          <ul class="boost-prozesse" id="boostProzesse"></ul>
+        </div>
+        <div class="boost-block">
+          <div class="boost-block-kopf">
+            <h3 data-t="boost.doppelte"></h3>
+            <button class="zweit" id="boostDoppelteBtn" data-t="boost.doppelte_suchen"></button>
+          </div>
+          <p class="hinweis" data-t="boost.doppelte_hinweis"></p>
+          <div class="boost-doppelte" id="boostDoppelte"></div>
+        </div>
+      </section>
+
       <section class="ansicht chat-ansicht" id="ansichtChat">
         <main id="verlauf" class="verlauf">
           <div class="leer" id="leer">
@@ -388,5 +416,6 @@
   <script src="clips.js"></script>
   <script src="code.js"></script>
   <script src="mc.js"></script>
+  <script src="boost.js"></script>
 </body>
 </html>

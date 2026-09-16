@@ -1023,6 +1023,14 @@ function ipcEinrichten() {
   });
   // MCP-Server verwalten. Tokens gehen direkt in den Tresor, nie in die config.json.
   ipc.handle('mcp:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMcp() : mcp.status()));
+  // Boost-Tab (Issue #26): rein lesende System-Infos für den Nutzer. Kein Eingriff.
+  ipc.handle('boost:status', () => win.systemStatus());
+  ipc.handle('boost:prozesse', (_e, sortierung) => win.prozesse(12, sortierung === 'cpu' ? 'cpu' : 'ram'));
+  ipc.handle('boost:doppelte', (_e, pfad) => {
+    const p = String(pfad || '').trim();
+    if (!p) throw new Error('Kein Ordner gewählt.');
+    return require('./doppelte').finden(path.resolve(p), { minGroesse: 1024 }); // ab 1 KB
+  });
   // Liste der eingebauten Werkzeuge (Name + kurze Beschreibung) für die
   // Einstellungen – dort lassen sich einzelne Werkzeuge abschalten (werkzeuge_aus).
   ipc.handle('werkzeuge:liste', () => {
