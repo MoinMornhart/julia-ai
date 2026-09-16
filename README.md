@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Sicherheit nachgeschärft** – nach einem automatischen Repo-Check gehärtet: Einstellungen werden beim Zusammenführen gegen manipulierte Sonderschlüssel abgesichert, und im Quelltext stehen keine unsichtbaren Zeichen mehr. Verhalten bleibt gleich, nur robuster.
 - **Oberfläche bleibt auch bei einem Hänger bedienbar** – falls der Start einmal auf eine Antwort im Hintergrund wartet, die nie kommt, blieb das Fenster früher ganz leer (ohne Knöpfe/Text) – und im Logbuch stand nichts. Jetzt gibt es ein Zeitlimit: Julia zeigt die Oberfläche notfalls trotzdem an, hält den Hänger im Logbuch fest und lädt bei Bedarf einmal neu. Damit verschwindet das „ich sehe keine Elemente, obwohl alles fehlerfrei aussieht".
 - **BETA-Bereich mit Sicherheits-Schalter** – neue, experimentelle Funktionen bekommen einen eigenen, deutlich gekennzeichneten BETA-Abschnitt in den Einstellungen. Freischalten geht nur, indem du eine Bestätigung genau ausschreibst; Standard ist aus, und die **KI kann diese Schalter nicht selbst einschalten**. Erster Eintrag: Selbst-Programmieren (nur im festgelegten Ordner, kommt schrittweise).
 - **Brainstorming-Modus** – in den Einstellungen einschaltbar: Bei Ideen-, Optionen- und Planungsfragen antwortet Julia dann offener und ideenreicher (mehrere Vorschläge mit Abwägungen), bei einfachen Faktenfragen ganz normal. Standard aus.
@@ -73,7 +74,6 @@
 - **Neuer „Boost"-Tab** – ein eigener Bereich mit System-Überblick auf einen Blick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien. Rein informativ – es wird nichts verändert, eingefroren oder gelöscht.
 - **Werkzeuge einzeln abschaltbar** – in den Einstellungen unter „Werkzeuge" kannst du jetzt jedes einzelne Werkzeug aus- oder anschalten. Ein abgeschaltetes Werkzeug darf die KI nicht mehr benutzen (sie bekommt einen klaren Hinweis, dass es aus ist). Standardmäßig ist alles an. Siehe [Die Ampel](#die-ampel).
 - **Selbstcheck der Oberfläche** – bleibt ein Fenster nach dem Start leer oder ohne Layout (Knöpfe fehlen), merkt Julia das jetzt selbst, hält es im Logbuch fest und lädt die Oberfläche einmal automatisch neu. Meist ist sie danach wieder normal da.
-- **Start bringt das Fenster jetzt zuverlässig nach vorn** – wenn Julia schon im Hintergrund/Tray läuft, öffnet ein erneuter Start jetzt immer das Fenster (legt es notfalls neu an), statt scheinbar „nichts zu tun". Siehe [Bedienung](#bedienung).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

@@ -11,6 +11,8 @@ function kurz(text, max = MAX_AUSGABE) {
 
 // Unsichtbare Zeichen, mit denen Befehle in Texten versteckt werden:
 // Unicode-Tag-Zeichen ("ASCII-Schmuggel"), Richtungswechsel, Nullbreite.
+// Als \u-Escapes geschrieben, damit im Quelltext selbst keine unsichtbaren
+// Zeichen stehen (sonst leicht versehentlich verändert; Semgrep-Bidi-Hinweis).
 const UNSICHTBAR = /[\u{E0000}-\u{E007F}‪-‮⁦-⁩​-‏⁠﻿]/gu;
 
 function unsichtbareEntfernen(text) {

@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Security tightened** – hardened after an automated repo check: settings are protected against manipulated special keys when merging, and the source code no longer contains invisible characters. Behaviour stays the same, just more robust.
 - **The interface stays usable even if something hangs** – if the startup ever waits on a background reply that never arrives, the window used to stay completely empty (no buttons/text) – with nothing in the logbook. Now there's a time limit: Julia shows the interface anyway, records the hang in the logbook and reloads once if needed. This ends the "I see no elements even though everything looks error-free".
 - **BETA area with a safety switch** – new, experimental features get their own clearly marked BETA section in the settings. Unlocking one requires typing a confirmation exactly; it's off by default, and the **AI cannot turn these switches on itself**. First entry: self-programming (only in the chosen folder, rolling out step by step).
 - **Brainstorming mode** – switchable in the settings: for idea, option and planning questions Julia then answers more openly and idea-rich (several suggestions with trade-offs), and normally for simple factual questions. Off by default.
@@ -73,7 +74,6 @@
 - **New "Boost" tab** – a dedicated area with a system overview at a glance: memory, drives, uptime, the biggest resource hogs (by RAM or CPU) and a duplicate-file finder. Read-only – nothing is changed, frozen or deleted.
 - **Turn individual tools off** – under "Tools" in the settings you can now switch each tool on or off. The AI may no longer use a disabled tool (it gets a clear note that it's off). Everything is on by default. See [The traffic light](#the-traffic-light).
 - **Interface self-check** – if a window comes up empty or without layout (buttons missing) after starting, Julia now notices it, records it in the logbook and reloads the interface once automatically. Usually it's back to normal afterwards.
-- **Launching reliably brings the window forward** – if Julia is already running in the background/tray, launching again now always opens the window (recreating it if needed) instead of seeming to "do nothing". See [Usage](#usage).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

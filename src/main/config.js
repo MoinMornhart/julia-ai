@@ -181,7 +181,10 @@ function mischen(standard, datei) {
   const out = klon(standard);
   if (!istObjekt(datei)) return out;
   for (const [k, v] of Object.entries(datei)) {
-    if (!(k in standard)) continue;
+    // Gefährliche Schlüssel nie mischen (Prototype-Pollution): `k in standard`
+    // wäre für `__proto__`/`constructor` über die Prototypenkette sonst wahr.
+    if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+    if (!Object.prototype.hasOwnProperty.call(standard, k)) continue;
     if (k === 'je_anbieter') {
       // Freie Schlüssel (Anbieter-IDs), nur Texte übernehmen.
       if (istObjekt(v)) for (const [id, s] of Object.entries(v)) if (typeof s === 'string' && s) out.je_anbieter[id] = s;

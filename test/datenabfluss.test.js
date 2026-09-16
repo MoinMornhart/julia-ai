@@ -55,6 +55,15 @@ test('Unsichtbare Zeichen werden aus fremden Inhalten entfernt und gemeldet', ()
   assert.doesNotMatch(fremd('x', 'ganz normal'), /unsichtbare/);
 });
 
+test('Alle abgedeckten Unsichtbar-Bereiche werden entfernt (bidi, Nullbreite, BOM, Wort-Verbinder)', () => {
+  // Je ein Zeichen aus jedem Bereich der UNSICHTBAR-Klasse.
+  const proben = ['‪', '‮', '⁦', '⁩', '​', '‏', '⁠', '﻿', '\u{E0041}'];
+  const text = `A${proben.join('')}B`;
+  const r = unsichtbareEntfernen(text);
+  assert.equal(r.sauber, 'AB');
+  assert.equal(r.anzahl, proben.length);
+});
+
 test('Werkzeuge, die fremde Inhalte liefern oder nach außen wirken, sind gekennzeichnet', () => {
   const { WERKZEUGE: basis } = require('../src/main/konten/google-werkzeuge');
   const google = Object.fromEntries(basis.map((w) => [w.name, w]));

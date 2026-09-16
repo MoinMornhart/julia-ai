@@ -138,3 +138,15 @@ test('Kaputte config.json wird gesichert statt überschrieben', () => {
   assert.ok(warnung);
   assert.ok(fs.readdirSync(dir).some((f) => f.startsWith('config.json.kaputt-')));
 });
+
+test('mischen ignoriert gefährliche Schlüssel (__proto__) – keine Prototype-Pollution', () => {
+  const { mischen } = require('../src/main/config');
+  const boese = JSON.parse('{"__proto__": {"polluted": true}, "constructor": {"x": 1}}');
+  const out = mischen(STANDARD, boese);
+  // Kein Objekt darf die eingeschmuggelte Eigenschaft geerbt haben.
+  assert.equal(({}).polluted, undefined);
+  assert.equal(out.polluted, undefined);
+  // Und ein normaler Merge funktioniert weiter.
+  const out2 = mischen(STANDARD, { update: { kanal: 'beta' } });
+  assert.equal(out2.update.kanal, 'beta');
+});
