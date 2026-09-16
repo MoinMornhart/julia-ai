@@ -2230,7 +2230,10 @@ if (!app.requestSingleInstanceLock()) {
   app.on('web-contents-created', (_e, wc) => {
     sicherheit.fensterHaerten(wc, { rendererOrdner: RENDERER, oeffnen: (url) => shell.openExternal(url) });
   });
-  app.on('second-instance', () => { if (chatFenster) chatZeigen(null); });
+  // Zweiter Start: immer das Chatfenster holen – chatZeigen legt es neu an, wenn
+  // keines (mehr) da ist. Sonst „passiert nichts", wenn Julia nur im Tray läuft
+  // oder das Fenster zuvor weg war (Issue #45).
+  app.on('second-instance', () => chatZeigen('chat'));
   app.on('window-all-closed', () => { /* Julia läuft im Tray weiter */ });
   app.on('before-quit', () => { beendenLaeuft = true; });
   app.on('will-quit', () => {

@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.0.1 – 2026-09-16
+- Läuft Julia schon im Hintergrund, öffnet ein erneuter Start jetzt zuverlässig das Fenster (und legt es notfalls neu an), statt scheinbar nichts zu tun
+
 ## 3.0.0 – 2026-09-16
 - Werkzeug- und MCP-Aufrufe im Chat lassen sich jetzt aufklappen: ein Tipp auf { } zeigt als lesbares JSON, was genau mit welchen Parametern aufgerufen wurde – so ist nachvollziehbar, was im Hintergrund passiert
 
