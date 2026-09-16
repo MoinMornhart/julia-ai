@@ -160,10 +160,20 @@ function juliaText(delta, ganz = false) {
   if (unten) verlauf.scrollTop = verlauf.scrollHeight;
 }
 
-function werkzeug({ id, name, eingabe }) {
+function werkzeug({ id, name, eingabe, eingabeVoll }) {
   antwortEl = null;
+  const zeigJson = eingabeVoll && eingabeVoll !== '{}';
   const d = element('werkzeug laeuft',
-    `<span class="ico"></span><span class="wname">${esc(name)}</span><span class="weingabe">${esc(eingabe === '{}' ? '' : eingabe || '')}</span>`);
+    `<span class="ico"></span><span class="wname">${esc(name)}</span><span class="weingabe">${esc(eingabe === '{}' ? '' : eingabe || '')}</span>`
+    + (zeigJson ? `<button class="w-json" type="button" title="${esc(tx('chat.werkzeug_details'))}" aria-label="${esc(tx('chat.werkzeug_details'))}">{ }</button>` : ''));
+  if (zeigJson) {
+    const pre = document.createElement('pre');
+    pre.className = 'w-details';
+    pre.hidden = true;
+    pre.textContent = eingabeVoll; // als Text gesetzt: kein HTML-Einschleusen
+    d.appendChild(pre);
+    d.querySelector('.w-json').addEventListener('click', () => { pre.hidden = !pre.hidden; });
+  }
   werkzeugEls.set(id, d);
   anhaengen(d);
   return d;

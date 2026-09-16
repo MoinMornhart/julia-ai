@@ -36,6 +36,15 @@ function kurzeEingabe(eingabe) {
   return s.length > 160 ? s.slice(0, 160) + '…' : s;
 }
 
+// Vollständige Parameter eines Werkzeug-/MCP-Aufrufs als lesbares JSON – für die
+// aufklappbare „Was hat Julia gemacht?"-Ansicht im Chat. Sicher gekürzt, damit
+// große Inhalte (z. B. Dateitexte) die Oberfläche nicht sprengen.
+function vollEingabe(eingabe) {
+  let s;
+  try { s = JSON.stringify(eingabe || {}, null, 2); } catch { s = String(eingabe); }
+  return s.length > 4000 ? `${s.slice(0, 4000)}\n… (gekürzt)` : s;
+}
+
 class Agent extends EventEmitter {
   // apiSchluessel(anbieterId): Schlüssel des Anbieters oder ''
   // claudeCodeExe(): Pfad zu claude.exe oder null
@@ -440,7 +449,7 @@ class Agent extends EventEmitter {
   async _werkzeug(aufruf) {
     const ergebnis = (content, istFehler = false) => ({ type: 'tool_result', tool_use_id: aufruf.id, content, ...(istFehler ? { is_error: true } : {}) });
     const w = werkzeuge.finden(aufruf.name, this.ctx);
-    this.emit('werkzeug', { id: aufruf.id, name: aufruf.name, eingabe: kurzeEingabe(aufruf.input) });
+    this.emit('werkzeug', { id: aufruf.id, name: aufruf.name, eingabe: kurzeEingabe(aufruf.input), eingabeVoll: vollEingabe(aufruf.input) });
     // Aus dem Minecraft-Chat nur Handgriffe im Spiel: Wer dort schreibt, ist auf
     // Servern ohne Anmeldung nicht sicher der Nutzer.
     if (this.aktiverKanal === 'minecraft' && !/^(minecraft_\w+|gedaechtnis_lesen|webseite_abrufen)$/.test(aufruf.name)) {

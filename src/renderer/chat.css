@@ -282,6 +282,10 @@ body.overlay .start { display: none !important; }
 .werkzeug.rot .ico::after { content: "⛔"; font-size: 11px; }
 .werkzeug .wname { color: var(--text-2); flex: none; }
 .werkzeug .weingabe { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; opacity: 0.8; }
+.werkzeug { flex-wrap: wrap; }
+.werkzeug .w-json { order: 4; flex: none; margin-left: auto; font-family: var(--mono); font-size: 10px; line-height: 1; padding: 2px 5px; border: 1px solid var(--linie-stark); border-radius: 5px; background: transparent; color: var(--text-3); cursor: pointer; }
+.werkzeug .w-json:hover { border-color: var(--akzent); color: var(--text-2); }
+.werkzeug .w-details { flex-basis: 100%; order: 5; margin: 4px 0 2px; padding: 8px 10px; background: var(--grund-2); border-radius: 6px; font-size: 11px; white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow: auto; color: var(--text-2); }
 
 /* Freigabekarte mit Warnstreifen */
 .karte {

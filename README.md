@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Werkzeug-Aufrufe zum Aufklappen** – im Chat kannst du bei jedem Werkzeug- oder MCP-Aufruf auf „{ }" tippen und siehst genau, was Julia mit welchen Parametern aufgerufen hat (als lesbares JSON). So ist nachvollziehbar, was im Hintergrund passiert.
 - **Hinweis „KI-Antworten prüfen"** – unter dem Eingabefeld steht jetzt dezent, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten. Und ruft die KI ein Werkzeug auf, das es nicht gibt oder das abgeschaltet ist, bekommt sie das jetzt klar zurückgemeldet.
 - **Sicherheits-Update einer Abhängigkeit** – eine gemeldete Schwachstelle im Paket `uuid` ist geschlossen (auf eine geprüfte, sichere Version gehoben), ohne dass sich für dich etwas ändert. `npm audit` meldet jetzt keine Lücken mehr.
 - **Oberflächen-Fehler werden protokolliert** – wenn ein Fenster zwar aufgeht, aber leer bleibt (UI lädt nicht), landet der zugrunde liegende Fehler jetzt im Start-Logbuch. So lässt sich so ein Problem endlich nachvollziehen, statt im Dunkeln zu tappen. Bleibt lokal auf deinem PC.
@@ -73,7 +74,6 @@
 - **Tabellen im Chat** – Julia kann Antworten jetzt als richtige Tabelle darstellen (Markdown-Tabellen mit `|`), inklusive Spalten-Ausrichtung. Vorher standen Tabellen nur als Textzeilen da; jetzt werden sie sauber gerendert.
 - **Shell-Zeitlimit selbst einstellbar** – hängende Konsolen-Befehle brechen jetzt zuverlässig ab: In den Einstellungen unter „Shell-Befehle" legst du ein Standard- und ein maximales Zeitlimit fest. Das Maximum begrenzt jeden Befehl, auch wenn die KI mehr möchte – Schluss mit endlos laufenden Befehlen.
 - **Modelle ohne Bild-Unterstützung merkt sich Julia** – meldet ein KI-Anbieter, dass ein Modell keine Bilder versteht (z. B. „Vision is disabled"), schickt Julia diesem Modell künftig keine Screenshots mehr und wiederholt den fehlgeschlagenen Schritt automatisch ohne Bild – statt immer wieder am selben Fehler zu scheitern.
-- **Einheitliche KI-Instruktionen (intern auf Englisch)** – die Anweisungen und der System-Prompt, die Julias KI steuern, sind jetzt durchgängig auf Englisch. Für dich ändert sich nichts an der Sprache: Julia spricht und schreibt weiter in deiner App-Sprache (Deutsch). Das macht die interne Steuerung einheitlicher und pflegeleichter.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 
