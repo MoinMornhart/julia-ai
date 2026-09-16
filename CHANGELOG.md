@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.9.0 – 2026-09-16
+- VibeWorks laesst sich jetzt in den Einstellungen anbinden: mit deinem API-Schluessel anmelden, danach stehen die VibeWorks-Werkzeuge bereit - der Schluessel liegt nur verschluesselt auf dem PC und wird der KI nie gezeigt
+
 ## 3.8.0 – 2026-09-16
 - Im Boost-Tab lassen sich CPU-Fresser jetzt gezielt entlasten: auf Klick senkt Julia die Prioritaet eines Programms (umkehrbar mit Zuruecksetzen) - nur auf deinen Klick, System- und Julia-eigene Prozesse gesperrt, nichts wird hart eingefroren, und die KI kann es nicht selbst ausloesen
 

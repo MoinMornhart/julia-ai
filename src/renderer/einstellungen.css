@@ -144,6 +144,7 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .mcp-zustand.fehler { color: var(--rot); }
 .mcp-was, .mcp-werkzeuge { font-family: var(--mono); font-size: 12px; color: var(--text-2); overflow-wrap: anywhere; }
 .mcp-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.vibe-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
 .mcp-neu summary { cursor: pointer; font-weight: 600; }
 .mcp-neu[open] { display: grid; gap: 10px; }
 .mcp-neu[open] summary { margin-bottom: 2px; }

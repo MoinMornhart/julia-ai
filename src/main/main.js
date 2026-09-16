@@ -15,6 +15,7 @@ const mikrofonRecht = require('./mikrofon-recht');
 const { Whisper } = require('./whisper');
 const { Piper } = require('./piper');
 const { McpVerwaltung, eintragPruefen: mcpEintragPruefen } = require('./mcp');
+const vibeworks = require('./vibeworks');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
@@ -130,6 +131,19 @@ const t = (k, w) => tt(config.get('sprachcode'), k, { name: assistentName(), ...
 function assistentName() {
   if (config && config.get('design.jarvis')) return 'J.A.R.V.I.S.';
   return (config && config.get('assistent.name')) || 'Julia';
+}
+
+// Anmeldestatus bei VibeWorks (Issue #51): abgeleitet vom MCP-Server-Eintrag.
+// Enthält nie den Schlüssel – nur, ob angemeldet, und wie die Verbindung steht.
+function vibeworksStatus() {
+  const s = (mcp && mcp.status ? mcp.status() : []).find((x) => x.id === vibeworks.ID);
+  return {
+    angemeldet: !!s,
+    zustand: s ? s.zustand : 'aus',
+    fehler: s ? s.fehler : null,
+    werkzeuge: s ? s.werkzeuge : 0,
+    konto: vibeworks.KONTO_URL,
+  };
 }
 
 // Persönlichkeit im Jarvis-Modus (Easter-Egg). Hängt sich hinten an den Prompt.
@@ -1085,6 +1099,28 @@ function ipcEinrichten() {
     return mcp.status();
   });
   ipc.handle('mcp:neu', async (_e, id) => { await mcp.neuStarten(String(id)); return mcp.status(); });
+  // VibeWorks-Anmeldung (Issue #51): API-Schlüssel prüfen und als HTTP-MCP-Server
+  // anlegen. Nur über die Oberfläche (kein KI-Werkzeug); der Schlüssel liegt
+  // verschlüsselt im Tresor, nie in der config und nie für die KI lesbar.
+  ipc.handle('vibeworks:status', () => vibeworksStatus());
+  ipc.handle('vibeworks:konto', () => { shell.openExternal(vibeworks.KONTO_URL).catch(() => {}); return true; });
+  ipc.handle('vibeworks:anmelden', async (_e, schluessel) => {
+    const p = await vibeworks.pruefen(schluessel);
+    if (!p.ok) return { ok: false, code: p.code, hinweis: vibeworks.hinweisSchluessel(p.code) };
+    // Schlüssel zuerst verschlüsselt ablegen, dann Server-Eintrag setzen (das
+    // löst mcp.anwenden aus, das die Kopfzeile schon vorfindet).
+    mcp.umgebungSetzen(vibeworks.ID, vibeworks.kopfzeile(schluessel));
+    const liste = config.get('mcp.server').filter((s) => s.id !== vibeworks.ID);
+    config.set('mcp.server', [...liste, vibeworks.serverEintrag()]);
+    await mcp.neuStarten(vibeworks.ID);
+    protokoll.eintragen({ werkzeug: 'vibeworks', stufe: 'INFO', ergebnis: 'Bei VibeWorks angemeldet' });
+    return { ok: true, status: vibeworksStatus() };
+  });
+  ipc.handle('vibeworks:abmelden', () => {
+    config.set('mcp.server', config.get('mcp.server').filter((s) => s.id !== vibeworks.ID));
+    mcp.umgebungSetzen(vibeworks.ID, null);
+    return vibeworksStatus();
+  });
   ipc.handle('piper:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielPiper() : piper.status()));
   ipc.handle('piper:laden', () => {
     const s = String(config.get('sprache.stimme') || '');

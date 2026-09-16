@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **VibeWorks anbinden (Anmelde-Box)** – in den Einstellungen kannst du Julia jetzt mit VibeWorks verbinden: „Schlüssel erstellen" öffnet dein Konto, du fügst deinen API-Schlüssel (`vw_…`) ein und meldest dich an – danach stehen die VibeWorks-Werkzeuge bereit (jeder Aufruf läuft über die Ampel). Der Schlüssel liegt **nur verschlüsselt** auf dem PC und wird der KI **nie** gezeigt; bei einem ungültigen/zurückgezogenen Schlüssel bekommst du einen klaren Hinweis.
 - **CPU-Fresser gezielt entlasten** – im Boost-Tab kannst du bei einem Programm, das die CPU auslastet, auf „Entlasten" tippen: Julia senkt dann seine Priorität (es läuft nur noch, wenn sonst nichts die CPU braucht) und „Zurücksetzen" hebt das wieder auf. **Sicher gebaut:** nur auf deinen Klick, System- und Julia-eigene Prozesse sind gesperrt, es wird nichts hart eingefroren, und die KI kann das nicht selbst auslösen.
 - **Minecraft: kommt aus dem Wasser wieder frei** – blieb sie mit einem Block über dem Kopf im Wasser hängen (ein bekannter Fall), erkennt Julia das jetzt und schwimmt selbst nach oben, statt festzustecken.
 - **Sicherheit nachgeschärft** – nach einem automatischen Repo-Check gehärtet: Einstellungen werden beim Zusammenführen gegen manipulierte Sonderschlüssel abgesichert, und im Quelltext stehen keine unsichtbaren Zeichen mehr. Verhalten bleibt gleich, nur robuster.
@@ -73,7 +74,6 @@
 - **BETA-Bereich mit Sicherheits-Schalter** – neue, experimentelle Funktionen bekommen einen eigenen, deutlich gekennzeichneten BETA-Abschnitt in den Einstellungen. Freischalten geht nur, indem du eine Bestätigung genau ausschreibst; Standard ist aus, und die **KI kann diese Schalter nicht selbst einschalten**. Erster Eintrag: Selbst-Programmieren (nur im festgelegten Ordner, kommt schrittweise).
 - **Brainstorming-Modus** – in den Einstellungen einschaltbar: Bei Ideen-, Optionen- und Planungsfragen antwortet Julia dann offener und ideenreicher (mehrere Vorschläge mit Abwägungen), bei einfachen Faktenfragen ganz normal. Standard aus.
 - **Geheimnisse sicher verwalten** – in den Einstellungen unter „Geheimnisse" kannst du Passwörter/Schlüssel hinterlegen. Sie liegen **nur verschlüsselt** auf deinem PC (Windows-Verschlüsselung), werden nach dem Speichern nicht mehr angezeigt, und die **KI bekommt die Werte nie zu sehen**.
-- **Neuer „Boost"-Tab** – ein eigener Bereich mit System-Überblick auf einen Blick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien. Anzeige und Dublettenfinder sind rein lesend.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

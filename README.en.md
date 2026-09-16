@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Connect VibeWorks (sign-in box)** – in the settings you can now connect Julia to VibeWorks: "Create a key" opens your account, you paste your API key (`vw_…`) and sign in – the VibeWorks tools then become available (every call goes through the traffic light). The key is stored **encrypted only** on the PC and is **never** shown to the AI; if a key is invalid or revoked you get a clear hint.
 - **Throttle CPU hogs on purpose** – in the Boost tab you can tap "Throttle" on a program that's maxing out the CPU: Julia lowers its priority (it only runs when nothing else needs the CPU) and "Reset" undoes it. **Built safely:** only on your click, system and Julia's own processes are locked, nothing is hard-frozen, and the AI cannot trigger it itself.
 - **Minecraft: gets out of the water again** – if she got stuck in water with a block above her head (a known case), Julia now notices and swims up herself instead of being trapped.
 - **Security tightened** – hardened after an automated repo check: settings are protected against manipulated special keys when merging, and the source code no longer contains invisible characters. Behaviour stays the same, just more robust.
@@ -73,7 +74,6 @@
 - **BETA area with a safety switch** – new, experimental features get their own clearly marked BETA section in the settings. Unlocking one requires typing a confirmation exactly; it's off by default, and the **AI cannot turn these switches on itself**. First entry: self-programming (only in the chosen folder, rolling out step by step).
 - **Brainstorming mode** – switchable in the settings: for idea, option and planning questions Julia then answers more openly and idea-rich (several suggestions with trade-offs), and normally for simple factual questions. Off by default.
 - **Manage secrets securely** – under "Secrets" in the settings you can store passwords/keys. They are kept **encrypted only** on your PC (Windows encryption), are no longer shown after saving, and the **AI never sees the values**.
-- **New "Boost" tab** – a dedicated area with a system overview at a glance: memory, drives, uptime, the biggest resource hogs (by RAM or CPU) and a duplicate-file finder. The overview and duplicate finder are read-only.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

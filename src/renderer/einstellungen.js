@@ -893,6 +893,45 @@ function mcpVerbinden() {
   };
 }
 
+// VibeWorks-Anmeldung (Issue #51): API-Schlüssel eintragen, Julia prüft ihn und
+// verbindet den VibeWorks-MCP-Server. Der Schlüssel liegt verschlüsselt auf dem
+// PC (Tresor) und wird der KI nie gezeigt.
+function vibeZeigen(s) {
+  const st = $('vibeStatus');
+  const angemeldet = !!(s && s.angemeldet);
+  st.textContent = angemeldet
+    ? (s.zustand === 'bereit' ? tx('vibe.verbunden', { n: s.werkzeuge })
+      : s.zustand === 'fehler' ? tx('vibe.status_fehler', { fehler: s.fehler || '?' }) : tx('vibe.verbindet'))
+    : tx('vibe.nicht_angemeldet');
+  $('vibeAbmelden').hidden = !angemeldet;
+  $('vibeSchluessel').hidden = angemeldet;
+}
+
+function vibeVerbinden() {
+  julia.on('mcp:status', async () => { try { vibeZeigen(await julia.vibeworksStatus()); } catch { /* egal */ } });
+  $('vibeKonto').onclick = () => julia.vibeworksKonto();
+  $('vibeAnmelden').onclick = async () => {
+    const m = $('vibeMeldung');
+    m.textContent = ''; m.classList.remove('fehler');
+    const key = $('vibeSchluessel').value.trim();
+    if (!key) { m.textContent = tx('vibe.hinweis_nicht_angemeldet'); m.classList.add('fehler'); return; }
+    $('vibeAnmelden').disabled = true;
+    try {
+      const r = await julia.vibeworksAnmelden(key);
+      if (!r || !r.ok) { m.textContent = tx((r && r.hinweis) || 'vibe.hinweis_fehler'); m.classList.add('fehler'); return; }
+      $('vibeSchluessel').value = '';
+      m.textContent = tx('vibe.angemeldet');
+      vibeZeigen(r.status);
+    } finally { $('vibeAnmelden').disabled = false; }
+  };
+  $('vibeAbmelden').onclick = async () => {
+    if (!confirm(tx('vibe.abmelden_frage'))) return;
+    vibeZeigen(await julia.vibeworksAbmelden());
+    $('vibeMeldung').textContent = '';
+  };
+  $('vibeSchluessel').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('vibeAnmelden').click(); } });
+}
+
 // Whisper: genaue Spracherkennung auf diesem PC – Status und einmaliger Download.
 let whisperStand = null;
 
@@ -1088,6 +1127,8 @@ async function init() {
   piperVerbinden();
   mcpVerbinden();
   mcpZeigen(await julia.mcpStatus());
+  vibeVerbinden();
+  vibeZeigen(await julia.vibeworksStatus());
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   sandboxZeigen();
