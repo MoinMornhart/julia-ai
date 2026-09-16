@@ -260,6 +260,7 @@ function texteAnwenden(daten) {
   $('assistentName').textContent = tx('chat.titel');
   document.title = tx('chat.titel');
   $('text').placeholder = tx('chat.platzhalter');
+  $('kiHinweis').textContent = tx('chat.ki_hinweis');
   $('btnNeu').title = tx('chat.neu');
   $('btnEinst').title = tx('chat.einstellungen');
   $('btnZu').title = tx('chat.schliessen');

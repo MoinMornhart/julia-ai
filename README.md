@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Hinweis „KI-Antworten prüfen"** – unter dem Eingabefeld steht jetzt dezent, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten. Und ruft die KI ein Werkzeug auf, das es nicht gibt oder das abgeschaltet ist, bekommt sie das jetzt klar zurückgemeldet.
 - **Sicherheits-Update einer Abhängigkeit** – eine gemeldete Schwachstelle im Paket `uuid` ist geschlossen (auf eine geprüfte, sichere Version gehoben), ohne dass sich für dich etwas ändert. `npm audit` meldet jetzt keine Lücken mehr.
 - **Oberflächen-Fehler werden protokolliert** – wenn ein Fenster zwar aufgeht, aber leer bleibt (UI lädt nicht), landet der zugrunde liegende Fehler jetzt im Start-Logbuch. So lässt sich so ein Problem endlich nachvollziehen, statt im Dunkeln zu tappen. Bleibt lokal auf deinem PC.
 - **Erholt sich selbst von wiederholten Grafik-Abstürzen** – stürzt die Anzeige (Renderer) mehrfach ab, stellt Julia jetzt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängen zu bleiben. Bisher griff das nur bei Abstürzen direkt beim Start. Siehe [Installation](#installation).
@@ -73,7 +74,6 @@
 - **Shell-Zeitlimit selbst einstellbar** – hängende Konsolen-Befehle brechen jetzt zuverlässig ab: In den Einstellungen unter „Shell-Befehle" legst du ein Standard- und ein maximales Zeitlimit fest. Das Maximum begrenzt jeden Befehl, auch wenn die KI mehr möchte – Schluss mit endlos laufenden Befehlen.
 - **Modelle ohne Bild-Unterstützung merkt sich Julia** – meldet ein KI-Anbieter, dass ein Modell keine Bilder versteht (z. B. „Vision is disabled"), schickt Julia diesem Modell künftig keine Screenshots mehr und wiederholt den fehlgeschlagenen Schritt automatisch ohne Bild – statt immer wieder am selben Fehler zu scheitern.
 - **Einheitliche KI-Instruktionen (intern auf Englisch)** – die Anweisungen und der System-Prompt, die Julias KI steuern, sind jetzt durchgängig auf Englisch. Für dich ändert sich nichts an der Sprache: Julia spricht und schreibt weiter in deiner App-Sprache (Deutsch). Das macht die interne Steuerung einheitlicher und pflegeleichter.
-- **Update installiert jetzt sicher über eine laufende Version** – der Installer beendet eine geöffnete Julia (samt Hintergrundprozessen) jetzt hart und zeigt keinen hängenden „bitte schließen"-Dialog mehr. Damit lässt sich eine neue Version zuverlässig drüber installieren und das automatische Update läuft durch. Siehe [Installation](#installation).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

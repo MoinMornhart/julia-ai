@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **"Check AI answers" note** – a subtle line under the input box now points out that AI answers can contain mistakes and important things should be checked. And if the AI calls a tool that doesn't exist or is disabled, it now gets a clear message back.
 - **Security update of a dependency** – a reported vulnerability in the `uuid` package is fixed (raised to a checked, safe version) with no change for you. `npm audit` now reports no vulnerabilities.
 - **Interface errors get logged** – if a window opens but stays blank (UI doesn't load), the underlying error now goes into the start logbook. So such a problem can finally be traced instead of being a mystery. Stays local on your PC.
 - **Recovers from repeated graphics crashes on its own** – if the display (renderer) crashes several times, Julia now switches to software graphics and restarts automatically, instead of getting stuck with a dead window. Previously this only kicked in for crashes right at startup. See [Installation](#installation).
@@ -73,7 +74,6 @@
 - **Set the shell time limit yourself** – stuck console commands now abort reliably: under "Shell commands" in the settings you set a default and a maximum time limit. The maximum caps every command, even if the AI wants more – no more commands running forever.
 - **Julia remembers models without image support** – if an AI provider reports that a model can't handle images (e.g. "Vision is disabled"), Julia stops sending screenshots to that model and automatically retries the failed step without the image – instead of hitting the same error over and over.
 - **Unified AI instructions (internally in English)** – the instructions and system prompt that steer Julia's AI are now consistently in English. Nothing changes for you language-wise: Julia still speaks and writes in your app language. It just makes the internal steering more consistent and easier to maintain.
-- **Updates now install reliably over a running version** – the installer now hard-closes an open Julia (including its background processes) and no longer gets stuck on a "please close" dialog. So a new version installs cleanly over the old one and the automatic update goes through. See [Installation](#installation).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

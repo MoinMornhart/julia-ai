@@ -130,6 +130,7 @@ const TEXTE = {
 
     'chat.titel': '{name}',
     'chat.platzhalter': 'Schreib {name} etwas …',
+    'chat.ki_hinweis': 'KI-Antworten können Fehler enthalten – bitte wichtige Dinge prüfen.',
     'chat.senden': 'Senden',
     'chat.stopp': 'Stopp',
     'chat.mikro': 'Sprechen',
@@ -833,6 +834,7 @@ const TEXTE = {
 
     'chat.titel': '{name}',
     'chat.platzhalter': 'Write to {name} …',
+    'chat.ki_hinweis': 'AI answers can contain mistakes – please double-check important things.',
     'chat.senden': 'Send',
     'chat.stopp': 'Stop',
     'chat.mikro': 'Talk',

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.9.0 – 2026-09-16
+- Unter dem Chat-Eingabefeld steht jetzt ein dezenter Hinweis, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten; ruft die KI ein nicht vorhandenes oder abgeschaltetes Werkzeug auf, bekommt sie das klar zurückgemeldet
+
 ## 2.8.1 – 2026-09-16
 - Sicherheits-Update: die gemeldete Schwachstelle im Paket uuid ist geschlossen (auf eine geprüfte, sichere Version angehoben), ohne Downgrade anderer Pakete – npm audit meldet keine Lücken mehr
 

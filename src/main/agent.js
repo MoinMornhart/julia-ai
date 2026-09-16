@@ -449,7 +449,7 @@ class Agent extends EventEmitter {
     }
     if (!w) {
       this.emit('werkzeugFertig', { id: aufruf.id, ok: false });
-      return ergebnis(`Unbekanntes Werkzeug ${aufruf.name}.`, true);
+      return ergebnis(`Unknown tool "${aufruf.name}": it does not exist or is disabled here. Only use the tools listed above.`, true);
     }
     try {
       if (aufruf.name === 'auftrag_vorlegen') {

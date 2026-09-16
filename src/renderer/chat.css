@@ -427,6 +427,8 @@ body.overlay .start { display: none !important; }
 /* --- Eingabe --- */
 
 .eingabe { padding: 10px 12px 14px; }
+.ki-hinweis { margin: 7px 4px 0; text-align: center; font-size: 11px; color: var(--text-3); }
+body.overlay .ki-hinweis { display: none; }
 .eingabe-feld {
   display: flex;
   align-items: flex-end;
