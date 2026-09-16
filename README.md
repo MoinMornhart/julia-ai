@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Modelle ohne Bild-Unterstützung merkt sich Julia** – meldet ein KI-Anbieter, dass ein Modell keine Bilder versteht (z. B. „Vision is disabled"), schickt Julia diesem Modell künftig keine Screenshots mehr und wiederholt den fehlgeschlagenen Schritt automatisch ohne Bild – statt immer wieder am selben Fehler zu scheitern.
 - **Einheitliche KI-Instruktionen (intern auf Englisch)** – die Anweisungen und der System-Prompt, die Julias KI steuern, sind jetzt durchgängig auf Englisch. Für dich ändert sich nichts an der Sprache: Julia spricht und schreibt weiter in deiner App-Sprache (Deutsch). Das macht die interne Steuerung einheitlicher und pflegeleichter.
 - **Update installiert jetzt sicher über eine laufende Version** – der Installer beendet eine geöffnete Julia (samt Hintergrundprozessen) jetzt hart und zeigt keinen hängenden „bitte schließen"-Dialog mehr. Damit lässt sich eine neue Version zuverlässig drüber installieren und das automatische Update läuft durch. Siehe [Installation](#installation).
 - **Minecraft: erkennt Hänger und verbindet sich neu** – friert die Spielfigur ein (verbunden, aber keine Reaktion mehr), merkt Julia das jetzt selbst und macht automatisch einen Relog, statt endlos still zu stehen. Ihr Zustand wird vorher fürs Logbuch gesichert. Siehe [Minecraft](#minecraft).
@@ -73,7 +74,6 @@
 - **Doppelte Dateien aufspüren** – Julia findet auf Wunsch inhaltsgleiche Dateien in einem Ordner und zeigt, wie viel Platz die Kopien unnötig belegen. Rein lesend – gelöscht wird nichts, du entscheidest. (Erster Baustein der geplanten „Boost"-Seite.)
 - **Minecraft: bleibt nicht mehr an Kanten hängen** – wenn Julia laufen will, aber an einer Stufe festklebt, springt sie jetzt automatisch drüber, statt davor stehen zu bleiben. Damit kommt sie beim Erkunden und Durchspielen deutlich flüssiger voran. Siehe [Minecraft](#minecraft).
 - **Dateien nach Namen finden** – ergänzend zur Textsuche findet Julia jetzt auch Dateien über ihren Namen: als Teiltext (`config` → `config.js`) oder als Muster mit `*` und `?` (z. B. `*.test.js`). So springt sie noch schneller an die richtige Stelle im Projekt.
-- **Schnelle Projekt-Suche** – Julia kann jetzt in einem Projekt gezielt nach Text suchen („wo steht X?", „wo wird Y benutzt?") und bekommt nur die Fundstellen als `datei:zeile` zurück, statt viele Dateien einzeln zu lesen. Das spart Zeit und Tokens; `node_modules`, `.git`, Build-Ordner und große/binäre Dateien werden übersprungen.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

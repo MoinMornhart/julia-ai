@@ -41,7 +41,7 @@ function werkzeugeUmwandeln(defs) {
   return { tools, ohneTyp };
 }
 
-function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false } = {}) {
+function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false, ohneBild = false } = {}) {
   const out = [{ role: 'system', content: system }];
   for (const m of verlauf || []) {
     const bloecke = typeof m.content === 'string' ? [{ type: 'text', text: m.content }] : m.content || [];
@@ -58,13 +58,18 @@ function verlaufUmwandeln(system, verlauf, { zwischenAntwort = false } = {}) {
     const teile = [];
     for (const b of bloecke) {
       if (b.type === 'tool_result') {
-        const t = textVon(b.content) || (bilderVon(b.content).length ? 'Bild folgt in der nächsten Nachricht.' : 'ok');
+        const roh = textVon(b.content);
+        const hatBild = bilderVon(b.content).length > 0;
+        let t;
+        if (ohneBild && hatBild) t = `${roh ? `${roh} ` : ''}[screenshot omitted: this model has no image support]`;
+        else t = roh || (hatBild ? 'Bild folgt in der nächsten Nachricht.' : 'ok');
         out.push({ role: 'tool', tool_call_id: b.tool_use_id, content: b.is_error ? `FEHLER: ${t}` : t });
-        bilder.push(...bilderVon(b.content));
+        if (!ohneBild) bilder.push(...bilderVon(b.content));
       } else if (b.type === 'text') {
         teile.push({ type: 'text', text: b.text });
       } else if (b.type === 'image' && b.source) {
-        teile.push(bildTeil(b));
+        if (ohneBild) teile.push({ type: 'text', text: '[screenshot omitted: this model has no image support]' });
+        else teile.push(bildTeil(b));
       }
     }
     // Bilder dürfen in Werkzeug-Nachrichten nicht stehen – sie kommen direkt danach.

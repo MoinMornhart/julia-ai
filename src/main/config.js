@@ -29,6 +29,7 @@ const STANDARD = {
   anbieter: 'anthropic', // siehe anbieter/liste.js
   anbieter_url: '', // nur für "eigen": OpenAI-kompatible Adresse
   modell: 'claude-opus-5',
+  modelle_ohne_bild: [], // Modelle, die keine Bilder/Screenshots verstehen – dann werden Screenshots nicht mitgeschickt (lernt Julia selbst, wenn ein Anbieter „Vision disabled" meldet)
   aufwand: 'high',
   kanal: 'desktop',
   autostart: false,
@@ -415,6 +416,9 @@ function pruefen(schluessel, wert) {
       return wert.map((p) => path.resolve(String(p)));
     case 'sandbox.ordner':
       return wert ? path.resolve(String(wert)) : '';
+    case 'modelle_ohne_bild':
+      if (!Array.isArray(wert)) throw new Error('modelle_ohne_bild ist eine Liste von Modellnamen.');
+      return [...new Set(wert.map((m) => String(m).trim()).filter(Boolean))];
     case 'blase.farben':
       if (!istObjekt(wert)) throw new Error('blase.farben ist ein Objekt mit Farblisten je Zustand.');
       return Object.fromEntries(ZUSTAENDE.map((z) => [z, wert[z] ? pruefen(`blase.farben.${z}`, wert[z]) : STANDARD.blase.farben[z]]));

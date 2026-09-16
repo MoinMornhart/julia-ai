@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.5.0 – 2026-09-16
+- Julia merkt sich Modelle, die keine Bilder verstehen: meldet ein Anbieter Vision-Deaktiviert, schickt sie diesem Modell keine Screenshots mehr und wiederholt den Schritt automatisch ohne Bild, statt am selben Fehler zu scheitern
+
 ## 2.4.0 – 2026-09-16
 - Die Anweisungen und der System-Prompt der KI laufen jetzt intern einheitlich auf Englisch; für dich bleibt alles gleich, Julia antwortet weiter in deiner App-Sprache
 
