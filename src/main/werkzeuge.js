@@ -10,6 +10,7 @@ const ampel = require('./ampel');
 const win = require('./win/win');
 const bildschirm = require('./bildschirm');
 const projektsuche = require('./projektsuche');
+const doppelte = require('./doppelte');
 
 // Julias Werkzeuge. Jedes Werkzeug stuft sich selbst in die Ampel ein
 // (einstufen) und führt dann aus (ausfuehren). Die Freigabe dazwischen holt
@@ -409,6 +410,28 @@ const WERKZEUGE = [
       if (!r.treffer.length) return fremd('der Dateisuche', `Keine Datei passt zu ${JSON.stringify(e.muster)} in ${ordner} (${r.geprueft} Dateien geprüft).`);
       const kopf = `${r.treffer.length}${r.abgeschnitten ? '+' : ''} Dateien passen zu ${JSON.stringify(e.muster)}:`;
       return fremd('der Dateisuche', [kopf, ...r.treffer].join('\n'));
+    },
+  },
+  {
+    name: 'doppelte_dateien',
+    fremd: true,
+    description: 'Inhaltsgleiche (doppelte) Dateien in einem Ordner finden, um Platz freizugeben. Rein lesend – es wird nichts gelöscht. Durchsucht den Ordner (Standard: erstes Arbeitsverzeichnis), gruppiert nach Größe und vergleicht nur gleich große Dateien per Prüfsumme. node_modules, .git und Build-Ordner werden übersprungen. Meldet die Gruppen und den verschwendeten Platz.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ordner: { type: 'string', description: 'Standard: erstes Arbeitsverzeichnis.' },
+        min_kb: { type: 'integer', description: 'Kleine Dateien unter dieser Größe (in KB) ignorieren.' },
+      },
+    },
+    einstufen: (e, ctx) => sandboxLesen(e.ordner || '.', ctx),
+    async ausfuehren(e, ctx) {
+      const ordner = pfadAbs(e.ordner || '.', ctx);
+      const minGroesse = Math.max(1, Math.round((Number(e.min_kb) || 0) * 1024));
+      const r = doppelte.finden(ordner, { minGroesse });
+      if (!r.gruppen.length) return fremd('der Dublettensuche', `Keine doppelten Dateien in ${ordner} (${r.geprueft} Dateien geprüft).`);
+      const kopf = `${r.gruppen.length} Gruppen doppelter Dateien, ~${formatGroesse(r.verschwendet)} unnötig belegt (${r.geprueft} Dateien geprüft):`;
+      const zeilen = r.gruppen.slice(0, 50).map((g) => `• ${formatGroesse(g.groesse)} ×${g.dateien.length}: ${g.dateien.join('  |  ')}`);
+      return fremd('der Dublettensuche', [kopf, ...zeilen, 'Nichts wurde gelöscht – du entscheidest, welche Kopie weg kann.'].join('\n'));
     },
   },
   {

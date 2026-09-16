@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Spot duplicate files** – on request Julia finds content-identical files in a folder and shows how much space the copies waste. Read-only – nothing is deleted, you decide. (First building block of the planned "Boost" page.)
 - **Minecraft: no more getting stuck on ledges** – when Julia wants to move but sticks on a one-block step, she now jumps over it automatically instead of standing there. She gets around much more smoothly while exploring and playing through. See [Minecraft](#minecraft).
 - **Find files by name** – on top of text search, Julia can now find files by their name: as a substring (`config` → `config.js`) or as a pattern with `*` and `?` (e.g. `*.test.js`). That gets her to the right place in a project even faster.
 - **Fast project search** – Julia can now search a project for text ("where is X?", "where is Y used?") and gets back only the matches as `file:line`, instead of reading many files one by one. It saves time and tokens; `node_modules`, `.git`, build folders and large/binary files are skipped.
@@ -73,7 +74,6 @@
 - **Search the settings** – the settings window now has a search box at the top: type e.g. "voice", "orb" or "diagnostics" and Julia shows only the matching sections. Accents don't matter, and several words narrow it further. See [Usage](#usage).
 - **Installer & update work even while Julia is open** – the wizard now closes a running Julia automatically before installing (gently first, then forcefully if needed). No more "file in use" errors during installation or automatic updates. See [Installation](#installation).
 - **Finds CPU hogs during PC control** – Julia now keeps a local performance logbook: for each control action (click, type, screenshot …) it records only technical data – duration and its own CPU usage, **never** content like text, coordinates or window titles. That lets a CPU spike be traced to its cause. At most a scrubbed summary goes to the developer, and only if you turn diagnostics on.
-- **Phone app as a ready-to-install APK** – no Expo account needed anymore: GitHub now builds the Android app automatically as an installable `Julia.apk` (release "[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Download it on your phone, allow install from unknown sources, done. See [Julia on your phone](#julia-on-your-phone).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.1.0 – 2026-09-16
+- Julia kann jetzt doppelte (inhaltsgleiche) Dateien in einem Ordner aufspüren und zeigen, wie viel Platz die Kopien unnötig belegen – rein lesend, gelöscht wird nichts
+
 ## 2.0.1 – 2026-09-16
 - Julia bleibt in Minecraft nicht mehr an einer Stufe hängen – will sie laufen, kommt aber nicht vom Fleck, springt sie jetzt automatisch drüber und kommt beim Erkunden und Durchspielen flüssiger voran
 

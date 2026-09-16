@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Doppelte Dateien aufspüren** – Julia findet auf Wunsch inhaltsgleiche Dateien in einem Ordner und zeigt, wie viel Platz die Kopien unnötig belegen. Rein lesend – gelöscht wird nichts, du entscheidest. (Erster Baustein der geplanten „Boost"-Seite.)
 - **Minecraft: bleibt nicht mehr an Kanten hängen** – wenn Julia laufen will, aber an einer Stufe festklebt, springt sie jetzt automatisch drüber, statt davor stehen zu bleiben. Damit kommt sie beim Erkunden und Durchspielen deutlich flüssiger voran. Siehe [Minecraft](#minecraft).
 - **Dateien nach Namen finden** – ergänzend zur Textsuche findet Julia jetzt auch Dateien über ihren Namen: als Teiltext (`config` → `config.js`) oder als Muster mit `*` und `?` (z. B. `*.test.js`). So springt sie noch schneller an die richtige Stelle im Projekt.
 - **Schnelle Projekt-Suche** – Julia kann jetzt in einem Projekt gezielt nach Text suchen („wo steht X?", „wo wird Y benutzt?") und bekommt nur die Fundstellen als `datei:zeile` zurück, statt viele Dateien einzeln zu lesen. Das spart Zeit und Tokens; `node_modules`, `.git`, Build-Ordner und große/binäre Dateien werden übersprungen.
@@ -73,7 +74,6 @@
 - **Einstellungen durchsuchen** – oben in den Einstellungen gibt es jetzt ein Suchfeld: tippe z. B. „Stimme", „Blase" oder „Diagnose", und Julia zeigt nur noch die passenden Abschnitte. Umlaute egal, mehrere Wörter grenzen weiter ein. Siehe [Bedienung](#bedienung).
 - **Installer & Update laufen auch bei geöffneter Julia** – der Assistent schließt eine noch laufende Julia jetzt automatisch, bevor er installiert (erst sanft, dann notfalls hart). Damit ist Schluss mit „Datei in Benutzung"-Fehlern bei Installation und automatischem Update. Siehe [Installation](#installation).
 - **Findet CPU-Fresser bei der PC-Steuerung** – Julia führt jetzt ein lokales Leistungs-Logbuch: pro Steuerungs-Aktion (Klick, Tippen, Screenshot …) hält sie nur Technisches fest – Dauer und ihren eigenen CPU-Verbrauch, **nie** Inhalte wie Text, Koordinaten oder Fenstertitel. So lässt sich eine CPU-Spitze einem Verursacher zuordnen. An den Entwickler geht davon höchstens eine bereinigte Zusammenfassung, und nur wenn du die Diagnose einschaltest.
-- **Handy-App als fertige APK zum Herunterladen** – du brauchst kein Expo-Konto mehr: GitHub baut die Android-App jetzt automatisch als installierbare `Julia.apk` (Release „[android-latest](https://github.com/MoinMornhart/julia-ai/releases/tag/android-latest)"). Aufs Handy laden, Installation aus unbekannter Quelle erlauben, fertig. Siehe [Julia aufs Handy](#julia-aufs-handy).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 
