@@ -96,59 +96,9 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// --- Kleines Markdown: Absätze, Listen, Code, fett/kursiv, Links ---
-
-function formatieren(s) {
-  return s
-    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-    .replace(/(^|[^*\w])\*([^*\n]+)\*(?![*\w])/g, '$1<em>$2</em>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noreferrer">$1</a>');
-}
-
-function inlineMd(s) {
-  return s.split('`').map((teil, i) => (i % 2 ? `<code>${esc(teil)}</code>` : formatieren(esc(teil)))).join('');
-}
-
-function bloecke(text) {
-  let out = '';
-  let liste = null;
-  let absatz = [];
-  const absatzEnde = () => {
-    if (absatz.length) out += `<p>${absatz.map(inlineMd).join('<br>')}</p>`;
-    absatz = [];
-  };
-  const listeEnde = () => {
-    if (liste) out += `<${liste.typ}>${liste.eintraege.map((e) => `<li>${inlineMd(e)}</li>`).join('')}</${liste.typ}>`;
-    liste = null;
-  };
-  for (const z of text.split('\n')) {
-    let m;
-    if (!z.trim()) { absatzEnde(); listeEnde(); continue; }
-    if ((m = /^\s*[-*•]\s+(.*)$/.exec(z)) || (m = /^\s*\d+[.)]\s+(.*)$/.exec(z))) {
-      const typ = /^\s*\d/.test(z) ? 'ol' : 'ul';
-      absatzEnde();
-      if (!liste || liste.typ !== typ) { listeEnde(); liste = { typ, eintraege: [] }; }
-      liste.eintraege.push(m[1]);
-      continue;
-    }
-    if ((m = /^#{1,6}\s+(.*)$/.exec(z))) { absatzEnde(); listeEnde(); out += `<h4>${inlineMd(m[1])}</h4>`; continue; }
-    if ((m = /^>\s?(.*)$/.exec(z))) { absatzEnde(); listeEnde(); out += `<blockquote>${inlineMd(m[1])}</blockquote>`; continue; }
-    listeEnde();
-    absatz.push(z);
-  }
-  absatzEnde();
-  listeEnde();
-  return out;
-}
-
-function md(text) {
-  return text.split('```').map((teil, i) => {
-    if (i % 2 === 0) return bloecke(teil);
-    const nl = teil.indexOf('\n');
-    const code = nl >= 0 && /^[\w+#.-]*$/.test(teil.slice(0, nl).trim()) ? teil.slice(nl + 1) : teil;
-    return `<pre><code>${esc(code.replace(/\n$/, ''))}</code></pre>`;
-  }).join('');
-}
+// Markdown (Absätze, Listen, Code, fett/kursiv, Links, Tabellen) kommt aus dem
+// gemeinsamen, getesteten Modul markdown.js (window.Md), das vor chat.js geladen wird.
+const md = (text) => window.Md.md(text);
 
 // --- Verlauf ---
 

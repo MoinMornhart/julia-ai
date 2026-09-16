@@ -256,6 +256,10 @@ body.overlay .start { display: none !important; }
 .blase p:last-child, .blase ul:last-child, .blase ol:last-child, .blase pre:last-child { margin-bottom: 0; }
 .blase ul, .blase ol { margin: 4px 0 8px; padding-left: 20px; }
 .blase li::marker { color: var(--akzent); }
+.blase table { border-collapse: collapse; margin: 6px 0 10px; display: block; overflow-x: auto; max-width: 100%; font-size: 13px; }
+.blase th, .blase td { border: 1px solid var(--linie-stark); padding: 5px 9px; text-align: left; vertical-align: top; }
+.blase th { background: var(--grund-2); font-weight: 650; }
+.blase tbody tr:nth-child(even) td { background: color-mix(in srgb, var(--grund-2) 45%, transparent); }
 .blase h4 { margin: 6px 0 4px; font-size: 14px; }
 .blase blockquote { margin: 4px 0; padding-left: 10px; border-left: 2px solid var(--akzent-rand); color: var(--text-2); }
 

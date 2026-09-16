@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.7.0 – 2026-09-16
+- Der Chat stellt Tabellen jetzt richtig dar: Markdown-Tabellen mit senkrechten Strichen werden sauber als Tabelle mit Spalten-Ausrichtung gerendert, statt nur als Textzeilen
+
 ## 2.6.0 – 2026-09-16
 - Zeitlimit für Shell-Befehle ist jetzt in den Einstellungen selbst einstellbar (Standard und Maximum); das Maximum begrenzt jeden Befehl, damit hängende Konsolen-Befehle sicher abbrechen statt endlos zu laufen
 
