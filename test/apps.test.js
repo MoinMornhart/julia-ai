@@ -36,7 +36,10 @@ function fakeFetch(routen) {
   return fn;
 }
 
-function verbunden(t, id, token = 'tok') {
+// Achtung: Alle „token"-Werte hier sind reine Test-Platzhalter (Dummys), keine
+// echten Zugangsschlüssel. Sie werden nur an einen Fake-fetch übergeben und
+// verlassen den Test nie – es gibt nichts zu widerrufen (Issue #42).
+function verbunden(t, id, token = 'test-dummy-token') {
   t.schreiben(id, { basisUrl: `https://${id}.example.de`, token });
 }
 
@@ -51,7 +54,7 @@ test('Apps: Verbinden prüft die Domain und meldet Status', () => {
   const t = tresor();
   const apps = new Apps({ fetch: fakeFetch([]), tresor: t });
   assert.throws(() => apps.verbindenApp('todoist', { basisUrl: 'keine-url' }), /Adresse/);
-  apps.verbindenApp('todoist', { basisUrl: 'https://todoch.example.de/', token: 'abc' });
+  apps.verbindenApp('todoist', { basisUrl: 'https://todoch.example.de/', token: 'test-dummy-token' });
   const v = apps.verbunden();
   assert.equal(v.todoist, true);
   assert.equal(v.todoistUrl, 'https://todoch.example.de');
@@ -60,7 +63,7 @@ test('Apps: Verbinden prüft die Domain und meldet Status', () => {
 
 test('ToDoch: Aufgabe wird an {basis}/tasks mit Bearer-Token gepostet', async () => {
   const t = tresor();
-  verbunden(t, 'todoist', 'tok123');
+  verbunden(t, 'todoist', 'test-dummy-token');
   const fetch = fakeFetch([['/tasks', { daten: { id: '9', text: 'Milch kaufen', due: 'morgen' } }]]);
   const apps = new Apps({ fetch, tresor: t });
   const r = await apps.todoistAufgabe('Milch kaufen', { faellig: 'morgen' });
@@ -68,7 +71,7 @@ test('ToDoch: Aufgabe wird an {basis}/tasks mit Bearer-Token gepostet', async ()
   const a = fetch.aufrufe[0];
   assert.equal(a.url, 'https://todoist.example.de/tasks');
   assert.equal(a.optionen.method, 'POST');
-  assert.equal(a.optionen.headers.Authorization, 'Bearer tok123');
+  assert.equal(a.optionen.headers.Authorization, 'Bearer test-dummy-token');
   assert.equal(a.body.text, 'Milch kaufen');
   assert.equal(a.body.due, 'morgen');
 });
@@ -98,7 +101,7 @@ test('Streamo: Suchen liest results, Hinzufügen postet an /list', async () => {
 
 test('VibeWork: Projekt anlegen, einladen, letzten Commit holen', async () => {
   const t = tresor();
-  verbunden(t, 'vibework', 'tokV');
+  verbunden(t, 'vibework', 'test-dummy-token');
   const fetch = fakeFetch([
     ['/projects/p7/invites', { daten: { ok: true } }],
     ['/projects/p7/commits/latest', { daten: { sha: 'abc123def4', message: 'Fix', author: 'Anna', date: '2026-09-15' } }],
@@ -108,7 +111,7 @@ test('VibeWork: Projekt anlegen, einladen, letzten Commit holen', async () => {
   const p = await apps.vibeworkProjektAnlegen('Website');
   assert.equal(p.id, 'p7');
   const anlegen = fetch.aufrufe[0];
-  assert.equal(anlegen.optionen.headers.Authorization, 'Bearer tokV');
+  assert.equal(anlegen.optionen.headers.Authorization, 'Bearer test-dummy-token');
   const ein = await apps.vibeworkEinladen('p7', 'anna@example.com');
   assert.equal(ein.person, 'anna@example.com');
   const c = await apps.vibeworkLetzterCommit('p7');
@@ -118,7 +121,7 @@ test('VibeWork: Projekt anlegen, einladen, letzten Commit holen', async () => {
 
 test('Patchfeld/Codewerk: Session starten und Fortschritt lesen', async () => {
   const t = tresor();
-  verbunden(t, 'patchfeld', 'tokP');
+  verbunden(t, 'patchfeld', 'test-dummy-token');
   const fetch = fakeFetch([
     ['/sessions', { daten: { id: 's1', titel: 'Netzwerke' } }],
     ['/progress', { daten: { level: 3, offen: 2 } }],
@@ -126,7 +129,7 @@ test('Patchfeld/Codewerk: Session starten und Fortschritt lesen', async () => {
   const apps = new Apps({ fetch, tresor: t });
   const s = await apps.lernSession('patchfeld', { kurs: 'Netzwerke' });
   assert.equal(s.titel, 'Netzwerke');
-  assert.equal(fetch.aufrufe[0].optionen.headers.Authorization, 'Bearer tokP');
+  assert.equal(fetch.aufrufe[0].optionen.headers.Authorization, 'Bearer test-dummy-token');
   assert.equal(fetch.aufrufe[0].body.kurs, 'Netzwerke');
   const f = await apps.lernFortschritt('patchfeld');
   assert.equal(f.level, 3);
@@ -134,7 +137,7 @@ test('Patchfeld/Codewerk: Session starten und Fortschritt lesen', async () => {
 
 test('Content-Helper: Beitrag planen und Ideen holen', async () => {
   const t = tresor();
-  verbunden(t, 'content', 'tokC');
+  verbunden(t, 'content', 'test-dummy-token');
   const fetch = fakeFetch([
     ['/posts', { daten: { id: 'x1', date: 'Freitag', platform: 'YouTube' } }],
     ['/ideas', { daten: { ideas: ['Kurz-Tutorial', 'Behind the Scenes'] } }],
