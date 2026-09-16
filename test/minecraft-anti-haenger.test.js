@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { haengerStatus } = require('../src/main/minecraft');
+const { haengerStatus, haengerAktiv, haengerDauer } = require('../src/main/minecraft');
 
 test('erster Aufruf merkt sich nur den Anker', () => {
   const s = haengerStatus(null, { x: 10, z: 20 }, 100);
@@ -37,4 +37,25 @@ test('Schwellen sind einstellbar', () => {
   assert.equal(haengerStatus(anker, { x: 0.5, z: 0 }, 20, { minWeit: 1, minTicks: 20 }).springen, true);
   // minWeit 0.2: 0,5 Block gilt als vorangekommen → kein Sprung
   assert.ok(!haengerStatus(anker, { x: 0.5, z: 0 }, 20, { minWeit: 0.2, minTicks: 20 }).springen);
+});
+
+test('haengerAktiv: am Boden und will vorankommen → prüfen', () => {
+  assert.equal(haengerAktiv({ wegsuche: true, selbst: false, onGround: true, imWasser: false }), true);
+  assert.equal(haengerAktiv({ wegsuche: false, selbst: true, onGround: true, imWasser: false }), true);
+});
+
+test('haengerAktiv: im Wasser (onGround false) und will vorankommen → prüfen (Issue #28)', () => {
+  assert.equal(haengerAktiv({ wegsuche: true, selbst: false, onGround: false, imWasser: true }), true);
+});
+
+test('haengerAktiv: in der Luft ohne Wasser → nicht prüfen', () => {
+  assert.equal(haengerAktiv({ wegsuche: true, selbst: false, onGround: false, imWasser: false }), false);
+});
+
+test('haengerAktiv: will gar nicht vorankommen → nie prüfen', () => {
+  assert.equal(haengerAktiv({ wegsuche: false, selbst: false, onGround: true, imWasser: true }), false);
+});
+
+test('haengerDauer: im Wasser länger als an Land', () => {
+  assert.ok(haengerDauer(true) > haengerDauer(false));
 });

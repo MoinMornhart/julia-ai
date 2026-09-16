@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.7.2 – 2026-09-16
+- Minecraft kommt jetzt aus dem Wasser wieder frei: blieb sie mit einem Block ueber dem Kopf im Wasser haengen, schwimmt sie selbst nach oben statt festzustecken
+
 ## 3.7.1 – 2026-09-16
 - Sicherheit nachgeschaerft nach einem automatischen Repo-Check: Einstellungen werden beim Zusammenfuehren gegen manipulierte Sonderschluessel abgesichert, und im Quelltext stehen keine unsichtbaren Zeichen mehr - Verhalten bleibt gleich, nur robuster
 

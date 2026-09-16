@@ -291,6 +291,20 @@ function besteWerkzeug(items, art) {
 //   { neu }            – neuen Anker merken (kommt voran oder erster Aufruf)
 //   { springen, neu }  – zu lange festgehangen → Sprung-Impuls, Anker neu
 //   {}                 – noch abwarten
+// Soll die Hänger-Prüfung überhaupt laufen? Nur wenn sie vorankommen will
+// (Wegsuche oder selbst vorwärts) und entweder am Boden steht oder im Wasser
+// ist (Issue #28: im Wasser ist onGround immer false).
+function haengerAktiv({ wegsuche, selbst, onGround, imWasser }) {
+  if (!wegsuche && !selbst) return false;
+  return !!(onGround || imWasser);
+}
+
+// Wie lange der Sprung-/Schwimm-Impuls gehalten wird: im Wasser länger, damit
+// sie sicher aufsteigt.
+function haengerDauer(imWasser) {
+  return imWasser ? 700 : 350;
+}
+
 function haengerStatus(anker, pos, ticks, { minWeit = 0.35, minTicks = 12 } = {}) {
   const stand = { x: pos.x, z: pos.z, t: ticks };
   if (!anker) return { neu: stand };
@@ -1551,12 +1565,18 @@ class Minecraft extends EventEmitter {
     if (!bot.entity) return;
     const wegsuche = bot.pathfinder && bot.pathfinder.isMoving && bot.pathfinder.isMoving();
     const selbst = bot.getControlState && (bot.getControlState('forward') || bot.getControlState('sprint'));
-    if ((!wegsuche && !selbst) || !bot.entity.onGround) { this._haenger = null; return; }
+    // Auch im Wasser eingreifen (Issue #28): dort ist onGround immer false, ein
+    // 1 Block hohes Hindernis oder ein Block über dem Kopf ließ sie sonst ewig
+    // festhängen. Im Wasser bedeutet „springen" = hochschwimmen (immer sicher,
+    // sie steigt nur; kein Block wird abgebaut).
+    const imWasser = !!bot.entity.isInWater;
+    if (!haengerAktiv({ wegsuche, selbst, onGround: bot.entity.onGround, imWasser })) { this._haenger = null; return; }
     const s = haengerStatus(this._haenger, bot.entity.position, this.ticks);
     if (s.neu) this._haenger = s.neu;
     if (s.springen && bot.setControlState) {
       bot.setControlState('jump', true);
-      setTimeout(() => { try { bot.setControlState('jump', false); } catch { /* getrennt */ } }, 350);
+      // Im Wasser länger halten, damit sie sicher an die Oberfläche schwimmt.
+      setTimeout(() => { try { bot.setControlState('jump', false); } catch { /* getrennt */ } }, haengerDauer(imWasser));
     }
   }
 
@@ -2315,5 +2335,5 @@ module.exports = {
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
-  itemNamen, ortLesen, mengeLesen, endeText, HILFE, haengerStatus, haengerErkannt,
+  itemNamen, ortLesen, mengeLesen, endeText, HILFE, haengerStatus, haengerAktiv, haengerDauer, haengerErkannt,
 };
