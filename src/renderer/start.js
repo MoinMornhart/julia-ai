@@ -259,11 +259,12 @@
   julia.on('agent:freigabe', () => ansichtSetzen('chat'));
 
   bereit.then(async () => {
-    texteSetzen();
-    cfg = await julia.config();
-    chipSetzen();
+    // Beschriftungen zuerst – auch wenn danach etwas hakt, ist die Oberfläche
+    // sichtbar und bedienbar (kein leeres Fenster mehr, Issue #26/#45).
+    try { texteSetzen(); } catch { /* nie die ganze Oberfläche blockieren */ }
+    try { cfg = await julia.config(); chipSetzen(); } catch { /* Chip bleibt leer */ }
     // Andere Skripte (verlauf.js) sind erst nach diesem hier geladen.
-    setTimeout(() => ansichtSetzen(lesen('julia-ansicht') || 'start'), 0);
+    setTimeout(() => { try { ansichtSetzen(lesen('julia-ansicht') || 'start'); } catch { /* egal */ } }, 0);
   });
   window.juliaIcons = iconsSetzen;
   window.juliaFragen = fragen;

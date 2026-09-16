@@ -96,6 +96,10 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
+// Zeitlimit für Start-IPCs kommt aus zeitlimit.js (window.mitZeitlimit), das vor
+// chat.js geladen wird – so bleibt es testbar.
+const mitZeitlimit = window.mitZeitlimit;
+
 // Markdown (Absätze, Listen, Code, fett/kursiv, Links, Tabellen) kommt aus dem
 // gemeinsamen, getesteten Modul markdown.js (window.Md), das vor chat.js geladen wird.
 const md = (text) => window.Md.md(text);
@@ -352,12 +356,24 @@ async function init() {
     $('btnZu').onclick = () => julia.schliessen();
   }
 
-  const st = await julia.status();
-  hotkey = st.hotkey;
-  hoert = st.hoert;
-  beschaeftigt = st.beschaeftigt;
-  texteAnwenden(await julia.texte());
-  zustandAnzeigen(st.zustand);
+  let st = {};
+  try {
+    st = await mitZeitlimit(julia.status(), 8000, 'Status') || {};
+  } catch (e) {
+    // Kein stiller Abbruch: melden (landet im Start-Logbuch) und mit Standard weiter.
+    try { julia.melden && julia.melden('start-status', e && e.message); } catch { /* egal */ }
+  }
+  hotkey = st.hotkey || '';
+  hoert = !!st.hoert;
+  beschaeftigt = !!st.beschaeftigt;
+  try {
+    texteAnwenden(await mitZeitlimit(julia.texte(), 8000, 'Texte'));
+  } catch (e) {
+    try { julia.melden && julia.melden('start-texte', e && e.message); } catch { /* egal */ }
+    // Notdarstellung: Oberfläche bleibt bedienbar (fehlt Text, zeigt tx den Schlüssel).
+    texteAnwenden({ sprachcode: document.documentElement.lang || 'de', texte: T });
+  }
+  zustandAnzeigen(st.zustand || 'idle');
   $('btnMikro').classList.toggle('aktiv', hoert);
 
   $('btnNeu').onclick = () => julia.neu();
@@ -434,6 +450,9 @@ async function init() {
 
 // Ereignisse, die schon während des Starts eintreffen (Vorführmodus), warten,
 // bis Texte und Status geladen sind.
-const bereit = init();
+// Selbst wenn init() an einer unerwarteten Stelle scheitert, muss „bereit"
+// auflösen – sonst füllt start.js die Navigation/Beschriftungen nie und die
+// Oberfläche bliebe leer. Fehler werden gemeldet, nicht verschluckt.
+const bereit = init().catch((e) => { try { julia.melden && julia.melden('start-init', e && e.message); } catch { /* egal */ } });
 julia.on('demo', (eintraege) => bereit.then(() => demo(eintraege)));
 julia.on('overlay:modus', (modus) => bereit.then(() => overlayModus(modus)));

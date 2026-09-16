@@ -14,6 +14,9 @@ const KANAELE = [
 contextBridge.exposeInMainWorld('julia', {
   texte: () => ipcRenderer.invoke('texte'),
   config: () => ipcRenderer.invoke('config:lesen'),
+  // Aufgefangene Startprobleme (z. B. hängender IPC) ins Start-Logbuch melden,
+  // damit „UI bleibt leer" sichtbar wird, statt spurlos zu verschwinden.
+  melden: (art, text) => fehlerMelden(String(art || 'melden'), text, '', 0),
   setzen: (schluessel, wert) => ipcRenderer.invoke('config:setzen', schluessel, wert),
   alleFreigeben: (an) => ipcRenderer.invoke('freigabe:immer', !!an),
   fremdFreigeben: (an) => ipcRenderer.invoke('freigabe:fremd', !!an),
@@ -170,14 +173,22 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('load', () => {
     setTimeout(() => {
       let leer = false;
+      let grund = '';
       try {
         const b = document.body;
         const ohneStil = !document.styleSheets || document.styleSheets.length === 0;
         const ohneInhalt = !b || b.childElementCount === 0;
-        leer = ohneStil || ohneInhalt;
-      } catch { leer = true; }
+        // Zusätzlich (Issue #26/#45): Das HTML ist zwar da, aber die Beschriftungen
+        // werden erst per Skript gefüllt. Hängt der Start-IPC, bleiben alle
+        // Navigations-Texte leer – für den Nutzer „keine Elemente", ohne Fehler.
+        const beschriftet = document.querySelectorAll('[data-nav],[data-t]');
+        const leereTexte = beschriftet.length > 0
+          && [...beschriftet].every((el) => !el.textContent.trim());
+        leer = ohneStil || ohneInhalt || leereTexte;
+        grund = ohneStil ? 'ohne Stil (CSS fehlt)' : ohneInhalt ? 'ohne Inhalt (Body leer)' : leereTexte ? 'Beschriftungen leer – Start hing beim Laden' : '';
+      } catch { leer = true; grund = 'Prüfung fehlgeschlagen'; }
       if (!leer) return;
-      fehlerMelden('ui-healthcheck', 'Oberfläche nach dem Laden leer/ohne Stil – Knöpfe/Layout fehlen', '', 0);
+      fehlerMelden('ui-healthcheck', `Oberfläche nach dem Laden leer – ${grund}`, '', 0);
       try {
         if (!sessionStorage.getItem('ui-neu-geladen')) {
           sessionStorage.setItem('ui-neu-geladen', '1');

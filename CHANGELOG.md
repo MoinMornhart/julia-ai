@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.7.0 – 2026-09-16
+- Die Oberflaeche bleibt jetzt auch dann bedienbar, wenn beim Start eine Antwort im Hintergrund ausbleibt - statt eines leeren Fensters ohne Knoepfe zeigt Julia sie notfalls mit Ersatz an, haelt den Haenger im Logbuch fest und laedt bei Bedarf einmal neu
+
 ## 3.6.0 – 2026-09-16
 - Neuer BETA-Bereich in den Einstellungen für experimentelle Funktionen: freischalten nur durch genaues Ausschreiben einer Bestätigung, Standard aus, und die KI kann diese Schalter nicht selbst einschalten (erster Eintrag: Selbst-Programmieren, kommt schrittweise)
 
