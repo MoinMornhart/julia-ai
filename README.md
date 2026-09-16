@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Geheimnisse sicher verwalten** – in den Einstellungen unter „Geheimnisse" kannst du Passwörter/Schlüssel hinterlegen. Sie liegen **nur verschlüsselt** auf deinem PC (Windows-Verschlüsselung), werden nach dem Speichern nicht mehr angezeigt, und die **KI bekommt die Werte nie zu sehen**.
 - **Neuer „Boost"-Tab** – ein eigener Bereich mit System-Überblick auf einen Blick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien. Rein informativ – es wird nichts verändert, eingefroren oder gelöscht.
 - **Werkzeuge einzeln abschaltbar** – in den Einstellungen unter „Werkzeuge" kannst du jetzt jedes einzelne Werkzeug aus- oder anschalten. Ein abgeschaltetes Werkzeug darf die KI nicht mehr benutzen (sie bekommt einen klaren Hinweis, dass es aus ist). Standardmäßig ist alles an. Siehe [Die Ampel](#die-ampel).
 - **Selbstcheck der Oberfläche** – bleibt ein Fenster nach dem Start leer oder ohne Layout (Knöpfe fehlen), merkt Julia das jetzt selbst, hält es im Logbuch fest und lädt die Oberfläche einmal automatisch neu. Meist ist sie danach wieder normal da.
@@ -73,7 +74,6 @@
 - **Werkzeug-Aufrufe zum Aufklappen** – im Chat kannst du bei jedem Werkzeug- oder MCP-Aufruf auf „{ }" tippen und siehst genau, was Julia mit welchen Parametern aufgerufen hat (als lesbares JSON). So ist nachvollziehbar, was im Hintergrund passiert.
 - **Hinweis „KI-Antworten prüfen"** – unter dem Eingabefeld steht jetzt dezent, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten. Und ruft die KI ein Werkzeug auf, das es nicht gibt oder das abgeschaltet ist, bekommt sie das jetzt klar zurückgemeldet.
 - **Sicherheits-Update einer Abhängigkeit** – eine gemeldete Schwachstelle im Paket `uuid` ist geschlossen (auf eine geprüfte, sichere Version gehoben), ohne dass sich für dich etwas ändert. `npm audit` meldet jetzt keine Lücken mehr.
-- **Oberflächen-Fehler werden protokolliert** – wenn ein Fenster zwar aufgeht, aber leer bleibt (UI lädt nicht), landet der zugrunde liegende Fehler jetzt im Start-Logbuch. So lässt sich so ein Problem endlich nachvollziehen, statt im Dunkeln zu tappen. Bleibt lokal auf deinem PC.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

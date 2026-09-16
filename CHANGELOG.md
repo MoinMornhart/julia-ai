@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.4.0 – 2026-09-16
+- Geheimnisse (Passwörter/Schlüssel) lassen sich jetzt in den Einstellungen verwalten: nur verschlüsselt auf dem PC gespeichert, nach dem Speichern nicht mehr angezeigt, und die KI bekommt die Werte nie zu sehen
+
 ## 3.3.0 – 2026-09-16
 - Neuer Boost-Tab mit System-Überblick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien – rein informativ, es wird nichts verändert oder gelöscht
 

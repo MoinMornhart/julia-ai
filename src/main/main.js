@@ -102,6 +102,7 @@ let erinnerungen;
 let weckwort;
 let weckwortZuletzt = 0;
 let gespraeche = null;
+let geheimnisse = null;
 let routinen = null;
 let clips = null;
 let minecraft = null;
@@ -1031,6 +1032,13 @@ function ipcEinrichten() {
     if (!p) throw new Error('Kein Ordner gewählt.');
     return require('./doppelte').finden(path.resolve(p), { minGroesse: 1024 }); // ab 1 KB
   });
+  // Geheimnisse (Issue #26): nutzer-verwaltet, verschlüsselt. Nur Namen verlassen
+  // den Hauptprozess – die Werte nie (auch nicht an die KI).
+  ipc.handle('geheimnisse:liste', () => geheimnisse.namen());
+  ipc.handle('geheimnisse:setzen', (_e, name, wert) => {
+    try { geheimnisse.setzen(name, wert); return { namen: geheimnisse.namen() }; } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('geheimnisse:loeschen', (_e, name) => { geheimnisse.loeschen(name); return { namen: geheimnisse.namen() }; });
   // Liste der eingebauten Werkzeuge (Name + kurze Beschreibung) für die
   // Einstellungen – dort lassen sich einzelne Werkzeuge abschalten (werkzeuge_aus).
   ipc.handle('werkzeuge:liste', () => {
@@ -2011,6 +2019,7 @@ async function start() {
     oeffnen: (url) => shell.openExternal(url),
   });
   gespraeche = new Gespraeche(DATEN, krypto);
+  geheimnisse = new (require('./geheimnisse').Geheimnisse)(DATEN, krypto);
   routinen = new routinenModul.Routinen(DATEN, { sprachcode: () => config.get('sprachcode') });
   clips = new Clips({ config, videos: app.getPath('videos'), taste: (k) => win.taste(k) });
   code = new CodeProjekte({ config });

@@ -397,6 +397,44 @@ function monitoreFuellen() {
   }
 }
 
+async function geheimZeigen() {
+  const ul = $('geheimListe');
+  if (!ul) return;
+  let namen;
+  try { namen = await julia.geheimnisse(); } catch { return; }
+  ul.innerHTML = '';
+  if (!namen.length) {
+    const li = document.createElement('li');
+    li.className = 'leer';
+    li.textContent = '–';
+    ul.appendChild(li);
+    return;
+  }
+  for (const name of namen) {
+    const li = document.createElement('li');
+    const span = document.createElement('span');
+    span.textContent = name;
+    span.title = name;
+    const b = document.createElement('button');
+    b.textContent = tx('einst.entfernen');
+    b.onclick = async () => { const r = await julia.geheimnisLoeschen(name); if (r && r.namen) geheimZeigen(); };
+    li.append(span, b);
+    ul.appendChild(li);
+  }
+}
+
+async function geheimSpeichern() {
+  const name = $('geheimName').value.trim();
+  const wert = $('geheimWert').value;
+  if (!name || !wert) return;
+  const r = await julia.geheimnisSetzen(name, wert);
+  if (r && r.fehler) { $('geheimName').title = r.fehler; return; }
+  $('geheimName').value = '';
+  $('geheimName').title = '';
+  $('geheimWert').value = '';
+  geheimZeigen();
+}
+
 async function werkzeugeZeigen() {
   const box = $('werkzeugeListe');
   if (!box) return;
@@ -1038,6 +1076,9 @@ async function init() {
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   sandboxZeigen();
   werkzeugeZeigen();
+  geheimZeigen();
+  $('geheimSpeichern').onclick = geheimSpeichern;
+  $('geheimWert').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geheimSpeichern(); } });
   $('sandboxWaehlen').onclick = async () => {
     const p = await julia.ordnerWaehlen();
     if (!p) return;
