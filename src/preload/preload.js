@@ -153,4 +153,30 @@ function fehlerMelden(art, nachricht, quelle, zeile) {
 if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('error', (e) => fehlerMelden('fehler', e.error || e.message, e.filename, e.lineno));
   window.addEventListener('unhandledrejection', (e) => fehlerMelden('promise', e.reason, '', 0));
+
+  // UI-Healthcheck (Issue #45): Manchmal startet ein Fenster, aber die Oberfläche
+  // bleibt „leer"/unstyled (Knöpfe und Layout fehlen), weil das CSS nicht griff
+  // oder der Inhalt nicht aufgebaut wurde. Kurz nach dem Laden prüfen wir, ob
+  // überhaupt Stil (Stylesheets) und Inhalt (Elemente im Body) da sind. Ist die
+  // Oberflaeche leer, wird das ins Logbuch gemeldet und EINMAL neu geladen
+  // (Selbstheilung); klappt es dann immer noch nicht, nur melden – keine Schleife.
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      let leer = false;
+      try {
+        const b = document.body;
+        const ohneStil = !document.styleSheets || document.styleSheets.length === 0;
+        const ohneInhalt = !b || b.childElementCount === 0;
+        leer = ohneStil || ohneInhalt;
+      } catch { leer = true; }
+      if (!leer) return;
+      fehlerMelden('ui-healthcheck', 'Oberfläche nach dem Laden leer/ohne Stil – Knöpfe/Layout fehlen', '', 0);
+      try {
+        if (!sessionStorage.getItem('ui-neu-geladen')) {
+          sessionStorage.setItem('ui-neu-geladen', '1');
+          setTimeout(() => { try { location.reload(); } catch { /* egal */ } }, 400);
+        }
+      } catch { /* sessionStorage evtl. blockiert – dann nur melden */ }
+    }, 2500);
+  });
 }

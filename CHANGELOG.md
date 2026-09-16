@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.1.0 – 2026-09-16
+- Neuer Selbstcheck der Oberfläche: bleibt ein Fenster nach dem Start leer oder ohne Layout, merkt Julia das, hält es im Logbuch fest und lädt die Oberfläche einmal automatisch neu
+
 ## 3.0.1 – 2026-09-16
 - Läuft Julia schon im Hintergrund, öffnet ein erneuter Start jetzt zuverlässig das Fenster (und legt es notfalls neu an), statt scheinbar nichts zu tun
 

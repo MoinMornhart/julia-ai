@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Selbstcheck der Oberfläche** – bleibt ein Fenster nach dem Start leer oder ohne Layout (Knöpfe fehlen), merkt Julia das jetzt selbst, hält es im Logbuch fest und lädt die Oberfläche einmal automatisch neu. Meist ist sie danach wieder normal da.
 - **Start bringt das Fenster jetzt zuverlässig nach vorn** – wenn Julia schon im Hintergrund/Tray läuft, öffnet ein erneuter Start jetzt immer das Fenster (legt es notfalls neu an), statt scheinbar „nichts zu tun". Siehe [Bedienung](#bedienung).
 - **Werkzeug-Aufrufe zum Aufklappen** – im Chat kannst du bei jedem Werkzeug- oder MCP-Aufruf auf „{ }" tippen und siehst genau, was Julia mit welchen Parametern aufgerufen hat (als lesbares JSON). So ist nachvollziehbar, was im Hintergrund passiert.
 - **Hinweis „KI-Antworten prüfen"** – unter dem Eingabefeld steht jetzt dezent, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten. Und ruft die KI ein Werkzeug auf, das es nicht gibt oder das abgeschaltet ist, bekommt sie das jetzt klar zurückgemeldet.
@@ -73,7 +74,6 @@
 - **Oberflächen-Fehler werden protokolliert** – wenn ein Fenster zwar aufgeht, aber leer bleibt (UI lädt nicht), landet der zugrunde liegende Fehler jetzt im Start-Logbuch. So lässt sich so ein Problem endlich nachvollziehen, statt im Dunkeln zu tappen. Bleibt lokal auf deinem PC.
 - **Erholt sich selbst von wiederholten Grafik-Abstürzen** – stürzt die Anzeige (Renderer) mehrfach ab, stellt Julia jetzt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängen zu bleiben. Bisher griff das nur bei Abstürzen direkt beim Start. Siehe [Installation](#installation).
 - **Tabellen im Chat** – Julia kann Antworten jetzt als richtige Tabelle darstellen (Markdown-Tabellen mit `|`), inklusive Spalten-Ausrichtung. Vorher standen Tabellen nur als Textzeilen da; jetzt werden sie sauber gerendert.
-- **Shell-Zeitlimit selbst einstellbar** – hängende Konsolen-Befehle brechen jetzt zuverlässig ab: In den Einstellungen unter „Shell-Befehle" legst du ein Standard- und ein maximales Zeitlimit fest. Das Maximum begrenzt jeden Befehl, auch wenn die KI mehr möchte – Schluss mit endlos laufenden Befehlen.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 
