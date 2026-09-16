@@ -114,6 +114,25 @@ function softwareRenderingSetzen(ordner, an) {
   } catch { /* nicht schlimm: dann greift es beim nächsten Start eben nicht */ }
 }
 
+// Bleibt die Oberfläche leer, OHNE dass ein GPU-/Renderer-Absturz gemeldet wurde
+// (Issue #3/#54: auf manchen PCs liefert die GPU keine Infos und der Renderer
+// hängt beim Aufbau, statt sauber zu crashen). Dann ist Software-Rendering fast
+// immer die Rettung (der Nutzer bestätigte: mit `--disable-gpu` kam das Bild
+// zurück). Also: ist Software-Rendering noch nicht aktiv, jetzt einschalten und
+// neu starten; ist es schon aktiv und trotzdem leer, nicht endlos neu starten,
+// sondern klar melden. Gibt true zurück, wenn neu gestartet wird.
+function blankUiAbsichern({ datenOrdner, logbuch, neustart, fatal }) {
+  if (softwareRendering(datenOrdner)) {
+    logbuch.schreiben('FATAL', 'Oberfläche bleibt leer, auch mit Software-Rendering – Grafik/Treiber oder Start-Hänger. Einzelheiten im Logbuch.');
+    if (fatal) fatal('Die Oberfläche bleibt leer, auch mit Software-Grafik. Bitte das Start-Logbuch schicken – ich grenze es weiter ein.');
+    return false;
+  }
+  softwareRenderingSetzen(datenOrdner, true);
+  logbuch.schreiben('GPU', 'Oberfläche blieb leer und kein GPU-Absturz gemeldet – wahrscheinlich Grafik/Treiber. Software-Rendering ist ab jetzt aktiv, ich starte einmal neu.');
+  if (neustart) neustart();
+  return true;
+}
+
 // --- Fehlermeldung mit Knöpfen ---
 
 // Zeigt eine native Meldung mit klarer Ursache und Knöpfen zum Logbuch. Gibt
@@ -220,6 +239,6 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, sc
 
 module.exports = {
   Logbuch, logbuchOeffnen, flaggenPruefen, schreibbarPruefen,
-  softwareRendering, softwareRenderingSetzen, fehlerDialog, gpuUeberwachen,
+  softwareRendering, softwareRenderingSetzen, blankUiAbsichern, fehlerDialog, gpuUeberwachen,
   LOG_MAX, LOG_ALTE, GPU_SCHWELLE, BEKANNTE_FLAGS,
 };

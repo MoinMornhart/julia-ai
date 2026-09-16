@@ -67,6 +67,34 @@ test('Start: Software-Rendering wird gemerkt und wieder vergessen', () => {
   }
 });
 
+test('Start: leere Oberfläche ohne GPU-Absturz → Software-Rendering + Neustart (Issue #3/#54)', () => {
+  const o = ordner();
+  try {
+    let neu = 0; let fatal = 0;
+    const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: { schreiben() {} }, neustart: () => neu++, fatal: () => fatal++ });
+    assert.equal(r, true);
+    assert.equal(sp.softwareRendering(o), true); // ab jetzt Software-Rendering
+    assert.equal(neu, 1);
+    assert.equal(fatal, 0);
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
+test('Start: leere Oberfläche TROTZ Software-Rendering → klar melden statt Endlos-Neustart', () => {
+  const o = ordner();
+  try {
+    sp.softwareRenderingSetzen(o, true); // war schon aktiv
+    let neu = 0; let fatal = 0;
+    const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: { schreiben() {} }, neustart: () => neu++, fatal: () => fatal++ });
+    assert.equal(r, false);
+    assert.equal(neu, 0, 'kein Neustart-Loop');
+    assert.equal(fatal, 1, 'stattdessen klare Meldung');
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
 function fakeApp() {
   return {
     _h: {},

@@ -124,6 +124,8 @@ let overlayFenster = null;
 let overlayPassiv = false;
 let overlayTimer = null;
 let beendenLaeuft = false;
+// Nur einmal pro Lauf auf „Oberfläche blieb leer" mit Software-Rendering reagieren.
+let blankBehandelt = false;
 let zustand = 'idle';
 let promptCache = null;
 let hoert = false;
@@ -373,6 +375,13 @@ function chatFensterErstellen() {
     title: assistentName(),
   }, 50));
   chatFenster.juliaKopfHoehe = 50;
+  // Mehr Diagnose beim Start (Issue #3/#54): Laden-fertig, Ladefehler und
+  // „reagiert nicht" ins Start-Logbuch. Hilft, ein leeres Fenster einzugrenzen.
+  const wc = chatFenster.webContents;
+  wc.on('did-finish-load', () => startLog.schreiben('RENDERER', 'Chat-Fenster fertig geladen'));
+  wc.on('did-fail-load', (_e, code, beschreibung, url) => startLog.schreiben('RENDERER-FEHLER', 'Chat-Fenster konnte nicht laden', { code, beschreibung: String(beschreibung || '').slice(0, 120), url: String(url || '').slice(0, 80) }));
+  wc.on('unresponsive', () => startLog.schreiben('RENDERER-FEHLER', 'Chat-Fenster reagiert nicht (unresponsive)'));
+  wc.on('responsive', () => startLog.schreiben('RENDERER', 'Chat-Fenster reagiert wieder'));
   chatFenster.loadFile(path.join(RENDERER, 'chat.html'));
   chatFenster.on('close', (e) => {
     if (!beendenLaeuft) {
@@ -982,6 +991,20 @@ function ipcEinrichten() {
       zeile: Number(i.zeile) || 0,
       art: String(i.art || '').slice(0, 20),
     });
+    // Blieb die Oberfläche leer (Healthcheck), ohne dass ein GPU-/Renderer-Absturz
+    // kam (Issue #3/#54)? Dann einmal auf Software-Rendering umstellen und neu
+    // starten – das holt auf betroffenen PCs das Bild zurück. Nur einmal.
+    if (i.art === 'ui-healthcheck' && !blankBehandelt) {
+      blankBehandelt = true;
+      setTimeout(() => {
+        startpruefung.blankUiAbsichern({
+          datenOrdner: DATEN,
+          logbuch: startLog,
+          neustart: () => { beendenLaeuft = true; app.relaunch(); app.exit(0); },
+          fatal: (text) => startFatal(text),
+        });
+      }, 600);
+    }
   });
   ipc.handle('texte', () => texteFuerRenderer());
   ipc.handle('config:lesen', () => {
@@ -2381,11 +2404,15 @@ if (!app.requestSingleInstanceLock()) {
         const d = (g && g.auxAttributes) || {};
         const gpu = (g && g.gpuDevice && g.gpuDevice.find((x) => x && x.active)) || (g && g.gpuDevice && g.gpuDevice[0]) || {};
         letzteGpu = { renderer: d.glRenderer || null, vendor: d.glVendor || null, treiber: d.driverVersion || d.driver_version || null };
-        startLog.schreiben('GPU-INFO', 'Grafik erkannt', {
+        const sw = startpruefung.softwareRendering(DATEN) || null;
+        // Fehlen bei aktiver Hardware-Grafik alle Treiber-Infos, ist die GPU oft
+        // degradiert (Issue #3/#54) – dann bleibt die Oberfläche gern leer.
+        const degradiert = !sw && !letzteGpu.renderer && !letzteGpu.vendor && !letzteGpu.treiber;
+        startLog.schreiben('GPU-INFO', degradiert ? 'Grafik erkannt – KEINE Treiber-Infos (GPU evtl. degradiert)' : 'Grafik erkannt', {
           ...letzteGpu, vendorId: gpu.vendorId || null, deviceId: gpu.deviceId || null,
-          software: startpruefung.softwareRendering(DATEN) || null,
+          software: sw, hardwareBeschleunigt: !sw, gpuAktiv: !!(gpu && Object.keys(gpu).length),
         });
-      }).catch(() => { /* GPU-Info ist nur Diagnose, kein Starthindernis */ });
+      }).catch((e) => { startLog.schreiben('GPU-INFO', 'GPU-Info nicht abrufbar', { fehler: String(e && e.message || e).slice(0, 120) }); });
     } catch { /* egal */ }
   }).catch(() => { /* Meldung folgt über start() */ });
   app.whenReady().then(start).catch((e) => {

@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.1 – 2026-09-16
+- Leeres Fenster heilt sich jetzt auch bei Grafik-Problemen selbst: bleibt die Oberflaeche leer (ohne gemeldeten Absturz), stellt Julia automatisch auf Software-Grafik um und startet einmal neu - plus deutlich mehr Start-Logging, um solche Faelle schneller einzugrenzen
+
 ## 4.3.0 – 2026-09-16
 - Sehr lange Gespraeche bleiben schlank: Julia behaelt automatisch nur die juengsten Runden im aktiven Kontext (uralte fallen weg), damit die Kosten nicht immer weiter steigen - an einer sicheren Stelle, sodass keine laufende Aktion durcheinandergeraet
 
