@@ -1034,7 +1034,22 @@ function ipcEinrichten() {
   // Grafik-Reparatur (Issue #55): auf Nutzer-Klick auf Software-Grafik umstellen
   // (der Rettungsanker gegen ein leeres Fenster) und neu starten – bzw. wieder
   // normale Grafik versuchen. Software-Grafik ist reversibel und ohne Systemeingriff.
-  ipc.handle('reparatur:status', () => ({ software: !!startpruefung.softwareRendering(DATEN) }));
+  ipc.handle('reparatur:status', () => {
+    const gpu = letzteGpu || {};
+    // Degradiert = Hardware-Grafik läuft, aber keine Treiber-Infos abrufbar.
+    const degradiert = !startpruefung.softwareRendering(DATEN) && !gpu.renderer && !gpu.vendor && !gpu.treiber;
+    return {
+      software: !!startpruefung.softwareRendering(DATEN),
+      degradiert,
+      treiber: require('./treiber').treiberQuelle(gpu.vendorId),
+    };
+  });
+  ipc.handle('reparatur:treiber', (_e, url) => {
+    // Nur die bekannten Hersteller-Treiberseiten öffnen (keine beliebigen Links).
+    const erlaubt = Object.values(require('./treiber').HERSTELLER).some((h) => h.url === String(url));
+    if (erlaubt) shell.openExternal(String(url)).catch(() => {});
+    return true;
+  });
   ipc.handle('reparatur:software', (_e, an) => {
     startpruefung.softwareRenderingSetzen(DATEN, !!an);
     startLog.schreiben('GPU', an ? 'Software-Grafik vom Nutzer eingeschaltet (Reparatur) – Neustart.' : 'Normale Grafik vom Nutzer wieder aktiviert – Neustart.');
@@ -2413,7 +2428,7 @@ if (!app.requestSingleInstanceLock()) {
       app.getGPUInfo('basic').then((g) => {
         const d = (g && g.auxAttributes) || {};
         const gpu = (g && g.gpuDevice && g.gpuDevice.find((x) => x && x.active)) || (g && g.gpuDevice && g.gpuDevice[0]) || {};
-        letzteGpu = { renderer: d.glRenderer || null, vendor: d.glVendor || null, treiber: d.driverVersion || d.driver_version || null };
+        letzteGpu = { renderer: d.glRenderer || null, vendor: d.glVendor || null, treiber: d.driverVersion || d.driver_version || null, vendorId: gpu.vendorId || null };
         const sw = startpruefung.softwareRendering(DATEN) || null;
         // Fehlen bei aktiver Hardware-Grafik alle Treiber-Infos, ist die GPU oft
         // degradiert (Issue #3/#54) – dann bleibt die Oberfläche gern leer.

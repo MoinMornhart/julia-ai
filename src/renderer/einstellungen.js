@@ -913,13 +913,26 @@ async function reparaturEinrichten() {
   const knopf = $('reparaturKnopf');
   const status = $('reparaturStatus');
   if (!knopf) return;
-  let software = false;
-  try { software = !!(await julia.reparaturStatus()).software; } catch { /* Standard: normal */ }
+  let stand = { software: false };
+  try { stand = await julia.reparaturStatus(); } catch { /* Standard: normal */ }
+  const software = !!stand.software;
   const malen = () => {
     status.textContent = tx(software ? 'einst.reparatur_status_software' : 'einst.reparatur_status_normal');
     knopf.textContent = tx(software ? 'einst.reparatur_normal' : 'einst.reparatur_software');
   };
   malen();
+  // Treiber-Hinweis nur zeigen, wenn die Grafik degradiert wirkt oder wir schon im
+  // Software-Modus sind – und der Hersteller bekannt ist. Kein Auto-Install, nur Link.
+  const tf = $('reparaturTreiber');
+  if (tf && stand.treiber && stand.treiber.url && (stand.degradiert || software)) {
+    tf.hidden = false;
+    tf.textContent = `${tx('einst.reparatur_treiber', { hersteller: stand.treiber.vendor })} `;
+    const a = document.createElement('a');
+    a.href = '#';
+    a.textContent = tx('einst.reparatur_treiber_link');
+    a.onclick = (e) => { e.preventDefault(); julia.reparaturTreiber(stand.treiber.url); };
+    tf.appendChild(a);
+  }
   knopf.onclick = async () => {
     const ziel = !software;
     if (!confirm(tx(ziel ? 'einst.reparatur_frage_software' : 'einst.reparatur_frage_normal'))) return;

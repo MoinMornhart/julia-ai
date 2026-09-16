@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4.1 – 2026-09-16
+- Treiber-Hinweis bei Grafikproblemen: meldet die Grafikkarte keine Treiber-Infos, zeigt Julia in der Reparatur-Sektion einen Link zur offiziellen Treiberseite des Herstellers (NVIDIA/AMD/Intel) - installiert wird nichts von selbst, du entscheidest
+
 ## 4.4.0 – 2026-09-16
 - Ein-Klick-Grafik-Reparatur in den Einstellungen: bleibt das Fenster leer oder flackert es, stellt Julia auf deinen Klick auf Software-Grafik um und startet neu (umkehrbar, ohne Eingriff ins System) - der Rettungsanker, den Technik-Profis mit --disable-gpu machen
 
