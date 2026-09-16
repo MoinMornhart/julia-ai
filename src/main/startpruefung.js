@@ -100,18 +100,42 @@ function schreibbarPruefen(ordner) {
 // Laden der Konfiguration (vor app.whenReady) feststehen muss.
 
 function _marker(ordner) {
-  return path.join(ordner, 'software-rendering');
+  return path.join(ordner, 'software-rendering'); // alter Boolean-Marker (Rückwärtskompatibilität)
+}
+function _modusMarker(ordner) {
+  return path.join(ordner, 'grafik-modus'); // neuer Marker mit dem Modusnamen (Issue #57)
 }
 
+// Aktueller Grafik-Modus (Fallback-Leiter). Neuer Marker hat Vorrang; sonst gilt
+// der alte Boolean-Marker als „software"; sonst „normal".
+function grafikModus(ordner) {
+  const { gueltig } = require('./grafik');
+  try {
+    const roh = fs.readFileSync(_modusMarker(ordner), 'utf8').trim();
+    if (gueltig(roh)) return roh;
+  } catch { /* nicht gesetzt */ }
+  try { if (fs.existsSync(_marker(ordner))) return 'software'; } catch { /* egal */ }
+  return 'normal';
+}
+
+function grafikModusSetzen(ordner, modus) {
+  const { gueltig } = require('./grafik');
+  const m = gueltig(modus) ? modus : 'normal';
+  try {
+    fs.rmSync(_marker(ordner), { force: true }); // alten Marker aufräumen
+    if (m === 'normal') fs.rmSync(_modusMarker(ordner), { force: true });
+    else fs.writeFileSync(_modusMarker(ordner), m);
+  } catch { /* nicht schlimm: dann greift es beim nächsten Start eben nicht */ }
+}
+
+// Rückwärtskompatibel: „Software-Rendering an?" = Modus ist die volle Software-
+// Stufe. Setzen schaltet zwischen normal und software.
 function softwareRendering(ordner) {
-  try { return fs.existsSync(_marker(ordner)); } catch { return false; }
+  return grafikModus(ordner) === 'software';
 }
 
 function softwareRenderingSetzen(ordner, an) {
-  try {
-    if (an) fs.writeFileSync(_marker(ordner), `${jetztText()}\n`);
-    else fs.rmSync(_marker(ordner), { force: true });
-  } catch { /* nicht schlimm: dann greift es beim nächsten Start eben nicht */ }
+  grafikModusSetzen(ordner, an ? 'software' : 'normal');
 }
 
 // Bleibt die Oberfläche leer, OHNE dass ein GPU-/Renderer-Absturz gemeldet wurde
@@ -122,13 +146,16 @@ function softwareRenderingSetzen(ordner, an) {
 // neu starten; ist es schon aktiv und trotzdem leer, nicht endlos neu starten,
 // sondern klar melden. Gibt true zurück, wenn neu gestartet wird.
 function blankUiAbsichern({ datenOrdner, logbuch, neustart, fatal }) {
-  if (softwareRendering(datenOrdner)) {
-    logbuch.schreiben('FATAL', 'Oberfläche bleibt leer, auch mit Software-Rendering – Grafik/Treiber oder Start-Hänger. Einzelheiten im Logbuch.');
-    if (fatal) fatal('Die Oberfläche bleibt leer, auch mit Software-Grafik. Bitte das Start-Logbuch schicken – ich grenze es weiter ein.');
+  const grafik = require('./grafik');
+  const modus = grafikModus(datenOrdner);
+  if (grafik.letzte(modus)) {
+    logbuch.schreiben('FATAL', `Oberfläche bleibt leer, auch mit Grafik-Modus „${modus}" – Grafik/Treiber oder Start-Hänger. Einzelheiten im Logbuch.`);
+    if (fatal) fatal('Die Oberfläche bleibt leer, auch mit dem verträglichsten Grafik-Modus. Bitte das Start-Logbuch schicken – ich grenze es weiter ein.');
     return false;
   }
-  softwareRenderingSetzen(datenOrdner, true);
-  logbuch.schreiben('GPU', 'Oberfläche blieb leer und kein GPU-Absturz gemeldet – wahrscheinlich Grafik/Treiber. Software-Rendering ist ab jetzt aktiv, ich starte einmal neu.');
+  const naechster = grafik.naechster(modus);
+  grafikModusSetzen(datenOrdner, naechster);
+  logbuch.schreiben('GPU', `Oberfläche blieb leer und kein GPU-Absturz gemeldet – nächster Grafik-Modus „${naechster}" wird ab jetzt probiert, ich starte einmal neu.`);
   if (neustart) neustart();
   return true;
 }
@@ -239,6 +266,6 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, sc
 
 module.exports = {
   Logbuch, logbuchOeffnen, flaggenPruefen, schreibbarPruefen,
-  softwareRendering, softwareRenderingSetzen, blankUiAbsichern, fehlerDialog, gpuUeberwachen,
+  softwareRendering, softwareRenderingSetzen, grafikModus, grafikModusSetzen, blankUiAbsichern, fehlerDialog, gpuUeberwachen,
   LOG_MAX, LOG_ALTE, GPU_SCHWELLE, BEKANNTE_FLAGS,
 };

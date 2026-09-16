@@ -48,9 +48,17 @@ for (const w of startFlaggen.warnungen) startLog.schreiben('WARN', w);
 // Reparatur-/Software-Start per Kommandozeile erzwingt Software-Grafik – ein
 // Rettungsanker, falls die GPU beim Start crasht: `Julia AI.exe --reparatur`.
 const reparatur = process.argv.includes('--reparatur') || process.argv.includes('--software') || process.argv.includes('--safe');
-if (startpruefung.softwareRendering(DATEN) || startFlaggen.konflikt || reparatur) {
-  app.disableHardwareAcceleration();
-  startLog.schreiben('GPU', reparatur ? 'Software-Rendering per --reparatur erzwungen.' : 'Software-Rendering aktiv (GPU-Rückfall oder Grafik-Flags).');
+// Grafik-Fallback-Leiter (Issue #57): den gemerkten Modus anwenden – andere
+// ANGLE-Backends (d3d9/gl), SwiftShader oder ganz ohne Hardware-Beschleunigung.
+const grafik = require('./grafik');
+let grafikModus = startpruefung.grafikModus(DATEN);
+if (reparatur && grafikModus === 'normal') grafikModus = 'software';
+for (const [name, wert] of grafik.flaggenFuer(grafikModus)) {
+  if (wert) app.commandLine.appendSwitch(name, wert); else app.commandLine.appendSwitch(name);
+}
+if (grafik.hardwareAus(grafikModus) || startFlaggen.konflikt || reparatur) app.disableHardwareAcceleration();
+if (grafikModus !== 'normal' || startFlaggen.konflikt || reparatur) {
+  startLog.schreiben('GPU', `Grafik-Modus „${grafikModus}"${reparatur ? ' (per --reparatur)' : ''}${startFlaggen.konflikt ? ' (Flag-Konflikt)' : ''} aktiv.`);
 }
 const startFatal = (text) => startpruefung.fehlerDialog({ app, dialog, shell, text, logDatei: startLog.datei, ordner: DATEN })
   .then(() => { beendenLaeuft = true; app.exit(1); });
@@ -1040,6 +1048,7 @@ function ipcEinrichten() {
     const degradiert = !startpruefung.softwareRendering(DATEN) && !gpu.renderer && !gpu.vendor && !gpu.treiber;
     return {
       software: !!startpruefung.softwareRendering(DATEN),
+      modus: startpruefung.grafikModus(DATEN),
       degradiert,
       treiber: require('./treiber').treiberQuelle(gpu.vendorId),
     };

@@ -917,7 +917,10 @@ async function reparaturEinrichten() {
   try { stand = await julia.reparaturStatus(); } catch { /* Standard: normal */ }
   const software = !!stand.software;
   const malen = () => {
-    status.textContent = tx(software ? 'einst.reparatur_status_software' : 'einst.reparatur_status_normal');
+    const basis = tx(software ? 'einst.reparatur_status_software' : 'einst.reparatur_status_normal');
+    // Bei einer automatisch gewählten Zwischenstufe der Fallback-Leiter den Modus dazu.
+    const extra = stand.modus && !['normal', 'software'].includes(stand.modus) ? ` (${stand.modus})` : '';
+    status.textContent = basis + extra;
     knopf.textContent = tx(software ? 'einst.reparatur_normal' : 'einst.reparatur_software');
   };
   malen();

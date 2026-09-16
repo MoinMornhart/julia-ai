@@ -67,13 +67,13 @@ test('Start: Software-Rendering wird gemerkt und wieder vergessen', () => {
   }
 });
 
-test('Start: leere Oberfläche ohne GPU-Absturz → Software-Rendering + Neustart (Issue #3/#54)', () => {
+test('Start: leere Oberfläche ohne GPU-Absturz → nächste Grafik-Stufe + Neustart (Issue #3/#54/#57)', () => {
   const o = ordner();
   try {
     let neu = 0; let fatal = 0;
     const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: { schreiben() {} }, neustart: () => neu++, fatal: () => fatal++ });
     assert.equal(r, true);
-    assert.equal(sp.softwareRendering(o), true); // ab jetzt Software-Rendering
+    assert.equal(sp.grafikModus(o), 'd3d9', 'erste Fallback-Stufe der Leiter');
     assert.equal(neu, 1);
     assert.equal(fatal, 0);
   } finally {
@@ -81,15 +81,24 @@ test('Start: leere Oberfläche ohne GPU-Absturz → Software-Rendering + Neustar
   }
 });
 
-test('Start: leere Oberfläche TROTZ Software-Rendering → klar melden statt Endlos-Neustart', () => {
+test('Start: leere Oberfläche arbeitet sich die Grafik-Leiter hoch, meldet erst auf der letzten Stufe klar', () => {
   const o = ordner();
   try {
-    sp.softwareRenderingSetzen(o, true); // war schon aktiv
+    const log = { schreiben() {} };
+    // normal → d3d9 → gl → swiftshader → software, jeweils Neustart …
+    for (const erwartet of ['d3d9', 'gl', 'swiftshader', 'software']) {
+      let neu = 0;
+      const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: log, neustart: () => neu++, fatal: () => {} });
+      assert.equal(r, true);
+      assert.equal(sp.grafikModus(o), erwartet);
+      assert.equal(neu, 1);
+    }
+    // … und auf der letzten Stufe (software) kein weiterer Neustart, sondern Meldung.
     let neu = 0; let fatal = 0;
-    const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: { schreiben() {} }, neustart: () => neu++, fatal: () => fatal++ });
+    const r = sp.blankUiAbsichern({ datenOrdner: o, logbuch: log, neustart: () => neu++, fatal: () => fatal++ });
     assert.equal(r, false);
-    assert.equal(neu, 0, 'kein Neustart-Loop');
-    assert.equal(fatal, 1, 'stattdessen klare Meldung');
+    assert.equal(neu, 0, 'kein Endlos-Neustart');
+    assert.equal(fatal, 1, 'klare Meldung');
   } finally {
     fs.rmSync(o, { recursive: true, force: true });
   }

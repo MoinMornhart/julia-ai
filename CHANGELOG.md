@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.5.0 – 2026-09-16
+- Mehrstufige Grafik-Rettung bei zickigen Treibern: bleibt das Fenster leer, probiert Julia automatisch nacheinander andere Grafik-Verfahren durch (aeltere/vertraeglichere Treiber, OpenGL, reiner Software-Renderer, zuletzt ganz ohne GPU) und merkt sich das funktionierende - kein eigener Renderer noetig, das ist der professionelle Weg
+
 ## 4.4.2 – 2026-09-16
 - Behebt die Neustart-Schleife bei leerem Fenster (die Selbstheilung wartet jetzt, bis die Oberflaeche sich zur Not mit Ersatz-Beschriftungen aufbauen konnte; echte Texte werden im Hintergrund nachgeladen) und macht die Einstellungen wieder mit dem Mausrad scrollbar
 
