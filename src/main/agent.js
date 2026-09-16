@@ -17,6 +17,30 @@ const { ClaudeCode, PRAEFIX } = require('./anbieter/claude-code');
 // Jeder Werkzeugaufruf läuft durch _werkzeug().
 
 const MAX_RUNDEN = 60;
+// Nach wie vielen echten Nutzer-Runden der Verlauf gekappt wird (Issue #16): sehr
+// lange reine Text-Gespräche bleiben so schlank, ohne den nahen Kontext zu
+// verlieren. Großzügig, damit es normale Chats nicht trifft.
+const MAX_VERLAUF_RUNDEN = 40;
+
+// Ist das eine „echte" Nutzer-Nachricht (getippt), keine Werkzeug-Ergebnis-Runde?
+function istNutzerRunde(m) {
+  if (!m || m.role !== 'user') return false;
+  if (typeof m.content === 'string') return true;
+  const erste = Array.isArray(m.content) ? m.content[0] : null;
+  return !!(erste && erste.type === 'text');
+}
+
+// Kürzt einen sehr langen Verlauf auf die letzten maxRunden echten Nutzer-Runden.
+// Geschnitten wird IMMER am Anfang einer echten Nutzer-Runde – so bleibt der
+// Verlauf gültig (beginnt mit einer Nutzer-Nachricht, kein verwaistes
+// tool_result, keine zerrissene Werkzeug-Kette). Kürzt nichts, wenn er kurz ist.
+function verlaufKuerzen(verlauf, maxRunden = MAX_VERLAUF_RUNDEN) {
+  if (!Array.isArray(verlauf) || maxRunden <= 0) return verlauf;
+  const starts = [];
+  for (let i = 0; i < verlauf.length; i++) if (istNutzerRunde(verlauf[i])) starts.push(i);
+  if (starts.length <= maxRunden) return verlauf;
+  return verlauf.slice(starts[starts.length - maxRunden]);
+}
 
 function modellFaehigkeiten(modell) {
   const m = String(modell);
@@ -155,6 +179,9 @@ class Agent extends EventEmitter {
     // Claude Code bekommt die Nachricht als reinen Text – Textanhänge kommen dazu.
     this.letzteAnhaengeText = extra.filter((b) => b.type === 'text').map((b) => b.text).join('\n\n');
     if (extra.length) this.fremdKontakt = true;
+    // Sehr lange Gespräche vor der neuen Runde kappen (Issue #16). Hier ist die
+    // sichere Stelle: die vorige Runde ist abgeschlossen, keine offene Werkzeug-Kette.
+    this.verlauf = verlaufKuerzen(this.verlauf);
     this.verlauf.push({ role: 'user', content: [{ type: 'text', text: this.letzteNachricht }, ...extra] });
     let letzterText = null;
     try {
@@ -558,4 +585,4 @@ class Agent extends EventEmitter {
   }
 }
 
-module.exports = { Agent, modellFaehigkeiten };
+module.exports = { Agent, modellFaehigkeiten, verlaufKuerzen, istNutzerRunde, MAX_VERLAUF_RUNDEN };
