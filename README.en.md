@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **No more "empty window + restart loop", and settings scroll again** – two fixes for finicky PCs: at startup the interface now gets enough time to build itself with fallback labels if needed before the self-healing steps in – ending the restart loop on affected machines (the real texts are loaded in the background). And the settings can be scrolled with the mouse wheel again.
 - **Driver hint for graphics problems** – if your graphics card reports no driver info (typical with an empty window), Julia shows a hint in the repair section with a **link to your manufacturer's official driver page** (NVIDIA/AMD/Intel). Julia installs **nothing** itself – you decide whether to get the driver.
 - **One-click graphics repair** – if the window ever stays empty or flickers, you can go to the settings (System) and click "Switch to software graphics & restart" in one step. It's the rescue anchor against graphics-driver trouble (the same thing tech folks do with `--disable-gpu`) – reversible, no system changes. Afterwards "Try normal graphics again" is enough.
 - **The weekly self-check now spots graphics problems too** – the token-saving weekly check (reads the start logbook without the AI) now also watches for empty windows and degraded graphics drivers, not just crashes. So a graphics issue shows up earlier – still reported only with your consent and sanitized (never IP/tokens).
@@ -73,7 +74,6 @@
 - **Very long chats stay lean** – in very long conversations Julia now automatically keeps only the most recent rounds in the active context (recent ones stay, ancient ones drop off), so costs don't keep climbing. This happens at a safe point so nothing gets tangled.
 - **Fewer tokens in long chats (custom providers)** – with OpenAI-compatible models Julia now only sends the most recent screenshots instead of re-sending all old images every turn. That noticeably saves tokens/cost in long sessions without losing the thread (for Anthropic models the server side already handles this).
 - **The AI can ask for a key during setup – without seeing it** – if Julia needs an access value for a setup (e.g. an MCP server/service), she can now open an **input box**: you type the value there, it's stored **encrypted** on the PC – the AI only gets "stored" back and **never sees the value**. You can cancel anytime.
-- **The AI can adjust looks/preferences – important things stay locked** – Julia can now change non-critical settings on request (e.g. light/dark theme, accent colour, brainstorming, learning) – for anything beyond the orb a confirmation box appears first. **Locked** are important/security-relevant things: provider and provider address (the AI can no longer redirect it), API keys, sandbox, BETA, diagnostics sending, MCP, "allow all", costs, microphone – only you change those.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

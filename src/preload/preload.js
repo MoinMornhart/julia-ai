@@ -181,6 +181,12 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   // überhaupt Stil (Stylesheets) und Inhalt (Elemente im Body) da sind. Ist die
   // Oberflaeche leer, wird das ins Logbuch gemeldet und EINMAL neu geladen
   // (Selbstheilung); klappt es dann immer noch nicht, nur melden – keine Schleife.
+  //
+  // WICHTIG (Issue #55/#3): erst NACH dem Start-Zeitlimit prüfen. Der Renderer
+  // füllt die Beschriftungen zur Not per Ersatz (chat.js, ~8 s). Prüfte der
+  // Healthcheck früher, meldete er fälschlich „leer" und die Selbstheilung
+  // startete neu, BEVOR der Ersatz greifen konnte – eine Neustart-Schleife. Darum
+  // deutlich später als das Init-Zeitlimit prüfen.
   window.addEventListener('load', () => {
     setTimeout(() => {
       let leer = false;
@@ -206,6 +212,6 @@ if (typeof window !== 'undefined' && window.addEventListener) {
           setTimeout(() => { try { location.reload(); } catch { /* egal */ } }, 400);
         }
       } catch { /* sessionStorage evtl. blockiert – dann nur melden */ }
-    }, 2500);
+    }, 11000);
   });
 }

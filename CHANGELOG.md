@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4.2 – 2026-09-16
+- Behebt die Neustart-Schleife bei leerem Fenster (die Selbstheilung wartet jetzt, bis die Oberflaeche sich zur Not mit Ersatz-Beschriftungen aufbauen konnte; echte Texte werden im Hintergrund nachgeladen) und macht die Einstellungen wieder mit dem Mausrad scrollbar
+
 ## 4.4.1 – 2026-09-16
 - Treiber-Hinweis bei Grafikproblemen: meldet die Grafikkarte keine Treiber-Infos, zeigt Julia in der Reparatur-Sektion einen Link zur offiziellen Treiberseite des Herstellers (NVIDIA/AMD/Intel) - installiert wird nichts von selbst, du entscheidest
 

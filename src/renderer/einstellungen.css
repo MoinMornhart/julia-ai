@@ -1,6 +1,11 @@
+html { height: 100%; }
 body {
   display: flex;
   flex-direction: column;
+  /* Feste Fensterhöhe, sonst wächst der Body auf Inhaltshöhe und der scrollbare
+     Bereich (.huelle) hat nichts zum Scrollen – dann geht das Maus-Scrollen ins
+     Leere und Inhalt unten ist nicht erreichbar (Issue #56). */
+  height: 100vh;
   overflow: hidden;
 }
 

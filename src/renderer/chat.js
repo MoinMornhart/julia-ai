@@ -393,7 +393,7 @@ async function init() {
 
   let st = {};
   try {
-    st = await mitZeitlimit(julia.status(), 8000, 'Status') || {};
+    st = await mitZeitlimit(julia.status(), 4000, 'Status') || {};
   } catch (e) {
     // Kein stiller Abbruch: melden (landet im Start-Logbuch) und mit Standard weiter.
     try { julia.melden && julia.melden('start-status', e && e.message); } catch { /* egal */ }
@@ -402,11 +402,14 @@ async function init() {
   hoert = !!st.hoert;
   beschaeftigt = !!st.beschaeftigt;
   try {
-    texteAnwenden(await mitZeitlimit(julia.texte(), 8000, 'Texte'));
+    texteAnwenden(await mitZeitlimit(julia.texte(), 4000, 'Texte'));
   } catch (e) {
     try { julia.melden && julia.melden('start-texte', e && e.message); } catch { /* egal */ }
     // Notdarstellung: Oberfläche bleibt bedienbar (fehlt Text, zeigt tx den Schlüssel).
     texteAnwenden({ sprachcode: document.documentElement.lang || 'de', texte: T });
+    // War der IPC nur langsam (nicht dauerhaft tot), im Hintergrund die echten
+    // Texte nachladen und dann ersetzen – ohne den Start weiter aufzuhalten.
+    julia.texte().then((d) => { if (d && d.texte) { texteAnwenden(d); if (window.juliaTexteNach) window.juliaTexteNach(); } }).catch(() => { /* bleibt bei der Notdarstellung */ });
   }
   zustandAnzeigen(st.zustand || 'idle');
   $('btnMikro').classList.toggle('aktiv', hoert);

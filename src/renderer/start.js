@@ -268,6 +268,8 @@
   });
   window.juliaIcons = iconsSetzen;
   window.juliaFragen = fragen;
+  // Kommen die Texte verspätet nach (langsamer Start-IPC), Beschriftungen neu füllen.
+  window.juliaTexteNach = () => { try { texteSetzen(); } catch { /* egal */ } };
   // Uhrzeit und Gruß frisch halten
   setInterval(() => { if (ansicht === 'start' && daten) malen(); }, 60000);
 })();
