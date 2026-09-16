@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: detects freezes and reconnects** – if the character freezes (still connected but unresponsive), Julia now notices it herself and does an automatic relog instead of standing still forever. Her state is saved for the logbook first. See [Minecraft](#minecraft).
 - **Julia learns and remembers things** – on request she keeps lasting notes (hidden `.julia-memos` folder in her working folder): preferences, project facts, learned solutions. Stays local, toggled under "Learning" in the settings.
 - **Spot duplicate files** – on request Julia finds content-identical files in a folder and shows how much space the copies waste. Read-only – nothing is deleted, you decide. (First building block of the planned "Boost" page.)
 - **Minecraft: no more getting stuck on ledges** – when Julia wants to move but sticks on a one-block step, she now jumps over it automatically instead of standing there. She gets around much more smoothly while exploring and playing through. See [Minecraft](#minecraft).
@@ -73,7 +74,6 @@
 - **Fast project search** – Julia can now search a project for text ("where is X?", "where is Y used?") and gets back only the matches as `file:line`, instead of reading many files one by one. It saves time and tokens; `node_modules`, `.git`, build folders and large/binary files are skipped.
 - **This-folder-only mode** – for focused work on a single project: turn the mode on in the settings and pick a folder, and Julia may read, write, move and list files **only there** – everything outside is blocked (red). Off by default. (Shell commands still need your approval; true shell isolation via WSL/Docker comes separately.) See [The traffic light](#the-traffic-light).
 - **Search the settings** – the settings window now has a search box at the top: type e.g. "voice", "orb" or "diagnostics" and Julia shows only the matching sections. Accents don't matter, and several words narrow it further. See [Usage](#usage).
-- **Installer & update work even while Julia is open** – the wizard now closes a running Julia automatically before installing (gently first, then forcefully if needed). No more "file in use" errors during installation or automatic updates. See [Installation](#installation).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

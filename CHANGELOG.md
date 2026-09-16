@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.0 – 2026-09-16
+- Julia erkennt in Minecraft jetzt, wenn die Spielfigur einfriert (verbunden, aber ohne Reaktion), sichert ihren Zustand ins Logbuch und verbindet sich automatisch neu, statt endlos still zu stehen
+
 ## 2.2.0 – 2026-09-16
 - Julia kann sich jetzt dauerhafte Lern-Notizen anlegen – als versteckte Dateien im Ordner .julia-memos in ihrem Arbeitsordner, damit sie sich Vorlieben, Projekt-Fakten und Lösungen merkt; in den Einstellungen unter Lernen an- und abschaltbar
 

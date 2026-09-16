@@ -300,6 +300,14 @@ function haengerStatus(anker, pos, ticks, { minWeit = 0.35, minTicks = 12 } = {}
   return {};
 }
 
+// Hängt die Figur? Kommen seit `grenzeMs` keine Physics-Ticks mehr (der Bot ist
+// zwar verbunden, aber eingefroren), gilt das als Hänger → Relog. Rein
+// rechnerisch, damit prüfbar.
+function haengerErkannt(letzterTickMs, jetztMs, grenzeMs) {
+  if (!letzterTickMs) return false;
+  return jetztMs - letzterTickMs >= grenzeMs;
+}
+
 function blockNamen(wort, alleNamen) {
   const w = String(wort || '').trim().toLowerCase().replace(/\s+/g, '_');
   if (!w) return [];
@@ -687,6 +695,8 @@ class Minecraft extends EventEmitter {
       host: ziel.host, port: p, connect: (c) => c.setSocket(net.connect(ziel.port, ip)), ...anmeldung, version: version || false, hideErrors: true, logErrors: false, checkTimeoutInterval: 30000,
     });
     this.bot = bot;
+    this.letzterTickZeit = Date.now();
+    this._wacheStarten();
     bot.on('error', (e) => { this.letzterFehler = e && e.message; }); // ohne Zuhörer würde ein Fehler die App beenden
     bot.loadPlugin(pf.pathfinder);
     try {
@@ -779,6 +789,7 @@ class Minecraft extends EventEmitter {
     this.pause = schlagPause(null, this.neuesKampfsystem);
     bot.on('physicsTick', () => {
       this.ticks++;
+      this.letzterTickZeit = Date.now(); // Lebenszeichen für die Hänger-Wache
       try { this._tick(); } catch (e) { this.letzterFehler = e.message; }
     });
     bot.on('chat', (von, text) => this._chat(von, text));
@@ -824,10 +835,69 @@ class Minecraft extends EventEmitter {
     this.bot = null;
     this.auftrag = null;
     this.jagt = null;
+    this._wacheStoppen();
     this._stimmeStoppen();
     if (bot) {
       try { bot.quit(); } catch { /* schon weg */ }
     }
+  }
+
+  // Hänger-Wache: Prüft unabhängig von den Physics-Ticks (eigener Timer), ob der
+  // Bot zwar verbunden ist, aber seit einer Weile keine Ticks mehr liefert –
+  // dann ist er eingefroren und wird per Relog neu verbunden.
+  _wacheStarten() {
+    this._wacheStoppen();
+    this.wache = setInterval(() => { try { this._haengerWache(); } catch (e) { this.letzterFehler = e && e.message; } }, 5000);
+    if (this.wache.unref) this.wache.unref();
+  }
+
+  _wacheStoppen() {
+    if (this.wache) { clearInterval(this.wache); this.wache = null; }
+  }
+
+  _haengerWache() {
+    if (!this.bot) { this._wacheStoppen(); return; }
+    if (haengerErkannt(this.letzterTickZeit, Date.now(), this.haengerGrenzeMs || 30000)) {
+      this._relog('keine Reaktion mehr (eingefroren)');
+    }
+  }
+
+  // Aktueller Zustand als schlichtes JSON – zum Prüfen/Loggen und für den Relog.
+  zustand() {
+    const bot = this.bot;
+    const p = bot && bot.entity && bot.entity.position;
+    return {
+      verbunden: this.verbunden,
+      server: this.server || null,
+      position: p ? { x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z) } : null,
+      leben: bot && typeof bot.health === 'number' ? Math.round(bot.health) : null,
+      hunger: bot && typeof bot.food === 'number' ? bot.food : null,
+      aufgabe: this.auftrag ? this.auftrag.art : null,
+      seitLetztemTickMs: this.letzterTickZeit ? Date.now() - this.letzterTickZeit : null,
+    };
+  }
+
+  // Erzwingt eine Neuverbindung, wenn der Bot hängt – der Zustand wird vorher ins
+  // Logbuch geschrieben. Läuft danach über den normalen Wiederverbinden-Weg.
+  _relog(grund) {
+    const bot = this.bot;
+    if (!bot) return;
+    const zustand = this.zustand();
+    if (this.logbuch) { try { this.logbuch.eintrag('haenger', `Relog wegen ${grund}`, { zustand }); } catch { /* Logbuch optional */ } }
+    const a = this.auftrag;
+    this._wacheStoppen();
+    this.bot = null;
+    this.auftrag = null;
+    this.jagt = null;
+    this._stimmeStoppen();
+    try { bot.removeAllListeners('end'); } catch { /* egal */ } // kein doppeltes Wiederverbinden
+    try { bot.quit(); } catch { /* schon weg */ }
+    this._melden('haenger', `Ich hing fest (${grund}) – ich verbinde mich neu.`);
+    this.trennung = {
+      zeit: Date.now(), grund: `Hänger: ${grund}`, rauswurf: false, server: this.server,
+      dauerS: 0, aufgabe: a ? a.art : null, fehler: null, versuch: 0, naechsterVersuch: null, aufgegeben: false,
+    };
+    if (this.letzteOptionen) this._wiederVerbinden();
   }
 
   _wiederVerbinden() {
@@ -2245,5 +2315,5 @@ module.exports = {
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
-  itemNamen, ortLesen, mengeLesen, endeText, HILFE, haengerStatus,
+  itemNamen, ortLesen, mengeLesen, endeText, HILFE, haengerStatus, haengerErkannt,
 };
