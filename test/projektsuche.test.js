@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { suchen, istBinaer } = require('../src/main/projektsuche');
+const { suchen, dateienFinden, globRegex, istBinaer } = require('../src/main/projektsuche');
 
 function baum() {
   const ordner = fs.mkdtempSync(path.join(os.tmpdir(), 'julia-suche-'));
@@ -71,4 +71,36 @@ test('maxTreffer begrenzt und meldet abgeschnitten', () => {
 test('istBinaer erkennt Nullbytes', () => {
   assert.equal(istBinaer(Buffer.from([65, 0, 66])), true);
   assert.equal(istBinaer(Buffer.from('nur text')), false);
+});
+
+test('dateienFinden: Teiltext findet passende Dateinamen', () => {
+  const o = baum();
+  const namen = dateienFinden(o, 'a.js').treffer.map((p) => path.basename(p));
+  assert.deepEqual(namen, ['a.js']);
+});
+
+test('dateienFinden: Glob *.js findet alle JS-Dateien (ohne node_modules)', () => {
+  const o = baum();
+  const r = dateienFinden(o, '*.js');
+  const namen = r.treffer.map((p) => path.basename(p)).sort();
+  assert.deepEqual(namen, ['a.js', 'c.js']);
+  assert.ok(!r.treffer.some((p) => p.includes('node_modules')));
+});
+
+test('dateienFinden: Glob ? passt auf genau ein Zeichen', () => {
+  const o = baum();
+  assert.equal(dateienFinden(o, '?.txt').treffer.length, 1); // b.txt
+  assert.equal(dateienFinden(o, '??.txt').treffer.length, 0);
+});
+
+test('dateienFinden: leeres Muster wirft', () => {
+  const o = baum();
+  assert.throws(() => dateienFinden(o, ''), /Suchmuster fehlt/);
+});
+
+test('globRegex übersetzt * und ? und verankert', () => {
+  assert.ok(globRegex('*.js').test('a.js'));
+  assert.ok(!globRegex('*.js').test('a.ts'));
+  assert.ok(globRegex('a?c').test('abc'));
+  assert.ok(!globRegex('a?c').test('ac'));
 });

@@ -84,4 +84,44 @@ function suchen(ordner, muster, { maxTreffer = 100, maxDateien = 5000, endungen 
   return { treffer, geprueft, abgeschnitten: treffer.length >= grenzeTreffer };
 }
 
-module.exports = { suchen, istBinaer, AUSLASSEN };
+// Ein einfaches Glob-Muster (* und ?) in einen ankernden regulären Ausdruck
+// übersetzen. * = beliebig viele Zeichen, ? = genau eines. Alles andere ist
+// wörtlich.
+function globRegex(muster) {
+  const escaped = String(muster).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.');
+  return new RegExp(`^${escaped}$`, 'i');
+}
+
+// Findet Dateien nach Namen unter `ordner`. Enthält `muster` ein * oder ?, wird
+// es als Glob auf den Dateinamen gewertet (z. B. "*.test.js"), sonst als Teiltext
+// (z. B. "config" findet "config.js"). Gibt { treffer:[pfad], geprueft,
+// abgeschnitten } zurück, überspringt dieselben Ordner wie die Textsuche.
+function dateienFinden(ordner, muster, { maxTreffer = 200, maxDateien = 20000, ganzerPfad = false } = {}) {
+  if (muster == null || String(muster) === '') throw new Error('Suchmuster fehlt.');
+  const glob = /[*?]/.test(String(muster));
+  const re = glob ? globRegex(muster) : null;
+  const nadel = glob ? null : String(muster).toLowerCase();
+  const treffer = [];
+  let geprueft = 0;
+  const stapel = [ordner];
+  while (stapel.length && treffer.length < maxTreffer && geprueft < maxDateien) {
+    const akt = stapel.pop();
+    let eintraege;
+    try { eintraege = fs.readdirSync(akt, { withFileTypes: true }); } catch { continue; }
+    for (const d of eintraege) {
+      if (treffer.length >= maxTreffer) break;
+      const p = path.join(akt, d.name);
+      if (d.isDirectory()) {
+        if (!AUSLASSEN.has(d.name) && !d.name.startsWith('.')) stapel.push(p);
+        continue;
+      }
+      if (!d.isFile()) continue;
+      geprueft += 1;
+      const passt = re ? re.test(d.name) : (ganzerPfad ? path.relative(ordner, p) : d.name).toLowerCase().includes(nadel);
+      if (passt) treffer.push(p);
+    }
+  }
+  return { treffer, geprueft, abgeschnitten: treffer.length >= maxTreffer };
+}
+
+module.exports = { suchen, dateienFinden, globRegex, istBinaer, AUSLASSEN };

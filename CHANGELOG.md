@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.0.0 – 2026-09-16
+- Julia kann jetzt auch Dateien nach Namen finden – als Teiltext (config → config.js) oder als Muster mit Sternchen und Fragezeichen (z. B. *.test.js); ergänzt die Projekt-Textsuche
+
 ## 1.9.0 – 2026-09-16
 - Julia kann jetzt schnell im Projekt nach Text suchen und bekommt nur die Fundstellen als datei:zeile zurück, statt viele Dateien einzeln zu lesen – das spart Zeit und Tokens (node_modules, .git und Build-Ordner werden übersprungen)
 

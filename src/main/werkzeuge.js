@@ -390,6 +390,28 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'datei_finden',
+    fremd: true,
+    description: 'Dateien im Projekt nach Namen finden (schnell). muster als Teiltext (z. B. "config" findet config.js) oder als Glob mit * und ? (z. B. "*.test.js"). Durchsucht den Ordner (Standard: erstes Arbeitsverzeichnis) und gibt die Pfade zurück. node_modules, .git und Build-Ordner werden übersprungen.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        muster: { type: 'string', description: 'Teiltext oder Glob (* und ?) für den Dateinamen.' },
+        ordner: { type: 'string', description: 'Standard: erstes Arbeitsverzeichnis.' },
+        max: { type: 'integer', description: 'Höchstens so viele Treffer (Standard 200, höchstens 500).' },
+      },
+      required: ['muster'],
+    },
+    einstufen: (e, ctx) => sandboxLesen(e.ordner || '.', ctx),
+    async ausfuehren(e, ctx) {
+      const ordner = pfadAbs(e.ordner || '.', ctx);
+      const r = projektsuche.dateienFinden(ordner, e.muster, { maxTreffer: Math.min(500, Math.max(1, e.max || 200)) });
+      if (!r.treffer.length) return fremd('der Dateisuche', `Keine Datei passt zu ${JSON.stringify(e.muster)} in ${ordner} (${r.geprueft} Dateien geprüft).`);
+      const kopf = `${r.treffer.length}${r.abgeschnitten ? '+' : ''} Dateien passen zu ${JSON.stringify(e.muster)}:`;
+      return fremd('der Dateisuche', [kopf, ...r.treffer].join('\n'));
+    },
+  },
+  {
     name: 'zwischenablage_lesen',
     fremd: true,
     description: 'Text aus der Zwischenablage lesen.',
