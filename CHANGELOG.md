@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.8.0 – 2026-09-16
+- Im Boost-Tab lassen sich CPU-Fresser jetzt gezielt entlasten: auf Klick senkt Julia die Prioritaet eines Programms (umkehrbar mit Zuruecksetzen) - nur auf deinen Klick, System- und Julia-eigene Prozesse gesperrt, nichts wird hart eingefroren, und die KI kann es nicht selbst ausloesen
+
 ## 3.7.2 – 2026-09-16
 - Minecraft kommt jetzt aus dem Wasser wieder frei: blieb sie mit einem Block ueber dem Kopf im Wasser haengen, schwimmt sie selbst nach oben statt festzustecken
 

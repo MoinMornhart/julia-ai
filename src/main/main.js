@@ -1029,11 +1029,22 @@ function ipcEinrichten() {
   ipc.handle('mcp:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMcp() : mcp.status()));
   // Boost-Tab (Issue #26): rein lesende System-Infos für den Nutzer. Kein Eingriff.
   ipc.handle('boost:status', () => win.systemStatus());
-  ipc.handle('boost:prozesse', (_e, sortierung) => win.prozesse(12, sortierung === 'cpu' ? 'cpu' : 'ram'));
+  ipc.handle('boost:prozesse', async (_e, sortierung) => {
+    const r = await win.prozesse(12, sortierung === 'cpu' ? 'cpu' : 'ram');
+    // Für jede Zeile mitgeben, ob sie entlastet werden darf (Sperrliste = einzige Quelle).
+    if (r && Array.isArray(r.prozesse)) r.prozesse = r.prozesse.map((p) => ({ ...p, geschuetzt: !win.darfBremsen(p.name) }));
+    return r;
+  });
   ipc.handle('boost:doppelte', (_e, pfad) => {
     const p = String(pfad || '').trim();
     if (!p) throw new Error('Kein Ordner gewählt.');
     return require('./doppelte').finden(path.resolve(p), { minGroesse: 1024 }); // ab 1 KB
+  });
+  // Prozess entlasten/zurücksetzen (Issue #19/#26): NUR über die Oberfläche auf
+  // Nutzer-Klick, kein KI-Werkzeug. Priorität auf Idle statt echtem Einfrieren,
+  // Sperrliste schützt System/Julia, umkehrbar.
+  ipc.handle('boost:bremsen', async (_e, pid, name, an) => {
+    try { return { ok: await win.prozessBremsen(pid, name, !!an) }; } catch (e) { return { fehler: e.message }; }
   });
   // Geheimnisse (Issue #26): nutzer-verwaltet, verschlüsselt. Nur Namen verlassen
   // den Hauptprozess – die Werte nie (auch nicht an die KI).

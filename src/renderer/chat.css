@@ -492,8 +492,12 @@ textarea:focus-visible { outline: none; }
 .boost-prozesse { list-style: none; margin: 0; padding: 0; }
 .boost-prozesse li { display: flex; justify-content: space-between; gap: 10px; padding: 5px 8px; border-bottom: 1px solid var(--linie); font-size: 13px; }
 .boost-prozesse .bp-kopf { color: var(--text-2); font-weight: 650; border-bottom: 1px solid var(--linie-stark); }
-.boost-prozesse .bp-name { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boost-prozesse .bp-name { font-family: var(--mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
 .boost-prozesse .bp-wert { color: var(--text-2); flex: none; font-variant-numeric: tabular-nums; }
+.boost-prozesse .bp-bremsen { flex: none; border: 1px solid var(--linie-stark); background: transparent; color: var(--text-2); border-radius: 7px; padding: 2px 9px; font-size: 12px; cursor: pointer; }
+.boost-prozesse .bp-bremsen:hover { border-color: var(--akzent); color: var(--text); }
+.boost-prozesse .bp-bremsen.aktiv { border-color: var(--akzent); color: var(--akzent); }
+.boost-prozesse .bp-bremsen:disabled { opacity: .5; cursor: default; }
 .boost-doppelte { margin-top: 6px; }
 .boost-dopp-kopf { font-weight: 650; margin: 4px 0; }
 .boost-dopp-gruppe { border: 1px solid var(--linie); border-radius: 8px; padding: 8px 10px; margin-bottom: 8px; }

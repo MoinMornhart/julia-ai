@@ -1,12 +1,15 @@
 'use strict';
 
-// Boost-Tab (Issue #26): rein lesende System-Übersicht – Systemstatus, die
-// größten Ressourcen-Fresser und ein Doppelte-Dateien-Finder. Es wird nichts
-// verändert, nichts eingefroren, nichts gelöscht. Läuft im Chat-Fenster; nutzt
-// die globalen Helfer tx/$/esc/julia wie die anderen Tabs.
+// Boost-Tab (Issue #26): System-Übersicht – Systemstatus, die größten
+// Ressourcen-Fresser und ein Doppelte-Dateien-Finder. Anzeige und Dublettenfinder
+// sind rein lesend. Einziger Eingriff: einen CPU-Fresser auf Nutzer-Klick
+// „entlasten" (Priorität senken, umkehrbar) – nie automatisch, nie durch die KI,
+// und geschützte System-/Julia-Prozesse sind gesperrt (Issue #19). Läuft im
+// Chat-Fenster; nutzt die globalen Helfer tx/$/esc/julia wie die anderen Tabs.
 
 (function boostTab() {
   let sortierung = 'ram';
+  const gebremst = new Set(); // pids, die der Nutzer entlastet hat (für Zurücksetzen)
 
   function mb(x) { const n = Number(x) || 0; return n >= 1024 ? `${(n / 1024).toFixed(1)} GB` : `${Math.round(n)} MB`; }
   function gb(x) { return `${(Number(x) || 0).toFixed(1)} GB`; }
@@ -43,11 +46,33 @@
       const r = await julia.boostProzesse(sortierung);
       const liste = (r.prozesse || []).map((p) => {
         const wert = sortierung === 'cpu' ? `${Math.round(p.cpu_sekunden || 0)}s CPU` : mb(p.ram_mb);
-        return `<li><span class="bp-name">${esc(p.name)}</span><span class="bp-wert">${esc(wert)}</span></li>`;
+        // Entlasten-Knopf nur für nicht geschützte Prozesse (System/Julia sind gesperrt).
+        const an = gebremst.has(p.pid);
+        const knopf = p.geschuetzt
+          ? ''
+          : `<button class="bp-bremsen${an ? ' aktiv' : ''}" data-pid="${p.pid}" data-name="${esc(p.name)}" data-an="${an ? '1' : '0'}">${esc(tx(an ? 'boost.zuruecksetzen' : 'boost.entlasten'))}</button>`;
+        return `<li><span class="bp-name">${esc(p.name)}</span><span class="bp-wert">${esc(wert)}</span>${knopf}</li>`;
       });
       const kopf = typeof r.cpu_last_prozent === 'number' ? `<li class="bp-kopf">${esc(tx('boost.cpu_last'))}: ${Math.round(r.cpu_last_prozent)}%</li>` : '';
       ul.innerHTML = kopf + (liste.join('') || `<li class="hinweis">–</li>`);
+      ul.querySelectorAll('.bp-bremsen').forEach((b) => { b.onclick = () => bremsen(b); });
     } catch { ul.innerHTML = `<li class="hinweis">${esc(tx('boost.fehler'))}</li>`; }
+  }
+
+  async function bremsen(b) {
+    const pid = Number(b.dataset.pid);
+    const name = b.dataset.name;
+    const an = b.dataset.an !== '1'; // umschalten
+    b.disabled = true;
+    try {
+      const r = await julia.boostBremsen(pid, name, an);
+      if (r && r.fehler) { b.disabled = false; b.title = r.fehler; return; }
+      if (an) gebremst.add(pid); else gebremst.delete(pid);
+      b.dataset.an = an ? '1' : '0';
+      b.classList.toggle('aktiv', an);
+      b.textContent = tx(an ? 'boost.zuruecksetzen' : 'boost.entlasten');
+      b.title = '';
+    } finally { b.disabled = false; }
   }
 
   async function doppelteSuchen() {

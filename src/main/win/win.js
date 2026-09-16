@@ -313,7 +313,48 @@ $z`), 15000);
   return Number(n) || 0;
 }
 
+// Prozesse, die NIE gebremst/entlastet werden dürfen (Issue #19/#26): Windows-
+// Kernprozesse (ein Einfrieren/Verlangsamen würde den PC lahmlegen) und Julia
+// selbst inkl. ihrer Kind-/GPU-Prozesse. Namen kleingeschrieben, ohne .exe.
+const SPERRLISTE_BREMSEN = new Set([
+  'system', 'registry', 'idle', 'system idle process', 'memory compression',
+  'csrss', 'wininit', 'winlogon', 'services', 'lsass', 'smss', 'svchost',
+  'explorer', 'dwm', 'fontdrvhost', 'sihost', 'ctfmon', 'taskhostw',
+  'lsaiso', 'conhost', 'wudfhost', 'spoolsv', 'audiodg', 'powershell', 'pwsh',
+  'julia ai', 'julia', 'electron',
+]);
+
+// Reine, testbare Prüfung: darf dieser Prozess (nach Name) entlastet werden?
+function darfBremsen(name) {
+  const n = String(name || '').trim().replace(/\.exe$/i, '').toLowerCase();
+  if (!n) return false;
+  return !SPERRLISTE_BREMSEN.has(n);
+}
+
+// Einen Prozess „entlasten" = seine Priorität auf Idle senken (er läuft dann nur
+// noch, wenn sonst nichts die CPU braucht) bzw. wieder auf Normal setzen. Bewusst
+// KEIN echtes Suspendieren: ein eingefrorener System-naher Prozess könnte den PC
+// zum Deadlock bringen. Umkehrbar, und die Sperrliste greift zusätzlich in
+// PowerShell, falls die pid nicht zum erwarteten Namen passt.
+async function prozessBremsen(pid, name, bremsen) {
+  const id = Number(pid);
+  if (!Number.isInteger(id) || id <= 0) throw new Error('Ungültige Prozess-Kennung.');
+  if (!darfBremsen(name)) throw new Error('Dieser Prozess ist geschützt und wird nicht verändert.');
+  const roh = String(name || '').trim().replace(/\.exe$/i, '').replace(/[^\w.\- ]/g, '');
+  const sperr = [...SPERRLISTE_BREMSEN].map((s) => `'${s}'`).join(',');
+  const ok = await worker.ausfuehren(mitArgs({ id, name: roh, bremsen: !!bremsen }, `
+$sperr = @(${sperr})
+$p = Get-Process -Id ([int]$a.id) -ErrorAction SilentlyContinue
+if (-not $p) { throw 'Prozess nicht gefunden.' }
+if ($p.ProcessName.ToLower() -ne $a.name.ToLower()) { throw 'Prozess passt nicht zur Kennung.' }
+if ($sperr -contains $p.ProcessName.ToLower()) { throw 'Prozess ist geschützt.' }
+$p.PriorityClass = if ($a.bremsen) { [System.Diagnostics.ProcessPriorityClass]::Idle } else { [System.Diagnostics.ProcessPriorityClass]::Normal }
+$true`), 15000);
+  return !!ok;
+}
+
 module.exports = {
   worker, aufwaermen, fensterAuflisten, vordergrund, vordergrundInfo, prozesse, systemStatus, passwortFelder, passwortFelderIn, SENSIBLE_PROGRAMME,
   klick, scrollen, tippen, taste, vkCodes, fokussieren, fensterAnordnen, FENSTER_SEITEN, programmOeffnen, programmSchliessen, medien, kopierenNachHotkey,
+  prozessBremsen, darfBremsen, SPERRLISTE_BREMSEN,
 };
