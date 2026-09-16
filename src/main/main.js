@@ -104,6 +104,9 @@ let weckwort;
 let weckwortZuletzt = 0;
 let gespraeche = null;
 let geheimnisse = null;
+// Offene „KI fragt nach geheimem Wert"-Eingaben (Teil B von #51): id → resolve.
+const offeneGeheimnisEingaben = new Map();
+let geheimnisEingabeNr = 0;
 let routinen = null;
 let clips = null;
 let minecraft = null;
@@ -1540,6 +1543,28 @@ function ipcEinrichten() {
   ipc.on('chat:neu', () => { agent.neu(); anAlle('chat:geleert'); });
   ipc.on('sprache:umschalten', () => sprachUmschalten());
   ipc.on('freigabe:antwort', (_e, { id, ja }) => agent.freigabeBeantworten(id, ja));
+  // Antwort auf „KI fragt nach geheimem Wert" (Teil B von #51). Der Wert wird HIER
+  // verschlüsselt abgelegt und NICHT an den Agenten/die KI zurückgegeben – der
+  // Resolver bekommt nur { ok, name }. Nichts vom Wert wird geloggt.
+  ipc.on('geheimnis:eingabe', (_e, { id, name, wert, abbruch }) => {
+    const fertig = offeneGeheimnisEingaben.get(id);
+    if (!fertig) return;
+    offeneGeheimnisEingaben.delete(id);
+    if (abbruch || wert == null || String(wert) === '') {
+      anAlle('agent:geheimnisErledigt', { id, ok: false });
+      fertig({ ok: false });
+      return;
+    }
+    try {
+      const n = geheimnisse.setzen(String(name || '').trim(), String(wert));
+      protokoll.eintragen({ werkzeug: 'geheimnis', stufe: 'INFO', ergebnis: `Wert für „${n}“ verschlüsselt hinterlegt` });
+      anAlle('agent:geheimnisErledigt', { id, ok: true, name: n });
+      fertig({ ok: true, name: n });
+    } catch (err) {
+      anAlle('agent:geheimnisErledigt', { id, ok: false, fehler: err.message });
+      fertig({ ok: false });
+    }
+  });
   ipc.on('fenster:einstellungen', () => einstellungenOeffnen(false));
   ipc.on('fenster:schliessen', (e) => {
     const w = BrowserWindow.fromWebContents(e.sender);
@@ -2147,6 +2172,17 @@ async function start() {
       return new Notizen({ ordner: path.join(basis, ORDNER_NAME) });
     },
     memosAn: () => !!config.get('memos').an,
+    // Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box im Chat holt
+    // ihn; der WERT fließt direkt vom Fenster in den verschlüsselten Speicher
+    // (IPC geheimnis:eingabe) – die KI/der Agent bekommt ihn NIE, nur ob er
+    // hinterlegt wurde.
+    geheimnisAnfordern: (name, zweck) => new Promise((resolve) => {
+      const id = ++geheimnisEingabeNr;
+      offeneGeheimnisEingaben.set(id, resolve);
+      chatZeigen();
+      if (chatFenster) chatFenster.flashFrame(true);
+      anAlle('agent:geheimnisFrage', { id, name, zweck });
+    }),
     // Anbieter ohne eigene Websuche bekommen das Werkzeug webseite_abrufen.
     eigenesWeb: () => anbieterListe.anbieterVon(config).art !== 'anthropic',
     clipJetzt: () => clipJetzt(),

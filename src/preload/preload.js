@@ -7,7 +7,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 const KANAELE = [
   'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
-  'agent:freigabe', 'agent:freigabeErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
+  'agent:freigabe', 'agent:freigabeErledigt', 'agent:geheimnisFrage', 'agent:geheimnisErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
   'zustand', 'pegel', 'sprache:hoert', 'sprache:teil', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'sync:status', 'appserver:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status', 'mcp:status', 'system:zeile',
 ];
 
@@ -142,6 +142,9 @@ contextBridge.exposeInMainWorld('julia', {
   neu: () => ipcRenderer.send('chat:neu'),
   sprechen: () => ipcRenderer.send('sprache:umschalten'),
   freigabe: (id, ja) => ipcRenderer.send('freigabe:antwort', { id, ja }),
+  // Antwort auf „KI fragt nach geheimem Wert": der Wert geht direkt an den
+  // Hauptprozess (verschlüsselt abgelegt), nie über den Agenten/die KI.
+  geheimnisEingabe: (daten) => ipcRenderer.send('geheimnis:eingabe', daten || {}),
   einstellungen: () => ipcRenderer.send('fenster:einstellungen'),
   schliessen: () => ipcRenderer.send('fenster:schliessen'),
   on: (kanal, rueckruf) => {

@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.1.0 – 2026-09-16
+- Julia kann beim Einrichten jetzt nach einem geheimen Wert fragen (z. B. fuer einen Dienst): eine Eingabe-Box holt ihn, der Wert wird verschluesselt gespeichert und die KI bekommt ihn nie zu sehen - nur die Bestaetigung, dass er hinterlegt wurde
+
 ## 4.0.1 – 2026-09-16
 - Die KI darf jetzt unkritische Einstellungen (Design, Brainstorming, Lernen) mit Bestaetigung aendern - Anbieter und Anbieter-Adresse sind dabei gesperrt, damit kein vergifteter Chat das Gespraech auf einen fremden Server umbiegen kann
 

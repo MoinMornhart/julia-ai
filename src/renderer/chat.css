@@ -329,6 +329,8 @@ body.overlay .start { display: none !important; }
 .karte .chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .karte .chip { font-size: 11px; background: var(--akzent-weich); border: 1px solid var(--akzent-rand); border-radius: 20px; padding: 1px 9px; color: var(--text); font-family: var(--mono); }
 .karte .k-knoepfe { display: flex; gap: 8px; }
+.karte .g-wert { width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; border: 1px solid var(--akzent-rand); background: var(--grund-2); color: var(--text); font-family: var(--mono); }
+.karte.geheimnis .k-titel { color: var(--akzent); }
 .karte .k-knoepfe button { padding: 7px 16px; border-radius: 9px; font-weight: 650; transition: filter 0.15s, box-shadow 0.15s; }
 .karte .ja { background: var(--akzent); color: var(--akzent-text); box-shadow: var(--glow-klein); }
 .karte .ja:hover { filter: brightness(1.1); box-shadow: var(--glow); }

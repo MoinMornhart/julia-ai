@@ -208,6 +208,41 @@ function freigabe(f) {
   karte.querySelector('.ja').focus();
 }
 
+// Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box mit Passwort-
+// Feld; der Wert geht direkt an den Hauptprozess (verschlüsselt), nie über die KI.
+function geheimnisFrage({ id, name, zweck }) {
+  antwortEl = null;
+  const karte = element('karte geheimnis');
+  karte.innerHTML = `
+    <div class="k-titel">🔒 ${esc(tx('chat.geheim_titel', { name: name || '' }))}</div>
+    ${zweck ? `<div class="k-text">${esc(zweck)}</div>` : ''}
+    <div class="k-grund">${esc(tx('chat.geheim_hinweis'))}</div>
+    <input class="g-wert" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(tx('chat.geheim_platzhalter'))}">
+    <div class="k-knoepfe"><button class="ja">${esc(tx('chat.geheim_speichern'))}</button><button class="nein">${esc(tx('chat.abbrechen'))}</button></div>`;
+  const feld = karte.querySelector('.g-wert');
+  const senden = (abbruch) => {
+    const wert = feld.value;
+    feld.value = '';
+    julia.geheimnisEingabe(abbruch ? { id, abbruch: true } : { id, name, wert });
+  };
+  karte.querySelector('.ja').onclick = () => senden(false);
+  karte.querySelector('.nein').onclick = () => senden(true);
+  feld.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); senden(false); } });
+  freigabeEls.set(`g${id}`, karte);
+  anhaengen(karte);
+  feld.focus();
+}
+
+function geheimnisErledigt({ id, ok, name }) {
+  const karte = freigabeEls.get(`g${id}`);
+  if (!karte) return;
+  karte.classList.add('erledigt');
+  const rest = karte.querySelector('.g-wert');
+  if (rest) rest.remove();
+  const knoepfe = karte.querySelector('.k-knoepfe');
+  if (knoepfe) knoepfe.outerHTML = `<div class="k-ergebnis ${ok ? 'ja-text' : 'nein-text'}">${ok ? '✓ ' + esc(tx('chat.geheim_ok', { name: name || '' })) : '✕ ' + esc(tx('chat.abgebrochen'))}</div>`;
+}
+
 function freigabeErledigt({ id, ja }) {
   const karte = freigabeEls.get(id);
   if (!karte) return;
@@ -419,6 +454,8 @@ async function init() {
   julia.on('agent:werkzeugFertig', werkzeugFertig);
   julia.on('agent:freigabe', freigabe);
   julia.on('agent:freigabeErledigt', freigabeErledigt);
+  julia.on('agent:geheimnisFrage', geheimnisFrage);
+  julia.on('agent:geheimnisErledigt', geheimnisErledigt);
   julia.on('agent:fertig', () => { beschaeftigtSetzen(false); antwortEl = null; $('text').focus(); });
   julia.on('agent:fehler', (e) => systemzeile(e.art === 'kein_schluessel' ? tx('chat.kein_schluessel') : e.text, 'fehler'));
   julia.on('agent:hinweis', (h) => {

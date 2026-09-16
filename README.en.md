@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **The AI can ask for a key during setup – without seeing it** – if Julia needs an access value for a setup (e.g. an MCP server/service), she can now open an **input box**: you type the value there, it's stored **encrypted** on the PC – the AI only gets "stored" back and **never sees the value**. You can cancel anytime.
 - **The AI can adjust looks/preferences – important things stay locked** – Julia can now change non-critical settings on request (e.g. light/dark theme, accent colour, brainstorming, learning) – for anything beyond the orb a confirmation box appears first. **Locked** are important/security-relevant things: provider and provider address (the AI can no longer redirect it), API keys, sandbox, BETA, diagnostics sending, MCP, "allow all", costs, microphone – only you change those.
 - **Token protection for secrets** – Julia now recognizes real access keys/tokens (GitHub, OpenAI, Google, AWS, Stripe, VibeWorks and many more, plus generally very long, random keys). If you accidentally enter a real token as the **name** of a secret, Julia rejects it – so no key can end up where the AI only sees the name. The value itself stays encrypted on the PC as before.
 - **Connect VibeWorks (sign-in box)** – in the settings you can now connect Julia to VibeWorks: "Create a key" opens your account, you paste your API key (`vw_…`) and sign in – the VibeWorks tools then become available (every call goes through the traffic light). The key is stored **encrypted only** on the PC and is **never** shown to the AI; if a key is invalid or revoked you get a clear hint.
@@ -73,7 +74,6 @@
 - **Minecraft: gets out of the water again** – if she got stuck in water with a block above her head (a known case), Julia now notices and swims up herself instead of being trapped.
 - **Security tightened** – hardened after an automated repo check: settings are protected against manipulated special keys when merging, and the source code no longer contains invisible characters. Behaviour stays the same, just more robust.
 - **The interface stays usable even if something hangs** – if the startup ever waits on a background reply that never arrives, the window used to stay completely empty (no buttons/text) – with nothing in the logbook. Now there's a time limit: Julia shows the interface anyway, records the hang in the logbook and reloads once if needed. This ends the "I see no elements even though everything looks error-free".
-- **BETA area with a safety switch** – new, experimental features get their own clearly marked BETA section in the settings. Unlocking one requires typing a confirmation exactly; it's off by default, and the **AI cannot turn these switches on itself**. First entry: self-programming (only in the chosen folder, rolling out step by step).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

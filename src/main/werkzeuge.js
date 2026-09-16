@@ -498,6 +498,27 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'geheimnis_anfordern',
+    description: 'Bittet den Nutzer, einen geheimen Wert (Passwort, API-Schlüssel, Token, Zugangsdaten) einzugeben, der dann VERSCHLÜSSELT auf dem PC gespeichert wird. Nutze das für ein Setup, bei dem du selbst einen Zugang brauchst, ihn aber nicht sehen darfst – z. B. um einen MCP-Server/Dienst einzurichten. Der Nutzer tippt den Wert in eine Box; du bekommst den Wert NIE zu sehen, nur ob er hinterlegt wurde. name = kurze Bezeichnung, wofür der Wert ist (z. B. „GitHub Token"); zweck = ein Satz, wofür du ihn brauchst.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: 'Bezeichnung des Geheimnisses (nicht der Wert!), z. B. „GitHub Token".' },
+        zweck: { type: 'string', description: 'Kurz, wofür der Wert gebraucht wird.' },
+      },
+      required: ['name'],
+    },
+    einstufen: gruen, // Die Box selbst ist die Nutzer-Entscheidung (eingeben oder abbrechen); der Wert bleibt lokal und verschlüsselt.
+    async ausfuehren(e, ctx) {
+      if (!ctx.geheimnisAnfordern) throw new Error('Geheimnis-Eingabe ist hier nicht verfügbar.');
+      const name = String(e.name || '').trim().slice(0, 80);
+      if (!name) throw new Error('Bitte eine Bezeichnung (name) angeben, wofür der Wert ist.');
+      const r = await ctx.geheimnisAnfordern(name, String(e.zweck || '').slice(0, 200));
+      if (!r || !r.ok) return `Der Nutzer hat die Eingabe für „${name}“ abgebrochen. Kein Wert hinterlegt.`;
+      return `Der Nutzer hat einen Wert für „${r.name || name}“ hinterlegt (verschlüsselt auf dem PC). Ich sehe den Wert nicht; er steht in den Geheimnissen zur Verfügung.`;
+    },
+  },
+  {
     name: 'zwischenablage_lesen',
     fremd: true,
     description: 'Text aus der Zwischenablage lesen.',
