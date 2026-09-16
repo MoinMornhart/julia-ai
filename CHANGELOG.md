@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.6.0 – 2026-09-16
+- Zeitlimit für Shell-Befehle ist jetzt in den Einstellungen selbst einstellbar (Standard und Maximum); das Maximum begrenzt jeden Befehl, damit hängende Konsolen-Befehle sicher abbrechen statt endlos zu laufen
+
 ## 2.5.0 – 2026-09-16
 - Julia merkt sich Modelle, die keine Bilder verstehen: meldet ein Anbieter Vision-Deaktiviert, schickt sie diesem Modell keine Screenshots mehr und wiederholt den Schritt automatisch ohne Bild, statt am selben Fehler zu scheitern
 

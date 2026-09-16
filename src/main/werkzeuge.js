@@ -195,6 +195,18 @@ async function sichern(ziel, ctx) {
   return kopie;
 }
 
+// Effektives Shell-Zeitlimit: Nennt die KI keins, gilt der Standard aus den
+// Einstellungen; das vom Nutzer gesetzte Maximum begrenzt immer (auch wenn die
+// KI mehr will). So brechen hängende Befehle verlässlich ab. Rein rechnerisch,
+// damit prüfbar.
+function shellTimeout(angefordert, standard, max) {
+  const std = Math.max(5, Math.round(Number(standard) || 60));
+  const grenze = Math.max(5, Math.round(Number(max) || 600));
+  const gewuenscht = angefordert == null || angefordert === '' ? std : Math.round(Number(angefordert));
+  if (!Number.isFinite(gewuenscht) || gewuenscht <= 0) return Math.min(std, grenze);
+  return Math.min(grenze, Math.max(5, gewuenscht));
+}
+
 function shellAusfuehren(befehl, ordner, timeoutS) {
   const skript = `[Console]::OutputEncoding = New-Object System.Text.UTF8Encoding($false)\n$ProgressPreference = 'SilentlyContinue'\n${befehl}`;
   return new Promise((resolve) => {
@@ -727,7 +739,7 @@ const WERKZEUGE = [
       properties: {
         befehl: { type: 'string' },
         arbeitsordner: { type: 'string', description: 'Standard: erstes Arbeitsverzeichnis.' },
-        timeout_s: { type: 'integer', description: 'Standard 120, höchstens 1800.' },
+        timeout_s: { type: 'integer', description: 'Zeitlimit in Sekunden. Ohne Angabe gilt das Standard-Limit aus den Einstellungen; das dort gesetzte Maximum begrenzt immer.' },
       },
       required: ['befehl'],
     },
@@ -738,7 +750,9 @@ const WERKZEUGE = [
     },
     async ausfuehren(e, ctx) {
       const ordner = e.arbeitsordner ? pfadAbs(e.arbeitsordner, ctx) : ctx.arbeitsordner();
-      const r = await shellAusfuehren(e.befehl, ordner, Math.min(1800, Math.max(5, e.timeout_s || 120)));
+      const sh = (ctx.config && ctx.config.get('shell')) || {};
+      const sekunden = shellTimeout(e.timeout_s, sh.timeout_s, sh.max_s);
+      const r = await shellAusfuehren(e.befehl, ordner, sekunden);
       const teile = [`Exit-Code ${r.code}${r.abgelaufen ? ' (Zeitlimit erreicht, abgebrochen)' : ''}`];
       if (r.aus) teile.push('--- Ausgabe ---\n' + kurz(r.aus));
       if (r.err) teile.push('--- Fehler ---\n' + kurz(r.err, 8000));
@@ -1156,4 +1170,4 @@ function finden(name, ctx) {
   return alle(ctx).find((w) => w.name === name);
 }
 
-module.exports = { WERKZEUGE, WEBSEITE, definitionen, finden, shellAusfuehren, bildBloecke };
+module.exports = { WERKZEUGE, WEBSEITE, definitionen, finden, shellAusfuehren, shellTimeout, bildBloecke };

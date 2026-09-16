@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Set the shell time limit yourself** – stuck console commands now abort reliably: under "Shell commands" in the settings you set a default and a maximum time limit. The maximum caps every command, even if the AI wants more – no more commands running forever.
 - **Julia remembers models without image support** – if an AI provider reports that a model can't handle images (e.g. "Vision is disabled"), Julia stops sending screenshots to that model and automatically retries the failed step without the image – instead of hitting the same error over and over.
 - **Unified AI instructions (internally in English)** – the instructions and system prompt that steer Julia's AI are now consistently in English. Nothing changes for you language-wise: Julia still speaks and writes in your app language. It just makes the internal steering more consistent and easier to maintain.
 - **Updates now install reliably over a running version** – the installer now hard-closes an open Julia (including its background processes) and no longer gets stuck on a "please close" dialog. So a new version installs cleanly over the old one and the automatic update goes through. See [Installation](#installation).
@@ -73,7 +74,6 @@
 - **Julia learns and remembers things** – on request she keeps lasting notes (hidden `.julia-memos` folder in her working folder): preferences, project facts, learned solutions. Stays local, toggled under "Learning" in the settings.
 - **Spot duplicate files** – on request Julia finds content-identical files in a folder and shows how much space the copies waste. Read-only – nothing is deleted, you decide. (First building block of the planned "Boost" page.)
 - **Minecraft: no more getting stuck on ledges** – when Julia wants to move but sticks on a one-block step, she now jumps over it automatically instead of standing there. She gets around much more smoothly while exploring and playing through. See [Minecraft](#minecraft).
-- **Find files by name** – on top of text search, Julia can now find files by their name: as a substring (`config` → `config.js`) or as a pattern with `*` and `?` (e.g. `*.test.js`). That gets her to the right place in a project even faster.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

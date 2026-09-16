@@ -148,6 +148,10 @@ const STANDARD = {
   memos: {
     an: true, // Julia darf sich dauerhafte Lern-Notizen in einem versteckten Ordner (.julia-memos) im Arbeitsordner anlegen
   },
+  shell: {
+    timeout_s: 60, // Standard-Zeitlimit für Shell-Befehle, wenn die KI keines nennt
+    max_s: 600, // hartes Maximum: kein Shell-Befehl läuft länger, auch wenn die KI mehr will – hängende Befehle brechen so sicher ab
+  },
   mcp: {
     server: [], // angeschlossene MCP-Server; Tokens liegen verschlüsselt im Tresor
   },
@@ -277,6 +281,8 @@ function pruefen(schluessel, wert) {
       if (s.length > 253 || !/^[A-Za-z0-9.\-:[\]]*$/.test(s)) throw new Error('Das ist keine gültige Serveradresse.');
       return s;
     }
+    case 'shell.timeout_s': return Math.round(zahl(wert, 5, 3600, 'Shell-Zeitlimit'));
+    case 'shell.max_s': return Math.round(zahl(wert, 5, 3600, 'Shell-Maximum'));
     case 'minecraft.port': return Math.round(zahl(wert, 1, 65535, 'Port'));
     case 'minecraft.gruppe': return String(wert ?? '').replace(/[ -]/g, '').trim().slice(0, 64);
     case 'minecraft.erlaubte': {
