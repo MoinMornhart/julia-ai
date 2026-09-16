@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.4.0 – 2026-09-16
+- Ein-Klick-Grafik-Reparatur in den Einstellungen: bleibt das Fenster leer oder flackert es, stellt Julia auf deinen Klick auf Software-Grafik um und startet neu (umkehrbar, ohne Eingriff ins System) - der Rettungsanker, den Technik-Profis mit --disable-gpu machen
+
 ## 4.3.2 – 2026-09-16
 - Die woechentliche Selbstpruefung erkennt jetzt auch Grafikprobleme (leere Fenster, degradierte Grafiktreiber), nicht nur Abstuerze - gemeldet weiter nur mit Zustimmung und bereinigt, nie IP oder Tokens
 

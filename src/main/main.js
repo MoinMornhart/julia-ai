@@ -1031,6 +1031,16 @@ function ipcEinrichten() {
   };
   ipc.handle('freigabe:immer', freigabeSchalter('freigabe.immer', 'freigabe'));
   ipc.handle('freigabe:fremd', freigabeSchalter('freigabe.fremd', 'freigabe_fremd'));
+  // Grafik-Reparatur (Issue #55): auf Nutzer-Klick auf Software-Grafik umstellen
+  // (der Rettungsanker gegen ein leeres Fenster) und neu starten – bzw. wieder
+  // normale Grafik versuchen. Software-Grafik ist reversibel und ohne Systemeingriff.
+  ipc.handle('reparatur:status', () => ({ software: !!startpruefung.softwareRendering(DATEN) }));
+  ipc.handle('reparatur:software', (_e, an) => {
+    startpruefung.softwareRenderingSetzen(DATEN, !!an);
+    startLog.schreiben('GPU', an ? 'Software-Grafik vom Nutzer eingeschaltet (Reparatur) – Neustart.' : 'Normale Grafik vom Nutzer wieder aktiviert – Neustart.');
+    setTimeout(() => { beendenLaeuft = true; app.relaunch(); app.exit(0); }, 200);
+    return { software: !!an };
+  });
   ipc.handle('schluessel:setzen', (_e, s) => {
     try { schluesselSetzen(s); return { ok: true }; } catch (e) { return { fehler: e.message }; }
   });

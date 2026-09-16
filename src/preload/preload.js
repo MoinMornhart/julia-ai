@@ -101,6 +101,8 @@ contextBridge.exposeInMainWorld('julia', {
   vibeworksKonto: () => ipcRenderer.invoke('vibeworks:konto'),
   vibeworksAnmelden: (schluessel) => ipcRenderer.invoke('vibeworks:anmelden', String(schluessel || '')),
   vibeworksAbmelden: () => ipcRenderer.invoke('vibeworks:abmelden'),
+  reparaturStatus: () => ipcRenderer.invoke('reparatur:status'),
+  reparaturSoftware: (an) => ipcRenderer.invoke('reparatur:software', !!an),
   mcChat: (text) => ipcRenderer.invoke('mc:chat', String(text || '')),
   mcKontoVerbinden: () => ipcRenderer.invoke('mc:konto:verbinden'),
   mcKontoAbmelden: () => ipcRenderer.invoke('mc:konto:abmelden'),

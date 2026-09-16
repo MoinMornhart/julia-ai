@@ -907,6 +907,28 @@ function vibeZeigen(s) {
   $('vibeSchluessel').hidden = angemeldet;
 }
 
+// Grafik-Reparatur (Issue #55): auf Software-Grafik umstellen (gegen ein leeres
+// Fenster) und neu starten – bzw. wieder normale Grafik versuchen.
+async function reparaturEinrichten() {
+  const knopf = $('reparaturKnopf');
+  const status = $('reparaturStatus');
+  if (!knopf) return;
+  let software = false;
+  try { software = !!(await julia.reparaturStatus()).software; } catch { /* Standard: normal */ }
+  const malen = () => {
+    status.textContent = tx(software ? 'einst.reparatur_status_software' : 'einst.reparatur_status_normal');
+    knopf.textContent = tx(software ? 'einst.reparatur_normal' : 'einst.reparatur_software');
+  };
+  malen();
+  knopf.onclick = async () => {
+    const ziel = !software;
+    if (!confirm(tx(ziel ? 'einst.reparatur_frage_software' : 'einst.reparatur_frage_normal'))) return;
+    knopf.disabled = true;
+    try { await julia.reparaturSoftware(ziel); } catch { knopf.disabled = false; }
+    // Julia startet gleich neu; nichts weiter nötig.
+  };
+}
+
 function vibeVerbinden() {
   julia.on('mcp:status', async () => { try { vibeZeigen(await julia.vibeworksStatus()); } catch { /* egal */ } });
   $('vibeKonto').onclick = () => julia.vibeworksKonto();
@@ -1129,6 +1151,7 @@ async function init() {
   mcpZeigen(await julia.mcpStatus());
   vibeVerbinden();
   vibeZeigen(await julia.vibeworksStatus());
+  reparaturEinrichten();
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   sandboxZeigen();

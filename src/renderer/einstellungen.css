@@ -72,6 +72,8 @@ body {
 .gruppe h2::before { content: ""; width: 10px; height: 10px; border-radius: 3px; background: var(--akzent); box-shadow: var(--glow-klein); transform: rotate(45deg); }
 .gruppe h3 { font-size: 12.5px; margin: 16px 0 8px; font-weight: 650; color: var(--text-2); }
 .hinweis { color: var(--text-2); margin: -4px 0 10px; font-size: 13px; }
+#reparaturFeld { margin-top: 8px; }
+#reparaturFeld .rep-status { display: block; font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
 
 .zwei { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 560px) { .zwei { grid-template-columns: 1fr; } }
