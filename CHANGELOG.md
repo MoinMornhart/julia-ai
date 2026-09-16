@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.8.1 – 2026-09-16
+- Sicherheits-Update: die gemeldete Schwachstelle im Paket uuid ist geschlossen (auf eine geprüfte, sichere Version angehoben), ohne Downgrade anderer Pakete – npm audit meldet keine Lücken mehr
+
 ## 2.8.0 – 2026-09-16
 - Fehler in der Oberfläche werden jetzt protokolliert: bleibt ein Fenster leer oder lädt die UI nicht, landet der zugrunde liegende Fehler im Start-Logbuch, damit sich so ein Problem nachvollziehen lässt (bleibt lokal auf dem PC)
 
