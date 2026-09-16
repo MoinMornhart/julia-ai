@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Brainstorming-Modus** – in den Einstellungen einschaltbar: Bei Ideen-, Optionen- und Planungsfragen antwortet Julia dann offener und ideenreicher (mehrere Vorschläge mit Abwägungen), bei einfachen Faktenfragen ganz normal. Standard aus.
 - **Geheimnisse sicher verwalten** – in den Einstellungen unter „Geheimnisse" kannst du Passwörter/Schlüssel hinterlegen. Sie liegen **nur verschlüsselt** auf deinem PC (Windows-Verschlüsselung), werden nach dem Speichern nicht mehr angezeigt, und die **KI bekommt die Werte nie zu sehen**.
 - **Neuer „Boost"-Tab** – ein eigener Bereich mit System-Überblick auf einen Blick: Arbeitsspeicher, Laufwerke, Betriebszeit, die größten Ressourcen-Fresser (nach RAM oder CPU) und ein Finder für doppelte Dateien. Rein informativ – es wird nichts verändert, eingefroren oder gelöscht.
 - **Werkzeuge einzeln abschaltbar** – in den Einstellungen unter „Werkzeuge" kannst du jetzt jedes einzelne Werkzeug aus- oder anschalten. Ein abgeschaltetes Werkzeug darf die KI nicht mehr benutzen (sie bekommt einen klaren Hinweis, dass es aus ist). Standardmäßig ist alles an. Siehe [Die Ampel](#die-ampel).
@@ -73,7 +74,6 @@
 - **Start bringt das Fenster jetzt zuverlässig nach vorn** – wenn Julia schon im Hintergrund/Tray läuft, öffnet ein erneuter Start jetzt immer das Fenster (legt es notfalls neu an), statt scheinbar „nichts zu tun". Siehe [Bedienung](#bedienung).
 - **Werkzeug-Aufrufe zum Aufklappen** – im Chat kannst du bei jedem Werkzeug- oder MCP-Aufruf auf „{ }" tippen und siehst genau, was Julia mit welchen Parametern aufgerufen hat (als lesbares JSON). So ist nachvollziehbar, was im Hintergrund passiert.
 - **Hinweis „KI-Antworten prüfen"** – unter dem Eingabefeld steht jetzt dezent, dass KI-Antworten Fehler enthalten können und wichtige Dinge geprüft werden sollten. Und ruft die KI ein Werkzeug auf, das es nicht gibt oder das abgeschaltet ist, bekommt sie das jetzt klar zurückgemeldet.
-- **Sicherheits-Update einer Abhängigkeit** – eine gemeldete Schwachstelle im Paket `uuid` ist geschlossen (auf eine geprüfte, sichere Version gehoben), ohne dass sich für dich etwas ändert. `npm audit` meldet jetzt keine Lücken mehr.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

@@ -239,7 +239,7 @@ function systemPromptText() {
 
 function laufzeitText() {
   const kanal = config.get('kanal');
-  return prompt.laufzeitKontext({
+  const basis = prompt.laufzeitKontext({
     sprachcode: config.get('sprachcode'),
     kanal,
     version: version(),
@@ -249,6 +249,9 @@ function laufzeitText() {
     konten: konten.beschreibung(),
     minecraft: minecraft && minecraft.verbunden ? minecraft.status() : null,
   });
+  // Brainstorming-Modus (Issue #35): nur wenn eingeschaltet, sonst kein Zusatz.
+  const brain = prompt.brainstormHinweis(config.get('brainstorming').an);
+  return brain ? `${basis}\n\n${brain}` : basis;
 }
 
 // --- Zustand und Nachrichten an alle Fenster ---

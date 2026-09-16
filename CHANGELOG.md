@@ -1,5 +1,8 @@
 # Changelog
 
+## 3.5.0 – 2026-09-16
+- Neuer Brainstorming-Modus in den Einstellungen: bei Ideen-, Optionen- und Planungsfragen antwortet Julia dann offener und ideenreicher (mehrere Vorschläge mit Abwägungen), bei einfachen Faktenfragen normal
+
 ## 3.4.0 – 2026-09-16
 - Geheimnisse (Passwörter/Schlüssel) lassen sich jetzt in den Einstellungen verwalten: nur verschlüsselt auf dem PC gespeichert, nach dem Speichern nicht mehr angezeigt, und die KI bekommt die Werte nie zu sehen
 

@@ -147,6 +147,16 @@ function laufzeitKontext({ kanal, version, monitore, gedaechtnis, vorgemerkt, ko
   return zeilen.join('\n');
 }
 
+// Zusatz-Instruktion für den Brainstorming-Modus (Issue #35). Ist er an, denkt
+// Julia bei Ideen-/Planungsfragen offener; sonst leer (kein Zusatz).
+function brainstormHinweis(an) {
+  if (!an) return '';
+  return '## Brainstorming mode is ON\n'
+    + 'When the user asks for ideas, options or planning, be more exploratory: offer several distinct options, '
+    + 'note their trade-offs, and think divergently before converging on a recommendation. '
+    + 'Stay concise and honest – no padding, no filler. For simple factual questions, answer normally.';
+}
+
 function zeitstempel(sprachcode) {
   const jetzt = new Date();
   return jetzt.toLocaleString(sprachcode === 'en' ? 'en-GB' : 'de-DE', {
@@ -154,4 +164,4 @@ function zeitstempel(sprachcode) {
   });
 }
 
-module.exports = { systemPrompt, laufzeitKontext, platzhalterWerte, ausfuellen, zeitstempel, windowsBezeichnung };
+module.exports = { systemPrompt, laufzeitKontext, platzhalterWerte, ausfuellen, zeitstempel, windowsBezeichnung, brainstormHinweis };

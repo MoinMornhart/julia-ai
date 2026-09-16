@@ -149,6 +149,9 @@ const STANDARD = {
     an: true, // Julia darf sich dauerhafte Lern-Notizen in einem versteckten Ordner (.julia-memos) im Arbeitsordner anlegen
   },
   werkzeuge_aus: [], // Namen abgeschalteter Werkzeuge: die KI darf sie nicht nutzen (rein einschränkend; in den Einstellungen wählbar)
+  brainstorming: {
+    an: false, // Brainstorming-Modus: Antworten offener/ideenreicher (mehrere Optionen, Abwägungen) – Standard aus
+  },
   shell: {
     timeout_s: 60, // Standard-Zeitlimit für Shell-Befehle, wenn die KI keines nennt
     max_s: 600, // hartes Maximum: kein Shell-Befehl läuft länger, auch wenn die KI mehr will – hängende Befehle brechen so sicher ab
@@ -230,6 +233,7 @@ function pruefen(schluessel, wert) {
     case 'diagnose.senden':
     case 'sandbox.an':
     case 'memos.an':
+    case 'brainstorming.an':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':

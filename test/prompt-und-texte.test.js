@@ -118,3 +118,10 @@ test('Der Laufzeitblock nennt Kanal, Version und Gedächtnis', () => {
   assert.match(t, /commits: Deutsch/);
   assert.match(t, /winget upgrade/);
 });
+
+test('brainstormHinweis nur bei aktivem Modus, ohne Platzhalter-Leck', () => {
+  assert.equal(prompt.brainstormHinweis(false), '');
+  const h = prompt.brainstormHinweis(true);
+  assert.match(h, /Brainstorming mode is ON/);
+  assert.ok(!h.includes('{{'), 'keine offenen Platzhalter');
+});

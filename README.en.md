@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Brainstorming mode** – switchable in the settings: for idea, option and planning questions Julia then answers more openly and idea-rich (several suggestions with trade-offs), and normally for simple factual questions. Off by default.
 - **Manage secrets securely** – under "Secrets" in the settings you can store passwords/keys. They are kept **encrypted only** on your PC (Windows encryption), are no longer shown after saving, and the **AI never sees the values**.
 - **New "Boost" tab** – a dedicated area with a system overview at a glance: memory, drives, uptime, the biggest resource hogs (by RAM or CPU) and a duplicate-file finder. Read-only – nothing is changed, frozen or deleted.
 - **Turn individual tools off** – under "Tools" in the settings you can now switch each tool on or off. The AI may no longer use a disabled tool (it gets a clear note that it's off). Everything is on by default. See [The traffic light](#the-traffic-light).
@@ -73,7 +74,6 @@
 - **Launching reliably brings the window forward** – if Julia is already running in the background/tray, launching again now always opens the window (recreating it if needed) instead of seeming to "do nothing". See [Usage](#usage).
 - **Expandable tool calls** – in the chat you can tap "{ }" on any tool or MCP call to see exactly what Julia called and with which parameters (as readable JSON). So it's clear what happens behind the scenes.
 - **"Check AI answers" note** – a subtle line under the input box now points out that AI answers can contain mistakes and important things should be checked. And if the AI calls a tool that doesn't exist or is disabled, it now gets a clear message back.
-- **Security update of a dependency** – a reported vulnerability in the `uuid` package is fixed (raised to a checked, safe version) with no change for you. `npm audit` now reports no vulnerabilities.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 
