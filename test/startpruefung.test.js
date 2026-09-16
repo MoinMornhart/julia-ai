@@ -140,6 +140,30 @@ test('Start: nach dem Startfenster erst ab der Schwelle der Software-Rückfall, 
   }
 });
 
+test('Start: wiederholte Renderer-Abstürze nach dem Start heilen sich (Software + Neustart)', () => {
+  const o = ordner();
+  try {
+    let t = 1000;
+    let gemeldet = 0; let neugestartet = 0;
+    const app = fakeApp();
+    sp.gpuUeberwachen({ app, logbuch: { schreiben() {} }, datenOrdner: o, melden: () => gemeldet++, neustart: () => neugestartet++, schwelle: 2, jetzt: () => t, startFensterMs: 20000 });
+    t = 100000; // weit nach dem Startfenster
+
+    app.feuern('render-process-gone', {}, { reason: 'clean-exit' });
+    assert.equal(gemeldet, 0, 'ein sauberes Ende zählt nicht');
+    app.feuern('render-process-gone', {}, { reason: 'crashed' });
+    assert.equal(gemeldet, 0, 'ein Absturz reicht noch nicht');
+    app.feuern('render-process-gone', {}, { reason: 'crashed' });
+    assert.equal(sp.softwareRendering(o), true);
+    assert.equal(gemeldet, 1);
+    assert.equal(neugestartet, 1);
+    app.feuern('render-process-gone', {}, { reason: 'crashed' });
+    assert.equal(gemeldet, 1, 'nur einmal');
+  } finally {
+    fs.rmSync(o, { recursive: true, force: true });
+  }
+});
+
 test('Start: ein sauberer GPU-Neustart löst keinen Rückfall aus', () => {
   const o = ordner();
   try {

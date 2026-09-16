@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.7.1 – 2026-09-16
+- Julia erholt sich jetzt auch von wiederholten Grafik-/Renderer-Abstürzen nach dem Start selbst: sie stellt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängenzubleiben
+
 ## 2.7.0 – 2026-09-16
 - Der Chat stellt Tabellen jetzt richtig dar: Markdown-Tabellen mit senkrechten Strichen werden sauber als Tabelle mit Spalten-Ausrichtung gerendert, statt nur als Textzeilen
 

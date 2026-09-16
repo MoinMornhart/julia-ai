@@ -152,8 +152,11 @@ async function fehlerDialog({ app, dialog, shell, titel = 'Julia', text, logDate
 // erste GPU-Absturz kurz nach dem Start, wird der Software-Rendering-Merker
 // SOFORT gesetzt. So startet Julia beim nächsten Mal sicher, selbst wenn sie
 // diesmal noch abstürzt, bevor der Neustart greift.
+const ECHTER_CRASH = /crashed|oom|launch-failed|integrity-failure|abnormal-exit/;
+
 function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, schwelle = GPU_SCHWELLE, jetzt = Date.now, startFensterMs = 20000 }) {
   let gpuAbstuerze = 0;
+  let rendererAbstuerze = 0;
   let gemeldet = false;
   let neugestartet = false;
   const start = jetzt();
@@ -196,9 +199,15 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, sc
   };
   const beiRenderer = (_e, _wc, d) => {
     logbuch.schreiben('CRASH', 'Renderer weg', { grund: d.reason, code: d.exitCode });
-    // Ein echter Renderer-Absturz beim Start (nicht sauber beendet/abgeschossen)
-    // führt zum schwarzen Fenster – gleich behandeln wie einen GPU-Absturz.
-    if (imStart() && /crashed|oom|launch-failed|integrity-failure|abnormal-exit/.test(String(d.reason || ''))) startAbsichern('Renderer-Absturz');
+    if (!ECHTER_CRASH.test(String(d.reason || ''))) return; // sauber beendet/abgeschossen: nichts tun
+    // Ein echter Renderer-Absturz beim Start führt zum schwarzen Fenster – sofort
+    // wie einen GPU-Absturz absichern.
+    if (imStart()) { startAbsichern('Renderer-Absturz'); return; }
+    // Auch nach dem Start: stürzt der Renderer wiederholt ab (oft dieselbe GPU-
+    // Ursache), auf Software-Rendering umstellen und neu starten, statt mit totem
+    // Fenster hängen zu bleiben (Issue #41/#3).
+    rendererAbstuerze += 1;
+    if (rendererAbstuerze >= schwelle) ausweichen();
   };
 
   app.on('child-process-gone', beiKind);

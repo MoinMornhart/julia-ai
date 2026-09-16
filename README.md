@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Erholt sich selbst von wiederholten Grafik-Abstürzen** – stürzt die Anzeige (Renderer) mehrfach ab, stellt Julia jetzt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängen zu bleiben. Bisher griff das nur bei Abstürzen direkt beim Start. Siehe [Installation](#installation).
 - **Tabellen im Chat** – Julia kann Antworten jetzt als richtige Tabelle darstellen (Markdown-Tabellen mit `|`), inklusive Spalten-Ausrichtung. Vorher standen Tabellen nur als Textzeilen da; jetzt werden sie sauber gerendert.
 - **Shell-Zeitlimit selbst einstellbar** – hängende Konsolen-Befehle brechen jetzt zuverlässig ab: In den Einstellungen unter „Shell-Befehle" legst du ein Standard- und ein maximales Zeitlimit fest. Das Maximum begrenzt jeden Befehl, auch wenn die KI mehr möchte – Schluss mit endlos laufenden Befehlen.
 - **Modelle ohne Bild-Unterstützung merkt sich Julia** – meldet ein KI-Anbieter, dass ein Modell keine Bilder versteht (z. B. „Vision is disabled"), schickt Julia diesem Modell künftig keine Screenshots mehr und wiederholt den fehlgeschlagenen Schritt automatisch ohne Bild – statt immer wieder am selben Fehler zu scheitern.
@@ -73,7 +74,6 @@
 - **Update installiert jetzt sicher über eine laufende Version** – der Installer beendet eine geöffnete Julia (samt Hintergrundprozessen) jetzt hart und zeigt keinen hängenden „bitte schließen"-Dialog mehr. Damit lässt sich eine neue Version zuverlässig drüber installieren und das automatische Update läuft durch. Siehe [Installation](#installation).
 - **Minecraft: erkennt Hänger und verbindet sich neu** – friert die Spielfigur ein (verbunden, aber keine Reaktion mehr), merkt Julia das jetzt selbst und macht automatisch einen Relog, statt endlos still zu stehen. Ihr Zustand wird vorher fürs Logbuch gesichert. Siehe [Minecraft](#minecraft).
 - **Julia lernt dazu und merkt sich Dinge** – auf Wunsch legt sie sich dauerhafte Notizen an (versteckter Ordner `.julia-memos` in ihrem Arbeitsordner): Vorlieben, Projekt-Fakten, gelernte Lösungen. Bleibt lokal, in den Einstellungen unter „Lernen" an-/abschaltbar.
-- **Doppelte Dateien aufspüren** – Julia findet auf Wunsch inhaltsgleiche Dateien in einem Ordner und zeigt, wie viel Platz die Kopien unnötig belegen. Rein lesend – gelöscht wird nichts, du entscheidest. (Erster Baustein der geplanten „Boost"-Seite.)
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 
