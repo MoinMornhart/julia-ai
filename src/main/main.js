@@ -950,6 +950,18 @@ function ipcEinrichten() {
   const ipc = sicherheit.ipcAbsichern(ipcMain, RENDERER, (kanal, url) => {
     protokoll.eintragen({ werkzeug: 'ipc', stufe: 'ROT', ergebnis: 'abgelehnt', grund: `Nachricht auf ${kanal} von fremder Seite ${url}` });
   });
+  // Fehlersystem: unbehandelte Fehler der Oberfläche (window.onerror /
+  // unhandledrejection) landen im Start-Logbuch, damit ein „UI lädt nicht" (Issue
+  // #3) diagnostizierbar ist. Bleibt lokal auf dem PC.
+  ipc.on('diagnose:rendererFehler', (_e, info) => {
+    const i = info && typeof info === 'object' ? info : {};
+    startLog.schreiben('RENDERER-FEHLER', String(i.nachricht || 'unbekannt').slice(0, 300), {
+      seite: String(i.seite || '').slice(0, 80),
+      quelle: String(i.quelle || '').slice(0, 200),
+      zeile: Number(i.zeile) || 0,
+      art: String(i.art || '').slice(0, 20),
+    });
+  });
   ipc.handle('texte', () => texteFuerRenderer());
   ipc.handle('config:lesen', () => {
     claudeCodePfad(true); // vielleicht inzwischen installiert

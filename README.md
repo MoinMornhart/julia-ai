@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Oberflächen-Fehler werden protokolliert** – wenn ein Fenster zwar aufgeht, aber leer bleibt (UI lädt nicht), landet der zugrunde liegende Fehler jetzt im Start-Logbuch. So lässt sich so ein Problem endlich nachvollziehen, statt im Dunkeln zu tappen. Bleibt lokal auf deinem PC.
 - **Erholt sich selbst von wiederholten Grafik-Abstürzen** – stürzt die Anzeige (Renderer) mehrfach ab, stellt Julia jetzt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängen zu bleiben. Bisher griff das nur bei Abstürzen direkt beim Start. Siehe [Installation](#installation).
 - **Tabellen im Chat** – Julia kann Antworten jetzt als richtige Tabelle darstellen (Markdown-Tabellen mit `|`), inklusive Spalten-Ausrichtung. Vorher standen Tabellen nur als Textzeilen da; jetzt werden sie sauber gerendert.
 - **Shell-Zeitlimit selbst einstellbar** – hängende Konsolen-Befehle brechen jetzt zuverlässig ab: In den Einstellungen unter „Shell-Befehle" legst du ein Standard- und ein maximales Zeitlimit fest. Das Maximum begrenzt jeden Befehl, auch wenn die KI mehr möchte – Schluss mit endlos laufenden Befehlen.
@@ -73,7 +74,6 @@
 - **Einheitliche KI-Instruktionen (intern auf Englisch)** – die Anweisungen und der System-Prompt, die Julias KI steuern, sind jetzt durchgängig auf Englisch. Für dich ändert sich nichts an der Sprache: Julia spricht und schreibt weiter in deiner App-Sprache (Deutsch). Das macht die interne Steuerung einheitlicher und pflegeleichter.
 - **Update installiert jetzt sicher über eine laufende Version** – der Installer beendet eine geöffnete Julia (samt Hintergrundprozessen) jetzt hart und zeigt keinen hängenden „bitte schließen"-Dialog mehr. Damit lässt sich eine neue Version zuverlässig drüber installieren und das automatische Update läuft durch. Siehe [Installation](#installation).
 - **Minecraft: erkennt Hänger und verbindet sich neu** – friert die Spielfigur ein (verbunden, aber keine Reaktion mehr), merkt Julia das jetzt selbst und macht automatisch einen Relog, statt endlos still zu stehen. Ihr Zustand wird vorher fürs Logbuch gesichert. Siehe [Minecraft](#minecraft).
-- **Julia lernt dazu und merkt sich Dinge** – auf Wunsch legt sie sich dauerhafte Notizen an (versteckter Ordner `.julia-memos` in ihrem Arbeitsordner): Vorlieben, Projekt-Fakten, gelernte Lösungen. Bleibt lokal, in den Einstellungen unter „Lernen" an-/abschaltbar.
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

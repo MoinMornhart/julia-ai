@@ -136,3 +136,21 @@ contextBridge.exposeInMainWorld('julia', {
     return () => ipcRenderer.removeListener(kanal, f);
   },
 });
+
+// Fehlersystem: unbehandelte Fehler der Oberfläche ins Start-Logbuch melden,
+// damit ein „UI lädt nicht" (Issue #3) sichtbar wird. Läuft in jedem Fenster.
+function fehlerMelden(art, nachricht, quelle, zeile) {
+  try {
+    ipcRenderer.send('diagnose:rendererFehler', {
+      art,
+      nachricht: String(nachricht == null ? '' : (nachricht.message || nachricht)).slice(0, 500),
+      quelle: String(quelle || '').slice(0, 200),
+      zeile: Number(zeile) || 0,
+      seite: (typeof location !== 'undefined' && location.pathname) || '',
+    });
+  } catch { /* Melden darf nie selbst stören */ }
+}
+if (typeof window !== 'undefined' && window.addEventListener) {
+  window.addEventListener('error', (e) => fehlerMelden('fehler', e.error || e.message, e.filename, e.lineno));
+  window.addEventListener('unhandledrejection', (e) => fehlerMelden('promise', e.reason, '', 0));
+}

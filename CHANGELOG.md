@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.8.0 – 2026-09-16
+- Fehler in der Oberfläche werden jetzt protokolliert: bleibt ein Fenster leer oder lädt die UI nicht, landet der zugrunde liegende Fehler im Start-Logbuch, damit sich so ein Problem nachvollziehen lässt (bleibt lokal auf dem PC)
+
 ## 2.7.1 – 2026-09-16
 - Julia erholt sich jetzt auch von wiederholten Grafik-/Renderer-Abstürzen nach dem Start selbst: sie stellt automatisch auf Software-Grafik um und startet neu, statt mit einem toten Fenster hängenzubleiben
 
