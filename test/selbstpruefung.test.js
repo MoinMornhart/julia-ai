@@ -34,3 +34,25 @@ test('Selbstprüfung: Abstürze werden zusammengefasst', () => {
   assert.equal(p.arten.FATAL, 1);
   assert.equal(p.letzte.length, 3);
 });
+
+test('Selbstprüfung: leere Oberfläche und degradierte GPU zählen als Problem (Issue #55)', () => {
+  const log = [
+    '2026-09-16 18:17 [START] Julia startet',
+    '2026-09-16 18:17 [GPU-INFO] Grafik erkannt – KEINE Treiber-Infos (GPU evtl. degradiert) {"vendorId":4318}',
+    '2026-09-16 18:18 [RENDERER-FEHLER] Oberfläche nach dem Laden leer – Beschriftungen leer – Start hing beim Laden',
+    '2026-09-16 18:18 [RENDERER] Chat-Fenster fertig geladen',
+  ].join('\n');
+  const p = probleme(log);
+  assert.ok(p, 'Problem erkannt');
+  assert.equal(p.arten['GPU-DEGRADIERT'], 1);
+  assert.equal(p.arten['RENDERER-FEHLER'], 1);
+});
+
+test('Selbstprüfung: normale GPU-INFO- und RENDERER-Zeilen sind kein Problem', () => {
+  const log = [
+    '2026-09-16 10:00 [GPU-INFO] Grafik erkannt {"renderer":"NVIDIA"}',
+    '2026-09-16 10:00 [RENDERER] Chat-Fenster fertig geladen',
+    '2026-09-16 10:00 [RENDERER] Chat-Fenster reagiert wieder',
+  ].join('\n');
+  assert.equal(probleme(log), null);
+});

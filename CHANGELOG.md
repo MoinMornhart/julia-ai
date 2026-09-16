@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.3.2 – 2026-09-16
+- Die woechentliche Selbstpruefung erkennt jetzt auch Grafikprobleme (leere Fenster, degradierte Grafiktreiber), nicht nur Abstuerze - gemeldet weiter nur mit Zustimmung und bereinigt, nie IP oder Tokens
+
 ## 4.3.1 – 2026-09-16
 - Leeres Fenster heilt sich jetzt auch bei Grafik-Problemen selbst: bleibt die Oberflaeche leer (ohne gemeldeten Absturz), stellt Julia automatisch auf Software-Grafik um und startet einmal neu - plus deutlich mehr Start-Logging, um solche Faelle schneller einzugrenzen
 
