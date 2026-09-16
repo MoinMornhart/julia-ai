@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Update installiert jetzt sicher über eine laufende Version** – der Installer beendet eine geöffnete Julia (samt Hintergrundprozessen) jetzt hart und zeigt keinen hängenden „bitte schließen"-Dialog mehr. Damit lässt sich eine neue Version zuverlässig drüber installieren und das automatische Update läuft durch. Siehe [Installation](#installation).
 - **Minecraft: erkennt Hänger und verbindet sich neu** – friert die Spielfigur ein (verbunden, aber keine Reaktion mehr), merkt Julia das jetzt selbst und macht automatisch einen Relog, statt endlos still zu stehen. Ihr Zustand wird vorher fürs Logbuch gesichert. Siehe [Minecraft](#minecraft).
 - **Julia lernt dazu und merkt sich Dinge** – auf Wunsch legt sie sich dauerhafte Notizen an (versteckter Ordner `.julia-memos` in ihrem Arbeitsordner): Vorlieben, Projekt-Fakten, gelernte Lösungen. Bleibt lokal, in den Einstellungen unter „Lernen" an-/abschaltbar.
 - **Doppelte Dateien aufspüren** – Julia findet auf Wunsch inhaltsgleiche Dateien in einem Ordner und zeigt, wie viel Platz die Kopien unnötig belegen. Rein lesend – gelöscht wird nichts, du entscheidest. (Erster Baustein der geplanten „Boost"-Seite.)
@@ -73,7 +74,6 @@
 - **Dateien nach Namen finden** – ergänzend zur Textsuche findet Julia jetzt auch Dateien über ihren Namen: als Teiltext (`config` → `config.js`) oder als Muster mit `*` und `?` (z. B. `*.test.js`). So springt sie noch schneller an die richtige Stelle im Projekt.
 - **Schnelle Projekt-Suche** – Julia kann jetzt in einem Projekt gezielt nach Text suchen („wo steht X?", „wo wird Y benutzt?") und bekommt nur die Fundstellen als `datei:zeile` zurück, statt viele Dateien einzeln zu lesen. Das spart Zeit und Tokens; `node_modules`, `.git`, Build-Ordner und große/binäre Dateien werden übersprungen.
 - **Nur-in-diesem-Ordner-Modus** – für konzentriertes Arbeiten an einem Projekt: Schaltest du den Modus in den Einstellungen ein und wählst einen Ordner, darf Julia Dateien **nur dort** lesen, schreiben, verschieben und auflisten – alles außerhalb ist gesperrt (rot). Standard aus. (Shell-Befehle brauchen weiterhin deine Freigabe; eine echte Shell-Abschottung über WSL/Docker kommt separat.) Siehe [Die Ampel](#die-ampel).
-- **Einstellungen durchsuchen** – oben in den Einstellungen gibt es jetzt ein Suchfeld: tippe z. B. „Stimme", „Blase" oder „Diagnose", und Julia zeigt nur noch die passenden Abschnitte. Umlaute egal, mehrere Wörter grenzen weiter ein. Siehe [Bedienung](#bedienung).
 
 Alle Änderungen stehen im [CHANGELOG](CHANGELOG.md). Und ein kleines Easter-Egg gibt es auch – tippe (oder sag) mal `jarvis`. Im Jarvis-Modus reicht „Jarvis" als Weckwort, und die Stimme klingt anders; „julia" schaltet zurück. 😉
 

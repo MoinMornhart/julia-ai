@@ -1,28 +1,37 @@
-; Individuelle NSIS-Ergänzungen für den Julia-Installer (Issue #9).
+; Individuelle NSIS-Ergänzungen für den Julia-Installer (Issues #9, #32).
 ;
-; Problem: Der Assistent-Installer (oneClick:false) beendet eine noch laufende
-; Julia nicht von selbst. Läuft die App während Installation oder Update, sind
-; ihre Dateien gesperrt → der Installer bricht mit einem Fehler ab ("Datei in
-; Benutzung"), und automatische Updates scheitern aus demselben Grund.
+; Problem: Der Assistent-Installer (oneClick:false) beendet eine laufende Julia
+; nicht zuverlässig. electron-builder zeigt beim Installieren/Updaten sonst den
+; Dialog „App kann nicht geschlossen werden – bitte manuell schließen und Retry",
+; der auch nach einem sanften taskkill hängen bleiben kann. Dann lässt sich eine
+; neue Version nicht über eine laufende drüber installieren und das Auto-Update
+; scheitert.
 ;
-; Lösung: Vor dem Kopieren der Dateien eine laufende Instanz beenden – erst
-; sanft (Fenster schließen lassen), dann, falls nötig, hart. Beim Uninstall
-; (auch der läuft vor jedem Update) genauso. taskkill ist auf jedem Windows
-; vorhanden, daher ohne Zusatz-Plugin robust.
+; Lösung: Den elektron-builder-Prüf-Hook `customCheckAppRunning` überschreiben
+; (statt des blockierenden „bitte schließen"-Dialogs) und die laufende Instanz
+; **hart** beenden – mit /F (erzwingen) und /T (auch Kindprozesse: GPU-/Renderer-
+; Prozesse heißen ebenfalls "Julia AI.exe"). Zwei Durchläufe mit kurzer Pause,
+; damit die Dateien danach sicher frei sind. taskkill ist auf jedem Windows da,
+; also kein Zusatz-Plugin nötig. Gilt für Installation und Uninstall (der läuft
+; bei jedem Update mit).
 
-!macro schliesseJulia
-  ; sanft: der App die Chance geben, sauber zu beenden
-  nsExec::Exec 'cmd.exe /c taskkill /IM "${PRODUCT_FILENAME}.exe"'
-  Sleep 1500
-  ; hart: falls sie noch offen ist, damit die Dateien frei sind
-  nsExec::Exec 'cmd.exe /c taskkill /F /IM "${PRODUCT_FILENAME}.exe"'
+!macro juliaHartBeenden
+  nsExec::Exec 'cmd.exe /c taskkill /F /T /IM "${PRODUCT_FILENAME}.exe"'
+  Sleep 700
+  nsExec::Exec 'cmd.exe /c taskkill /F /T /IM "${PRODUCT_FILENAME}.exe"'
   Sleep 500
 !macroend
 
+; Ersetzt die Standard-Prüfung „läuft die App?" – kein Retry-Dialog mehr,
+; sondern direkt hart beenden.
+!macro customCheckAppRunning
+  !insertmacro juliaHartBeenden
+!macroend
+
 !macro customInit
-  !insertmacro schliesseJulia
+  !insertmacro juliaHartBeenden
 !macroend
 
 !macro customUnInit
-  !insertmacro schliesseJulia
+  !insertmacro juliaHartBeenden
 !macroend

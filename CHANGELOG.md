@@ -1,5 +1,8 @@
 # Changelog
 
+## 2.3.1 – 2026-09-16
+- Update installiert jetzt zuverlässig über eine laufende Version: der Installer beendet eine geöffnete Julia samt Hintergrundprozessen hart und zeigt keinen hängenden Bitte-schliessen-Dialog mehr, damit auch das automatische Update durchläuft
+
 ## 2.3.0 – 2026-09-16
 - Julia erkennt in Minecraft jetzt, wenn die Spielfigur einfriert (verbunden, aber ohne Reaktion), sichert ihren Zustand ins Logbuch und verbindet sich automatisch neu, statt endlos still zu stehen
 
