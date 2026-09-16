@@ -277,8 +277,11 @@ function zeitText(ms, ctx) {
 }
 
 const EINSTELLUNG_GRUEN = /^(blase\.|sprache\.)/;
-// Anbieter und Adresse bestimmen, wohin das Gespräch geht – nur mit Ja.
-const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|anbieter$|anbieter_url$|nutzer\.name$|sprachcode$|clip\.|code\.)/;
+// Mit Rückfrage änderbar. Anbieter und Anbieter-Adresse bestimmen, WOHIN das
+// Gespräch geht – die darf die KI NICHT setzen (auch nicht mit Bestätigung), sonst
+// könnte ein vergifteter Chat die Adresse auf einen fremden Server umbiegen und
+// Daten abfließen lassen. Sie bleiben deshalb gesperrt (fallen unten auf ROT).
+const EINSTELLUNG_GELB = /^(update\.|hotkey\.|autostart$|aufwand$|modell$|nutzer\.name$|sprachcode$|clip\.|code\.|design\.|brainstorming\.|memos\.)/;
 
 const WERKZEUGE = [
   {
@@ -807,7 +810,7 @@ const WERKZEUGE = [
   },
   {
     name: 'einstellung_setzen',
-    description: 'Eine Einstellung ändern, z. B. blase.an, blase.farben.idle (Liste von Hex-Farben), blase.groesse, blase.tempo, sprache.vorlesen. Das Aussehen der Blase gilt sofort.',
+    description: 'Eine unkritische App-Einstellung ändern (bei wichtigeren kommt vorher eine Rückfrage-Box, die der Nutzer bestätigen muss). Ohne Rückfrage: Blase/Sprache-Ausgabe (blase.an, blase.farben.idle als Hex-Liste, blase.groesse, sprache.vorlesen). Mit Rückfrage: u. a. design.modus (hell/dunkel/system), design.akzent (#Hex), brainstorming.an, memos.an, modell, sprachcode, hotkey.*, update.*. GESPERRT (geht hier nicht, nur der Nutzer von Hand): Anbieter/Anbieter-Adresse, API-Schlüssel, Sandbox, BETA/Selbst-Programmieren, Diagnose-Versand, MCP, Freigaben („Allem zustimmen"), Arbeitsordner, Kosten, Mikrofon.',
     input_schema: {
       type: 'object',
       properties: {

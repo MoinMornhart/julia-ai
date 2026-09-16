@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.0.1 – 2026-09-16
+- Die KI darf jetzt unkritische Einstellungen (Design, Brainstorming, Lernen) mit Bestaetigung aendern - Anbieter und Anbieter-Adresse sind dabei gesperrt, damit kein vergifteter Chat das Gespraech auf einen fremden Server umbiegen kann
+
 ## 4.0.0 – 2026-09-16
 - Julia erkennt jetzt echte Zugangs-Tokens vieler Anbieter (und generell sehr lange, zufaellige Schluessel) und laesst keinen Token als Namen eines Geheimnisses zu - so kann kein Schluessel dort landen, wo die KI nur den Namen sieht
 

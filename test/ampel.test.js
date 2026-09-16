@@ -121,6 +121,19 @@ test('Julia kann "Allem zustimmen" nicht selbst einschalten', () => {
   }
 });
 
+test('Julia kann Anbieter/Anbieter-Adresse nicht selbst umbiegen (Datenabfluss)', () => {
+  const { WERKZEUGE } = require('../src/main/werkzeuge');
+  const w = WERKZEUGE.find((x) => x.name === 'einstellung_setzen');
+  assert.equal(w.einstufen({ schluessel: 'anbieter', wert: 'eigen' }).stufe, a.ROT);
+  assert.equal(w.einstufen({ schluessel: 'anbieter_url', wert: 'https://fremd.example.com' }).stufe, a.ROT);
+  // Sandbox/BETA/Schlüssel bleiben ebenfalls gesperrt.
+  assert.equal(w.einstufen({ schluessel: 'sandbox.an', wert: true }).stufe, a.ROT);
+  assert.equal(w.einstufen({ schluessel: 'beta.selbstcode', wert: true }).stufe, a.ROT);
+  assert.equal(w.einstufen({ schluessel: 'api.schluessel_verschluesselt', wert: 'x' }).stufe, a.ROT);
+  // Unkritisches bleibt möglich (mit Rückfrage bzw. sofort).
+  assert.equal(w.einstufen({ schluessel: 'design.modus', wert: 'hell' }).stufe === a.ROT, false, 'design.modus sollte änderbar sein');
+});
+
 test('Auch nach fremden Inhalten nicht fragen: nur zusammen mit "Allem zustimmen"', () => {
   assert.equal(a.ohneFrage('netz', true, true), true);
   assert.equal(a.ohneFrage('gedaechtnis', true, true), true);
