@@ -30,7 +30,7 @@ const STANDARD = {
   anbieter_url: '', // nur für "eigen": OpenAI-kompatible Adresse
   modell: 'claude-opus-5',
   modelle_ohne_bild: [], // Modelle, die keine Bilder/Screenshots verstehen – dann werden Screenshots nicht mitgeschickt (lernt Julia selbst, wenn ein Anbieter „Vision disabled" meldet)
-  aufwand: 'high',
+  aufwand: 'medium', // Denkaufwand: Standard „mittel" – gute Antworten bei spürbar mehr Tempo (Issue #75). Wer mehr Tiefe will, stellt in den Einstellungen auf high/xhigh/max; für Sprache/Bildschirmsteuerung wird ohnehin schneller gedacht.
   kanal: 'desktop',
   autostart: false,
   erinnerung: {

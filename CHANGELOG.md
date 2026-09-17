@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.0.1 – 2026-09-17
+- Julia antwortet spuerbar schneller - der Standard-Denkaufwand ist jetzt mittel statt hoch (gute Antworten, deutlich flotter); wer mehr Tiefe will, stellt den Denkaufwand in den Einstellungen wieder hoeher
+
 ## 5.0.0 – 2026-09-17
 - Denk-Schritt sichtbar - waehrend Julia nachdenkt, erscheint eine eingeklappte Box mit ihrem Reasoning (zum Aufklappen), statt nur arbeitet; wie viel sie nachdenkt, stellst du ueber den Denkaufwand in den Einstellungen ein
 
