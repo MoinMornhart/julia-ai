@@ -14,6 +14,8 @@ let hoert = false;
 let hotkey = '';
 let antwortEl = null;
 let antwortRoh = '';
+let denkEl = null; // eingeklappte Reasoning-Box (Issue #74)
+let denkRoh = '';
 const werkzeugEls = new Map();
 const freigabeEls = new Map();
 
@@ -167,8 +169,26 @@ function juliaText(delta, ganz = false) {
   if (unten) verlauf.scrollTop = verlauf.scrollHeight;
 }
 
+// Reasoning-Schritt live in einer eingeklappten Box zeigen (Issue #74). Standard
+// zugeklappt (nur „Nachdenken …"); wer will, klappt auf. Kommt nur, wenn der
+// Anbieter Denk-/Thinking-Deltas liefert; sonst bleibt es wie bisher.
+function juliaDenken(delta) {
+  if (!delta) return;
+  if (!denkEl) {
+    denkEl = anhaengen(element('nachricht julia',
+      `<details class="denken"><summary>${esc(tx('chat.reasoning'))}</summary><div class="denk-inhalt"></div></details>`));
+    denkRoh = '';
+  }
+  denkRoh += delta;
+  const unten = amEnde();
+  const inhalt = denkEl.querySelector('.denk-inhalt');
+  if (inhalt) inhalt.textContent = denkRoh;
+  if (unten) verlauf.scrollTop = verlauf.scrollHeight;
+}
+
 function werkzeug({ id, name, eingabe, eingabeVoll }) {
   antwortEl = null;
+  denkEl = null;
   const zeigJson = eingabeVoll && eingabeVoll !== '{}';
   const d = element('werkzeug laeuft',
     `<span class="ico"></span><span class="wname">${esc(name)}</span><span class="weingabe">${esc(eingabe === '{}' ? '' : eingabe || '')}</span>`
@@ -266,6 +286,7 @@ function leeren() {
   $('leer').hidden = false;
   antwortEl = null;
   antwortRoh = '';
+  denkEl = null;
   werkzeugEls.clear();
   freigabeEls.clear();
 }
@@ -454,15 +475,16 @@ async function init() {
     if (window.juliaAnsicht) window.juliaAnsicht('chat');
     dateienHinzu([...e.dataTransfer.files]);
   });
-  julia.on('agent:start', () => beschaeftigtSetzen(true));
+  julia.on('agent:start', () => { denkEl = null; beschaeftigtSetzen(true); });
   julia.on('agent:text', (d) => juliaText(d));
+  julia.on('agent:denken', (d) => juliaDenken(d));
   julia.on('agent:werkzeug', werkzeug);
   julia.on('agent:werkzeugFertig', werkzeugFertig);
   julia.on('agent:freigabe', freigabe);
   julia.on('agent:freigabeErledigt', freigabeErledigt);
   julia.on('agent:geheimnisFrage', geheimnisFrage);
   julia.on('agent:geheimnisErledigt', geheimnisErledigt);
-  julia.on('agent:fertig', () => { beschaeftigtSetzen(false); antwortEl = null; $('text').focus(); });
+  julia.on('agent:fertig', () => { beschaeftigtSetzen(false); antwortEl = null; denkEl = null; $('text').focus(); });
   julia.on('agent:fehler', (e) => systemzeile(e.art === 'kein_schluessel' ? tx('chat.kein_schluessel') : e.text, 'fehler'));
   julia.on('agent:hinweis', (h) => {
     const k = { abgebrochen: 'chat.abgebrochen', beschaeftigt: 'chat.beschaeftigt', verweigert: 'hinweis.verweigert', max_tokens: 'hinweis.max_tokens', zu_viele_runden: 'hinweis.zu_viele_runden', kosten_warnung: 'hinweis.kosten_warnung' }[h.art];

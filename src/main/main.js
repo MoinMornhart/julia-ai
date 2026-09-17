@@ -2143,7 +2143,7 @@ function erinnerungenVerdrahten() {
 }
 
 function agentVerdrahten() {
-  for (const ereignis of ['text', 'werkzeug', 'werkzeugFertig', 'freigabeErledigt', 'start', 'fehler', 'hinweis']) {
+  for (const ereignis of ['text', 'denken', 'werkzeug', 'werkzeugFertig', 'freigabeErledigt', 'start', 'fehler', 'hinweis']) {
     agent.on(ereignis, (d) => anAlle(`agent:${ereignis}`, d));
   }
   agent.on('freigabe', (d) => {

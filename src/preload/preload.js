@@ -6,7 +6,7 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 // nur diese Funktionen, kein Node und kein Dateisystem.
 
 const KANAELE = [
-  'agent:nutzer', 'agent:start', 'agent:text', 'agent:werkzeug', 'agent:werkzeugFertig',
+  'agent:nutzer', 'agent:start', 'agent:text', 'agent:denken', 'agent:werkzeug', 'agent:werkzeugFertig',
   'agent:freigabe', 'agent:freigabeErledigt', 'agent:geheimnisFrage', 'agent:geheimnisErledigt', 'agent:fertig', 'agent:fehler', 'agent:hinweis',
   'zustand', 'pegel', 'sprache:hoert', 'sprache:teil', 'config:geaendert', 'texte:geaendert', 'chat:geleert', 'demo', 'overlay:modus', 'sync:status', 'appserver:status', 'ansicht', 'chat:laden', 'verlauf:geaendert', 'routinen:geaendert', 'auswahl:text', 'clips:geaendert', 'zugriff', 'mc:geaendert', 'mc:code', 'erinnerung', 'kosten', 'mikrotest', 'whisper:status', 'piper:status', 'mcp:status', 'system:zeile',
 ];

@@ -332,6 +332,10 @@ class Agent extends EventEmitter {
     const parameter = this._parameter();
     const stream = client.beta.messages.stream(parameter, { signal: this.abbruch.signal });
     stream.on('text', (d) => this.emit('text', d));
+    // Den Denk-/Reasoning-Schritt live an die Oberfläche geben (Issue #74),
+    // damit während des Nachdenkens etwas zu sehen ist statt nur „arbeitet …".
+    // Die Oberfläche zeigt es in einer eingeklappten Box.
+    stream.on('thinking', (d) => { if (d) this.emit('denken', d); });
     const msg = await stream.finalMessage();
     return { content: msg.content, stop_reason: msg.stop_reason, usage: msg.usage, model: msg.model || parameter.model };
   }

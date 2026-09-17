@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.0.0 – 2026-09-17
+- Denk-Schritt sichtbar - waehrend Julia nachdenkt, erscheint eine eingeklappte Box mit ihrem Reasoning (zum Aufklappen), statt nur arbeitet; wie viel sie nachdenkt, stellst du ueber den Denkaufwand in den Einstellungen ein
+
 ## 4.9.3 – 2026-09-17
 - Minecraft - Steck-Stellen landen im lokalen Logbuch; gibt Julia an einem Hindernis auf, notiert sie die Stelle mit Koordinaten, damit sich solche Punkte hinterher gezielt nachvollziehen lassen
 
