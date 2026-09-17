@@ -905,6 +905,8 @@ function vibeZeigen(s) {
     : tx('vibe.nicht_angemeldet');
   $('vibeAbmelden').hidden = !angemeldet;
   $('vibeSchluessel').hidden = angemeldet;
+  $('vibeGeraet').hidden = angemeldet;
+  if (angemeldet) $('vibeGeraetInfo').hidden = true;
 }
 
 // Grafik-Reparatur (Issue #55): auf Software-Grafik umstellen (gegen ein leeres
@@ -1003,6 +1005,34 @@ function vibeVerbinden() {
       m.textContent = tx('vibe.angemeldet');
       vibeZeigen(r.status);
     } finally { $('vibeAnmelden').disabled = false; }
+  };
+  $('vibeGeraet').onclick = async () => {
+    const m = $('vibeMeldung');
+    m.classList.remove('fehler');
+    $('vibeGeraet').disabled = true;
+    try {
+      const start = await julia.vibeworksGeraetStart('');
+      if (!start || !start.ok) {
+        m.textContent = tx((start && start.hinweis) || 'vibe.hinweis_fehler');
+        m.classList.add('fehler');
+        return;
+      }
+      $('vibeGeraetInfo').hidden = false;
+      $('vibeGeraetCode').textContent = start.user_code;
+      m.textContent = tx('vibe.geraet_warten', { code: start.user_code });
+      const r = await julia.vibeworksGeraetWarten();
+      $('vibeGeraetInfo').hidden = true;
+      if (r && r.ok) {
+        m.textContent = tx('vibe.angemeldet');
+        vibeZeigen(r.status);
+      } else {
+        const code = r && r.code;
+        m.textContent = tx(code === 'abgelehnt' ? 'vibe.geraet_abgelehnt'
+          : code === 'abgelaufen' ? 'vibe.geraet_abgelaufen'
+            : (r && r.hinweis) || 'vibe.hinweis_fehler');
+        m.classList.add('fehler');
+      }
+    } finally { $('vibeGeraet').disabled = false; }
   };
   $('vibeAbmelden').onclick = async () => {
     if (!confirm(tx('vibe.abmelden_frage'))) return;

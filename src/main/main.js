@@ -1204,6 +1204,34 @@ function ipcEinrichten() {
     mcp.umgebungSetzen(vibeworks.ID, null);
     return vibeworksStatus();
   });
+  // Geräte-Anmeldung (VibeWorks ≥ 1.1.9, Issue #17/#13): Julia holt sich einen
+  // Code, der Kontoinhaber erlaubt einmal – kein Schlüssel-Kopieren. Der device_code
+  // bleibt im Hauptprozess, der abgeholte Schlüssel geht nie an die Oberfläche/KI.
+  let vibeGeraet = null;
+  ipc.handle('vibeworks:geraetStart', async (_e, basis) => {
+    const b = (basis && String(basis).trim()) || vibeworks.BASIS;
+    const r = await vibeworks.geraetStart({ basis: b, scope: 'tasks' });
+    if (!r.ok) return { ok: false, code: r.code, hinweis: vibeworks.hinweisSchluessel(r.code === 'netz' ? 'netz' : 'fehler') };
+    vibeGeraet = { device_code: r.device_code, basis: b, interval: r.interval };
+    if (r.verification_uri_complete) shell.openExternal(r.verification_uri_complete).catch(() => {});
+    return { ok: true, user_code: r.user_code, verification_uri: r.verification_uri_complete || r.verification_uri };
+  });
+  ipc.handle('vibeworks:geraetWarten', async () => {
+    if (!vibeGeraet) return { ok: false, code: 'kein_lauf' };
+    const lauf = vibeGeraet;
+    const t = await vibeworks.geraetSchleife({ basis: lauf.basis, device_code: lauf.device_code, interval: lauf.interval });
+    vibeGeraet = null;
+    if (t.status !== 'fertig' || !t.access_token) {
+      return { ok: false, code: t.status, hinweis: vibeworks.hinweisSchluessel(t.status === 'abgelaufen' ? 'zu_viele' : 'fehler') };
+    }
+    // Schlüssel sofort verschlüsselt ablegen, Server-Eintrag mit der gelieferten mcp_url.
+    mcp.umgebungSetzen(vibeworks.ID, vibeworks.kopfzeile(t.access_token));
+    const liste = config.get('mcp.server').filter((s) => s.id !== vibeworks.ID);
+    config.set('mcp.server', [...liste, vibeworks.serverEintrag(t.mcp_url || vibeworks.MCP_URL)]);
+    await mcp.neuStarten(vibeworks.ID);
+    protokoll.eintragen({ werkzeug: 'vibeworks', stufe: 'INFO', ergebnis: 'Bei VibeWorks angemeldet (Geraet)' });
+    return { ok: true, status: vibeworksStatus() };
+  });
   ipc.handle('piper:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielPiper() : piper.status()));
   ipc.handle('piper:laden', () => {
     const s = String(config.get('sprache.stimme') || '');

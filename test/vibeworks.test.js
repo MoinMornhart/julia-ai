@@ -96,3 +96,72 @@ test('pruefen: hängender Server läuft ins Zeitlimit statt einzufrieren (Schutz
   assert.equal(r.ok, false);
   assert.equal(r.code, 'netz');
 });
+
+// ─── Geräte-Anmeldung (RFC 8628, Issue #17/#13) ─────────────────────────
+
+function jsonAntwort(status, obj) {
+  return { status, headers: new Map(), text: async () => JSON.stringify(obj) };
+}
+
+test('geraetStart: liefert Code und Verifizierungs-URL', async () => {
+  let gesehen = null;
+  const holen = async (url, opt) => {
+    gesehen = { url, body: JSON.parse(opt.body) };
+    return jsonAntwort(200, {
+      device_code: 'dev-123', user_code: 'BCDF-GHJK',
+      verification_uri: 'https://vw.example/verbinden',
+      verification_uri_complete: 'https://vw.example/verbinden?code=BCDF-GHJK',
+      expires_in: 600, interval: 5, mcp_url: 'https://vw.example/api/mcp',
+    });
+  };
+  const r = await vw.geraetStart({ basis: 'https://vw.example', scope: 'tasks', holen });
+  assert.equal(r.ok, true);
+  assert.equal(r.user_code, 'BCDF-GHJK');
+  assert.equal(r.device_code, 'dev-123');
+  assert.equal(r.mcp_url, 'https://vw.example/api/mcp');
+  assert.equal(gesehen.url, 'https://vw.example/api/mcp/device');
+  assert.equal(gesehen.body.client_name, 'Julia');
+  assert.equal(gesehen.body.scope, 'tasks');
+});
+
+test('geraetStart: Netzfehler und unerwartete Antwort sauber', async () => {
+  assert.equal((await vw.geraetStart({ holen: async () => { throw new Error('offline'); } })).code, 'netz');
+  const r = await vw.geraetStart({ holen: async () => jsonAntwort(200, { foo: 1 }) });
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'unerwartet');
+});
+
+test('geraetToken: bildet die RFC-8628-Zustände ab', async () => {
+  const mk = (status, obj) => async () => jsonAntwort(status, obj);
+  assert.equal((await vw.geraetToken({ device_code: 'd', holen: mk(400, { error: 'authorization_pending' }) })).status, 'warten');
+  assert.equal((await vw.geraetToken({ device_code: 'd', holen: mk(400, { error: 'slow_down' }) })).status, 'langsamer');
+  assert.equal((await vw.geraetToken({ device_code: 'd', holen: mk(400, { error: 'access_denied' }) })).status, 'abgelehnt');
+  assert.equal((await vw.geraetToken({ device_code: 'd', holen: mk(400, { error: 'expired_token' }) })).status, 'abgelaufen');
+  const fertig = await vw.geraetToken({ device_code: 'd', holen: mk(200, { access_token: 'vw_geheim', scope: 'tasks', mcp_url: 'u' }) });
+  assert.equal(fertig.status, 'fertig');
+  assert.equal(fertig.access_token, 'vw_geheim');
+});
+
+test('geraetSchleife: wartet, wird langsamer und wird am Ende fertig', async () => {
+  const folge = ['authorization_pending', 'slow_down', 'authorization_pending'];
+  let i = 0;
+  const holen = async () => {
+    if (i < folge.length) {
+      const e = folge[i]; i += 1;
+      return jsonAntwort(400, { error: e });
+    }
+    return jsonAntwort(200, { access_token: 'vw_final', scope: 'tasks', mcp_url: 'u' });
+  };
+  const r = await vw.geraetSchleife({ device_code: 'd', interval: 1, holen, warten: () => Promise.resolve() });
+  assert.equal(r.status, 'fertig');
+  assert.equal(r.access_token, 'vw_final');
+});
+
+test('geraetSchleife: Ablehnung bricht ab', async () => {
+  const r = await vw.geraetSchleife({
+    device_code: 'd', interval: 1,
+    holen: async () => jsonAntwort(400, { error: 'access_denied' }),
+    warten: () => Promise.resolve(),
+  });
+  assert.equal(r.status, 'abgelehnt');
+});

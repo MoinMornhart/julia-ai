@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **VibeWorks: sign in with your account without copying a key (device login)** – besides the API key, the settings now offer "Sign in with account (device)": Julia fetches a code itself, the VibeWorks page opens, you allow access **once** – done. No more key to copy. The access is fetched securely and stored encrypted on the PC only (the AI never sees it); your one-time approval stays the security boundary.
 - **VibeWorks sign-in no longer freezes** – if the VibeWorks server ever fails to respond, Julia now aborts the key check cleanly after a short while and shows a network hint, instead of the sign-in box loading forever ("nothing loads"). A small safeguard so a hanging server can't block the interface.
 - **Agents with a reviewer loop (BETA)** – Julia can now solve a task with two roles working together: an "Author" role writes a draft, a "Reviewer" role critiques it against the goal, and it gets improved – until the reviewer is satisfied or the (small) round limit is reached. That makes results more thorough. Both roles only reason (no PC access), and it's only there with BETA agents on. Third and final building block of the agent structure.
 - **Delegate to agent roles (BETA)** – Julia can now hand a focused subtask to one of your roles (e.g. ask a "Critic" or "Researcher" role for a second opinion) and use its answer. The role agent **only reasons – no PC access, no tools** – and it's only available when you've turned BETA agents on. Second building block of the agent structure.
@@ -73,7 +74,6 @@
 - **Security tightened again** – after an automated repo check, two small hardenings: invisible control characters now only appear as readable escapes in the source, and changing settings is additionally protected against manipulated special keys. Behaviour stays the same.
 - **Multi-stage graphics rescue for finicky drivers** – if the window stays empty, Julia now automatically tries different graphics methods one after another (modern drivers, an older/more compatible one, OpenGL, then a pure software renderer, and finally no GPU at all) and remembers the one that works. So she finds a way by herself on more PCs, without you setting anything.
 - **No more "empty window + restart loop", and settings scroll again** – two fixes for finicky PCs: at startup the interface now gets enough time to build itself with fallback labels if needed before the self-healing steps in – ending the restart loop on affected machines (the real texts are loaded in the background). And the settings can be scrolled with the mouse wheel again.
-- **Driver hint for graphics problems** – if your graphics card reports no driver info (typical with an empty window), Julia shows a hint in the repair section with a **link to your manufacturer's official driver page** (NVIDIA/AMD/Intel). Julia installs **nothing** itself – you decide whether to get the driver.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

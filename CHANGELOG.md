@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.9.0 – 2026-09-17
+- VibeWorks-Anmeldung per Konto ohne Schluessel-Kopieren - Julia holt sich per Geraete-Anmeldung selbst einen Code, du erlaubst den Zugriff einmal auf der VibeWorks-Seite, fertig; der Zugang liegt nur verschluesselt auf dem PC und wird der KI nie gezeigt
+
 ## 4.8.1 – 2026-09-17
 - VibeWorks-Anmeldung friert nicht mehr ein - haengt der Server, bricht Julia die Schluessel-Pruefung nach kurzer Zeit sauber ab und zeigt einen Netz-Hinweis, statt dass die Anmelde-Box ewig laedt
 
