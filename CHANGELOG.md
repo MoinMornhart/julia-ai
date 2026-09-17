@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.9.1 – 2026-09-17
+- Absturz beim Start behoben - auf manchen Rechnern lud die Oberflaeche nicht mehr, weil sich zwei Skripte im Chatfenster denselben Namen teilten (doppeltes mitZeitlimit/md) und das Haupt-Skript abbrach; zusaetzlich ein Test, der solche Skript-Kollisionen kuenftig verhindert
+
 ## 4.9.0 – 2026-09-17
 - VibeWorks-Anmeldung per Konto ohne Schluessel-Kopieren - Julia holt sich per Geraete-Anmeldung selbst einen Code, du erlaubst den Zugriff einmal auf der VibeWorks-Seite, fertig; der Zugang liegt nur verschluesselt auf dem PC und wird der KI nie gezeigt
 

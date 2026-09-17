@@ -96,13 +96,16 @@ function esc(s) {
   return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 
-// Zeitlimit für Start-IPCs kommt aus zeitlimit.js (window.mitZeitlimit), das vor
-// chat.js geladen wird – so bleibt es testbar.
-const mitZeitlimit = window.mitZeitlimit;
+// Zeitlimit für Start-IPCs kommt aus zeitlimit.js, das vor chat.js geladen wird
+// und `mitZeitlimit` global bereitstellt. NICHT hier erneut deklarieren – ein
+// `const mitZeitlimit` würde mit der Funktion aus zeitlimit.js kollidieren
+// („Identifier 'mitZeitlimit' has already been declared") und chat.js komplett
+// lahmlegen (Issue #70). Die globale Funktion wird direkt verwendet.
 
 // Markdown (Absätze, Listen, Code, fett/kursiv, Links, Tabellen) kommt aus dem
-// gemeinsamen, getesteten Modul markdown.js (window.Md), das vor chat.js geladen wird.
-const md = (text) => window.Md.md(text);
+// gemeinsamen, getesteten Modul markdown.js, das vor chat.js geladen wird und
+// `md` global bereitstellt. NICHT erneut deklarieren (würde wie bei #70 mit der
+// Funktion aus markdown.js kollidieren) – die globale Funktion wird direkt genutzt.
 
 // --- Verlauf ---
 
