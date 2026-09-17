@@ -61,11 +61,7 @@ impl Trainer {
     /// Vorhersage `y = w · x`.
     pub fn vorhersage(&self, x: &[f32]) -> f32 {
         assert_eq!(x.len(), self.w.len(), "x muss dim lang sein");
-        let mut y = 0.0f32;
-        for i in 0..self.w.len() {
-            y += self.w[i] * x[i];
-        }
-        y
+        self.w.iter().zip(x.iter()).map(|(&w, &xi)| w * xi).sum()
     }
 
     /// Ein Online-Schritt (Delta-Regel). Gibt den quadratischen Fehler VOR dem
@@ -73,8 +69,9 @@ impl Trainer {
     pub fn schritt(&mut self, x: &[f32], ziel: f32) -> f32 {
         let pred = self.vorhersage(x);
         let fehler = ziel - pred;
-        for i in 0..self.w.len() {
-            self.w[i] += self.lr * fehler * x[i];
+        let lr = self.lr;
+        for (w, &xi) in self.w.iter_mut().zip(x.iter()) {
+            *w += lr * fehler * xi;
         }
         self.stats.schritte += 1;
         self.stats.letzter_loss = fehler * fehler;

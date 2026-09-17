@@ -37,10 +37,10 @@ impl Ternary {
         for r in 0..self.rows {
             let base = r * self.cols;
             let mut acc = 0.0f32;
-            for c in 0..self.cols {
+            for (c, &xc) in x.iter().enumerate() {
                 match self.w[base + c] {
-                    1 => acc += x[c],
-                    -1 => acc -= x[c],
+                    1 => acc += xc,
+                    -1 => acc -= xc,
                     _ => {}
                 }
             }

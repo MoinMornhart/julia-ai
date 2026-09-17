@@ -28,7 +28,10 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Rust-Version zeigen
-        run: cargo --version && rustc --version
+        run: cargo --version && rustc --version && cargo clippy --version
+
+      - name: Clippy (Lints und Optimierungen, Warnungen sind Fehler)
+        run: cargo clippy --all-targets -- -D warnings
 
       - name: Tests
         run: cargo test --all --verbose

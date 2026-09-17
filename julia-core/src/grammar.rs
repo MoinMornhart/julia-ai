@@ -14,9 +14,9 @@ pub fn mask_logits(allowed: &[usize], logits: &mut [f32]) {
             erlaubt[i] = true;
         }
     }
-    for i in 0..logits.len() {
+    for (i, l) in logits.iter_mut().enumerate() {
         if !erlaubt[i] {
-            logits[i] = f32::NEG_INFINITY;
+            *l = f32::NEG_INFINITY;
         }
     }
 }

@@ -31,14 +31,15 @@ impl WeightStream {
         assert_eq!(x.len(), self.cols, "x muss cols lang sein");
         let mut y = vec![0.0f32; self.rows];
         let mut buf = vec![0u8; self.cols * 4];
-        for r in 0..self.rows {
+        for yr in y.iter_mut() {
             self.reader.read_exact(&mut buf)?;
             let mut acc = 0.0f32;
-            for c in 0..self.cols {
-                let b = [buf[c * 4], buf[c * 4 + 1], buf[c * 4 + 2], buf[c * 4 + 3]];
-                acc += f32::from_le_bytes(b) * x[c];
+            for (c, &xc) in x.iter().enumerate() {
+                let o = c * 4;
+                let b = [buf[o], buf[o + 1], buf[o + 2], buf[o + 3]];
+                acc += f32::from_le_bytes(b) * xc;
             }
-            y[r] = acc;
+            *yr = acc;
         }
         Ok(y)
     }
