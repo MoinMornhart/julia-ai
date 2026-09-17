@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.8.0 – 2026-09-17
+- Agenten mit Pruefer-Schleife (BETA): Julia kann eine Aufgabe im Zusammenspiel zweier Rollen loesen - eine Ersteller-Rolle macht einen Entwurf, eine Pruefer-Rolle kritisiert ihn gegen das Ziel, es wird nachgebessert, bis der Pruefer zufrieden ist oder die kleine Rundenzahl erreicht ist; beide Rollen denken nur, kein PC-Zugriff, nur bei eingeschalteten BETA-Agenten
+
 ## 4.7.0 – 2026-09-17
 - Agenten-Rollen delegieren (BETA): Julia kann eine fokussierte Teilaufgabe an eine deiner Rollen abgeben (z. B. Kritiker oder Rechercheur um eine Zweitmeinung bitten) und deren Antwort nutzen - der Rollen-Agent denkt nur nach, hat keinen PC-Zugriff und keine Werkzeuge, und das Werkzeug gibt es nur bei eingeschalteten BETA-Agenten
 

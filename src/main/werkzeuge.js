@@ -520,6 +520,45 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'mit_pruefer',
+    description: 'Löse eine Aufgabe mit einer Ersteller- und einer Prüfer-Rolle (nur bei eingeschalteten BETA-Agenten). Intern: die Ersteller-Rolle macht einen Entwurf, die Prüfer-Rolle kritisiert ihn gegen die Aufgabe, die Ersteller-Rolle bessert nach – bis der Prüfer zufrieden ist oder die Rundenzahl erreicht ist. Beide Rollen denken nur (kein PC-Zugriff). ersteller/pruefer = Namen angelegter Rollen, aufgabe = die Aufgabe, runden = optionale Obergrenze (1–3, Standard 2). Du bekommst das Endergebnis zurück.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        ersteller: { type: 'string', description: 'Rolle, die den Entwurf macht.' },
+        pruefer: { type: 'string', description: 'Rolle, die prüft/kritisiert.' },
+        aufgabe: { type: 'string' },
+        runden: { type: 'number', description: '1–3, Standard 2.' },
+      },
+      required: ['ersteller', 'pruefer', 'aufgabe'],
+    },
+    einstufen: gruen, // Nur Nachdenken (mehrere Modell-Aufrufe), kein PC-Zugriff; BETA-Gate in ausfuehren.
+    async ausfuehren(e, ctx) {
+      if (!ctx.agentenAn || !ctx.agentenAn()) throw new Error('Agenten-Rollen sind aus. Der Nutzer kann sie im BETA-Bereich der Einstellungen einschalten.');
+      if (!ctx.unterAgent) throw new Error('Sub-Agenten sind hier nicht verfügbar.');
+      const rollen = ctx.config.get('rollen') || [];
+      const finde = (n) => rollen.find((r) => r.name.toLowerCase() === String(n || '').trim().toLowerCase());
+      const ersteller = finde(e.ersteller);
+      const pruefer = finde(e.pruefer);
+      if (!ersteller || !pruefer) throw new Error(`Ersteller- und Prüfer-Rolle müssen angelegt sein. Vorhanden: ${rollen.map((r) => r.name).join(', ') || '—'}.`);
+      const aufgabe = String(e.aufgabe || '').trim();
+      if (!aufgabe) throw new Error('Keine Aufgabe angegeben.');
+      const runden = Math.max(1, Math.min(3, Math.round(Number(e.runden) || 2)));
+
+      let entwurf = await ctx.unterAgent(ersteller, aufgabe);
+      let genutzte = 0;
+      for (let i = 0; i < runden; i++) {
+        genutzte = i + 1;
+        const kritik = await ctx.unterAgent(pruefer,
+          `Aufgabe/Ziel:\n${aufgabe}\n\nEntwurf:\n${entwurf}\n\nPrüfe streng, ob der Entwurf die Aufgabe erfüllt. Antworte ZUERST mit genau einem Wort: BESTANDEN oder NACHBESSERN. Danach kurz die wichtigsten Punkte.`);
+        if (/^\s*BESTANDEN\b/i.test(String(kritik)) || !/NACHBESSERN/i.test(String(kritik))) break;
+        entwurf = await ctx.unterAgent(ersteller,
+          `Aufgabe:\n${aufgabe}\n\nDein bisheriger Entwurf:\n${entwurf}\n\nRückmeldung des Prüfers:\n${kritik}\n\nVerbessere den Entwurf entsprechend und gib nur das verbesserte Ergebnis aus.`);
+      }
+      return fremd(`den Rollen ${ersteller.name}/${pruefer.name} (${genutzte} Prüfrunde${genutzte === 1 ? '' : 'n'})`, entwurf || '(kein Ergebnis)');
+    },
+  },
+  {
     name: 'geheimnis_anfordern',
     description: 'Bittet den Nutzer, einen geheimen Wert (Passwort, API-Schlüssel, Token, Zugangsdaten) einzugeben, der dann VERSCHLÜSSELT auf dem PC gespeichert wird. Nutze das für ein Setup, bei dem du selbst einen Zugang brauchst, ihn aber nicht sehen darfst – z. B. um einen MCP-Server/Dienst einzurichten. Der Nutzer tippt den Wert in eine Box; du bekommst den Wert NIE zu sehen, nur ob er hinterlegt wurde. name = kurze Bezeichnung, wofür der Wert ist (z. B. „GitHub Token"); zweck = ein Satz, wofür du ihn brauchst.',
     input_schema: {
@@ -1205,9 +1244,10 @@ function alle(ctx) {
   const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
   const web = ctx && ctx.eigenesWeb && ctx.eigenesWeb() ? [WEBSEITE] : [];
   const mcp = ctx && ctx.mcp ? ctx.mcp.werkzeuge() : [];
-  // Agenten-Rollen-Werkzeug nur anbieten, wenn BETA-Agenten an ist (Issue #58).
+  // Agenten-Rollen-Werkzeuge nur anbieten, wenn BETA-Agenten an ist (Issue #58).
   const agentenAn = !!(ctx && ctx.agentenAn && ctx.agentenAn());
-  const basis = agentenAn ? WERKZEUGE : WERKZEUGE.filter((w) => w.name !== 'rolle_fragen');
+  const AGENTEN_WZ = new Set(['rolle_fragen', 'mit_pruefer']);
+  const basis = agentenAn ? WERKZEUGE : WERKZEUGE.filter((w) => !AGENTEN_WZ.has(w.name));
   return [...basis, ...web, ...extra, ...mcp];
 }
 
