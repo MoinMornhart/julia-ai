@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.9.2 – 2026-09-17
+- Minecraft - kein endloses Springen an einer Stelle mehr; bleibt Julia beim selbst Vorlaufen an einem Hindernis haengen und kommt nach mehreren Spruengen nicht voran, hoert sie auf zu druecken statt endlos auf der Stelle zu springen, und der naechste Schritt sucht einen neuen Weg
+
 ## 4.9.1 – 2026-09-17
 - Absturz beim Start behoben - auf manchen Rechnern lud die Oberflaeche nicht mehr, weil sich zwei Skripte im Chatfenster denselben Namen teilten (doppeltes mitZeitlimit/md) und das Haupt-Skript abbrach; zusaetzlich ein Test, der solche Skript-Kollisionen kuenftig verhindert
 

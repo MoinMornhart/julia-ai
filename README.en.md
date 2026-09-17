@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: no more endless jumping in place** – if Julia gets stuck at an obstacle while walking on her own and still doesn't get past it after several jumps, she stops pushing against it (instead of jumping in place forever); the next step then looks for a new way. (During active pathfinding the pathfinder handles it itself, as before.)
 - **Startup crash fixed – the interface loads again** – on some machines the interface didn't build at all, because two scripts in the chat window shared the same name (a duplicated `mitZeitlimit`/`md`), which made the main script abort entirely – leaving other parts without their helpers. Fixed; an automated test now also makes sure interface scripts can't knock each other out anymore.
 - **VibeWorks: sign in with your account without copying a key (device login)** – besides the API key, the settings now offer "Sign in with account (device)": Julia fetches a code itself, the VibeWorks page opens, you allow access **once** – done. No more key to copy. The access is fetched securely and stored encrypted on the PC only (the AI never sees it); your one-time approval stays the security boundary.
 - **VibeWorks sign-in no longer freezes** – if the VibeWorks server ever fails to respond, Julia now aborts the key check cleanly after a short while and shows a network hint, instead of the sign-in box loading forever ("nothing loads"). A small safeguard so a hanging server can't block the interface.
@@ -73,7 +74,6 @@
 - **Delegate to agent roles (BETA)** – Julia can now hand a focused subtask to one of your roles (e.g. ask a "Critic" or "Researcher" role for a second opinion) and use its answer. The role agent **only reasons – no PC access, no tools** – and it's only available when you've turned BETA agents on. Second building block of the agent structure.
 - **Agent roles (BETA)** – in the BETA area you can now create your own specialized Julias: a role gets a name and an extra instruction (e.g. "Coder" or "Researcher"), and the active role additionally shapes Julia's behaviour. When BETA is off, it's completely hidden; safety and the traffic light stay untouched, and the AI cannot create or activate roles itself. First building block for a larger agent structure (planner/checker to follow).
 - **Security tightened again** – after an automated repo check, two small hardenings: invisible control characters now only appear as readable escapes in the source, and changing settings is additionally protected against manipulated special keys. Behaviour stays the same.
-- **Multi-stage graphics rescue for finicky drivers** – if the window stays empty, Julia now automatically tries different graphics methods one after another (modern drivers, an older/more compatible one, OpenGL, then a pure software renderer, and finally no GPU at all) and remembers the one that works. So she finds a way by herself on more PCs, without you setting anything.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

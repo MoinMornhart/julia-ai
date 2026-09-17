@@ -6,7 +6,7 @@ const { haengerStatus, haengerAktiv, haengerDauer } = require('../src/main/minec
 
 test('erster Aufruf merkt sich nur den Anker', () => {
   const s = haengerStatus(null, { x: 10, z: 20 }, 100);
-  assert.deepEqual(s.neu, { x: 10, z: 20, t: 100 });
+  assert.deepEqual(s.neu, { x: 10, z: 20, t: 100, sp: 0 });
   assert.ok(!s.springen);
 });
 
@@ -14,14 +14,36 @@ test('kommt sie voran, wird der Anker versetzt und nicht gesprungen', () => {
   const anker = { x: 0, z: 0, t: 100 };
   const s = haengerStatus(anker, { x: 1, z: 0 }, 106); // 1 Block weiter
   assert.ok(!s.springen);
-  assert.deepEqual(s.neu, { x: 1, z: 0, t: 106 });
+  assert.deepEqual(s.neu, { x: 1, z: 0, t: 106, sp: 0 });
 });
 
 test('kaum bewegt und lange genug festgehangen → Sprung-Impuls', () => {
   const anker = { x: 0, z: 0, t: 100 };
   const s = haengerStatus(anker, { x: 0.1, z: 0.05 }, 100 + 12); // <0,35 Block, 12 Ticks
   assert.equal(s.springen, true);
-  assert.deepEqual(s.neu, { x: 0.1, z: 0.05, t: 112 });
+  assert.deepEqual(s.neu, { x: 0.1, z: 0.05, t: 112, sp: 1 });
+});
+
+test('nach mehreren Sprüngen ohne Vorankommen → aufgeben (Livelock-Schutz #8)', () => {
+  // Simuliert wiederholtes Festhängen am selben Ort; der Zähler wächst mit.
+  let anker = { x: 0, z: 0, t: 0 };
+  let letzter = null;
+  for (let i = 1; i <= 4; i++) {
+    letzter = haengerStatus(anker, { x: 0.05, z: 0 }, i * 20, { minTicks: 12, maxSpruenge: 4 });
+    assert.equal(letzter.springen, true);
+    anker = letzter.neu; // Anker (inkl. Sprung-Zähler) übernehmen
+  }
+  assert.equal(letzter.neu.sp, 4);
+  assert.equal(letzter.aufgeben, true);
+});
+
+test('Vorankommen setzt den Sprung-Zähler zurück (kein vorschnelles Aufgeben)', () => {
+  let s = haengerStatus({ x: 0, z: 0, t: 0, sp: 3 }, { x: 0.05, z: 0 }, 20, { minTicks: 12, maxSpruenge: 4 });
+  assert.equal(s.aufgeben, true); // 4. Sprung
+  // Jetzt kommt sie ein Stück voran → Zähler zurück auf 0, kein Aufgeben mehr.
+  s = haengerStatus(s.neu, { x: 2, z: 0 }, 40, { minTicks: 12, maxSpruenge: 4 });
+  assert.ok(!s.springen);
+  assert.equal(s.neu.sp, 0);
 });
 
 test('kaum bewegt, aber noch nicht lange genug → abwarten', () => {

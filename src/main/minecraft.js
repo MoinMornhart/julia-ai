@@ -305,12 +305,23 @@ function haengerDauer(imWasser) {
   return imWasser ? 700 : 350;
 }
 
-function haengerStatus(anker, pos, ticks, { minWeit = 0.35, minTicks = 12 } = {}) {
+// Zählt zusätzlich, wie oft in Folge am (nahezu) selben Ort gesprungen wurde
+// (`sp` im Anker). Kommt sie voran, wird der Zähler zurückgesetzt. Springt sie
+// trotz `maxSpruenge`-facher Impulse weiter nicht weg, ist die Stelle für das
+// reine Vorwärts-Laufen unpassierbar → `aufgeben`, damit der Aufrufer das Drücken
+// stoppt (kein endloses Springen auf der Stelle / Livelock, Issue #8) und der
+// nächste Planungs-Schritt einen neuen Weg sucht.
+function haengerStatus(anker, pos, ticks, { minWeit = 0.35, minTicks = 12, maxSpruenge = 4 } = {}) {
   const stand = { x: pos.x, z: pos.z, t: ticks };
-  if (!anker) return { neu: stand };
+  if (!anker) return { neu: { ...stand, sp: 0 } };
   const weit = Math.hypot(pos.x - anker.x, pos.z - anker.z);
-  if (weit > minWeit) return { neu: stand };
-  if (ticks - anker.t >= minTicks) return { springen: true, neu: stand };
+  if (weit > minWeit) return { neu: { ...stand, sp: 0 } };
+  if (ticks - anker.t >= minTicks) {
+    const sp = (anker.sp || 0) + 1;
+    const res = { springen: true, neu: { ...stand, sp } };
+    if (sp >= maxSpruenge) res.aufgeben = true;
+    return res;
+  }
   return {};
 }
 
@@ -1577,6 +1588,17 @@ class Minecraft extends EventEmitter {
       bot.setControlState('jump', true);
       // Im Wasser länger halten, damit sie sicher an die Oberfläche schwimmt.
       setTimeout(() => { try { bot.setControlState('jump', false); } catch { /* getrennt */ } }, haengerDauer(imWasser));
+    }
+    // Trotz mehrerer Sprünge kein Vorankommen beim SELBST-Laufen (nicht Wegfindung):
+    // aufhören vorwärtszudrücken, sonst springt sie endlos gegen das Hindernis
+    // (Livelock, Issue #8). Bei aktiver Wegfindung nicht eingreifen – der Pathfinder
+    // steuert selbst und weicht aus.
+    if (s.aufgeben && !wegsuche && bot.setControlState) {
+      try {
+        bot.setControlState('forward', false);
+        bot.setControlState('sprint', false);
+      } catch { /* getrennt */ }
+      this._haenger = null;
     }
   }
 
