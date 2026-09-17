@@ -142,7 +142,7 @@ function fehlerAus(status, text) {
 
 // Eine Runde: schickt den Verlauf, streamt den Text über beiText und liefert
 // { content, stop_reason, model, usage } im Anthropic-Format zurück.
-async function runde({ url, schluessel, modell, system, werkzeuge, verlauf, signal, beiText = () => {}, holen = (u, o) => globalThis.fetch(u, o), optionen = {} }) {
+async function runde({ url, schluessel, modell, system, werkzeuge, verlauf, signal, beiText = () => {}, beiDenken = () => {}, holen = (u, o) => globalThis.fetch(u, o), optionen = {} }) {
   const { tools, ohneTyp } = werkzeugeUmwandeln(werkzeuge);
   const body = {
     model: modell,
@@ -185,6 +185,11 @@ async function runde({ url, schluessel, modell, system, werkzeuge, verlauf, sign
       text += d.content;
       beiText(d.content);
     }
+    // Reasoning-/Denk-Schritt streamen (Issue #74/#77): viele OpenAI-kompatible
+    // Anbieter (z. B. DeepSeek) senden ihn als reasoning_content bzw. reasoning.
+    // Die Oberfläche zeigt ihn in der eingeklappten Box; er zählt NICHT zur Antwort.
+    const denk = d.reasoning_content ?? d.reasoning;
+    if (typeof denk === 'string' && denk) beiDenken(denk);
     for (const t of d.tool_calls || []) {
       const i = Number.isInteger(t.index) ? t.index : aufrufe.length;
       const z = aufrufe[i] || (aufrufe[i] = { id: '', name: '', args: '' });

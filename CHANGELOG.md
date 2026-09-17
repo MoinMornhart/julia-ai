@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.3.2 – 2026-09-17
+- Auto-Update laeuft wieder zuverlaessig (der Installer schoss sich beim harten Beenden nicht mehr selbst mit ab) und der Denk-Schritt erscheint jetzt auch bei OpenAI-kompatiblen Anbietern, die Reasoning mitsenden
+
 ## 5.3.1 – 2026-09-17
 - Leeres Fenster endgueltig behoben - die Beschriftungen werden jetzt sofort beim Start aus mitgelieferten Texten gesetzt, unabhaengig von IPC/Init; damit bleibt das Fenster auf keinem PC mehr leer und die Neustart-Schleife ist weg
 

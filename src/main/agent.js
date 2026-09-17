@@ -362,6 +362,7 @@ class Agent extends EventEmitter {
       verlauf: this.verlauf,
       signal: this.abbruch.signal,
       beiText: (d) => this.emit('text', d),
+      beiDenken: (d) => this.emit('denken', d),
       holen: this.holen,
       optionen: { nutzung: a.nutzung, kopf: a.kopf, zwischenAntwort: a.zwischenAntwort, ohneBild },
     });

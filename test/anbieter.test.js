@@ -153,6 +153,27 @@ test('OpenAI-Runde: Text wird gestreamt, zerteilte Werkzeugaufrufe richtig zusam
   assert.equal(msg.model, 'gpt-5-2026');
 });
 
+test('OpenAI-Runde: Reasoning-Deltas gehen an beiDenken, nicht in die Antwort (Issue #77)', async () => {
+  const holen = async () => sse([
+    { choices: [{ index: 0, delta: { reasoning_content: 'Ich denke ' } }] },
+    { choices: [{ index: 0, delta: { reasoning_content: 'nach …' } }] },
+    { choices: [{ index: 0, delta: { content: 'Antwort' } }] },
+    { choices: [{ index: 0, delta: {}, finish_reason: 'stop' }] },
+    '[DONE]',
+  ]);
+  const text = [];
+  const denken = [];
+  const msg = await openai.runde({
+    url: 'https://x.example/v1', schluessel: 'sk-test', modell: 'deepseek-reasoner', system: 'SYS', werkzeuge: [],
+    verlauf: [{ role: 'user', content: [{ type: 'text', text: 'Hi' }] }],
+    beiText: (t) => text.push(t), beiDenken: (d) => denken.push(d), holen,
+  });
+  assert.equal(denken.join(''), 'Ich denke nach …');
+  assert.equal(text.join(''), 'Antwort');
+  // Der Denk-Schritt darf NICHT Teil der eigentlichen Antwort sein.
+  assert.equal(msg.content.find((b) => b.type === 'text').text, 'Antwort');
+});
+
 test('OpenAI-Runde: Fehler des Anbieters mit Status, Modelle laden', async () => {
   const abgelehnt = async () => new Response(JSON.stringify({ error: { message: 'Incorrect API key provided' } }), { status: 401 });
   await assert.rejects(openai.runde({ url: 'https://x.example/v1', modell: 'm', system: 's', werkzeuge: [], verlauf: [], holen: abgelehnt }), (e) => e.status === 401 && /Incorrect API key/.test(e.message));
