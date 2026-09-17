@@ -30,6 +30,7 @@
 //! Schritt und bewusst **nicht** Teil dieses Grundgerüsts. Genauso wenig macht der
 //! Kern eine KI „von selbst gutartig" – Sicherheit bleibt an der Ampel/den Werkzeugen.
 
+pub mod cli;
 pub mod grammar;
 pub mod safety;
 pub mod state;
