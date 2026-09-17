@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable,
+  ActivityIndicator, Alert, FlatList, KeyboardAvoidingView, Linking, Platform, Pressable,
   SafeAreaView, ScrollView, StyleSheet, Switch, Text, TextInput, useColorScheme, View,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as Speech from 'expo-speech';
+import * as Zugriff from './modules/julia-zugriff';
 import { antwortStreamen, ANBIETER } from './src/anbieter';
 import { frage as pcFrage, koppeln as pcKoppeln } from './src/pc';
 import {
@@ -56,26 +57,27 @@ export default function App() {
           </Pressable>
         </View>
       </View>
-      {ansicht === 'chat'
-        ? (
-          <Chat
-            f={f} einst={einst} schluesselDa={schluesselDa} nachrichten={nachrichten}
-            setNachrichten={setNachrichten} setKosten={setKosten}
-            zuEinstellungen={() => setAnsicht('einstellungen')}
-          />
-        )
-        : (
-          <Einstellungen
-            f={f} einst={einst}
-            beiSpeichern={async (neu, neuerSchluessel) => {
-              setEinst(neu);
-              await einstellungenSpeichern(neu);
-              if (neuerSchluessel !== null) await schluesselSpeichern(neu.anbieter, neuerSchluessel);
-              setSchluesselDa(!!(await schluesselLesen(neu.anbieter)));
-              setAnsicht('chat');
-            }}
-          />
-        )}
+      {ansicht === 'chat' && (
+        <Chat
+          f={f} einst={einst} schluesselDa={schluesselDa} nachrichten={nachrichten}
+          setNachrichten={setNachrichten} setKosten={setKosten}
+          zuEinstellungen={() => setAnsicht('einstellungen')}
+        />
+      )}
+      {ansicht === 'einstellungen' && (
+        <Einstellungen
+          f={f} einst={einst}
+          zuSteuerung={() => setAnsicht('steuerung')}
+          beiSpeichern={async (neu, neuerSchluessel) => {
+            setEinst(neu);
+            await einstellungenSpeichern(neu);
+            if (neuerSchluessel !== null) await schluesselSpeichern(neu.anbieter, neuerSchluessel);
+            setSchluesselDa(!!(await schluesselLesen(neu.anbieter)));
+            setAnsicht('chat');
+          }}
+        />
+      )}
+      {ansicht === 'steuerung' && <Steuerung f={f} />}
     </SafeAreaView>
   );
 }
@@ -217,7 +219,7 @@ function Chat({ f, einst, schluesselDa, nachrichten, setNachrichten, setKosten, 
   );
 }
 
-function Einstellungen({ f, einst, beiSpeichern }) {
+function Einstellungen({ f, einst, beiSpeichern, zuSteuerung }) {
   const [name, setName] = useState(einst.name);
   const [nutzer, setNutzer] = useState(einst.nutzer);
   const [sprachcode, setSprachcode] = useState(einst.sprachcode);
@@ -322,6 +324,109 @@ function Einstellungen({ f, einst, beiSpeichern }) {
       >
         <Text style={{ color: '#fff', fontWeight: '700' }}>Speichern</Text>
       </Pressable>
+
+      {Platform.OS === 'android' && (
+        <Pressable onPress={zuSteuerung} style={[s.reihe, { borderColor: f.linie, marginTop: 4 }]}>
+          <View style={{ flex: 1 }}>
+            <Text style={{ color: f.text, fontSize: 16 }}>Handy-Steuerung (BETA)</Text>
+            <Text style={{ color: f.schwach, fontSize: 12, marginTop: 2 }}>Bildschirm lesen &amp; über die Bedienungshilfen steuern – jede Aktion nur mit Freigabe.</Text>
+          </View>
+          <Text style={{ color: f.akzent, fontSize: 18 }}>›</Text>
+        </Pressable>
+      )}
+    </ScrollView>
+  );
+}
+
+// Handy-Steuerung (Issue #6): nutzt die JS↔Native-Brücke (modules/julia-zugriff)
+// zum AccessibilityService. Nur-Lesen (Bildschirm als Elementliste) ist harmlos;
+// jede STEUERNDE Aktion läuft über eine ausdrückliche Freigabe (Bestätigungs-
+// dialog) – dasselbe Prinzip wie die Ampel am PC. Ist der Dienst nicht in den
+// Android-Bedienungshilfen eingeschaltet, führt hier nichts etwas aus.
+function Steuerung({ f }) {
+  const [aktiv, setAktiv] = useState(false);
+  const [elemente, setElemente] = useState([]);
+  const [meldung, setMeldung] = useState('');
+
+  function statusPruefen() {
+    try { setAktiv(Zugriff.dienstLaeuft()); } catch { setAktiv(false); }
+  }
+  useEffect(() => { statusPruefen(); }, []);
+
+  function bedienungshilfenOeffnen() {
+    // Direkt zur Android-Bedienungshilfen-Seite; dort „Julia" einschalten.
+    Linking.sendIntent('android.settings.ACCESSIBILITY_SETTINGS').catch(() => {
+      Linking.openSettings().catch(() => setMeldung('Konnte die Einstellungen nicht öffnen.'));
+    });
+  }
+
+  function lesen() {
+    try {
+      const e = Zugriff.bildschirmLesen();
+      setElemente(Array.isArray(e) ? e : []);
+      setMeldung(`${Array.isArray(e) ? e.length : 0} Elemente gelesen.`);
+    } catch (err) {
+      setElemente([]);
+      setMeldung('Lesen nicht möglich' + (err && err.message ? `: ${err.message}` : '.'));
+    }
+  }
+
+  // Eine steuernde Aktion nur nach ausdrücklicher Freigabe ausführen (Ampel-Prinzip).
+  function mitFreigabe(was, tun) {
+    if (!aktiv) { setMeldung('Erst den Dienst in den Bedienungshilfen einschalten.'); return; }
+    Alert.alert(
+      'Aktion freigeben',
+      `${was}\n\nJulia führt diese Steuerung nur mit deiner Freigabe aus.`,
+      [
+        { text: 'Abbrechen', style: 'cancel' },
+        {
+          text: 'Freigeben',
+          onPress: () => {
+            try {
+              const ok = tun();
+              setMeldung(ok ? `„${was}" ausgeführt.` : `„${was}" war nicht möglich.`);
+            } catch (err) {
+              setMeldung('Fehler: ' + (err && err.message ? err.message : 'unbekannt'));
+            }
+          },
+        },
+      ],
+    );
+  }
+
+  return (
+    <ScrollView style={s.flaeche} contentContainerStyle={{ padding: 16, gap: 14 }}>
+      <View style={[s.reihe, { borderColor: f.linie }]}>
+        <Text style={{ color: f.text, fontSize: 16 }}>Dienst {aktiv ? 'aktiv ✓' : 'aus'}</Text>
+        <Pressable onPress={statusPruefen} hitSlop={10}><Text style={{ color: f.akzent, fontWeight: '600' }}>Aktualisieren</Text></Pressable>
+      </View>
+
+      {!aktiv && (
+        <View style={{ gap: 8 }}>
+          <Text style={{ color: f.schwach }}>Schalte in den Android-Bedienungshilfen den Dienst „Julia" ein, dann kann sie den Bildschirm lesen und (nur mit Freigabe) steuern.</Text>
+          <Pressable onPress={bedienungshilfenOeffnen} style={[s.speichern, { backgroundColor: f.akzent }]}>
+            <Text style={{ color: '#fff', fontWeight: '700' }}>Bedienungshilfen öffnen</Text>
+          </Pressable>
+        </View>
+      )}
+
+      <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
+        <Pressable onPress={lesen} style={[s.wahl, { borderColor: f.akzent, backgroundColor: f.akzent }]}><Text style={{ color: '#fff' }}>Bildschirm lesen</Text></Pressable>
+        <Pressable onPress={() => mitFreigabe('Zurück', () => Zugriff.zurueck())} style={[s.wahl, { borderColor: f.linie }]}><Text style={{ color: f.text }}>Zurück</Text></Pressable>
+        <Pressable onPress={() => mitFreigabe('Startseite', () => Zugriff.startseite())} style={[s.wahl, { borderColor: f.linie }]}><Text style={{ color: f.text }}>Startseite</Text></Pressable>
+        <Pressable onPress={() => mitFreigabe('Nach unten scrollen', () => Zugriff.scrollen(true))} style={[s.wahl, { borderColor: f.linie }]}><Text style={{ color: f.text }}>Scrollen ↓</Text></Pressable>
+      </View>
+
+      {!!meldung && <Text style={{ color: f.schwach, fontSize: 13 }}>{meldung}</Text>}
+
+      {elemente.map((e, i) => (
+        <View key={i} style={[s.blase, { backgroundColor: f.karte, alignSelf: 'stretch', maxWidth: '100%' }]}>
+          <Text style={{ color: f.text }} numberOfLines={2}>{e.text || e.desc || '(ohne Text)'}</Text>
+          <Text style={{ color: f.schwach, fontSize: 11, marginTop: 2 }}>
+            {e.klasse}{e.clickable ? ' · klickbar' : ''}{e.editable ? ' · Eingabe' : ''}{e.scrollable ? ' · scrollbar' : ''} · {e.x},{e.y}
+          </Text>
+        </View>
+      ))}
     </ScrollView>
   );
 }
