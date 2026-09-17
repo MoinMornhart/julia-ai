@@ -1,5 +1,6 @@
 # Von VibeWorks angelegt: kostenloser Repo-Check ohne KI – Geheimnisse (Gitleaks),
-# Sicherheitslücken (OSV-Scanner), Fehlermuster (Semgrep) und offene Stellen (TODO/FIXME).
+# Sicherheitslücken (OSV-Scanner), Fehlermuster (Semgrep), je Sprache Bandit, ShellCheck,
+# Hadolint und actionlint sowie offene Stellen (TODO/FIXME).
 # Das Ergebnis liegt als Artefakt „vibeworks-check“ bereit, VibeWorks holt es selbst ab.
 # Datei löschen = Check aus.
 name: VibeWorks Repo-Check
@@ -54,6 +55,26 @@ jobs:
         # Nur Kommentare (// # /* * -- <!--) – nicht jedes Wort „TODO“ im Code
         run: |
           git grep -n -I -E '(//|#|/\*|\*|--|<!--)[[:space:]]*(TODO|FIXME|HACK|XXX)\b' -- ':!*.lock' ':!package-lock.json' ':!.github/workflows/vibeworks-check.yml' > .vw-todos.txt || true
+
+      - name: Sprachwerkzeuge (Bandit, ShellCheck, Hadolint, actionlint)
+        continue-on-error: true
+        # Nur was im Repository vorkommt – je Sprache ein kostenloses Werkzeug
+        run: |
+          if git ls-files '*.py' | grep -q .; then
+            pipx run bandit -r . -q -f json -o .vw-bandit.json --exit-zero || true
+          fi
+          if git ls-files '*.sh' '*.bash' | grep -q .; then
+            git ls-files -z '*.sh' '*.bash' | xargs -0 shellcheck -f json > .vw-shellcheck.json || true
+          fi
+          i=0
+          git ls-files '*Dockerfile*' '*.dockerfile' | head -20 | while IFS= read -r f; do
+            i=$((i + 1))
+            printf '%s\n' "$f" >> .vw-hadolint-files.txt
+            docker run --rm -i hadolint/hadolint:latest hadolint -f json - < "$f" > ".vw-hadolint-$i.json" || true
+          done
+          if git ls-files '.github/workflows/*.yml' '.github/workflows/*.yaml' | grep -q .; then
+            docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -format '{{json .}}' > .vw-actionlint.json || true
+          fi
 
       - name: Zusammenfassen
         run: |
@@ -114,6 +135,45 @@ jobs:
               out["tools"]["todos"] = True
           except Exception:
               out["tools"]["todos"] = False
+
+          # Sprachwerkzeuge: als Befunde mit Werkzeug im Regelnamen, zusammen höchstens 100
+          extra = []
+          def add(tool, file, line, rule, severity, message):
+              if len(extra) < 100:
+                  extra.append({"file": (file or "").removeprefix("./"), "line": line if isinstance(line, int) else None, "rule": f"{tool}:{rule}", "severity": severity, "message": (message or "")[:300]})
+
+          bandit = load(".vw-bandit.json")
+          if bandit is not None:
+              out["tools"]["bandit"] = True
+              for x in (bandit.get("results") or []):
+                  add("bandit", x.get("filename"), x.get("line_number"), x.get("test_id"), {"HIGH": "ERROR", "MEDIUM": "WARNING"}.get(x.get("issue_severity"), "INFO"), x.get("issue_text"))
+
+          shellcheck = load(".vw-shellcheck.json")
+          if shellcheck is not None:
+              out["tools"]["shellcheck"] = True
+              for x in shellcheck:
+                  add("shellcheck", x.get("file"), x.get("line"), f"SC{x.get('code')}", {"error": "ERROR", "warning": "WARNING"}.get(x.get("level"), "INFO"), x.get("message"))
+
+          try:
+              with open(".vw-hadolint-files.txt", encoding="utf-8") as f:
+                  docker_files = [l.rstrip("\n") for l in f]
+          except Exception:
+              docker_files = []
+          for n, name in enumerate(docker_files, start=1):
+              data = load(f".vw-hadolint-{n}.json")
+              if data is None:
+                  continue
+              out["tools"]["hadolint"] = True
+              for x in data:
+                  add("hadolint", name, x.get("line"), x.get("code"), {"error": "ERROR", "warning": "WARNING"}.get(x.get("level"), "INFO"), x.get("message"))
+
+          actionlint = load(".vw-actionlint.json")
+          if actionlint is not None:
+              out["tools"]["actionlint"] = True
+              for x in actionlint:
+                  add("actionlint", x.get("filepath"), x.get("line"), x.get("kind"), "WARNING", x.get("message"))
+
+          out["findings"] = extra + out["findings"][: 400 - len(extra)]
 
           out["counts"] = {k: len(out[k]) for k in ("secrets", "vulnerabilities", "findings", "todos")}
           with open("vibeworks-check.json", "w", encoding="utf-8") as f:
