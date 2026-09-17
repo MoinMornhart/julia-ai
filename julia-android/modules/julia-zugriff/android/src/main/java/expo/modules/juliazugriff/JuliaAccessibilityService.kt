@@ -1,10 +1,11 @@
-package __PACKAGE__
+package expo.modules.juliazugriff
 
 // Julias Handy-Steuerung „über Elemente" (Issue #6) – ein AccessibilityService.
 // Liest den UI-Baum als flache Elementliste (Text/Id/Bounds/Flags) und kann
 // Gesten/Aktionen ausführen. Ohne Root, ohne Shizuku, ohne dauerhafte Screenshots.
 // Eigene, frische Umsetzung (kein übernommener Fremdcode). Der Dienst wird vom
-// Nutzer bewusst in den Android-Bedienungshilfen freigeschaltet.
+// Nutzer bewusst in den Android-Bedienungshilfen freigeschaltet. Er liegt im
+// Expo-Modul „julia-zugriff", damit die JS↔Native-Brücke ihn direkt erreicht.
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
@@ -18,7 +19,8 @@ import org.json.JSONObject
 
 class JuliaAccessibilityService : AccessibilityService() {
 
-    private val eigenesPaket = "__PACKAGE__"
+    // Das eigene App-Paket (zur Laufzeit), um Julias eigene Fenster zu überspringen.
+    private val eigenesPaket: String get() = packageName
 
     companion object {
         @Volatile

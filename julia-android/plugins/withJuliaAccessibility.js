@@ -1,13 +1,15 @@
 // Expo-Config-Plugin (Issue #6): meldet Julias AccessibilityService im nativen
-// Android-Projekt an und legt die Kotlin-Datei + die Service-Konfiguration ab.
+// Android-Projekt an und legt die Service-Konfiguration (res/xml) ab.
 // Läuft bei `expo prebuild`. Additiv – ändert nichts am bestehenden App-Verhalten;
 // der Dienst tut nichts, solange der Nutzer ihn nicht in den Bedienungshilfen
-// einschaltet.
+// einschaltet. Die Kotlin-Klasse selbst liefert das Expo-Modul „julia-zugriff"
+// (modules/julia-zugriff); deshalb wird sie hier nur noch registriert, nicht kopiert.
 const { withAndroidManifest, withDangerousMod, AndroidConfig } = require('@expo/config-plugins');
 const fs = require('fs');
 const path = require('path');
 
-const DIENST_NAME = '.JuliaAccessibilityService';
+// Voll qualifizierter Klassenname im Modul-Paket (nicht im App-Paket).
+const DIENST_NAME = 'expo.modules.juliazugriff.JuliaAccessibilityService';
 
 const XML_CONFIG = `<?xml version="1.0" encoding="utf-8"?>
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
@@ -49,20 +51,12 @@ const withJuliaAccessibility = (config) => {
   });
 
   config = withDangerousMod(config, ['android', (c) => {
-    const paket = (c.android && c.android.package) || 'io.github.moinmornhart.julia';
     const wurzel = c.modRequest.platformProjectRoot; // .../android
 
-    // 1) Service-Konfiguration nach res/xml
+    // Service-Konfiguration nach res/xml (die Kotlin-Klasse liefert das Modul).
     const xmlDir = path.join(wurzel, 'app', 'src', 'main', 'res', 'xml');
     fs.mkdirSync(xmlDir, { recursive: true });
     fs.writeFileSync(path.join(xmlDir, 'julia_accessibility_config.xml'), XML_CONFIG);
-
-    // 2) Kotlin-Service an die Paketstelle kopieren (package im Quelltext ersetzen)
-    const quelle = path.join(c.modRequest.projectRoot, 'native', 'JuliaAccessibilityService.kt');
-    let kotlin = fs.readFileSync(quelle, 'utf8').split('__PACKAGE__').join(paket);
-    const zielDir = path.join(wurzel, 'app', 'src', 'main', 'java', ...paket.split('.'));
-    fs.mkdirSync(zielDir, { recursive: true });
-    fs.writeFileSync(path.join(zielDir, 'JuliaAccessibilityService.kt'), kotlin);
 
     return c;
   }]);

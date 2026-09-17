@@ -1,0 +1,7 @@
+{
+  "name": "julia-zugriff",
+  "version": "0.1.0",
+  "description": "Julias Handy-Zugriff – JS-Bruecke zum AccessibilityService (Issue #6)",
+  "main": "index.ts",
+  "private": true
+}
