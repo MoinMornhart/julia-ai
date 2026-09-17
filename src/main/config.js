@@ -507,6 +507,11 @@ class Konfiguration extends EventEmitter {
   set(schluessel, wert) {
     const sauber = pruefen(schluessel, wert);
     const teile = schluessel.split('.');
+    // Prototype-Pollution ausschließen: `pruefen` lässt ohnehin nur bekannte
+    // Schlüssel durch, aber zur Sicherheit hier zusätzlich sperren.
+    if (teile.some((k) => k === '__proto__' || k === 'constructor' || k === 'prototype')) {
+      throw new Error('Unbekannte Einstellung.');
+    }
     let o = this.daten;
     for (const k of teile.slice(0, -1)) {
       if (!istObjekt(o[k])) o[k] = {};

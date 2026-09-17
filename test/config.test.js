@@ -150,3 +150,13 @@ test('mischen ignoriert gefährliche Schlüssel (__proto__) – keine Prototype-
   const out2 = mischen(STANDARD, { update: { kanal: 'beta' } });
   assert.equal(out2.update.kanal, 'beta');
 });
+
+test('set lehnt gefährliche Schlüssel ab (Prototype-Pollution)', () => {
+  const dir = tempOrdner();
+  const k = new Konfiguration(dir);
+  k.laden();
+  assert.throws(() => k.set('__proto__.polluted', true), /Unbekannte Einstellung/);
+  assert.throws(() => k.set('constructor.x', 1), /Unbekannte Einstellung/);
+  assert.equal(({}).polluted, undefined);
+  fs.rmSync(dir, { recursive: true, force: true });
+});

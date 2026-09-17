@@ -13,7 +13,7 @@ function kurz(text, max = MAX_AUSGABE) {
 // Unicode-Tag-Zeichen ("ASCII-Schmuggel"), Richtungswechsel, Nullbreite.
 // Als \u-Escapes geschrieben, damit im Quelltext selbst keine unsichtbaren
 // Zeichen stehen (sonst leicht versehentlich verändert; Semgrep-Bidi-Hinweis).
-const UNSICHTBAR = /[\u{E0000}-\u{E007F}‪-‮⁦-⁩​-‏⁠﻿]/gu;
+const UNSICHTBAR = /[\u{E0000}-\u{E007F}\u202A-\u202E\u2066-\u2069\u200B-\u200F\u2060\uFEFF]/gu;
 
 function unsichtbareEntfernen(text) {
   const s = String(text ?? '');

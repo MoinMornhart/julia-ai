@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.5.1 – 2026-09-17
+- Sicherheit erneut nachgeschaerft nach einem Repo-Check: unsichtbare Steuerzeichen stehen im Quelltext nur noch als lesbare Escapes, und das Aendern von Einstellungen ist zusaetzlich gegen manipulierte Sonderschluessel abgesichert
+
 ## 4.5.0 – 2026-09-16
 - Mehrstufige Grafik-Rettung bei zickigen Treibern: bleibt das Fenster leer, probiert Julia automatisch nacheinander andere Grafik-Verfahren durch (aeltere/vertraeglichere Treiber, OpenGL, reiner Software-Renderer, zuletzt ganz ohne GPU) und merkt sich das funktionierende - kein eigener Renderer noetig, das ist der professionelle Weg
 
