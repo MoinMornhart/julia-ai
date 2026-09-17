@@ -35,3 +35,24 @@ jobs:
 
       - name: Tests
         run: cargo test --all --verbose
+
+  # Baut das Sidecar-Binary für Windows (Zielplattform der Desktop-App) und lädt
+  # es als Artefakt hoch. Das ist die Voraussetzung, um den Kern später mit der
+  # App auszuliefern; das Einbetten in den Installer folgt als eigener Schritt.
+  windows-binary:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: julia-core
+    steps:
+      - name: Quellcode holen
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Release-Binary bauen
+        run: cargo build --release --bin cli
+
+      - name: Sidecar-Binary als Artefakt anhängen
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: julia-core-sidecar-windows
+          path: julia-core/target/release/cli.exe
