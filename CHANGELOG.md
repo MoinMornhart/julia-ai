@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.7.0 – 2026-09-17
+- Agenten-Rollen delegieren (BETA): Julia kann eine fokussierte Teilaufgabe an eine deiner Rollen abgeben (z. B. Kritiker oder Rechercheur um eine Zweitmeinung bitten) und deren Antwort nutzen - der Rollen-Agent denkt nur nach, hat keinen PC-Zugriff und keine Werkzeuge, und das Werkzeug gibt es nur bei eingeschalteten BETA-Agenten
+
 ## 4.6.0 – 2026-09-17
 - Agenten-Rollen als BETA-Feature: im BETA-Bereich lassen sich eigene, spezialisierte Julias anlegen (Name + Zusatz-Anweisung, z. B. Coder oder Rechercheur); die aktive Rolle praegt das Verhalten zusaetzlich - komplett versteckt wenn BETA aus, Sicherheit/Ampel unberuehrt, und die KI kann Rollen nicht selbst anlegen oder aktivieren
 

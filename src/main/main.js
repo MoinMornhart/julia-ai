@@ -2252,6 +2252,9 @@ async function start() {
       return new Notizen({ ordner: path.join(basis, ORDNER_NAME) });
     },
     memosAn: () => !!config.get('memos').an,
+    // Agenten-Rollen (Issue #58): BETA-Schalter + Sub-Agent-Aufruf für das Werkzeug.
+    agentenAn: () => !!config.get('beta').agenten,
+    unterAgent: (rolle, aufgabe) => agent.unterAgent(rolle, aufgabe),
     // Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box im Chat holt
     // ihn; der WERT fließt direkt vom Fenster in den verschlüsselten Speicher
     // (IPC geheimnis:eingabe) – die KI/der Agent bekommt ihn NIE, nur ob er

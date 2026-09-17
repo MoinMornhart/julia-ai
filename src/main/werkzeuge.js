@@ -498,6 +498,28 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'rolle_fragen',
+    description: 'Delegiere eine fokussierte Teilaufgabe an eine deiner Agenten-Rollen (nur wenn der Nutzer BETA-Agenten eingeschaltet und Rollen angelegt hat). Die Rolle denkt eigenständig und antwortet dir – sie hat KEINEN PC-Zugriff und keine Werkzeuge, sie überlegt nur. Nützlich, um eine spezialisierte Sicht einzuholen (z. B. eine „Kritiker"- oder „Rechercheur"-Rolle) und ihre Antwort dann selbst zu nutzen. rolle = Name einer angelegten Rolle, aufgabe = die Teilaufgabe/Frage.',
+    input_schema: {
+      type: 'object',
+      properties: {
+        rolle: { type: 'string', description: 'Name einer vom Nutzer angelegten Rolle.' },
+        aufgabe: { type: 'string', description: 'Die fokussierte Teilaufgabe oder Frage an die Rolle.' },
+      },
+      required: ['rolle', 'aufgabe'],
+    },
+    einstufen: gruen, // Nur Nachdenken, kein PC-Zugriff; BETA-Gate steckt in ausfuehren.
+    async ausfuehren(e, ctx) {
+      if (!ctx.agentenAn || !ctx.agentenAn()) throw new Error('Agenten-Rollen sind aus. Der Nutzer kann sie im BETA-Bereich der Einstellungen einschalten.');
+      const rollen = ctx.config.get('rollen') || [];
+      const rolle = rollen.find((r) => r.name.toLowerCase() === String(e.rolle || '').trim().toLowerCase());
+      if (!rolle) throw new Error(`Es gibt keine Rolle „${e.rolle}“. Angelegte Rollen: ${rollen.map((r) => r.name).join(', ') || '—'}.`);
+      if (!ctx.unterAgent) throw new Error('Sub-Agenten sind hier nicht verfügbar.');
+      const antwort = await ctx.unterAgent(rolle, e.aufgabe);
+      return fremd(`der Rolle ${rolle.name}`, antwort || '(keine Antwort)');
+    },
+  },
+  {
     name: 'geheimnis_anfordern',
     description: 'Bittet den Nutzer, einen geheimen Wert (Passwort, API-Schlüssel, Token, Zugangsdaten) einzugeben, der dann VERSCHLÜSSELT auf dem PC gespeichert wird. Nutze das für ein Setup, bei dem du selbst einen Zugang brauchst, ihn aber nicht sehen darfst – z. B. um einen MCP-Server/Dienst einzurichten. Der Nutzer tippt den Wert in eine Box; du bekommst den Wert NIE zu sehen, nur ob er hinterlegt wurde. name = kurze Bezeichnung, wofür der Wert ist (z. B. „GitHub Token"); zweck = ein Satz, wofür du ihn brauchst.',
     input_schema: {
@@ -1183,7 +1205,10 @@ function alle(ctx) {
   const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
   const web = ctx && ctx.eigenesWeb && ctx.eigenesWeb() ? [WEBSEITE] : [];
   const mcp = ctx && ctx.mcp ? ctx.mcp.werkzeuge() : [];
-  return [...WERKZEUGE, ...web, ...extra, ...mcp];
+  // Agenten-Rollen-Werkzeug nur anbieten, wenn BETA-Agenten an ist (Issue #58).
+  const agentenAn = !!(ctx && ctx.agentenAn && ctx.agentenAn());
+  const basis = agentenAn ? WERKZEUGE : WERKZEUGE.filter((w) => w.name !== 'rolle_fragen');
+  return [...basis, ...web, ...extra, ...mcp];
 }
 
 function definitionen(ctx) {
