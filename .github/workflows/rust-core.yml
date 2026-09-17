@@ -30,8 +30,5 @@ jobs:
       - name: Rust-Version zeigen
         run: cargo --version && rustc --version
 
-      - name: Format prüfen
-        run: cargo fmt --check || echo "Hinweis: cargo fmt meldet Formatabweichungen (nicht blockierend)."
-
       - name: Tests
         run: cargo test --all --verbose
