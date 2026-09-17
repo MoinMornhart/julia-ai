@@ -66,6 +66,45 @@ function umgebungLesen(text) {
   return aus;
 }
 
+// Aus einer MCP-JSON Server-Einträge im Julia-Format ableiten (Issue #75, Drag-and-Drop).
+// Erkennt den verbreiteten `{ "mcpServers": { name: {...} } }`-Stil (auch `servers`),
+// eine reine name→Server-Map oder einen einzelnen Server. stdio (command+args) und
+// http/sse (url) werden unterschieden; env/headers werden zu „K=V"-Zeilen (umgebung).
+// vertraut ist immer false → jeder Aufruf läuft über die Ampel. Wirft eine klare
+// deutsche Meldung, wenn die JSON ungültig ist oder keinen Server enthält.
+function mcpAusJson(text) {
+  let obj;
+  try { obj = JSON.parse(String(text || '')); } catch { throw new Error('Das ist keine gültige JSON-Datei.'); }
+  if (!obj || typeof obj !== 'object') throw new Error('Die JSON enthält keine MCP-Server.');
+  const map = (obj.mcpServers && typeof obj.mcpServers === 'object') ? obj.mcpServers
+    : (obj.servers && typeof obj.servers === 'object') ? obj.servers : obj;
+
+  const befehlAus = (s) => [s.command, ...(Array.isArray(s.args) ? s.args : [])]
+    .map(String)
+    .map((t) => (/\s/.test(t) ? `"${t.replace(/"/g, '\\"')}"` : t))
+    .join(' ').trim();
+  const umgebungAus = (o) => (o && typeof o === 'object'
+    ? Object.entries(o).filter(([k]) => /^[A-Za-z_]/.test(k)).map(([k, v]) => `${k}=${String(v)}`).join('\n')
+    : '');
+
+  const eintraege = [];
+  const einer = (name, s) => {
+    if (!s || typeof s !== 'object') return;
+    const basis = { name: String(name || s.name || 'MCP').slice(0, 40), vertraut: false, an: true };
+    if (s.url || s.type === 'http' || s.type === 'sse') {
+      eintraege.push({ ...basis, art: 'http', url: String(s.url || ''), umgebung: umgebungAus(s.headers || s.env) });
+    } else if (s.command) {
+      eintraege.push({ ...basis, art: 'stdio', befehl: befehlAus(s), umgebung: umgebungAus(s.env) });
+    }
+  };
+
+  if (map.command || map.url) einer(map.name || 'MCP', map);
+  else for (const [name, s] of Object.entries(map)) einer(name, s);
+
+  if (!eintraege.length) throw new Error('In der JSON wurde kein MCP-Server gefunden (erwartet z. B. „mcpServers": { … }).');
+  return eintraege;
+}
+
 // Eintrag aus den Einstellungen prüfen: Name, Art, Befehl oder Adresse.
 function eintragPruefen(roh) {
   const e = roh && typeof roh === 'object' ? roh : {};
@@ -411,4 +450,4 @@ class McpVerwaltung extends EventEmitter {
   }
 }
 
-module.exports = { McpVerwaltung, McpServer, eintragPruefen, befehlTeilen, werkzeugName, umgebungLesen, inhaltText, PROTOKOLL };
+module.exports = { McpVerwaltung, McpServer, eintragPruefen, mcpAusJson, befehlTeilen, werkzeugName, umgebungLesen, inhaltText, PROTOKOLL };

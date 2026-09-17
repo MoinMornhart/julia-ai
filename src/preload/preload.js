@@ -97,6 +97,7 @@ contextBridge.exposeInMainWorld('julia', {
       name: s(x.name, 60), art: x.art === 'http' ? 'http' : 'stdio', befehl: s(x.befehl, 1000), url: s(x.url, 500), umgebung: s(x.umgebung, 8000), vertraut: x.vertraut === true,
     });
   },
+  mcpImport: (text) => ipcRenderer.invoke('mcp:import', String(text || '').slice(0, 200000)),
   mcpEntfernen: (id) => ipcRenderer.invoke('mcp:entfernen', String(id || '')),
   mcpSchalten: (id, an) => ipcRenderer.invoke('mcp:schalten', String(id || ''), !!an),
   mcpNeu: (id) => ipcRenderer.invoke('mcp:neu', String(id || '')),

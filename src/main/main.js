@@ -1167,6 +1167,24 @@ function ipcEinrichten() {
     const aus = config.get('kategorien_aus') || [];
     return KATEGORIEN.map((k) => ({ id: k.id, an: !aus.includes(k.id), anzahl: k.werkzeuge.length }));
   });
+  // MCP per JSON importieren (Issue #75, Drag-and-Drop): eine mcp.json wird erkannt
+  // und ihre Server werden übernommen. vertraut bleibt false → jeder Aufruf über die Ampel.
+  ipc.handle('mcp:import', (_e, text) => {
+    let eintraege;
+    try { eintraege = require('./mcp').mcpAusJson(text); } catch (e) { return { fehler: e.message, status: mcp.status() }; }
+    const fehler = [];
+    let anzahl = 0;
+    for (const roh of eintraege) {
+      try {
+        const eintrag = mcpEintragPruefen({ ...roh, id: undefined });
+        if (roh.umgebung) mcp.umgebungSetzen(eintrag.id, String(roh.umgebung));
+        config.set('mcp.server', [...config.get('mcp.server'), eintrag]);
+        anzahl += 1;
+      } catch (e) { fehler.push(`${roh.name || 'Server'}: ${e.message}`); }
+    }
+    if (anzahl) protokoll.eintragen({ werkzeug: 'mcp', stufe: 'INFO', ergebnis: `${anzahl} MCP-Server per JSON importiert` });
+    return { ok: anzahl > 0, anzahl, fehler, status: mcp.status() };
+  });
   ipc.handle('mcp:hinzufuegen', (_e, d) => {
     try {
       const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });

@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.2.0 – 2026-09-17
+- MCP-Server per Drag-and-Drop hinzufuegen - zieh eine mcp.json in die MCP-Einstellungen (oder klick zum Auswaehlen), Julia erkennt die enthaltenen Server (mcpServers-Stil, lokale Programme und Web-Adressen) und uebernimmt sie; alles weiter ueber die Ampel
+
 ## 5.1.0 – 2026-09-17
 - Werkzeuge abschalten macht Julia wirklich schneller - abgeschaltete Werkzeuge gehen gar nicht mehr ans Modell (vorher nur die Nutzung blockiert), und du kannst jetzt ganze Gruppen auf einmal ab-/anschalten; weniger Werkzeuge = schnellere, tokenschonendere Antworten
 

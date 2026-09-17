@@ -916,6 +916,34 @@ function mcpVerbinden() {
     $('mcpVertraut').checked = false;
     m.textContent = tx('mcp.hinzugefuegt');
   };
+
+  // Drag-and-Drop einer mcp.json (Issue #75): Datei draufziehen oder anklicken →
+  // die enthaltenen Server werden erkannt und übernommen (über die Ampel).
+  const drop = $('mcpDrop');
+  const datei = $('mcpDatei');
+  const meld = $('mcpImportMeldung');
+  if (drop && datei && meld) {
+    const importiere = async (text) => {
+      meld.classList.remove('fehler');
+      const r = await julia.mcpImport(text);
+      if (r && r.status) mcpZeigen(r.status);
+      if (r && r.fehler && !r.anzahl) { meld.textContent = r.fehler; meld.classList.add('fehler'); return; }
+      const teile = [tx('mcp.import_ok', { n: (r && r.anzahl) || 0 })];
+      if (r && r.fehler && r.fehler.length) teile.push(r.fehler.join(' · '));
+      meld.textContent = teile.join(' — ');
+    };
+    const ausDatei = (f) => { if (!f) return; const leser = new FileReader(); leser.onload = () => importiere(String(leser.result || '')); leser.readAsText(f); };
+    drop.onclick = () => datei.click();
+    datei.onchange = () => { ausDatei(datei.files && datei.files[0]); datei.value = ''; };
+    drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('drueber'); });
+    drop.addEventListener('dragleave', () => drop.classList.remove('drueber'));
+    drop.addEventListener('drop', (e) => {
+      e.preventDefault();
+      drop.classList.remove('drueber');
+      const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      ausDatei(f);
+    });
+  }
 }
 
 // VibeWorks-Anmeldung (Issue #51): API-Schlüssel eintragen, Julia prüft ihn und
