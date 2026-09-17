@@ -278,7 +278,14 @@ function laufzeitText() {
   });
   // Brainstorming-Modus (Issue #35): nur wenn eingeschaltet, sonst kein Zusatz.
   const brain = prompt.brainstormHinweis(config.get('brainstorming').an);
-  return brain ? `${basis}\n\n${brain}` : basis;
+  // Agenten-Rolle (Issue #58): nur wenn BETA-Agenten an UND eine Rolle aktiv ist.
+  let rolleTxt = '';
+  if (config.get('beta').agenten) {
+    const aktiv = String(config.get('rolle_aktiv') || '');
+    const rolle = aktiv ? (config.get('rollen') || []).find((r) => r.name === aktiv) : null;
+    rolleTxt = rolle ? prompt.rollenHinweis(rolle) : '';
+  }
+  return [basis, brain, rolleTxt].filter(Boolean).join('\n\n');
 }
 
 // --- Zustand und Nachrichten an alle Fenster ---
@@ -1119,6 +1126,22 @@ function ipcEinrichten() {
   // Sperrliste schützt System/Julia, umkehrbar.
   ipc.handle('boost:bremsen', async (_e, pid, name, an) => {
     try { return { ok: await win.prozessBremsen(pid, name, !!an) }; } catch (e) { return { fehler: e.message }; }
+  });
+  // Agenten-Rollen (Issue #58, BETA): vom Nutzer verwaltet. Die KI kann diese
+  // nicht selbst setzen (kein Werkzeug dafür; einstellung_setzen erlaubt sie nicht).
+  ipc.handle('rollen:lesen', () => ({
+    an: !!config.get('beta').agenten,
+    rollen: config.get('rollen') || [],
+    aktiv: config.get('rolle_aktiv') || '',
+  }));
+  ipc.handle('rollen:speichern', (_e, rollen, aktiv) => {
+    try {
+      config.set('rollen', Array.isArray(rollen) ? rollen : []);
+      // Aktive Rolle nur behalten, wenn sie noch existiert.
+      const namen = (config.get('rollen') || []).map((r) => r.name);
+      config.set('rolle_aktiv', namen.includes(String(aktiv || '')) ? String(aktiv) : '');
+      return { ok: true, rollen: config.get('rollen'), aktiv: config.get('rolle_aktiv') };
+    } catch (e) { return { fehler: e.message }; }
   });
   // Geheimnisse (Issue #26): nutzer-verwaltet, verschlüsselt. Nur Namen verlassen
   // den Hauptprozess – die Werte nie (auch nicht an die KI).

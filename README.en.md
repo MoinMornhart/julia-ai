@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Agent roles (BETA)** – in the BETA area you can now create your own specialized Julias: a role gets a name and an extra instruction (e.g. "Coder" or "Researcher"), and the active role additionally shapes Julia's behaviour. When BETA is off, it's completely hidden; safety and the traffic light stay untouched, and the AI cannot create or activate roles itself. First building block for a larger agent structure (planner/checker to follow).
 - **Security tightened again** – after an automated repo check, two small hardenings: invisible control characters now only appear as readable escapes in the source, and changing settings is additionally protected against manipulated special keys. Behaviour stays the same.
 - **Multi-stage graphics rescue for finicky drivers** – if the window stays empty, Julia now automatically tries different graphics methods one after another (modern drivers, an older/more compatible one, OpenGL, then a pure software renderer, and finally no GPU at all) and remembers the one that works. So she finds a way by herself on more PCs, without you setting anything.
 - **No more "empty window + restart loop", and settings scroll again** – two fixes for finicky PCs: at startup the interface now gets enough time to build itself with fallback labels if needed before the self-healing steps in – ending the restart loop on affected machines (the real texts are loaded in the background). And the settings can be scrolled with the mouse wheel again.
@@ -73,7 +74,6 @@
 - **One-click graphics repair** – if the window ever stays empty or flickers, you can go to the settings (System) and click "Switch to software graphics & restart" in one step. It's the rescue anchor against graphics-driver trouble (the same thing tech folks do with `--disable-gpu`) – reversible, no system changes. Afterwards "Try normal graphics again" is enough.
 - **The weekly self-check now spots graphics problems too** – the token-saving weekly check (reads the start logbook without the AI) now also watches for empty windows and degraded graphics drivers, not just crashes. So a graphics issue shows up earlier – still reported only with your consent and sanitized (never IP/tokens).
 - **An empty window now self-heals for graphics problems too** – on some PCs (e.g. with a finicky graphics driver) the interface stayed empty without any crash being reported – so the self-healing didn't kick in. Julia now detects exactly this case: if the window stays empty, she automatically switches to software graphics and restarts once – then the image is usually back. She also writes much more to the logbook at startup to pin down such cases faster.
-- **Very long chats stay lean** – in very long conversations Julia now automatically keeps only the most recent rounds in the active context (recent ones stay, ancient ones drop off), so costs don't keep climbing. This happens at a safe point so nothing gets tangled.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

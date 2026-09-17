@@ -398,18 +398,18 @@ function monitoreFuellen() {
 }
 
 function betaEinrichten() {
-  const cb = $('betaSelbstcode');
   const eingabe = $('betaBestaetigung');
-  if (!cb || !eingabe) return;
+  const schalter = ['betaSelbstcode', 'betaAgenten'].map((id) => $(id)).filter(Boolean);
+  if (!eingabe || !schalter.length) return;
   const phrase = () => tx('einst.beta_phrase');
-  const schonAn = !!(cfg.beta && cfg.beta.selbstcode);
-  // Ist es schon an, bleibt der Schalter bedienbar (zum Ausschalten). Sonst erst
+  const schonAn = (id) => !!(cfg.beta && cfg.beta[id]);
+  // Ein schon aktiver Schalter bleibt bedienbar (zum Ausschalten); sonst erst
   // freigeben, wenn der Nutzer die Bestätigung exakt ausschreibt.
-  cb.disabled = !schonAn;
+  for (const cb of schalter) cb.disabled = !schonAn(cb.dataset.k.split('.')[1]);
   eingabe.placeholder = phrase();
   eingabe.addEventListener('input', () => {
     const passt = eingabe.value.trim() === phrase().trim();
-    cb.disabled = !passt && !cb.checked;
+    for (const cb of schalter) cb.disabled = !passt && !cb.checked;
   });
 }
 
@@ -945,6 +945,48 @@ async function reparaturEinrichten() {
   };
 }
 
+// Agenten-Rollen (Issue #58, BETA): benannte Rollen mit Zusatz-Anweisung anlegen,
+// die aktive auswählen. Nur sichtbar, wenn BETA-Agenten an ist.
+async function rollenEinrichten() {
+  const bereich = $('rollenBereich');
+  if (!bereich) return;
+  let stand = { an: false, rollen: [], aktiv: '' };
+  try { stand = await julia.rollenLesen(); } catch { /* Standard */ }
+
+  const malen = () => {
+    bereich.hidden = !stand.an;
+    const sel = $('rolleAktiv');
+    sel.innerHTML = `<option value="">${esc(tx('einst.rolle_keine'))}</option>`
+      + stand.rollen.map((r) => `<option value="${esc(r.name)}"${r.name === stand.aktiv ? ' selected' : ''}>${esc(r.name)}</option>`).join('');
+    const ul = $('rollenListe');
+    ul.innerHTML = stand.rollen.map((r, i) => `<li><div class="rl-text"><b>${esc(r.name)}</b><small>${esc(r.anweisung.slice(0, 120))}${r.anweisung.length > 120 ? '…' : ''}</small></div><button class="klein" data-i="${i}">${esc(tx('einst.rolle_entfernen'))}</button></li>`).join('')
+      || `<li class="hinweis">${esc(tx('einst.rolle_keine_da'))}</li>`;
+    ul.querySelectorAll('button[data-i]').forEach((b) => { b.onclick = () => speichern(stand.rollen.filter((_, j) => j !== Number(b.dataset.i)), stand.aktiv); });
+  };
+
+  const speichern = async (rollen, aktiv) => {
+    const r = await julia.rollenSpeichern(rollen, aktiv);
+    const m = $('rolleMeldung');
+    if (r && r.fehler) { m.textContent = r.fehler; m.classList.add('fehler'); return; }
+    m.textContent = ''; m.classList.remove('fehler');
+    stand.rollen = (r && r.rollen) || rollen; stand.aktiv = (r && r.aktiv) || '';
+    malen();
+  };
+
+  $('rolleAktiv').onchange = (e) => speichern(stand.rollen, e.target.value);
+  $('rolleHinzufuegen').onclick = () => {
+    const name = $('rolleName').value.trim();
+    const anweisung = $('rolleAnweisung').value.trim();
+    if (!name || !anweisung) { const m = $('rolleMeldung'); m.textContent = tx('einst.rolle_unvollstaendig'); m.classList.add('fehler'); return; }
+    speichern([...stand.rollen, { name, anweisung }], stand.aktiv);
+    $('rolleName').value = ''; $('rolleAnweisung').value = '';
+  };
+  // Der BETA-Agenten-Schalter zeigt/versteckt den Bereich sofort.
+  const toggle = $('betaAgenten');
+  if (toggle) toggle.addEventListener('change', () => { stand.an = toggle.checked; malen(); });
+  malen();
+}
+
 function vibeVerbinden() {
   julia.on('mcp:status', async () => { try { vibeZeigen(await julia.vibeworksStatus()); } catch { /* egal */ } });
   $('vibeKonto').onclick = () => julia.vibeworksKonto();
@@ -1174,6 +1216,7 @@ async function init() {
   werkzeugeZeigen();
   geheimZeigen();
   betaEinrichten();
+  rollenEinrichten();
   $('geheimSpeichern').onclick = geheimSpeichern;
   $('geheimWert').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); geheimSpeichern(); } });
   $('sandboxWaehlen').onclick = async () => {

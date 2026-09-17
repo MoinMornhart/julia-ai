@@ -160,3 +160,19 @@ test('set lehnt gefährliche Schlüssel ab (Prototype-Pollution)', () => {
   assert.equal(({}).polluted, undefined);
   fs.rmSync(dir, { recursive: true, force: true });
 });
+
+test('Rollen (Issue #58): Validierung – Name/Anweisung nötig, eindeutig, begrenzt', () => {
+  const { pruefen } = require('../src/main/config');
+  // gültig
+  assert.deepEqual(pruefen('rollen', [{ name: 'Coder', anweisung: 'Schreibe sauberen Code.' }]),
+    [{ name: 'Coder', anweisung: 'Schreibe sauberen Code.' }]);
+  // Name fehlt / Anweisung fehlt
+  assert.throws(() => pruefen('rollen', [{ name: '', anweisung: 'x' }]), /Namen/);
+  assert.throws(() => pruefen('rollen', [{ name: 'A', anweisung: '' }]), /Anweisung/);
+  // doppelte Namen (case-insensitiv)
+  assert.throws(() => pruefen('rollen', [{ name: 'A', anweisung: 'x' }, { name: 'a', anweisung: 'y' }]), /eindeutig/);
+  // zu viele
+  assert.throws(() => pruefen('rollen', Array.from({ length: 13 }, (_, i) => ({ name: 'R' + i, anweisung: 'x' }))), /Höchstens 12/);
+  // rolle_aktiv: Text, getrimmt
+  assert.equal(pruefen('rolle_aktiv', '  Coder  '), 'Coder');
+});

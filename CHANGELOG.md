@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.6.0 – 2026-09-17
+- Agenten-Rollen als BETA-Feature: im BETA-Bereich lassen sich eigene, spezialisierte Julias anlegen (Name + Zusatz-Anweisung, z. B. Coder oder Rechercheur); die aktive Rolle praegt das Verhalten zusaetzlich - komplett versteckt wenn BETA aus, Sicherheit/Ampel unberuehrt, und die KI kann Rollen nicht selbst anlegen oder aktivieren
+
 ## 4.5.1 – 2026-09-17
 - Sicherheit erneut nachgeschaerft nach einem Repo-Check: unsichtbare Steuerzeichen stehen im Quelltext nur noch als lesbare Escapes, und das Aendern von Einstellungen ist zusaetzlich gegen manipulierte Sonderschluessel abgesichert
 

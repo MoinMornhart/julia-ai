@@ -28,6 +28,8 @@ contextBridge.exposeInMainWorld('julia', {
   boostProzesse: (sortierung) => ipcRenderer.invoke('boost:prozesse', String(sortierung || 'ram')),
   boostDoppelte: (pfad) => ipcRenderer.invoke('boost:doppelte', String(pfad || '')),
   boostBremsen: (pid, name, an) => ipcRenderer.invoke('boost:bremsen', Number(pid) || 0, String(name || ''), !!an),
+  rollenLesen: () => ipcRenderer.invoke('rollen:lesen'),
+  rollenSpeichern: (rollen, aktiv) => ipcRenderer.invoke('rollen:speichern', rollen, aktiv),
   geheimnisse: () => ipcRenderer.invoke('geheimnisse:liste'),
   geheimnisSetzen: (name, wert) => ipcRenderer.invoke('geheimnisse:setzen', String(name || ''), String(wert || '')),
   geheimnisLoeschen: (name) => ipcRenderer.invoke('geheimnisse:loeschen', String(name || '')),

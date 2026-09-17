@@ -157,7 +157,12 @@ const STANDARD = {
     // das in den Einstellungen (mit ausgeschriebener Bestätigung) einschalten –
     // die KI kann es nicht selbst setzen (nicht in der einstellung_setzen-Freigabe).
     selbstcode: false, // erlaubt Julia (später) im Sandbox-Ordner eigene Werkzeuge zu schreiben/auszuführen
+    agenten: false, // Agenten-Rollen (Issue #58): eigene, spezialisierte Julias mit Zusatz-Anweisung
   },
+  // Agenten-Rollen (Issue #58, BETA): benannte Rollen mit einer Zusatz-Anweisung
+  // an den System-Prompt. rolle_aktiv nennt die gerade aktive Rolle (leer = keine).
+  rollen: [], // [{ name, anweisung }]
+  rolle_aktiv: '',
   shell: {
     timeout_s: 60, // Standard-Zeitlimit für Shell-Befehle, wenn die KI keines nennt
     max_s: 600, // hartes Maximum: kein Shell-Befehl läuft länger, auch wenn die KI mehr will – hängende Befehle brechen so sicher ab
@@ -244,6 +249,7 @@ function pruefen(schluessel, wert) {
     case 'memos.an':
     case 'brainstorming.an':
     case 'beta.selbstcode':
+    case 'beta.agenten':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
     case 'overlay.automatisch':
@@ -420,6 +426,21 @@ function pruefen(schluessel, wert) {
       if (new Set(liste.map((s) => s.id)).size !== liste.length) throw new Error('Doppelte MCP-Server.');
       return liste;
     }
+    case 'rollen': {
+      if (!Array.isArray(wert)) throw new Error('Rollen sind eine Liste.');
+      if (wert.length > 12) throw new Error('Höchstens 12 Rollen.');
+      const liste = wert.map((r) => {
+        const name = String((r && r.name) || '').replace(/[\r\n]+/g, ' ').trim().slice(0, 40);
+        if (!name) throw new Error('Jede Rolle braucht einen Namen.');
+        const anweisung = String((r && r.anweisung) || '').slice(0, 2000).trim();
+        if (!anweisung) throw new Error(`Die Rolle „${name}“ braucht eine Anweisung.`);
+        return { name, anweisung };
+      });
+      if (new Set(liste.map((r) => r.name.toLowerCase())).size !== liste.length) throw new Error('Rollennamen müssen eindeutig sein.');
+      return liste;
+    }
+    case 'rolle_aktiv':
+      return String(wert ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, 40);
     case 'overlay.spiele': {
       const roh = Array.isArray(wert) ? wert : String(wert ?? '').split(/[\n,;]/);
       const liste = [...new Set(roh.map((p) => String(p).trim().replace(/\.exe$/i, '')).filter(Boolean))];

@@ -170,6 +170,28 @@
         <input id="betaBestaetigung" type="text" autocomplete="off" spellcheck="false">
       </div>
       <label class="schalter"><input type="checkbox" id="betaSelbstcode" data-k="beta.selbstcode" disabled><span data-t="einst.beta_selbstcode"></span></label>
+      <label class="schalter"><input type="checkbox" id="betaAgenten" data-k="beta.agenten" disabled><span data-t="einst.beta_agenten"></span></label>
+      <div class="rollen-bereich" id="rollenBereich" hidden>
+        <p class="hinweis" data-t="einst.rollen_hinweis"></p>
+        <div class="feld schmal">
+          <label for="rolleAktiv" data-t="einst.rolle_aktiv"></label>
+          <select id="rolleAktiv"></select>
+        </div>
+        <ul class="rollen-liste" id="rollenListe"></ul>
+        <details class="rollen-neu">
+          <summary data-t="einst.rolle_neu"></summary>
+          <div class="feld">
+            <label for="rolleName" data-t="einst.rolle_name"></label>
+            <input id="rolleName" maxlength="40" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="feld">
+            <label for="rolleAnweisung" data-t="einst.rolle_anweisung"></label>
+            <textarea id="rolleAnweisung" rows="3" maxlength="2000" spellcheck="true"></textarea>
+          </div>
+          <button class="primaer klein" id="rolleHinzufuegen" data-t="einst.rolle_hinzufuegen"></button>
+          <small class="konto-meldung" id="rolleMeldung"></small>
+        </details>
+      </div>
     </section>
 
     <section class="gruppe">

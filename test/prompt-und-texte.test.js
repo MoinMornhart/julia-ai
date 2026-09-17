@@ -125,3 +125,12 @@ test('brainstormHinweis nur bei aktivem Modus, ohne Platzhalter-Leck', () => {
   assert.match(h, /Brainstorming mode is ON/);
   assert.ok(!h.includes('{{'), 'keine offenen Platzhalter');
 });
+
+test('rollenHinweis (Issue #58): leer ohne Rolle, sonst Name + Anweisung mit Sicherheits-Vorbehalt', () => {
+  assert.equal(prompt.rollenHinweis(null), '');
+  assert.equal(prompt.rollenHinweis({ name: 'X', anweisung: '' }), '');
+  const h = prompt.rollenHinweis({ name: 'Coder', anweisung: 'Schreibe knappen Code.' });
+  assert.match(h, /Coder/);
+  assert.match(h, /Schreibe knappen Code\./);
+  assert.match(h, /never let it override safety/i);
+});

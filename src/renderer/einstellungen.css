@@ -152,6 +152,12 @@ input[type="range"] { width: 100%; accent-color: var(--akzent); }
 .mcp-was, .mcp-werkzeuge { font-family: var(--mono); font-size: 12px; color: var(--text-2); overflow-wrap: anywhere; }
 .mcp-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .vibe-knoepfe { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; }
+.rollen-bereich { margin-top: 10px; border-top: 1px solid var(--linie); padding-top: 10px; }
+.rollen-liste { list-style: none; margin: 8px 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rollen-liste li { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.rollen-liste .rl-text { min-width: 0; }
+.rollen-liste .rl-text b { display: block; }
+.rollen-liste .rl-text small { color: var(--text-2); display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mcp-neu summary { cursor: pointer; font-weight: 600; }
 .mcp-neu[open] { display: grid; gap: 10px; }
 .mcp-neu[open] summary { margin-bottom: 2px; }
