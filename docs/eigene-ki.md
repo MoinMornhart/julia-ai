@@ -119,6 +119,7 @@ sauberen, **unit-getesteten** Rust-Code um (per `cargo test` in der CI verifizie
 | `stream.rs` | Gewichte **zeilenweise** von der Platte | Immer nur eine Zeile im RAM → **O(1)-RAM** unabhängig von der Modellgröße |
 | `grammar.rs` | Grammatik-Masking auf Logit-Ebene | Erzwingt gültige Ausgaben (gegen strukturelle Halluzinationen) |
 | `safety.rs` | Begrenztes Koexistenz-Gate | Zusätzliche Verteidigungslinie – echte Sicherheit bleibt an der Ampel |
+| `train.rs` | Lokaler Online-Trainings-Loop (Delta-/Hebb'sche Updates) + Statistik | 100 % lokal & kostenlos; Gewichte wachsen nicht mit der Datenmenge; f32→ternär quantisierbar |
 
 ### Warum linear statt quadratisch (das Kern-Diagramm)
 

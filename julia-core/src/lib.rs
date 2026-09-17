@@ -16,6 +16,9 @@
 //!               erzwingt gültige Ausgaben, statt auf sie zu hoffen.
 //! * [`safety`] – ein **ehrlich begrenztes** Sicherheits-Gate (kein Ersatz für die
 //!               Ampel – siehe Modul-Doku).
+//! * [`train`]  – **lokaler Online-Trainings-Loop** (Delta-/Hebb'sche Updates),
+//!               100 % lokal, plus Statistik für ein Dashboard und Quantisierung
+//!               der gelernten Gewichte nach ternär.
 //!
 //! ## Ehrliche Einordnung
 //!
@@ -32,6 +35,7 @@ pub mod safety;
 pub mod state;
 pub mod stream;
 pub mod ternary;
+pub mod train;
 
 #[cfg(test)]
 mod tests {
