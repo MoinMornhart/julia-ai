@@ -44,7 +44,11 @@ jobs:
           java-version: '17'
 
       - name: Abhängigkeiten installieren
-        run: npm install
+        # `npm ci` statt `npm install`: installiert exakt die Versionen aus
+        # package-lock.json → reproduzierbare Builds. Ohne Lockdatei löste
+        # `npm install` bei jedem Lauf frisch auf, wodurch ein neueres
+        # Transitiv-Paket den Build sporadisch brechen konnte (Issue #6).
+        run: npm ci
 
       - name: Natives Android-Projekt erzeugen (expo prebuild)
         run: npx expo prebuild --platform android --no-install
