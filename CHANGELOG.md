@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.2.1 – 2026-09-17
+- Leeres Fenster auf langsamen PCs behoben - Julia holt die zwei Start-Infos jetzt parallel (schneller startklar) und wartet laenger, bevor sie ein leeres Fenster annimmt; das beendet die Neustart-Schleife auf langsamen oder grafiktreiber-zickigen Rechnern
+
 ## 5.2.0 – 2026-09-17
 - MCP-Server per Drag-and-Drop hinzufuegen - zieh eine mcp.json in die MCP-Einstellungen (oder klick zum Auswaehlen), Julia erkennt die enthaltenen Server (mcpServers-Stil, lokale Programme und Web-Adressen) und uebernimmt sie; alles weiter ueber die Ampel
 

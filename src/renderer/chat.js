@@ -415,24 +415,24 @@ async function init() {
     $('btnZu').onclick = () => julia.schliessen();
   }
 
-  let st = {};
-  try {
-    st = await mitZeitlimit(julia.status(), 4000, 'Status') || {};
-  } catch (e) {
-    // Kein stiller Abbruch: melden (landet im Start-Logbuch) und mit Standard weiter.
-    try { julia.melden && julia.melden('start-status', e && e.message); } catch { /* egal */ }
-  }
+  // Beide Start-IPCs PARALLEL holen – höchstens ~4 s statt ~8 s nacheinander.
+  // Wichtig auf langsamen/degradierten PCs (Issue #3/#54): so steht die Oberfläche
+  // früh, bevor der Healthcheck ein „leeres Fenster" meldet und die Selbstheilung
+  // eine Neustart-Schleife auslöst. Kein stiller Abbruch – Hänger landen im Log.
+  const [stErg, txErg] = await Promise.all([
+    mitZeitlimit(julia.status(), 4000, 'Status').catch((e) => { try { julia.melden && julia.melden('start-status', e && e.message); } catch { /* egal */ } return null; }),
+    mitZeitlimit(julia.texte(), 4000, 'Texte').catch((e) => { try { julia.melden && julia.melden('start-texte', e && e.message); } catch { /* egal */ } return null; }),
+  ]);
+  const st = stErg || {};
   hotkey = st.hotkey || '';
   hoert = !!st.hoert;
   beschaeftigt = !!st.beschaeftigt;
-  try {
-    texteAnwenden(await mitZeitlimit(julia.texte(), 4000, 'Texte'));
-  } catch (e) {
-    try { julia.melden && julia.melden('start-texte', e && e.message); } catch { /* egal */ }
-    // Notdarstellung: Oberfläche bleibt bedienbar (fehlt Text, zeigt tx den Schlüssel).
+  if (txErg && txErg.texte) {
+    texteAnwenden(txErg);
+  } else {
+    // Notdarstellung: Oberfläche bleibt bedienbar (fehlt Text, zeigt tx den Schlüssel);
+    // die echten Texte im Hintergrund nachladen und ersetzen.
     texteAnwenden({ sprachcode: document.documentElement.lang || 'de', texte: T });
-    // War der IPC nur langsam (nicht dauerhaft tot), im Hintergrund die echten
-    // Texte nachladen und dann ersetzen – ohne den Start weiter aufzuhalten.
     julia.texte().then((d) => { if (d && d.texte) { texteAnwenden(d); if (window.juliaTexteNach) window.juliaTexteNach(); } }).catch(() => { /* bleibt bei der Notdarstellung */ });
   }
   zustandAnzeigen(st.zustand || 'idle');

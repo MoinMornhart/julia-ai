@@ -208,7 +208,13 @@ if (typeof window !== 'undefined' && window.addEventListener) {
         const leereTexte = beschriftet.length > 0
           && [...beschriftet].every((el) => !el.textContent.trim());
         leer = ohneStil || ohneInhalt || leereTexte;
-        grund = ohneStil ? 'ohne Stil (CSS fehlt)' : ohneInhalt ? 'ohne Inhalt (Body leer)' : leereTexte ? 'Beschriftungen leer – Start hing beim Laden' : '';
+        // Konkrete Diagnose ins Log (Issue #3/#54): sagt beim nächsten Mal genau,
+        // WAS leer ist – Body-Kinder, wie viele Beschriftungen (leer/gesamt),
+        // Ladezustand, Stylesheets. So lässt sich ein Blank-Fenster gezielt einordnen.
+        const gesamt = beschriftet.length;
+        const leerAnzahl = [...beschriftet].filter((el) => !el.textContent.trim()).length;
+        const diag = `body=${b ? b.childElementCount : 0} texte=${leerAnzahl}/${gesamt} css=${document.styleSheets ? document.styleSheets.length : 0} readyState=${document.readyState}`;
+        grund = (ohneStil ? 'ohne Stil (CSS fehlt)' : ohneInhalt ? 'ohne Inhalt (Body leer)' : leereTexte ? 'Beschriftungen leer – Start hing beim Laden' : '') + ` [${diag}]`;
       } catch { leer = true; grund = 'Prüfung fehlgeschlagen'; }
       if (!leer) return;
       fehlerMelden('ui-healthcheck', `Oberfläche nach dem Laden leer – ${grund}`, '', 0);
@@ -218,6 +224,6 @@ if (typeof window !== 'undefined' && window.addEventListener) {
           setTimeout(() => { try { location.reload(); } catch { /* egal */ } }, 400);
         }
       } catch { /* sessionStorage evtl. blockiert – dann nur melden */ }
-    }, 11000);
+    }, 20000);
   });
 }
