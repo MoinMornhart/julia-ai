@@ -25,7 +25,7 @@ test('abgeschaltete Kategorie fällt komplett weg', () => {
 test('mehrere Kategorien abschaltbar; Kern bleibt', () => {
   const n = namen({ kategorienAus: () => ['steuerung', 'gedaechtnis'] });
   assert.ok(!n.includes('klick'));
-  assert.ok(!n.includes('memo_schreiben'));
+  assert.ok(!n.includes('gedaechtnis_schreiben'));
   // Kern-Werkzeuge ohne Kategorie bleiben immer (z. B. Einstellungen, Auftrag)
   assert.ok(n.includes('einstellung_setzen'));
   assert.ok(n.includes('auftrag_vorlegen'));

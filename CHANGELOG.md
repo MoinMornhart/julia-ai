@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.4.0 – 2026-09-17
+- Ein einziges Merk-System - Gedaechtnis und Lern-Notizen sind zu EINER Werkzeug-Gruppe zusammengefuehrt (6 Werkzeuge auf 3): standard global, mit Schalter projekt die projektbezogenen Notizen; weniger Werkzeuge, schneller und tokenschonender, ohne Datenverlust
+
 ## 5.3.2 – 2026-09-17
 - Auto-Update laeuft wieder zuverlaessig (der Installer schoss sich beim harten Beenden nicht mehr selbst mit ab) und der Denk-Schritt erscheint jetzt auch bei OpenAI-kompatiblen Anbietern, die Reasoning mitsenden
 

@@ -451,54 +451,6 @@ const WERKZEUGE = [
     },
   },
   {
-    name: 'memo_schreiben',
-    description: 'Eine dauerhafte Lern-Notiz für dich selbst anlegen (versteckter Ordner .julia-memos im Arbeitsordner) – für Dinge, die du dir über die Zeit merken willst (z. B. Vorlieben, Projekt-Fakten, gelernte Lösungen). name = kurzer Titel, text = Inhalt. anhaengen=true ergänzt eine vorhandene Notiz unten, sonst wird sie überschrieben.',
-    input_schema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: 'Kurzer Titel der Notiz.' },
-        text: { type: 'string' },
-        anhaengen: { type: 'boolean' },
-      },
-      required: ['name', 'text'],
-    },
-    einstufen: gruen,
-    async ausfuehren(e, ctx) {
-      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus. Der Nutzer kann sie in den Einstellungen unter „Lernen“ einschalten.');
-      const name = ctx.notizen().schreiben(e.name, e.text, { anhaengen: !!e.anhaengen });
-      return `Notiz „${name}“ ${e.anhaengen ? 'ergänzt' : 'gespeichert'}.`;
-    },
-  },
-  {
-    name: 'memo_lesen',
-    fremd: true,
-    description: 'Deine Lern-Notizen lesen. Ohne name kommt die Liste aller Notizen (neueste zuerst); mit name der Inhalt dieser Notiz. Nutze das, um dich an früher Gemerktes zu erinnern.',
-    input_schema: { type: 'object', properties: { name: { type: 'string' } } },
-    einstufen: gruen,
-    async ausfuehren(e, ctx) {
-      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus.');
-      const n = ctx.notizen();
-      if (e.name) {
-        const inhalt = n.lesen(e.name);
-        if (inhalt == null) return `Es gibt keine Notiz „${e.name}“.`;
-        return fremd('deiner Notiz', inhalt);
-      }
-      const liste = n.liste();
-      if (!liste.length) return 'Noch keine Lern-Notizen vorhanden.';
-      return fremd('deinen Notizen', ['Deine Notizen (neueste zuerst):', ...liste.map((x) => `• ${x.name} (${formatGroesse(x.groesse)})`)].join('\n'));
-    },
-  },
-  {
-    name: 'memo_loeschen',
-    description: 'Eine deiner Lern-Notizen löschen (name = Titel der Notiz).',
-    input_schema: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] },
-    einstufen: gruen,
-    async ausfuehren(e, ctx) {
-      if (!ctx.memosAn()) throw new Error('Lern-Notizen sind aus.');
-      return ctx.notizen().loeschen(e.name) ? `Notiz „${e.name}“ gelöscht.` : `Es gibt keine Notiz „${e.name}“.`;
-    },
-  },
-  {
     name: 'rolle_fragen',
     description: 'Delegiere eine fokussierte Teilaufgabe an eine deiner Agenten-Rollen (nur wenn der Nutzer BETA-Agenten eingeschaltet und Rollen angelegt hat). Die Rolle denkt eigenständig und antwortet dir – sie hat KEINEN PC-Zugriff und keine Werkzeuge, sie überlegt nur. Nützlich, um eine spezialisierte Sicht einzuholen (z. B. eine „Kritiker"- oder „Rechercheur"-Rolle) und ihre Antwort dann selbst zu nutzen. rolle = Name einer angelegten Rolle, aufgabe = die Teilaufgabe/Frage.',
     input_schema: {
@@ -845,33 +797,57 @@ const WERKZEUGE = [
       return fremd('der Shell-Ausgabe', teile.join('\n'));
     },
   },
+  // Ein einziges Merk-System (Issue #75/#76: memo und gedaechtnis zusammengeführt).
+  // `projekt=true` = projektbezogene Notiz im versteckten .julia-memos-Ordner des
+  // Arbeitsordners (wandert mit dem Projekt); sonst globales Gedächtnis (App-Ordner).
   {
     name: 'gedaechtnis_lesen',
-    description: 'Alle gemerkten Einträge lesen.',
-    input_schema: { type: 'object', properties: {} },
+    fremd: true,
+    description: 'Gemerktes lesen. Ohne projekt: alle globalen Merk-Einträge. Mit projekt=true: projektbezogene Notizen im Arbeitsordner – ohne schluessel die Liste, mit schluessel der Inhalt dieser Notiz.',
+    input_schema: { type: 'object', properties: { schluessel: { type: 'string' }, projekt: { type: 'boolean', description: 'true = projektbezogene Notizen statt globales Gedächtnis.' } } },
     einstufen: gruen,
-    async ausfuehren(e, ctx) { return ctx.gedaechtnis.alsText(); },
+    async ausfuehren(e, ctx) {
+      if (!e.projekt) return ctx.gedaechtnis.alsText();
+      if (!ctx.memosAn || !ctx.memosAn()) throw new Error('Projekt-Notizen sind aus. Der Nutzer kann sie in den Einstellungen unter „Lernen“ einschalten.');
+      const n = ctx.notizen();
+      if (e.schluessel) {
+        const inhalt = n.lesen(e.schluessel);
+        return inhalt == null ? `Es gibt keine Projekt-Notiz „${e.schluessel}“.` : fremd('deiner Projekt-Notiz', inhalt);
+      }
+      const liste = n.liste();
+      if (!liste.length) return 'Noch keine Projekt-Notizen vorhanden.';
+      return fremd('deinen Projekt-Notizen', ['Projekt-Notizen (neueste zuerst):', ...liste.map((x) => `• ${x.name} (${formatGroesse(x.groesse)})`)].join('\n'));
+    },
   },
   {
     name: 'gedaechtnis_schreiben',
-    description: 'Etwas Dauerhaftes merken oder einen Eintrag ersetzen. Nie Zugangsdaten.',
-    input_schema: { type: 'object', properties: { schluessel: { type: 'string', description: 'Kurzer, sprechender Name, z. B. "commits_sprache".' }, inhalt: { type: 'string' } }, required: ['schluessel', 'inhalt'] },
+    description: 'Etwas Dauerhaftes merken (nie Zugangsdaten). schluessel = kurzer, sprechender Name; inhalt = Text. anhaengen=true ergänzt einen vorhandenen Eintrag unten statt zu ersetzen. projekt=true legt es als projektbezogene Notiz im Arbeitsordner ab (wandert mit dem Projekt) statt ins globale Gedächtnis.',
+    input_schema: { type: 'object', properties: { schluessel: { type: 'string', description: 'Kurzer, sprechender Name, z. B. "commits_sprache".' }, inhalt: { type: 'string' }, anhaengen: { type: 'boolean' }, projekt: { type: 'boolean' } }, required: ['schluessel', 'inhalt'] },
     dauerhaft: true,
     einstufen(e) {
-      return { ...gruen(), beschreibung: `Dauerhaft merken: ${e.schluessel} = ${e.inhalt}` };
+      return { ...gruen(), beschreibung: `${e.projekt ? 'Projekt-Notiz' : 'Dauerhaft merken'}: ${e.schluessel} = ${e.inhalt}` };
     },
     async ausfuehren(e, ctx) {
-      ctx.gedaechtnis.schreiben(e.schluessel, e.inhalt);
+      if (e.projekt) {
+        if (!ctx.memosAn || !ctx.memosAn()) throw new Error('Projekt-Notizen sind aus. Der Nutzer kann sie in den Einstellungen unter „Lernen“ einschalten.');
+        const name = ctx.notizen().schreiben(e.schluessel, e.inhalt, { anhaengen: !!e.anhaengen });
+        return `Projekt-Notiz „${name}“ ${e.anhaengen ? 'ergänzt' : 'gespeichert'}.`;
+      }
+      ctx.gedaechtnis.schreiben(e.schluessel, e.inhalt, { anhaengen: !!e.anhaengen });
       ctx.kontextGeaendert();
-      return 'Gemerkt.';
+      return e.anhaengen ? 'Ergänzt.' : 'Gemerkt.';
     },
   },
   {
     name: 'gedaechtnis_loeschen',
-    description: 'Einen gemerkten Eintrag vollständig löschen.',
-    input_schema: { type: 'object', properties: { schluessel: { type: 'string' } }, required: ['schluessel'] },
+    description: 'Einen gemerkten Eintrag vollständig löschen. projekt=true löscht eine projektbezogene Notiz statt eines globalen Eintrags.',
+    input_schema: { type: 'object', properties: { schluessel: { type: 'string' }, projekt: { type: 'boolean' } }, required: ['schluessel'] },
     einstufen: gruen,
     async ausfuehren(e, ctx) {
+      if (e.projekt) {
+        if (!ctx.memosAn || !ctx.memosAn()) throw new Error('Projekt-Notizen sind aus.');
+        return ctx.notizen().loeschen(e.schluessel) ? `Projekt-Notiz „${e.schluessel}“ gelöscht.` : `Es gibt keine Projekt-Notiz „${e.schluessel}“.`;
+      }
       const ok = ctx.gedaechtnis.loeschen(e.schluessel);
       ctx.kontextGeaendert();
       return ok ? 'Gelöscht.' : `Es gibt keinen Eintrag "${e.schluessel}".`;
@@ -1310,7 +1286,7 @@ const KATEGORIEN = [
   { id: 'dateien', werkzeuge: ['datei_lesen', 'datei_schreiben', 'datei_finden', 'datei_verschieben', 'datei_papierkorb', 'ordner_auflisten', 'doppelte_dateien', 'projekt_suchen'] },
   { id: 'bildschirm', werkzeuge: ['screenshot', 'medien', 'zwischenablage_lesen'] },
   { id: 'system', werkzeuge: ['shell', 'system_status', 'prozesse_auflisten', 'protokoll_lesen'] },
-  { id: 'gedaechtnis', werkzeuge: ['gedaechtnis_lesen', 'gedaechtnis_schreiben', 'gedaechtnis_loeschen', 'memo_lesen', 'memo_schreiben', 'memo_loeschen'] },
+  { id: 'gedaechtnis', werkzeuge: ['gedaechtnis_lesen', 'gedaechtnis_schreiben', 'gedaechtnis_loeschen'] },
   { id: 'erinnerungen', werkzeuge: ['erinnerung_setzen', 'erinnerung_loeschen', 'erinnerungen_anzeigen', 'stoppuhr'] },
   { id: 'web', werkzeuge: ['webseite_abrufen'] },
   { id: 'apps', werkzeuge: ['apps', 'clip_speichern'] },

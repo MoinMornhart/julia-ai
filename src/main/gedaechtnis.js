@@ -39,7 +39,7 @@ class Gedaechtnis {
     return this._laden().eintraege;
   }
 
-  schreiben(schluessel, inhalt) {
+  schreiben(schluessel, inhalt, { anhaengen = false } = {}) {
     const k = String(schluessel || '').trim();
     const v = String(inhalt || '').trim();
     if (!k || !v) throw new Error('Schlüssel und Inhalt dürfen nicht leer sein.');
@@ -47,7 +47,8 @@ class Gedaechtnis {
       throw new Error('Das sieht nach Zugangsdaten aus. Die merke ich mir nicht.');
     }
     const daten = this._laden();
-    daten.eintraege[k] = { inhalt: v, geaendert: new Date().toISOString().slice(0, 10) };
+    const vorher = anhaengen && daten.eintraege[k] ? `${daten.eintraege[k].inhalt}\n` : '';
+    daten.eintraege[k] = { inhalt: vorher + v, geaendert: new Date().toISOString().slice(0, 10) };
     this._speichern(daten);
   }
 

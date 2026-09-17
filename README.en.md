@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **One single memory system (fewer tools)** – "memory" and "learning notes" used to be two separate tool groups (6 tools). Julia now uses **one** group (remember/read/delete): the global memory by default, and with a "project" switch the project-scoped notes in the work folder (which travel with the project). Fewer tools = faster and more token-efficient – and nothing is lost, both stores stay.
 - **Auto-update works reliably again** – for some, the automatic update broke off mid-way ("processes still active") because the installer accidentally killed itself during the hard shutdown. Fixed: Julia now only closes its own programs (not the running installer). Note: this improvement takes effect from the next installer – if your update is stuck, install the current version once by hand from the Releases page, after that it's automatic again.
 - **Reasoning step now visible with more providers** – the collapsible "reasoning" box now also appears for OpenAI-compatible providers that send their reasoning step (e.g. DeepSeek), not just Anthropic.
 - **Empty window fixed for good** – the interface labels are now set **immediately at startup** from bundled texts, completely independent of how fast the PC or the connection to the main program is. So the window no longer stays empty on any machine and the restart loop is gone – the correct language/text set is then loaded in the background.
@@ -73,7 +74,6 @@
 - **Empty window on slow PCs fixed** – on some (slow, or with a finicky graphics driver) the main window stayed empty and Julia kept restarting in a loop. The cause wasn't graphics but a startup race: Julia fetched two startup infos one after another and the self-healing kicked in before the interface had finished building. Now Julia loads both in parallel (ready faster) and waits longer before assuming an "empty window" – the loop is gone.
 - **Add MCP servers by drag-and-drop** – just drag an `mcp.json` into the MCP settings (or click to pick one): Julia detects the servers inside (the common `mcpServers` style, local programs as well as web addresses) and adds them. Every call still goes through the traffic light, and the servers start out "not trusted".
 - **Switching tools off now really makes Julia faster** – disabled tools are **no longer offered to the AI at all** (before, only their use was blocked while the description was still sent – with no speed gain). You can now also turn **whole groups** on/off at once (PC control, files, system, memory …). Fewer tools = faster, more token-efficient answers. Core functions always stay on.
-- **Julia answers noticeably faster** – the default thinking effort is now "medium" instead of "high": good answers, but clearly quicker instead of a long wait. If you want deeper reasoning on purpose, set the **Thinking effort** higher again in the settings (high/very high/max).
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

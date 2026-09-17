@@ -18,6 +18,15 @@ test('Merken, lesen, löschen', () => {
   assert.equal(g.alsText(), '(noch leer)');
 });
 
+test('anhaengen ergänzt statt zu ersetzen (Issue #75/#76)', () => {
+  const g = neu();
+  g.schreiben('notiz', 'Zeile 1');
+  g.schreiben('notiz', 'Zeile 2', { anhaengen: true });
+  assert.match(g.alle().notiz.inhalt, /Zeile 1\nZeile 2/);
+  g.schreiben('notiz', 'ersetzt'); // ohne anhaengen überschreibt
+  assert.equal(g.alle().notiz.inhalt, 'ersetzt');
+});
+
 test('Kaputte gedaechtnis.json: Lesen meldet es, Schreiben überschreibt nichts', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'julia-gd-'));
   const datei = path.join(dir, 'gedaechtnis.json');
