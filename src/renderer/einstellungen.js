@@ -451,6 +451,31 @@ async function geheimSpeichern() {
   geheimZeigen();
 }
 
+async function kategorienZeigen() {
+  const box = $('kategorienListe');
+  if (!box) return;
+  let liste;
+  try { liste = await julia.werkzeugKategorien(); } catch { return; }
+  box.innerHTML = '';
+  for (const k of liste) {
+    const l = document.createElement('label');
+    l.className = 'schalter werkzeug-schalter';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.checked = k.an !== false;
+    cb.dataset.id = k.id;
+    const span = document.createElement('span');
+    span.textContent = `${tx(`einst.kat_${k.id}`)}${k.anzahl ? ` (${k.anzahl})` : ''}`;
+    cb.addEventListener('change', async () => {
+      const aus = [...box.querySelectorAll('input[type="checkbox"]')].filter((c) => !c.checked).map((c) => c.dataset.id);
+      const r = await setzen('kategorien_aus', aus);
+      if (r.fehler) cb.checked = !cb.checked;
+    });
+    l.append(cb, span);
+    box.appendChild(l);
+  }
+}
+
 async function werkzeugeZeigen() {
   const box = $('werkzeugeListe');
   if (!box) return;
@@ -1243,6 +1268,7 @@ async function init() {
   $('overlayVorschau').onclick = () => julia.overlayVorschau();
   $('overlayPositionWeg').onclick = () => julia.setzen('overlay.position', null);
   sandboxZeigen();
+  kategorienZeigen();
   werkzeugeZeigen();
   geheimZeigen();
   betaEinrichten();

@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.1.0 – 2026-09-17
+- Werkzeuge abschalten macht Julia wirklich schneller - abgeschaltete Werkzeuge gehen gar nicht mehr ans Modell (vorher nur die Nutzung blockiert), und du kannst jetzt ganze Gruppen auf einmal ab-/anschalten; weniger Werkzeuge = schnellere, tokenschonendere Antworten
+
 ## 5.0.1 – 2026-09-17
 - Julia antwortet spuerbar schneller - der Standard-Denkaufwand ist jetzt mittel statt hoch (gute Antworten, deutlich flotter); wer mehr Tiefe will, stellt den Denkaufwand in den Einstellungen wieder hoeher
 

@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Switching tools off now really makes Julia faster** – disabled tools are **no longer offered to the AI at all** (before, only their use was blocked while the description was still sent – with no speed gain). You can now also turn **whole groups** on/off at once (PC control, files, system, memory …). Fewer tools = faster, more token-efficient answers. Core functions always stay on.
 - **Julia answers noticeably faster** – the default thinking effort is now "medium" instead of "high": good answers, but clearly quicker instead of a long wait. If you want deeper reasoning on purpose, set the **Thinking effort** higher again in the settings (high/very high/max).
 - **Reasoning step visible while answering** – while Julia is thinking, a **collapsible box** with her reasoning now appears (tap to expand) instead of just "working …". So you can see something is happening even when she takes longer. How much she reasons is still set via **Thinking effort** in the settings.
 - **Minecraft: stuck spots go into the logbook** – when Julia gives up at an obstacle (instead of jumping forever), she notes the spot with coordinates in the local game logbook. That makes it easy to see afterwards exactly where she got stuck – helpful for improving such points specifically. (Stays local on the PC.)
@@ -73,7 +74,6 @@
 - **Startup crash fixed – the interface loads again** – on some machines the interface didn't build at all, because two scripts in the chat window shared the same name (a duplicated `mitZeitlimit`/`md`), which made the main script abort entirely – leaving other parts without their helpers. Fixed; an automated test now also makes sure interface scripts can't knock each other out anymore.
 - **VibeWorks: sign in with your account without copying a key (device login)** – besides the API key, the settings now offer "Sign in with account (device)": Julia fetches a code itself, the VibeWorks page opens, you allow access **once** – done. No more key to copy. The access is fetched securely and stored encrypted on the PC only (the AI never sees it); your one-time approval stays the security boundary.
 - **VibeWorks sign-in no longer freezes** – if the VibeWorks server ever fails to respond, Julia now aborts the key check cleanly after a short while and shows a network hint, instead of the sign-in box loading forever ("nothing loads"). A small safeguard so a hanging server can't block the interface.
-- **Agents with a reviewer loop (BETA)** – Julia can now solve a task with two roles working together: an "Author" role writes a draft, a "Reviewer" role critiques it against the goal, and it gets improved – until the reviewer is satisfied or the (small) round limit is reached. That makes results more thorough. Both roles only reason (no PC access), and it's only there with BETA agents on. Third and final building block of the agent structure.
 
 All changes are in the [CHANGELOG](CHANGELOG.md). There's a little easter egg too – type (or say) `jarvis`. In Jarvis mode just “Jarvis” works as the wake word and the voice changes; “julia” switches back. 😉
 

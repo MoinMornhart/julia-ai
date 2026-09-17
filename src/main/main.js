@@ -1161,6 +1161,12 @@ function ipcEinrichten() {
       an: !aus.includes(w.name),
     }));
   });
+  // Werkzeug-Kategorien für die Bulk-Abschaltung (Issue #75/#76).
+  ipc.handle('werkzeuge:kategorien', () => {
+    const { KATEGORIEN } = require('./werkzeuge');
+    const aus = config.get('kategorien_aus') || [];
+    return KATEGORIEN.map((k) => ({ id: k.id, an: !aus.includes(k.id), anzahl: k.werkzeuge.length }));
+  });
   ipc.handle('mcp:hinzufuegen', (_e, d) => {
     try {
       const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });
@@ -2282,6 +2288,8 @@ async function start() {
     memosAn: () => !!config.get('memos').an,
     // Agenten-Rollen (Issue #58): BETA-Schalter + Sub-Agent-Aufruf für das Werkzeug.
     agentenAn: () => !!config.get('beta').agenten,
+    werkzeugeAus: () => config.get('werkzeuge_aus') || [], // einzelne Werkzeuge
+    kategorienAus: () => config.get('kategorien_aus') || [], // ganze Kategorien
     unterAgent: (rolle, aufgabe) => agent.unterAgent(rolle, aufgabe),
     // Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box im Chat holt
     // ihn; der WERT fließt direkt vom Fenster in den verschlüsselten Speicher

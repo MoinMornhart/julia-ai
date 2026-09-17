@@ -1240,6 +1240,25 @@ const WEBSEITE = {
 };
 
 // Grundwerkzeuge plus die Werkzeuge verbundener Konten und MCP-Server.
+// Werkzeug-Kategorien (Issue #75/#76): Ganze Gruppen lassen sich in den
+// Einstellungen abschalten → weniger aktive Werkzeuge = schneller & tokenschonender
+// (jede Werkzeug-Beschreibung geht bei jeder Runde ans Modell). Nicht gelistete
+// Werkzeuge sind Kern (Aufträge, Einstellungen, Geheimnis-Box, Update, Diagnose,
+// Agenten-Rollen) und bleiben immer an.
+const KATEGORIEN = [
+  { id: 'steuerung', werkzeuge: ['klick', 'tippen', 'taste', 'scrollen', 'fenster_fokussieren', 'fenster_auflisten', 'fenster_anordnen', 'programm_oeffnen', 'programm_schliessen'] },
+  { id: 'dateien', werkzeuge: ['datei_lesen', 'datei_schreiben', 'datei_finden', 'datei_verschieben', 'datei_papierkorb', 'ordner_auflisten', 'doppelte_dateien', 'projekt_suchen'] },
+  { id: 'bildschirm', werkzeuge: ['screenshot', 'medien', 'zwischenablage_lesen'] },
+  { id: 'system', werkzeuge: ['shell', 'system_status', 'prozesse_auflisten', 'protokoll_lesen'] },
+  { id: 'gedaechtnis', werkzeuge: ['gedaechtnis_lesen', 'gedaechtnis_schreiben', 'gedaechtnis_loeschen', 'memo_lesen', 'memo_schreiben', 'memo_loeschen'] },
+  { id: 'erinnerungen', werkzeuge: ['erinnerung_setzen', 'erinnerung_loeschen', 'erinnerungen_anzeigen', 'stoppuhr'] },
+  { id: 'web', werkzeuge: ['webseite_abrufen'] },
+  { id: 'apps', werkzeuge: ['apps', 'clip_speichern'] },
+];
+const KAT_VON = new Map();
+for (const k of KATEGORIEN) for (const n of k.werkzeuge) KAT_VON.set(n, k.id);
+function kategorieVon(name) { return KAT_VON.get(name) || null; }
+
 function alle(ctx) {
   const extra = ctx && ctx.konten ? ctx.konten.werkzeuge() : [];
   const web = ctx && ctx.eigenesWeb && ctx.eigenesWeb() ? [WEBSEITE] : [];
@@ -1248,7 +1267,22 @@ function alle(ctx) {
   const agentenAn = !!(ctx && ctx.agentenAn && ctx.agentenAn());
   const AGENTEN_WZ = new Set(['rolle_fragen', 'mit_pruefer']);
   const basis = agentenAn ? WERKZEUGE : WERKZEUGE.filter((w) => !AGENTEN_WZ.has(w.name));
-  return [...basis, ...web, ...extra, ...mcp];
+  let liste = [...basis, ...web, ...extra, ...mcp];
+  // Abgeschaltete Werkzeuge WIRKLICH aus der Liste nehmen, damit sie gar nicht
+  // erst ans Modell gehen (weniger Tokens/Zeit) – vorher wurde nur die Ausführung
+  // blockiert, die Beschreibung aber weiter mitgeschickt (Issue #75/#76):
+  //  - einzelne Werkzeuge (werkzeuge_aus), und
+  //  - ganze Kategorien (kategorien_aus). Kern-Werkzeuge ohne Kategorie bleiben.
+  const ausTools = new Set((ctx && ctx.werkzeugeAus && ctx.werkzeugeAus()) || []);
+  const ausKat = new Set((ctx && ctx.kategorienAus && ctx.kategorienAus()) || []);
+  if (ausTools.size || ausKat.size) {
+    liste = liste.filter((w) => {
+      if (ausTools.has(w.name)) return false;
+      const k = kategorieVon(w.name);
+      return !(k && ausKat.has(k));
+    });
+  }
+  return liste;
 }
 
 function definitionen(ctx) {
@@ -1259,4 +1293,4 @@ function finden(name, ctx) {
   return alle(ctx).find((w) => w.name === name);
 }
 
-module.exports = { WERKZEUGE, WEBSEITE, definitionen, finden, shellAusfuehren, shellTimeout, bildBloecke };
+module.exports = { WERKZEUGE, WEBSEITE, KATEGORIEN, kategorieVon, alle, definitionen, finden, shellAusfuehren, shellTimeout, bildBloecke };

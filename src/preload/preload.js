@@ -24,6 +24,7 @@ contextBridge.exposeInMainWorld('julia', {
   anbieterSetzen: (id) => ipcRenderer.invoke('anbieter:setzen', id),
   modelleLaden: () => ipcRenderer.invoke('anbieter:modelle'),
   werkzeuge: () => ipcRenderer.invoke('werkzeuge:liste'),
+  werkzeugKategorien: () => ipcRenderer.invoke('werkzeuge:kategorien'),
   boostStatus: () => ipcRenderer.invoke('boost:status'),
   boostProzesse: (sortierung) => ipcRenderer.invoke('boost:prozesse', String(sortierung || 'ram')),
   boostDoppelte: (pfad) => ipcRenderer.invoke('boost:doppelte', String(pfad || '')),
