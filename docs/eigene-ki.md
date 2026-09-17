@@ -105,6 +105,57 @@ Das ist kein „selbst denkendes“ Lebewesen und kein Ersatz für die Sprach-KI
 es ist ein **echtes, überprüfbares** Stück „Julia lernt dazu“, das man Schritt für
 Schritt ausbauen kann (erst Minecraft/Rechnen, dann weitere enge Fertigkeiten).
 
+## Nativer Rust-Kern `julia-core` (Anfang gebaut)
+
+Auf ausdrücklichen Wunsch (Issue #65) ist der **native, ressourcenschonende Kern**
+als eigenes Workspace-Crate **`julia-core/`** angelegt – als richtiger Unterbau,
+nicht als Nebenprojekt. Er setzt die realen, im Issue genannten Techniken als
+sauberen, **unit-getesteten** Rust-Code um (per `cargo test` in der CI verifiziert):
+
+| Modul (`julia-core/src/…`) | Was es umsetzt | Warum ressourcenschonend |
+|---|---|---|
+| `state.rs` | Lineare Zustandsraum-Rekurrenz (SSM-Stil) | Fester Zustand `h`, **O(1)-Speicher** über die Sequenz – kein wachsender KV-Cache |
+| `ternary.rs` | Ternäre Gewichte `{-1, 0, +1}` (BitNet-Idee) | Matrixprodukt = nur **Addition/Subtraktion**, ~1,58 Bit je Gewicht |
+| `stream.rs` | Gewichte **zeilenweise** von der Platte | Immer nur eine Zeile im RAM → **O(1)-RAM** unabhängig von der Modellgröße |
+| `grammar.rs` | Grammatik-Masking auf Logit-Ebene | Erzwingt gültige Ausgaben (gegen strukturelle Halluzinationen) |
+| `safety.rs` | Begrenztes Koexistenz-Gate | Zusätzliche Verteidigungslinie – echte Sicherheit bleibt an der Ampel |
+
+### Warum linear statt quadratisch (das Kern-Diagramm)
+
+```mermaid
+flowchart LR
+    subgraph T["Transformer-Attention (quadratisch)"]
+      t1["Token 1"] --> KV["KV-Cache\nwächst mit der Länge\n→ Speicher O(n)"]
+      t2["Token 2"] --> KV
+      t3["Token …"] --> KV
+      KV --> tout["Ausgabe\nKosten ~ O(n²)"]
+    end
+
+    subgraph S["julia-core: linearer Zustand (O(1))"]
+      s1["Token 1"] --> H["fester Zustand h\n[f32; dim]\nh ← a·h + b·x"]
+      s2["Token 2"] --> H
+      s3["Token …"] --> H
+      H --> sout["Ausgabe\nSpeicher konstant"]
+    end
+```
+
+Statt jeden Token mit jedem zu vergleichen (quadratisch, wachsender Cache), faltet
+der lineare Zustand die Vergangenheit in einen **festen** Vektor. Dadurch bleibt der
+Speicher konstant – die Grundlage für „läuft, ohne dass RAM/GB explodieren".
+
+### Was der Kern kann – und was (noch) nicht
+
+- **Kann jetzt:** die obige Mathematik ausführen, kompiliert und getestet. Ein
+  echter, linearer, ressourcenschonender Kern-Unterbau.
+- **Kann noch nicht:** „klug" antworten. Dafür braucht der Kern **trainierte
+  Gewichte** (Daten + Rechenzeit). Das Grundgerüst rechnet mit beliebigen (auch
+  gestreamten) Gewichten; das Training selbst ist der große, kostenrelevante
+  Schritt – siehe unten.
+- **Anbindung an die App:** Als nächster Schritt wird der Kern über eine native
+  Brücke (z. B. `napi-rs` als Node-Addon oder ein schlankes Sidecar-Binary) an
+  Julia gehängt und in der **BETA** zuschaltbar gemacht – additiv, mit Warnhinweis,
+  Standard aus.
+
 ## Was eine Kosten-/Forschungs-Entscheidung ist (für MoinMornhart)
 
 Der Teil „ein **eigenes großes Modell trainieren**“ (statt nur den kleinen

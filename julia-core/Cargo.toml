@@ -1,0 +1,14 @@
+[package]
+name = "julia-core"
+version = "0.1.0"
+edition = "2021"
+description = "Nativer, ressourcenschonender Kern-Anfang fuer Julia AI (Issue #65): lineares SSM mit O(1)-State, ternaere Gewichte, gestreamte Gewichte, Grammatik-Masking. Getestete Mathematik-Grundlage, kein trainiertes Modell."
+license = "MIT"
+
+[lib]
+name = "julia_core"
+path = "src/lib.rs"
+
+# Bewusst OHNE externe Abhaengigkeiten (nur std) – haelt den Build klein,
+# offline-tauglich und die CI robust.
+[dependencies]

@@ -1,0 +1,37 @@
+name: Rust-Kern testen
+
+# Baut und testet den nativen Kern-Anfang julia-core (Issue #65). Läuft nur, wenn
+# sich am Kern etwas ändert. GitHub-Runner haben Rust/cargo bereits vorinstalliert,
+# daher braucht es keine zusätzliche Toolchain-Action.
+
+on:
+  push:
+    paths:
+      - 'julia-core/**'
+      - '.github/workflows/rust-core.yml'
+  pull_request:
+    paths:
+      - 'julia-core/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: julia-core
+    steps:
+      - name: Quellcode holen
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Rust-Version zeigen
+        run: cargo --version && rustc --version
+
+      - name: Format prüfen
+        run: cargo fmt --check || echo "Hinweis: cargo fmt meldet Formatabweichungen (nicht blockierend)."
+
+      - name: Tests
+        run: cargo test --all --verbose
