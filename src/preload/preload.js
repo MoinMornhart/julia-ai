@@ -2,6 +2,13 @@
 
 const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
+// Mitgelieferte Standard-Texte (Deutsch/Englisch) – synchron im Fenster verfügbar,
+// damit die Beschriftungen SOFORT beim Laden gesetzt werden können, ohne auf einen
+// IPC zu warten (Issue #3/#54: „leeres Fenster" auf langsamen/zickigen PCs). Der
+// Hauptprozess liefert später den vollen, an die Einstellung angepassten Satz.
+let STANDARD_TEXTE = { de: {}, en: {} };
+try { STANDARD_TEXTE = require('../shared/texte').TEXTE; } catch { /* Notfalls IPC-only */ }
+
 // Die einzige Brücke zwischen Oberfläche und Hauptprozess. Die Fenster sehen
 // nur diese Funktionen, kein Node und kein Dateisystem.
 
@@ -12,6 +19,7 @@ const KANAELE = [
 ];
 
 contextBridge.exposeInMainWorld('julia', {
+  standardTexte: STANDARD_TEXTE, // synchrone Standard-Texte für die Sofort-Anzeige
   texte: () => ipcRenderer.invoke('texte'),
   config: () => ipcRenderer.invoke('config:lesen'),
   // Aufgefangene Startprobleme (z. B. hängender IPC) ins Start-Logbuch melden,

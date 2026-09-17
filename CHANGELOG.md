@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.3.1 – 2026-09-17
+- Leeres Fenster endgueltig behoben - die Beschriftungen werden jetzt sofort beim Start aus mitgelieferten Texten gesetzt, unabhaengig von IPC/Init; damit bleibt das Fenster auf keinem PC mehr leer und die Neustart-Schleife ist weg
+
 ## 5.3.0 – 2026-09-17
 - Videos schneiden und Thumbnails - Julia kann auf Zuruf Videos schneiden/trimmen, mehrere zusammenfuegen und Standbilder (Thumbnails) erstellen; lokal per ffmpeg, jede neue Datei einmal freigeben, in der abschaltbaren Kategorie Videos
 

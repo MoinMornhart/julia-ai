@@ -519,5 +519,29 @@ async function init() {
 // auflösen – sonst füllt start.js die Navigation/Beschriftungen nie und die
 // Oberfläche bliebe leer. Fehler werden gemeldet, nicht verschluckt.
 const bereit = init().catch((e) => { try { julia.melden && julia.melden('start-init', e && e.message); } catch { /* egal */ } });
+
+// WICHTIG (Issue #3/#54): Die Beschriftungen SOFORT beim Laden mit mitgelieferten
+// Standard-Texten füllen – unabhängig von IPC/Init. Damit ist das Fenster NIE leer,
+// auch auf langsamen oder grafiktreiber-zickigen PCs (dort hing die Beschriftung
+// bisher an der IPC/Init-Kette, blieb leer → „leeres Fenster" + Neustart-Schleife).
+// Den echten Sprach-/Text-Satz vom Hauptprozess spielt init() danach darüber.
+function standardTexteSetzen() {
+  try {
+    const std = julia.standardTexte;
+    if (imOverlay || !std) return;
+    const sc = String(navigator.language || 'de').toLowerCase().startsWith('en') ? 'en' : 'de';
+    const texte = std[sc] && Object.keys(std[sc]).length ? std[sc] : std.de;
+    if (!texte || !Object.keys(texte).length) return;
+    texteAnwenden({ sprachcode: sc, texte });
+    // Beschriftungen DIREKT füllen – unabhängig davon, ob start.js schon bereit ist
+    // (garantiert kein „leeres Fenster", egal was in der Init-Kette hakt).
+    document.querySelectorAll('[data-nav]').forEach((el) => { if (el.dataset.nav) el.textContent = tx(el.dataset.nav); });
+    document.querySelectorAll('[data-t]').forEach((el) => { if (el.dataset.t) el.textContent = tx(el.dataset.t); });
+    if (window.juliaTexteNach) window.juliaTexteNach(); // start.js: restliche Startseite füllen
+  } catch { /* egal – init füllt später nach */ }
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', standardTexteSetzen);
+else standardTexteSetzen();
+
 julia.on('demo', (eintraege) => bereit.then(() => demo(eintraege)));
 julia.on('overlay:modus', (modus) => bereit.then(() => overlayModus(modus)));
