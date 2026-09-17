@@ -70,11 +70,8 @@ mod tests {
         let y = stream.matvec(&x).unwrap();
 
         // Referenz im Speicher.
-        for r in 0..2 {
-            let mut acc = 0.0f32;
-            for c in 0..3 {
-                acc += matrix[r][c] * x[c];
-            }
+        for (r, row) in matrix.iter().enumerate() {
+            let acc: f32 = row.iter().zip(x.iter()).map(|(&w, &xi)| w * xi).sum();
             assert!((y[r] - acc).abs() < 1e-6, "Zeile {r} weicht ab");
         }
 

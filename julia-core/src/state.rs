@@ -43,9 +43,16 @@ impl LinearState {
     pub fn step(&mut self, x: &[f32]) -> f32 {
         assert_eq!(x.len(), self.dim(), "x muss dim lang sein");
         let mut y = 0.0f32;
-        for i in 0..self.h.len() {
-            self.h[i] = self.a[i] * self.h[i] + self.b[i] * x[i];
-            y += self.c[i] * self.h[i];
+        for ((((h, &a), &b), &c), &xi) in self
+            .h
+            .iter_mut()
+            .zip(self.a.iter())
+            .zip(self.b.iter())
+            .zip(self.c.iter())
+            .zip(x.iter())
+        {
+            *h = a * *h + b * xi;
+            y += c * *h;
         }
         y
     }

@@ -34,7 +34,7 @@ impl Ternary {
     pub fn matvec(&self, x: &[f32]) -> Vec<f32> {
         assert_eq!(x.len(), self.cols, "x muss cols lang sein");
         let mut y = vec![0.0f32; self.rows];
-        for r in 0..self.rows {
+        for (r, yr) in y.iter_mut().enumerate() {
             let base = r * self.cols;
             let mut acc = 0.0f32;
             for (c, &xc) in x.iter().enumerate() {
@@ -44,7 +44,7 @@ impl Ternary {
                     _ => {}
                 }
             }
-            y[r] = acc;
+            *yr = acc;
         }
         y
     }
@@ -72,8 +72,8 @@ mod tests {
         // Referenz mit echten Multiplikationen.
         for r in 0..2 {
             let mut ref_acc = 0.0f32;
-            for c in 0..3 {
-                ref_acc += (vals[r * 3 + c] as f32) * x[c];
+            for (c, &xc) in x.iter().enumerate() {
+                ref_acc += (vals[r * 3 + c] as f32) * xc;
             }
             assert!((y[r] - ref_acc).abs() < 1e-6);
         }

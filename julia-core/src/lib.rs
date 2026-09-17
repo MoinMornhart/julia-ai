@@ -4,21 +4,12 @@
 //! Sie setzt die real existierenden, ressourcensparenden Techniken um, die im Issue
 //! genannt wurden – als sauberer, modularer Rust-Code:
 //!
-//! * [`state`]  – lineare Zustandsraum-Rekurrenz (SSM-Stil) mit **O(1)-Speicher**
-//!               über die Sequenzlänge (ersetzt den mit der Länge wachsenden
-//!               Transformer-KV-Cache).
-//! * [`ternary`] – ternäre Gewichte `{-1, 0, +1}` (BitNet-b1.58-Idee): das
-//!               Matrix-Vektor-Produkt wird zu reiner **Addition/Subtraktion**,
-//!               ganz ohne Fließkomma-Multiplikation.
-//! * [`stream`] – Gewichte **zeilenweise von der Platte streamen**: der RAM-Bedarf
-//!               bleibt O(cols), unabhängig von der Modellgröße.
-//! * [`grammar`] – **Grammatik-Masking auf Logit-Ebene** (constrained decoding):
-//!               erzwingt gültige Ausgaben, statt auf sie zu hoffen.
-//! * [`safety`] – ein **ehrlich begrenztes** Sicherheits-Gate (kein Ersatz für die
-//!               Ampel – siehe Modul-Doku).
-//! * [`train`]  – **lokaler Online-Trainings-Loop** (Delta-/Hebb'sche Updates),
-//!               100 % lokal, plus Statistik für ein Dashboard und Quantisierung
-//!               der gelernten Gewichte nach ternär.
+//! * [`state`] – lineare Zustandsraum-Rekurrenz (SSM-Stil) mit O(1)-Speicher über die Sequenzlänge (ersetzt den wachsenden Transformer-KV-Cache).
+//! * [`ternary`] – ternäre Gewichte `{-1, 0, +1}` (BitNet-b1.58): das Matrix-Vektor-Produkt wird zu reiner Addition/Subtraktion, ohne Multiplikation.
+//! * [`stream`] – Gewichte zeilenweise von der Platte streamen: der RAM-Bedarf bleibt O(cols), unabhängig von der Modellgröße.
+//! * [`grammar`] – Grammatik-Masking auf Logit-Ebene (constrained decoding): erzwingt gültige Ausgaben.
+//! * [`safety`] – ein ehrlich begrenztes Sicherheits-Gate (kein Ersatz für die Ampel – siehe Modul-Doku).
+//! * [`train`] – lokaler Online-Trainings-Loop (Delta-/Hebb'sche Updates), 100 % lokal, plus Statistik und Quantisierung nach ternär.
 //!
 //! ## Ehrliche Einordnung
 //!
