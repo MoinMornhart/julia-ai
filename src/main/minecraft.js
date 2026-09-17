@@ -1598,6 +1598,16 @@ class Minecraft extends EventEmitter {
         bot.setControlState('forward', false);
         bot.setControlState('sprint', false);
       } catch { /* getrennt */ }
+      // Steck-Stelle lokal festhalten (überlebt Abstürze), damit sich solche
+      // Punkte im Logbuch gezielt nachvollziehen lassen (Issue #8).
+      if (this.logbuch) {
+        try {
+          const p = bot.entity.position;
+          this.logbuch.eintrag('haenger', 'Beim Vorlaufen nicht vorangekommen – Vorwärts gestoppt, plane neu.', {
+            x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z), imWasser,
+          });
+        } catch { /* Logbuch darf nie das Spiel stören */ }
+      }
       this._haenger = null;
     }
   }

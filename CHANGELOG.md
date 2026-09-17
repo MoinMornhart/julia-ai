@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.9.3 – 2026-09-17
+- Minecraft - Steck-Stellen landen im lokalen Logbuch; gibt Julia an einem Hindernis auf, notiert sie die Stelle mit Koordinaten, damit sich solche Punkte hinterher gezielt nachvollziehen lassen
+
 ## 4.9.2 – 2026-09-17
 - Minecraft - kein endloses Springen an einer Stelle mehr; bleibt Julia beim selbst Vorlaufen an einem Hindernis haengen und kommt nach mehreren Spruengen nicht voran, hoert sie auf zu druecken statt endlos auf der Stelle zu springen, und der naechste Schritt sucht einen neuen Weg
 
