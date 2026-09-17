@@ -76,6 +76,7 @@ mit Tag, Changelog-Zeile und README-Eintrag.
 | 💡 | Routinen, die du selbst anlegst („Feierabend": Programme schließen, Musik an) | M | mittel | jede Routine einmal freigeben, einzelne GELB-Schritte bleiben GELB |
 | 💡 | Gaming-Modus: leise, nur Overlay, keine Sprachausgabe | S | mittel | GRÜN |
 | 💡 | Kostenanzeige pro Gespräch und Monat | S | mittel | — |
+| 💡 | **Videos schneiden/cutten** – Julia schneidet auf Zuruf Videos (z. B. Gaming-Clips): trimmen, zusammenfügen, Ausschnitt exportieren, evtl. einfache Übergänge; lokal über ffmpeg, nichts wird hochgeladen. Wunsch des Nutzers | L | hoch | GELB (schreibt Dateien; jeder Export einmal freigeben) |
 
 ## Was du selbst tun musst
 
