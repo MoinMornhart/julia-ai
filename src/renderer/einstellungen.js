@@ -605,7 +605,10 @@ function anbieterZeigen() {
   $('schluessel').placeholder = a.schluessel || '';
   $('schluesselSeite').hidden = !a.seite;
   if (a.seite) $('schluesselSeite').href = a.seite;
-  $('aufwandFeld').hidden = !(a.art === 'anthropic' || a.art === 'claude-code');
+  // Denkaufwand jetzt auch für OpenAI-kompatible Anbieter zeigen (Issue #79):
+  // wird als reasoning_effort mitgeschickt; kennt ein Modell den Parameter nicht,
+  // lässt Julia ihn für dieses Modell automatisch wieder weg.
+  $('aufwandFeld').hidden = !(a.art === 'anthropic' || a.art === 'claude-code' || a.art === 'openai');
   const hinweis = a.id === 'claude-abo' ? 'einst.abo_hinweis' : a.lokal ? 'einst.lokal_hinweis' : a.art === 'openai' ? 'einst.fremd_hinweis' : '';
   $('anbieterHinweis').hidden = !hinweis;
   $('anbieterHinweis').textContent = hinweis ? tx(hinweis) : '';

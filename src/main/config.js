@@ -30,6 +30,7 @@ const STANDARD = {
   anbieter_url: '', // nur für "eigen": OpenAI-kompatible Adresse
   modell: 'claude-opus-5',
   modelle_ohne_bild: [], // Modelle, die keine Bilder/Screenshots verstehen – dann werden Screenshots nicht mitgeschickt (lernt Julia selbst, wenn ein Anbieter „Vision disabled" meldet)
+  modelle_ohne_reasoning: [], // Modelle, die reasoning_effort ablehnen – dann wird der Denkaufwand für sie weggelassen (lernt Julia selbst, wenn ein Anbieter den Parameter mit 400 zurückweist – Issue #79)
   aufwand: 'medium', // Denkaufwand: Standard „mittel" – gute Antworten bei spürbar mehr Tempo (Issue #75). Wer mehr Tiefe will, stellt in den Einstellungen auf high/xhigh/max; für Sprache/Bildschirmsteuerung wird ohnehin schneller gedacht.
   kategorien_aus: [], // Abgeschaltete Werkzeug-Kategorien (Issue #75/#76): ganze Gruppen aus = weniger aktive Werkzeuge = schneller/tokenschonender. Nur der Nutzer (nicht KI-setzbar); Kern-Werkzeuge bleiben immer an.
   kanal: 'desktop',
@@ -462,6 +463,9 @@ function pruefen(schluessel, wert) {
       return wert ? path.resolve(String(wert)) : '';
     case 'modelle_ohne_bild':
       if (!Array.isArray(wert)) throw new Error('modelle_ohne_bild ist eine Liste von Modellnamen.');
+      return [...new Set(wert.map((m) => String(m).trim()).filter(Boolean))];
+    case 'modelle_ohne_reasoning':
+      if (!Array.isArray(wert)) throw new Error('modelle_ohne_reasoning ist eine Liste von Modellnamen.');
       return [...new Set(wert.map((m) => String(m).trim()).filter(Boolean))];
     case 'werkzeuge_aus':
       if (!Array.isArray(wert)) throw new Error('werkzeuge_aus ist eine Liste von Werkzeugnamen.');

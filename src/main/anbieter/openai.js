@@ -137,8 +137,15 @@ function fehlerAus(status, text) {
   if (/\b(image|images|vision|multimodal|modalit|image_url)\b/i.test(meldung)) {
     meldung = `Das gewählte Modell versteht offenbar keine Bilder/Screenshots. Wähle ein Modell mit Bild-Unterstützung, oder arbeite ohne Screenshots (z. B. „Seite abrufen“ für Webinhalte). Meldung des Dienstes: ${meldung}`;
   }
-  return Object.assign(new Error(meldung.slice(0, 500)), { status, bildFehler: /versteht offenbar keine Bilder/.test(meldung) });
+  // Der Anbieter/das Modell kennt „reasoning_effort" nicht (viele Nicht-Denk-Modelle
+  // lehnen den Parameter mit 400 ab). Wird als reasoningFehler markiert, damit der
+  // Agent die Runde einmal ohne den Parameter wiederholen kann (Issue #79).
+  const reasoningFehler = status === 400 && /reasoning[_.\s-]?effort|reasoning/i.test(meldung);
+  return Object.assign(new Error(meldung.slice(0, 500)), { status, bildFehler: /versteht offenbar keine Bilder/.test(meldung), reasoningFehler });
 }
+
+// Julias Denkaufwand → OpenAI-Wert. xhigh/max gibt es dort nicht → auf „high".
+const REASONING_EFFORT = { low: 'low', medium: 'medium', high: 'high', xhigh: 'high', max: 'high' };
 
 // Eine Runde: schickt den Verlauf, streamt den Text über beiText und liefert
 // { content, stop_reason, model, usage } im Anthropic-Format zurück.
@@ -150,6 +157,7 @@ async function runde({ url, schluessel, modell, system, werkzeuge, verlauf, sign
     stream: true,
     ...(tools.length ? { tools, tool_choice: 'auto' } : {}),
     ...(optionen.nutzung ? { stream_options: { include_usage: true } } : {}),
+    ...(optionen.aufwand && REASONING_EFFORT[optionen.aufwand] ? { reasoning_effort: REASONING_EFFORT[optionen.aufwand] } : {}),
   };
   const kopf = { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(optionen.kopf || {}) };
   if (schluessel) kopf.Authorization = `Bearer ${schluessel}`;

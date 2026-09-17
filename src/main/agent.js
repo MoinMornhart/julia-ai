@@ -353,6 +353,11 @@ class Agent extends EventEmitter {
     // Modelle ohne Bild-Unterstützung: keine Screenshots mitschicken (Julia merkt
     // sich das selbst, sobald ein Anbieter „Vision disabled" meldet – siehe _schleife).
     const ohneBild = (this.config.get('modelle_ohne_bild') || []).includes(modell);
+    // Denkaufwand als reasoning_effort mitgeben, damit der Nutzer ihn auch bei
+    // OpenAI-kompatiblen Anbietern steuern kann (Issue #79). Lehnt ein Anbieter den
+    // Parameter ab, merkt sich Julia das Modell und wiederholt ohne (siehe _schleife).
+    const aufwand = (this.config.get('modelle_ohne_reasoning') || []).includes(modell)
+      ? null : (this.config.get('aufwand') || null);
     return openai.runde({
       url: a.url,
       schluessel,
@@ -364,7 +369,7 @@ class Agent extends EventEmitter {
       beiText: (d) => this.emit('text', d),
       beiDenken: (d) => this.emit('denken', d),
       holen: this.holen,
-      optionen: { nutzung: a.nutzung, kopf: a.kopf, zwischenAntwort: a.zwischenAntwort, ohneBild },
+      optionen: { nutzung: a.nutzung, kopf: a.kopf, zwischenAntwort: a.zwischenAntwort, ohneBild, aufwand },
     });
   }
 
@@ -421,6 +426,16 @@ class Agent extends EventEmitter {
     return true;
   }
 
+  // Merkt sich Modelle, die reasoning_effort ablehnen (Issue #79), damit der
+  // Parameter künftig weggelassen und die aktuelle Runde einmal wiederholt wird.
+  _ohneReasoningMerken() {
+    const modell = this.config.get('modell');
+    const liste = this.config.get('modelle_ohne_reasoning') || [];
+    if (liste.includes(modell)) return false;
+    try { this.config.set('modelle_ohne_reasoning', [...liste, modell]); } catch { return false; }
+    return true;
+  }
+
   async _schleife() {
     const a = anbieter.anbieterVon(this.config);
     if (a.art === 'claude-code') return this._schleifeAbo(a);
@@ -442,6 +457,9 @@ class Agent extends EventEmitter {
           // wiederholen, statt am selben Fehler hängen zu bleiben.
           if (e && e.bildFehler && this._bildlosMerken()) {
             this.emit('hinweis', { art: 'bildlos' });
+            msg = await this._rundeOpenAI(a, schluessel);
+          } else if (e && e.reasoningFehler && this._ohneReasoningMerken()) {
+            // Anbieter kennt reasoning_effort nicht → ab jetzt ohne, Runde wiederholen.
             msg = await this._rundeOpenAI(a, schluessel);
           } else {
             throw e;

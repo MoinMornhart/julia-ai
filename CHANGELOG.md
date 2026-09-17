@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.4.1 – 2026-09-17
+- Die Gedanken-Box erscheint jetzt sofort beim Antwortstart und fuellt sich live (verschwindet wieder, wenn kein Denk-Schritt kommt); zusaetzlich laesst sich der Denkaufwand jetzt auch bei OpenAI-kompatiblen Anbietern einstellen (als reasoning_effort, mit automatischem Weglassen, wenn ein Modell ihn nicht kennt)
+
 ## 5.4.0 – 2026-09-17
 - Ein einziges Merk-System - Gedaechtnis und Lern-Notizen sind zu EINER Werkzeug-Gruppe zusammengefuehrt (6 Werkzeuge auf 3): standard global, mit Schalter projekt die projektbezogenen Notizen; weniger Werkzeuge, schneller und tokenschonender, ohne Datenverlust
 

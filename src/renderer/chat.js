@@ -158,6 +158,7 @@ function kopierKnopf(nachricht) {
 
 function juliaText(delta, ganz = false) {
   if (!antwortEl) {
+    denkBoxAbschliessen(); // beginnt die Antwort: leere Denk-Box weg, volle zuklappen
     antwortEl = anhaengen(element('nachricht julia', '<div class="blase"></div>'));
     if (!imOverlay) kopierKnopf(antwortEl);
     antwortRoh = '';
@@ -169,26 +170,37 @@ function juliaText(delta, ganz = false) {
   if (unten) verlauf.scrollTop = verlauf.scrollHeight;
 }
 
-// Reasoning-Schritt live in einer eingeklappten Box zeigen (Issue #74). Standard
-// zugeklappt (nur „Nachdenken …"); wer will, klappt auf. Kommt nur, wenn der
-// Anbieter Denk-/Thinking-Deltas liefert; sonst bleibt es wie bisher.
+// Reasoning-/Denk-Schritt live in einer Box zeigen (Issue #74/#79). Die Box
+// erscheint SOFORT beim Antwortstart als „Nachdenken …" (aufgeklappt, damit man
+// direkt sieht, dass etwas passiert, statt langer Stille) und füllt sich live.
+// Liefert der Anbieter/das Modell keinen Reasoning-Schritt, wird die leere Box
+// entfernt, sobald die eigentliche Antwort beginnt (juliaText).
+function denkBoxAnlegen() {
+  if (imOverlay || denkEl) return;
+  denkEl = anhaengen(element('nachricht julia',
+    `<details class="denken" open><summary>${esc(tx('chat.reasoning'))}</summary><div class="denk-inhalt"></div></details>`));
+  denkRoh = '';
+}
 function juliaDenken(delta) {
   if (!delta) return;
-  if (!denkEl) {
-    denkEl = anhaengen(element('nachricht julia',
-      `<details class="denken"><summary>${esc(tx('chat.reasoning'))}</summary><div class="denk-inhalt"></div></details>`));
-    denkRoh = '';
-  }
+  denkBoxAnlegen();
   denkRoh += delta;
   const unten = amEnde();
-  const inhalt = denkEl.querySelector('.denk-inhalt');
+  const inhalt = denkEl && denkEl.querySelector('.denk-inhalt');
   if (inhalt) inhalt.textContent = denkRoh;
   if (unten) verlauf.scrollTop = verlauf.scrollHeight;
+}
+// Leere Denk-Box wegräumen (kein Reasoning gekommen); volle nur zuklappen.
+function denkBoxAbschliessen() {
+  if (!denkEl) return;
+  if (!denkRoh) denkEl.remove();
+  else denkEl.open = false;
+  denkEl = null;
 }
 
 function werkzeug({ id, name, eingabe, eingabeVoll }) {
   antwortEl = null;
-  denkEl = null;
+  denkBoxAbschliessen(); // vor einem Werkzeug: leere Denk-Box weg, volle zuklappen
   const zeigJson = eingabeVoll && eingabeVoll !== '{}';
   const d = element('werkzeug laeuft',
     `<span class="ico"></span><span class="wname">${esc(name)}</span><span class="weingabe">${esc(eingabe === '{}' ? '' : eingabe || '')}</span>`
@@ -475,7 +487,7 @@ async function init() {
     if (window.juliaAnsicht) window.juliaAnsicht('chat');
     dateienHinzu([...e.dataTransfer.files]);
   });
-  julia.on('agent:start', () => { denkEl = null; beschaeftigtSetzen(true); });
+  julia.on('agent:start', () => { denkEl = null; denkBoxAnlegen(); beschaeftigtSetzen(true); });
   julia.on('agent:text', (d) => juliaText(d));
   julia.on('agent:denken', (d) => juliaDenken(d));
   julia.on('agent:werkzeug', werkzeug);
@@ -484,7 +496,7 @@ async function init() {
   julia.on('agent:freigabeErledigt', freigabeErledigt);
   julia.on('agent:geheimnisFrage', geheimnisFrage);
   julia.on('agent:geheimnisErledigt', geheimnisErledigt);
-  julia.on('agent:fertig', () => { beschaeftigtSetzen(false); antwortEl = null; denkEl = null; $('text').focus(); });
+  julia.on('agent:fertig', () => { beschaeftigtSetzen(false); antwortEl = null; denkBoxAbschliessen(); $('text').focus(); });
   julia.on('agent:fehler', (e) => systemzeile(e.art === 'kein_schluessel' ? tx('chat.kein_schluessel') : e.text, 'fehler'));
   julia.on('agent:hinweis', (h) => {
     const k = { abgebrochen: 'chat.abgebrochen', beschaeftigt: 'chat.beschaeftigt', verweigert: 'hinweis.verweigert', max_tokens: 'hinweis.max_tokens', zu_viele_runden: 'hinweis.zu_viele_runden', kosten_warnung: 'hinweis.kosten_warnung' }[h.art];
