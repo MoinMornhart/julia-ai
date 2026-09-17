@@ -11,6 +11,7 @@ const win = require('./win/win');
 const bildschirm = require('./bildschirm');
 const projektsuche = require('./projektsuche');
 const doppelte = require('./doppelte');
+const video = require('./video');
 
 // Julias Werkzeuge. Jedes Werkzeug stuft sich selbst in die Ampel ein
 // (einstufen) und führt dann aus (ausfuehren). Die Freigabe dazwischen holt
@@ -1219,6 +1220,65 @@ WERKZEUGE.push({
   },
 });
 
+// ── Videos schneiden & Thumbnails (Nutzerwunsch) – lokal per ffmpeg ──────
+// Eine neue Datei zu schreiben ist GELB (Freigabe wie beim Datei-Schreiben);
+// die Ausgabe-Einstufung teilen sich die drei Werkzeuge.
+function ffmpegFinden(ctx) {
+  let statisch = null;
+  try { statisch = require('ffmpeg-static'); } catch { /* nicht mitgeliefert – dann PATH */ }
+  const gesetzt = ctx && ctx.ffmpegPfad ? ctx.ffmpegPfad() : '';
+  return video.ffmpegPfad({ gesetzt, statisch });
+}
+function videoAusgabeEinstufen(ausgabeRoh, ctx, beschreibung) {
+  const aus = pfadAbs(ausgabeRoh, ctx);
+  const rot = sandboxRot([aus], ctx);
+  if (rot) return { ...rot, beschreibung };
+  return { ...ampel.einstufenPfade([aus], arbeitsDirs(ctx), geschuetzt(ctx)), beschreibung };
+}
+WERKZEUGE.push({
+  name: 'video_schneiden',
+  description: 'Ein Video schneiden/trimmen: vom Zeitpunkt „von" bis „bis" (Zeiten wie 90, 1:30 oder 00:01:30; ohne „bis" bis zum Ende). Standard schnell ohne Neukodieren (schneidet an Keyframes); genau=true kodiert neu (exakter Schnitt, langsamer). eingabe = vorhandenes Video, ausgabe = neue Datei. Alles lokal, nichts wird hochgeladen.',
+  input_schema: { type: 'object', properties: { eingabe: { type: 'string' }, ausgabe: { type: 'string' }, von: { type: 'string' }, bis: { type: 'string' }, genau: { type: 'boolean' } }, required: ['eingabe', 'ausgabe'] },
+  einstufen(e, ctx) { return videoAusgabeEinstufen(e.ausgabe, ctx, `Video schneiden → ${pfadAbs(e.ausgabe, ctx)}`); },
+  async ausfuehren(e, ctx) {
+    const eingabe = pfadAbs(e.eingabe, ctx);
+    const ausgabe = pfadAbs(e.ausgabe, ctx);
+    await fsp.mkdir(path.dirname(ausgabe), { recursive: true });
+    await video.ausfuehren(ffmpegFinden(ctx), video.argsSchneiden({ eingabe, ausgabe, von: e.von, bis: e.bis, genau: !!e.genau }));
+    return `Video geschnitten: ${ausgabe}`;
+  },
+});
+WERKZEUGE.push({
+  name: 'video_thumbnail',
+  description: 'Ein Standbild (Thumbnail) aus einem Video ziehen – zur Zeit „zeit" (z. B. 5 oder 1:30), optional auf „breite" Pixel skaliert. ausgabe endet auf .jpg oder .png. Lokal per ffmpeg.',
+  input_schema: { type: 'object', properties: { eingabe: { type: 'string' }, ausgabe: { type: 'string' }, zeit: { type: 'string' }, breite: { type: 'number' } }, required: ['eingabe', 'ausgabe'] },
+  einstufen(e, ctx) { return videoAusgabeEinstufen(e.ausgabe, ctx, `Thumbnail erstellen → ${pfadAbs(e.ausgabe, ctx)}`); },
+  async ausfuehren(e, ctx) {
+    const eingabe = pfadAbs(e.eingabe, ctx);
+    const ausgabe = pfadAbs(e.ausgabe, ctx);
+    await fsp.mkdir(path.dirname(ausgabe), { recursive: true });
+    await video.ausfuehren(ffmpegFinden(ctx), video.argsThumbnail({ eingabe, ausgabe, zeit: e.zeit || 0, breite: e.breite }));
+    return `Thumbnail erstellt: ${ausgabe}`;
+  },
+});
+WERKZEUGE.push({
+  name: 'video_zusammenfuegen',
+  description: 'Mehrere Videos gleicher Kodierung in Reihenfolge aneinanderhängen. dateien = Liste vorhandener Videos, ausgabe = neue Datei. Lokal per ffmpeg (concat).',
+  input_schema: { type: 'object', properties: { dateien: { type: 'array', items: { type: 'string' } }, ausgabe: { type: 'string' } }, required: ['dateien', 'ausgabe'] },
+  einstufen(e, ctx) { return videoAusgabeEinstufen(e.ausgabe, ctx, `Videos zusammenfügen → ${pfadAbs(e.ausgabe, ctx)}`); },
+  async ausfuehren(e, ctx) {
+    const dateien = (Array.isArray(e.dateien) ? e.dateien : []).map((d) => pfadAbs(d, ctx));
+    const ausgabe = pfadAbs(e.ausgabe, ctx);
+    await fsp.mkdir(path.dirname(ausgabe), { recursive: true });
+    const listeDatei = path.join(os.tmpdir(), `julia-concat-${Date.now()}.txt`);
+    await fsp.writeFile(listeDatei, video.concatListe(dateien), 'utf8');
+    try {
+      await video.ausfuehren(ffmpegFinden(ctx), video.argsZusammenfuegen({ listeDatei, ausgabe }));
+    } finally { fsp.unlink(listeDatei).catch(() => {}); }
+    return `Videos zusammengefügt: ${ausgabe}`;
+  },
+});
+
 // Minecraft mitspielen (eigene Spielfigur auf dem Server des Nutzers).
 WERKZEUGE.push(...require('./minecraft').WERKZEUGE);
 
@@ -1254,6 +1314,7 @@ const KATEGORIEN = [
   { id: 'erinnerungen', werkzeuge: ['erinnerung_setzen', 'erinnerung_loeschen', 'erinnerungen_anzeigen', 'stoppuhr'] },
   { id: 'web', werkzeuge: ['webseite_abrufen'] },
   { id: 'apps', werkzeuge: ['apps', 'clip_speichern'] },
+  { id: 'video', werkzeuge: ['video_schneiden', 'video_thumbnail', 'video_zusammenfuegen'] },
 ];
 const KAT_VON = new Map();
 for (const k of KATEGORIEN) for (const n of k.werkzeuge) KAT_VON.set(n, k.id);

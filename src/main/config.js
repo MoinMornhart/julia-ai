@@ -33,6 +33,7 @@ const STANDARD = {
   aufwand: 'medium', // Denkaufwand: Standard „mittel" – gute Antworten bei spürbar mehr Tempo (Issue #75). Wer mehr Tiefe will, stellt in den Einstellungen auf high/xhigh/max; für Sprache/Bildschirmsteuerung wird ohnehin schneller gedacht.
   kategorien_aus: [], // Abgeschaltete Werkzeug-Kategorien (Issue #75/#76): ganze Gruppen aus = weniger aktive Werkzeuge = schneller/tokenschonender. Nur der Nutzer (nicht KI-setzbar); Kern-Werkzeuge bleiben immer an.
   kanal: 'desktop',
+  video: { ffmpeg: '' }, // Pfad zu ffmpeg.exe (leer = mitgeliefertes/PATH-ffmpeg). Für Video schneiden/Thumbnails.
   autostart: false,
   erinnerung: {
     vorlesen: true,

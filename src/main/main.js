@@ -2308,6 +2308,7 @@ async function start() {
     agentenAn: () => !!config.get('beta').agenten,
     werkzeugeAus: () => config.get('werkzeuge_aus') || [], // einzelne Werkzeuge
     kategorienAus: () => config.get('kategorien_aus') || [], // ganze Kategorien
+    ffmpegPfad: () => (config.get('video') || {}).ffmpeg || '', // für Video-Werkzeuge
     unterAgent: (rolle, aufgabe) => agent.unterAgent(rolle, aufgabe),
     // Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box im Chat holt
     // ihn; der WERT fließt direkt vom Fenster in den verschlüsselten Speicher

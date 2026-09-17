@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.3.0 – 2026-09-17
+- Videos schneiden und Thumbnails - Julia kann auf Zuruf Videos schneiden/trimmen, mehrere zusammenfuegen und Standbilder (Thumbnails) erstellen; lokal per ffmpeg, jede neue Datei einmal freigeben, in der abschaltbaren Kategorie Videos
+
 ## 5.2.1 – 2026-09-17
 - Leeres Fenster auf langsamen PCs behoben - Julia holt die zwei Start-Infos jetzt parallel (schneller startklar) und wartet laenger, bevor sie ein leeres Fenster annimmt; das beendet die Neustart-Schleife auf langsamen oder grafiktreiber-zickigen Rechnern
 
