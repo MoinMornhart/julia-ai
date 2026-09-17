@@ -86,3 +86,13 @@ test('pruefen: Netzfehler wird sauber gemeldet', async () => {
   const r = await vw.pruefen('vw_abcdefgh12345', { holen });
   assert.equal(r.code, 'netz');
 });
+
+test('pruefen: hängender Server läuft ins Zeitlimit statt einzufrieren (Schutz #13)', async () => {
+  // Ein „holen", das nie antwortet – ohne Zeitlimit würde die Box ewig laden.
+  const holen = (_u, opt) => new Promise((_, ab) => {
+    if (opt && opt.signal) opt.signal.addEventListener('abort', () => ab(new Error('abgebrochen')));
+  });
+  const r = await vw.pruefen('vw_abcdefgh12345', { holen, zeitlimit: 20 });
+  assert.equal(r.ok, false);
+  assert.equal(r.code, 'netz');
+});

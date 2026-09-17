@@ -60,18 +60,40 @@ function hinweisSchluessel(code) {
 // Schlüssel prüfen, OHNE MCP: GET /api/mcp/rules mit Bearer. 200 = gültig,
 // 401 = fehlt/ungültig/gesperrt. Bewusst KEIN Origin-Kopf (der Server lehnt
 // fremde Origins mit 403 ab; ohne Origin ist alles gut).
-async function pruefen(key, { holen = (u, o) => globalThis.fetch(u, o) } = {}) {
+//
+// Schutzfunktion (Issue #13): mit einem Abbruch-Zeitlimit, damit ein hängender/
+// nicht antwortender Server die Anmeldung NICHT einfrieren lässt („nichts lädt").
+// Läuft die Zeit ab, wird die Anfrage abgebrochen und als klarer „Netz"-Hinweis
+// gemeldet, statt ewig zu warten.
+async function pruefen(key, { holen = (u, o) => globalThis.fetch(u, o), zeitlimit = 12000 } = {}) {
   const k = schluesselNormal(key);
   if (!schluesselGueltig(k)) return { ok: false, code: 'malformed' };
+
+  const abbruch = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  let timer = null;
+  const zeitAus = new Promise((_, ab) => {
+    timer = setTimeout(() => {
+      if (abbruch) { try { abbruch.abort(); } catch { /* egal */ } }
+      ab(new Error('zeitlimit'));
+    }, zeitlimit);
+    if (timer && timer.unref) timer.unref(); // hält den Prozess nicht wach
+  });
+
   let r;
   try {
-    r = await holen(REGELN_URL, {
-      method: 'GET',
-      headers: { Authorization: `Bearer ${k}`, Accept: 'text/markdown, text/plain, */*' },
-      redirect: 'error',
-    });
+    r = await Promise.race([
+      holen(REGELN_URL, {
+        method: 'GET',
+        headers: { Authorization: `Bearer ${k}`, Accept: 'text/markdown, text/plain, */*' },
+        redirect: 'error',
+        signal: abbruch ? abbruch.signal : undefined,
+      }),
+      zeitAus,
+    ]);
   } catch (e) {
     return { ok: false, code: 'netz', fehler: e && e.message };
+  } finally {
+    if (timer) clearTimeout(timer);
   }
   let body = '';
   try { body = await r.text(); } catch { /* egal */ }

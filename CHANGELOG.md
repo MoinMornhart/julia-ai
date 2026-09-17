@@ -1,5 +1,8 @@
 # Changelog
 
+## 4.8.1 – 2026-09-17
+- VibeWorks-Anmeldung friert nicht mehr ein - haengt der Server, bricht Julia die Schluessel-Pruefung nach kurzer Zeit sauber ab und zeigt einen Netz-Hinweis, statt dass die Anmelde-Box ewig laedt
+
 ## 4.8.0 – 2026-09-17
 - Agenten mit Pruefer-Schleife (BETA): Julia kann eine Aufgabe im Zusammenspiel zweier Rollen loesen - eine Ersteller-Rolle macht einen Entwurf, eine Pruefer-Rolle kritisiert ihn gegen das Ziel, es wird nachgebessert, bis der Pruefer zufrieden ist oder die kleine Rundenzahl erreicht ist; beide Rollen denken nur, kein PC-Zugriff, nur bei eingeschalteten BETA-Agenten
 
