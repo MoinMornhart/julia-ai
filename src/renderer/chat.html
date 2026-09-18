@@ -219,7 +219,11 @@
           <header class="rt-kopf">
             <div class="rt-kopf-text"><h1 data-nav="nav.video"></h1><p data-nav="video.hinweis"></p></div>
           </header>
-          <div class="vid-warnung" id="vidWarnung" hidden><p data-nav="video.kein_ffmpeg"></p></div>
+          <div class="vid-warnung" id="vidWarnung" hidden>
+            <p data-nav="video.kein_ffmpeg"></p>
+            <button class="knopf primaer" id="vidFfmpegLaden" data-nav="video.ffmpeg_laden"></button>
+            <p class="vid-status" id="vidFfmpegStatus" hidden></p>
+          </div>
           <div class="vid-feld">
             <label class="vid-label" data-nav="video.datei"></label>
             <div class="vid-zeile">

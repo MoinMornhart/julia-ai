@@ -102,6 +102,8 @@ const audio = require('./audio');
 const { CodeProjekte } = require('./code');
 const { pathToFileURL } = require('url');
 const { fremd } = require('./hilfen');
+const video = require('./video');
+const videoFfmpeg = require('./video-ffmpeg');
 const anzeige = require('./anzeige');
 const anbieterListe = require('./anbieter/liste');
 const { claudeFinden } = require('./anbieter/claude-code');
@@ -1560,12 +1562,30 @@ function ipcEinrichten() {
   });
   ipc.handle('clips:windows', () => { shell.openExternal('ms-settings:gaming-gamedvr'); return true; });
   // ── Video-Tab (eigener Schneide-Bereich, Nutzerwunsch) – lokal per ffmpeg ──
-  const video = require('./video');
-  const ffmpegPfadFinden = () => {
-    let statisch = null;
-    try { statisch = require('ffmpeg-static'); } catch { /* nicht mitgeliefert → PATH */ }
-    return video.ffmpegPfad({ gesetzt: (config.get('video') || {}).ffmpeg || '', statisch });
-  };
+  // ffmpeg wird bei Bedarf geladen (nicht in den Installer gepackt); Auflösung:
+  // vom Nutzer gesetzt → heruntergeladen → PATH.
+  const ffmpegPfadFinden = () => videoFfmpeg.aufgeloest(DATEN, (config.get('video') || {}).ffmpeg || '');
+  let ffmpegLaedt = null;
+  ipc.handle('video:ffmpegLaden', async () => {
+    if (ffmpegLaedt) return { fehler: t('video.laedt_schon') };
+    const abbruch = new AbortController();
+    ffmpegLaedt = abbruch;
+    try {
+      await videoFfmpeg.herunterladen({
+        datenOrdner: DATEN,
+        holen: (u, o) => net.fetch(u, o),
+        signal: abbruch.signal,
+        fortschritt: (n) => anAlle('video:ffmpegFortschritt', Math.round((n / videoFfmpeg.FFMPEG.groesse) * 100)),
+      });
+      anAlle('video:ffmpegFortschritt', 100);
+      protokoll.eintragen({ werkzeug: 'video', stufe: 'INFO', ergebnis: 'ffmpeg heruntergeladen' });
+      return { ok: true };
+    } catch (e) {
+      return { fehler: e.message };
+    } finally {
+      ffmpegLaedt = null;
+    }
+  });
   // Freien Ausgabe-Dateinamen neben der Quelle finden (nichts überschreiben).
   const freierName = (eingabe, suffix, ext) => {
     const dir = path.dirname(eingabe);
@@ -1576,11 +1596,7 @@ function ipcEinrichten() {
     }
     return path.join(dir, `${basis}_${suffix}_${Date.now()}${ext}`);
   };
-  ipc.handle('video:bereit', () => {
-    // „bereit" = ffmpeg auffindbar (gesetzter Pfad, mitgeliefert oder im PATH).
-    const p = ffmpegPfadFinden();
-    return { bereit: p !== 'ffmpeg' || !!(config.get('video') || {}).ffmpeg };
-  });
+  ipc.handle('video:bereit', () => ({ bereit: videoFfmpeg.bereit(DATEN, (config.get('video') || {}).ffmpeg || '') }));
   ipc.handle('video:waehlen', async () => {
     const r = await dialog.showOpenDialog(chatFenster || undefined, {
       title: t('video.waehlen'),
@@ -2436,7 +2452,7 @@ async function start() {
     agentenAn: () => !!config.get('beta').agenten,
     werkzeugeAus: () => config.get('werkzeuge_aus') || [], // einzelne Werkzeuge
     kategorienAus: () => config.get('kategorien_aus') || [], // ganze Kategorien
-    ffmpegPfad: () => (config.get('video') || {}).ffmpeg || '', // für Video-Werkzeuge
+    ffmpegPfad: () => videoFfmpeg.aufgeloest(DATEN, (config.get('video') || {}).ffmpeg || ''), // gesetzt → geladen → PATH
     unterAgent: (rolle, aufgabe) => agent.unterAgent(rolle, aufgabe),
     // Teil B von #51: Die KI bittet um einen geheimen Wert. Eine Box im Chat holt
     // ihn; der WERT fließt direkt vom Fenster in den verschlüsselten Speicher

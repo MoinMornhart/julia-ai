@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.0 – 2026-09-19
+- Video-Schneiden funktioniert jetzt wirklich - der Video-Tab laedt ffmpeg bei Bedarf einmalig herunter (~79 MB, mit Fortschritt und Pruefsumme) statt es in den Installer zu packen; danach gehen Schneiden und Thumbnails offline
+
 ## 5.8.1 – 2026-09-18
 - Mikro-Hotkey und Weckwort Hey Julia gehen wieder zuverlaessig (haengengebliebener Vorleser-Zaehler machte Julia dauerhaft zu spricht gerade); Google-Fehler 403 access_denied erklaert jetzt den Testnutzer-Schritt statt nur abgelehnt
 

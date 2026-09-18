@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Video cutting actually works now** – the Video tab was there, but cutting was missing **ffmpeg** (the program that does the work). Julia now **downloads it once** at the press of a button (~79 MB, with progress and checksum) and stores it locally – after that, cutting and thumbnails work entirely offline, without you installing anything. (You can still point to a self-installed ffmpeg in the settings.)
 - **Mic hotkey & "Hey Julia" work reliably again** – sometimes neither the mic hotkey nor the "Hey Julia" wake word responded, seemingly at random. The cause was a stuck internal counter after an interrupted read-aloud that made Julia think she was permanently "speaking". Fixed – muting now resets that state cleanly.
 - **Google/Outlook sign-in: clearer help** – the Google "access blocked / 403" error now explains that your account must be added as a **test user** (or the app published), instead of just saying "declined".
 - **Dedicated Video tab for cutting** – cutting videos and making thumbnails now has its own area (the "Video" nav item), not just via chat: pick a file, enter from–to, **Cut** – or grab a **thumbnail** at a given time. Runs entirely locally via ffmpeg, nothing is uploaded; the result is saved next to the source file and can be shown in the folder directly. (Needs ffmpeg on the PC; if it's missing, the tab says so clearly.)

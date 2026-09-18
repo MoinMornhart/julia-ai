@@ -1200,10 +1200,9 @@ WERKZEUGE.push({
 // Eine neue Datei zu schreiben ist GELB (Freigabe wie beim Datei-Schreiben);
 // die Ausgabe-Einstufung teilen sich die drei Werkzeuge.
 function ffmpegFinden(ctx) {
-  let statisch = null;
-  try { statisch = require('ffmpeg-static'); } catch { /* nicht mitgeliefert – dann PATH */ }
+  // ctx.ffmpegPfad() löst bereits vollständig auf (gesetzt → geladen → PATH).
   const gesetzt = ctx && ctx.ffmpegPfad ? ctx.ffmpegPfad() : '';
-  return video.ffmpegPfad({ gesetzt, statisch });
+  return video.ffmpegPfad({ gesetzt });
 }
 function videoAusgabeEinstufen(ausgabeRoh, ctx, beschreibung) {
   const aus = pfadAbs(ausgabeRoh, ctx);

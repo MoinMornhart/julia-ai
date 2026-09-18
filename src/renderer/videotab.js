@@ -99,6 +99,35 @@
     } catch { /* egal */ }
   }
 
+  let ffmpegLaedt = false;
+  async function ffmpegLaden() {
+    if (ffmpegLaedt) return;
+    ffmpegLaedt = true;
+    const b = $('vidFfmpegLaden');
+    const st = $('vidFfmpegStatus');
+    if (b) b.disabled = true;
+    if (st) { st.hidden = false; st.textContent = tx('video.ffmpeg_laedt', { pct: 0 }); }
+    try {
+      const r = await julia.videoFfmpegLaden();
+      if (r && r.ok) {
+        if (st) st.hidden = true;
+        await ffmpegPruefen();
+      } else if (st) {
+        st.textContent = (r && r.fehler) || tx('video.fehlgeschlagen');
+      }
+    } catch (e) {
+      if (st) st.textContent = e.message;
+    } finally {
+      ffmpegLaedt = false;
+      if (b) b.disabled = false;
+    }
+  }
+
+  julia.on('video:ffmpegFortschritt', (pct) => {
+    const st = $('vidFfmpegStatus');
+    if (st && ffmpegLaedt) { st.hidden = false; st.textContent = tx('video.ffmpeg_laedt', { pct: Number(pct) || 0 }); }
+  });
+
   function texte() {
     document.querySelectorAll('#ansichtVideo [data-nav]').forEach((el) => { el.textContent = tx(el.dataset.nav); });
   }
@@ -106,6 +135,7 @@
   if ($('vidWaehlen')) $('vidWaehlen').onclick = waehlen;
   if ($('vidSchneiden')) $('vidSchneiden').onclick = schneiden;
   if ($('vidThumbnail')) $('vidThumbnail').onclick = thumbnail;
+  if ($('vidFfmpegLaden')) $('vidFfmpegLaden').onclick = ffmpegLaden;
 
   window.juliaAnsichtBeimOeffnen.video = () => { texte(); ffmpegPruefen(); };
   julia.on('texte:geaendert', () => setTimeout(texte, 0));

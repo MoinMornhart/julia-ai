@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Video-Schneiden funktioniert jetzt wirklich** – der Video-Tab war da, aber zum Schneiden fehlte **ffmpeg** (das Programm, das die Arbeit macht). Jetzt lädt Julia es auf Knopfdruck **einmalig herunter** (~79 MB, mit Fortschritt und Prüfsumme) und legt es lokal ab – danach geht Schneiden und Thumbnails komplett offline, ohne dass du selbst etwas installierst. (Ein selbst installiertes ffmpeg kannst du weiterhin in den Einstellungen angeben.)
 - **Mikro-Hotkey & „Hey Julia" gehen wieder zuverlässig** – manchmal reagierte weder der Mikro-Hotkey noch das Weckwort „Hey Julia", scheinbar zufällig. Ursache war ein hängengebliebener interner Zähler nach einem abgebrochenen Vorlesen, durch den Julia sich dauerhaft für „spricht gerade" hielt. Behoben – beim Stummschalten wird der Zustand jetzt sauber zurückgesetzt.
 - **Google/Outlook-Anmeldung: klarere Hilfe** – der Google-Fehler „Zugriff blockiert / 403" erklärt jetzt, dass dein Konto als **Testnutzer** eingetragen werden muss (oder die App veröffentlicht), statt nur „abgelehnt" zu sagen.
 - **Eigener Video-Tab zum Schneiden** – Videos schneiden und Thumbnails gibt es jetzt als eigenen Bereich (Navigationspunkt „Video"), nicht mehr nur über den Chat: Datei wählen, Von–Bis eintragen, **Schneiden** – oder zu einem Zeitpunkt ein **Thumbnail** ziehen. Läuft komplett lokal über ffmpeg, nichts wird hochgeladen; das Ergebnis landet neben der Ausgangsdatei und lässt sich direkt im Ordner zeigen. (Braucht ffmpeg auf dem PC; fehlt es, sagt der Tab es klar.)
