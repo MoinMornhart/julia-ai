@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Eigener Video-Tab zum Schneiden** – Videos schneiden und Thumbnails gibt es jetzt als eigenen Bereich (Navigationspunkt „Video"), nicht mehr nur über den Chat: Datei wählen, Von–Bis eintragen, **Schneiden** – oder zu einem Zeitpunkt ein **Thumbnail** ziehen. Läuft komplett lokal über ffmpeg, nichts wird hochgeladen; das Ergebnis landet neben der Ausgangsdatei und lässt sich direkt im Ordner zeigen. (Braucht ffmpeg auf dem PC; fehlt es, sagt der Tab es klar.)
 - **Minecraft stört nicht mehr Overlay & Blase** – Julias Minecraft-Antworten und -Aktionen erscheinen nicht mehr im Gaming-Overlay und in der schwebenden Blase, sondern bleiben im Fenster (Chat/Minecraft-Tab). Wichtige Rückfragen (Ampel) werden weiterhin angezeigt.
 - **Automatische Updates gehen wieder** – nach dem Umzug des Projekts auf den neuen Ort (`Morni-Team/julia-ai`) suchte die App die Updates noch am alten Ort. Jetzt zeigt alles auf die richtige Adresse. (Diese eine Version bitte einmal von Hand installieren, danach läuft's wieder automatisch.)
 - **Minecraft kommt nach einem Rauswurf von selbst zurück** – wird die Spielfigur vom Server geworfen (z. B. periodischer Timeout-/Anti-Bot-Kick), verbindet sie sich jetzt automatisch neu. Nur wenn es nichts bringt (Bann, Whitelist, falsche Version, „Fliegen"-Anti-Cheat), bleibt sie weg – mit klarer Meldung.

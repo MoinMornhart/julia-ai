@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.8.0 – 2026-09-18
+- Eigener Video-Tab zum Schneiden - Videos schneiden und Thumbnails gibt es jetzt als eigenen Bereich (Datei waehlen, Von-Bis, Schneiden, Thumbnail, Ergebnisliste mit Im-Ordner-zeigen), komplett lokal ueber ffmpeg statt nur im Chat
+
 ## 5.7.1 – 2026-09-18
 - Minecraft-Antworten und -Aktionen erscheinen nicht mehr im Gaming-Overlay und der schwebenden Blase, sondern bleiben im Fenster (Chat/Minecraft-Tab); wichtige Rueckfragen bleiben sichtbar
 

@@ -1559,6 +1559,62 @@ function ipcEinrichten() {
     try { const neu = clips.umbenennen(p, name); anAlle('clips:geaendert'); return { ok: true, pfad: neu, url: pathToFileURL(neu).href }; } catch (e) { return { fehler: e.message }; }
   });
   ipc.handle('clips:windows', () => { shell.openExternal('ms-settings:gaming-gamedvr'); return true; });
+  // ── Video-Tab (eigener Schneide-Bereich, Nutzerwunsch) – lokal per ffmpeg ──
+  const video = require('./video');
+  const ffmpegPfadFinden = () => {
+    let statisch = null;
+    try { statisch = require('ffmpeg-static'); } catch { /* nicht mitgeliefert → PATH */ }
+    return video.ffmpegPfad({ gesetzt: (config.get('video') || {}).ffmpeg || '', statisch });
+  };
+  // Freien Ausgabe-Dateinamen neben der Quelle finden (nichts überschreiben).
+  const freierName = (eingabe, suffix, ext) => {
+    const dir = path.dirname(eingabe);
+    const basis = path.basename(eingabe, path.extname(eingabe));
+    for (let i = 0; i < 1000; i++) {
+      const name = path.join(dir, `${basis}_${suffix}${i ? `_${i}` : ''}${ext}`);
+      if (!fs.existsSync(name)) return name;
+    }
+    return path.join(dir, `${basis}_${suffix}_${Date.now()}${ext}`);
+  };
+  ipc.handle('video:bereit', () => {
+    // „bereit" = ffmpeg auffindbar (gesetzter Pfad, mitgeliefert oder im PATH).
+    const p = ffmpegPfadFinden();
+    return { bereit: p !== 'ffmpeg' || !!(config.get('video') || {}).ffmpeg };
+  });
+  ipc.handle('video:waehlen', async () => {
+    const r = await dialog.showOpenDialog(chatFenster || undefined, {
+      title: t('video.waehlen'),
+      properties: ['openFile'],
+      filters: [{ name: 'Video', extensions: ['mp4', 'mkv', 'mov', 'avi', 'webm', 'm4v', 'flv', 'wmv', 'ts'] }],
+    });
+    if (r.canceled || !r.filePaths || !r.filePaths[0]) return { abgebrochen: true };
+    return { pfad: r.filePaths[0] };
+  });
+  ipc.handle('video:schneiden', async (_e, o) => {
+    const d = o && typeof o === 'object' ? o : {};
+    try {
+      if (!d.eingabe || !fs.existsSync(d.eingabe)) throw new Error(t('video.erst_datei'));
+      const ausgabe = freierName(d.eingabe, 'schnitt', path.extname(d.eingabe) || '.mp4');
+      const args = video.argsSchneiden({ eingabe: d.eingabe, ausgabe, von: d.von, bis: d.bis, genau: !!d.genau });
+      await video.ausfuehren(ffmpegPfadFinden(), args);
+      protokoll.eintragen({ werkzeug: 'video', stufe: 'INFO', ergebnis: 'Video im Video-Tab geschnitten' });
+      return { ok: true, ausgabe };
+    } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('video:thumbnail', async (_e, o) => {
+    const d = o && typeof o === 'object' ? o : {};
+    try {
+      if (!d.eingabe || !fs.existsSync(d.eingabe)) throw new Error(t('video.erst_datei'));
+      const ausgabe = freierName(d.eingabe, 'thumb', '.jpg');
+      const args = video.argsThumbnail({ eingabe: d.eingabe, ausgabe, zeit: d.zeit || '0' });
+      await video.ausfuehren(ffmpegPfadFinden(), args);
+      protokoll.eintragen({ werkzeug: 'video', stufe: 'INFO', ergebnis: 'Thumbnail im Video-Tab erstellt' });
+      return { ok: true, ausgabe };
+    } catch (e) { return { fehler: e.message }; }
+  });
+  ipc.handle('video:zeigen', (_e, p) => {
+    try { shell.showItemInFolder(String(p)); return { ok: true }; } catch (e) { return { fehler: e.message }; }
+  });
   ipc.handle('mc:status', () => (VORFUEHRUNG ? require('./vorfuehrung').beispielMinecraft() : mcStand()));
   ipc.handle('mc:beitreten', async (_e, d) => {
     try {

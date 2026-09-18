@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Dedicated Video tab for cutting** – cutting videos and making thumbnails now has its own area (the "Video" nav item), not just via chat: pick a file, enter from–to, **Cut** – or grab a **thumbnail** at a given time. Runs entirely locally via ffmpeg, nothing is uploaded; the result is saved next to the source file and can be shown in the folder directly. (Needs ffmpeg on the PC; if it's missing, the tab says so clearly.)
 - **Minecraft no longer clutters the overlay & bubble** – Julia's Minecraft replies and actions no longer show up in the gaming overlay and the floating bubble; they stay in the window (chat/Minecraft tab). Important approvals (traffic light) are still shown.
 - **Automatic updates work again** – after the project moved to its new home (`Morni-Team/julia-ai`), the app was still looking for updates at the old location. Everything now points to the right address. (Please install this one version by hand once, after that it's automatic again.)
 - **Minecraft comes back on its own after a kick** – if the character is kicked from the server (e.g. a periodic timeout/anti-bot kick), it now reconnects automatically. Only when it's pointless (ban, whitelist, wrong version, "flying" anti-cheat) does it stay away – with a clear message.
