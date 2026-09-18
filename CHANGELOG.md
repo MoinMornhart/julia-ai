@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.3 – 2026-09-18
+- Anzeigefehler behoben - im Overlay/Titel stand woertlich {name} statt des Assistenten-Namens (Nachwirkung der Not-Fuellung); der Platzhalter wird jetzt korrekt durch den Namen ersetzt
+
 ## 5.5.2 – 2026-09-18
 - Leeres Fenster wirklich behoben - die mitgelieferten Texte erreichten im gepackten Build das (gesandboxte) Fenster nicht, weshalb die Beschriftungen leer blieben und Julia falschlich Neustart/FATAL ausloeste; die Texte kommen jetzt zuverlaessig per IPC, die Oberflaeche wird notfalls selbst gefuellt, und ein Verdacht auf leere Beschriftungen loest nie mehr Neustart oder die Meldung Oberflaeche bleibt leer aus
 

@@ -38,7 +38,8 @@ function notFuellung() {
         const k = el.dataset && el.dataset[attr];
         if (!k) return;
         if (el.textContent && el.textContent.trim()) return;
-        el.textContent = (typeof satz[k] === 'string' && satz[k]) ? satz[k] : k;
+        const roh = (typeof satz[k] === 'string' && satz[k]) ? satz[k] : k;
+        el.textContent = roh.split('{name}').join('Julia'); // stray-Platzhalter abfangen
         n += 1;
       });
     };

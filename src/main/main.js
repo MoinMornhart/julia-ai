@@ -119,7 +119,20 @@ const { t: tt, TEXTE } = require('../shared/texte');
 // gesandboxt) liest die Texte problemlos und liefert sie hier synchron aus, damit
 // das Preload die Beschriftungen zur Not selbst füllen kann. So früh wie möglich
 // registriert, damit es vor dem ersten Fenster bereitsteht.
-ipcMain.on('standard-texte', (e) => { try { e.returnValue = TEXTE; } catch { e.returnValue = null; } });
+ipcMain.on('standard-texte', (e) => {
+  try {
+    // Platzhalter {name} gleich durch den Assistenten-Namen ersetzen (fällt auf
+    // „Julia" zurück, solange die Config noch nicht geladen ist), sonst zeigte die
+    // Not-Füllung im Fenster wörtlich „{name}".
+    const name = assistentName();
+    const ersetzt = (satz) => {
+      const o = {};
+      for (const [k, v] of Object.entries(satz || {})) o[k] = typeof v === 'string' ? v.split('{name}').join(name) : v;
+      return o;
+    };
+    e.returnValue = { de: ersetzt(TEXTE.de), en: ersetzt(TEXTE.en) };
+  } catch { e.returnValue = null; }
+});
 
 const APP = app.getAppPath();
 const RENDERER = path.join(__dirname, '..', 'renderer');
