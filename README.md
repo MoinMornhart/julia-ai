@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Minecraft stört nicht mehr Overlay & Blase** – Julias Minecraft-Antworten und -Aktionen erscheinen nicht mehr im Gaming-Overlay und in der schwebenden Blase, sondern bleiben im Fenster (Chat/Minecraft-Tab). Wichtige Rückfragen (Ampel) werden weiterhin angezeigt.
 - **Automatische Updates gehen wieder** – nach dem Umzug des Projekts auf den neuen Ort (`Morni-Team/julia-ai`) suchte die App die Updates noch am alten Ort. Jetzt zeigt alles auf die richtige Adresse. (Diese eine Version bitte einmal von Hand installieren, danach läuft's wieder automatisch.)
 - **Minecraft kommt nach einem Rauswurf von selbst zurück** – wird die Spielfigur vom Server geworfen (z. B. periodischer Timeout-/Anti-Bot-Kick), verbindet sie sich jetzt automatisch neu. Nur wenn es nichts bringt (Bann, Whitelist, falsche Version, „Fliegen"-Anti-Cheat), bleibt sie weg – mit klarer Meldung.
 - **Outlook-Anmeldung: klare Hilfe statt kryptischem Fehler** – wird versehentlich eine Microsoft-eigene Anwendungs-ID (z. B. die des Azure-Portals) eingetragen, sagt Julia das jetzt direkt. Und der häufige Fehler „AADSTS90072" wird verständlich erklärt (du brauchst eine eigene App-Registrierung, die auch private Microsoft-Konten erlaubt).

@@ -339,6 +339,22 @@ function anAlle(kanal, daten) {
   ereignisWeiterleiten(kanal, daten);
 }
 
+// Nur an die „großen" Fenster (Chat/Einstellungen) senden – NICHT ins
+// Gaming-Overlay und die schwebende Blase (Orb).
+function anChatFenster(kanal, daten) {
+  for (const w of [chatFenster, einstFenster]) {
+    if (w && !w.isDestroyed()) w.webContents.send(kanal, daten);
+  }
+}
+
+// Agent-Ereignisse: läuft der Minecraft-Kanal, Julias Antworten/Werkzeuge NICHT
+// ins Gaming-Overlay und die Blase spiegeln (Nutzerwunsch) – sie gehören in den
+// Minecraft-/Chat-Tab. Sonst wie gewohnt an alle Fenster.
+function anAgentAlle(kanal, daten) {
+  if (agent && agent.aktiverKanal === 'minecraft') { anChatFenster(kanal, daten); return; }
+  anAlle(kanal, daten);
+}
+
 function zustandSetzen(z) {
   zustand = z;
   anAlle('zustand', z);
@@ -2031,12 +2047,12 @@ async function minecraftFrage({ von, text }) {
     return;
   }
   protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { von, text: text.slice(0, 250) }, ergebnis: 'Frage aus dem Minecraft-Chat' });
-  anAlle('agent:nutzer', { text: t('mc.im_spiel', { von, text }), perSprache: false });
+  anChatFenster('agent:nutzer', { text: t('mc.im_spiel', { von, text }), perSprache: false });
   try {
     const antwort = await agent.senden(`[${t('mc.auftrag_kopf', { von })}] ${text}`, { kanal: 'minecraft' });
     if (antwort) await minecraft.antworten(antwort);
   } catch (e) {
-    if (e.message !== 'BESCHAEFTIGT') anAlle('agent:fehler', { art: 'text', text: e.message });
+    if (e.message !== 'BESCHAEFTIGT') anChatFenster('agent:fehler', { art: 'text', text: e.message });
   }
 }
 
@@ -2056,11 +2072,11 @@ async function minecraftStimme(pcm) {
     if (!frage) return;
     const von = config.get('minecraft.spieler') || '?';
     protokoll.eintragen({ werkzeug: 'minecraft', stufe: 'INFO', eingabe: { von, text: frage.slice(0, 250) }, ergebnis: 'Frage im Minecraft-Voice-Chat' });
-    anAlle('agent:nutzer', { text: t('mc.im_voice', { von, text: frage }), perSprache: true });
+    anChatFenster('agent:nutzer', { text: t('mc.im_voice', { von, text: frage }), perSprache: true });
     const antwort = await agent.senden(`[${t('mc.auftrag_stimme', { von })}] ${frage}`, { kanal: 'minecraft', perSprache: true });
     if (antwort) await minecraftSagen(antwort);
   } catch (e) {
-    if (e.message !== 'BESCHAEFTIGT') anAlle('agent:fehler', { art: 'text', text: e.message });
+    if (e.message !== 'BESCHAEFTIGT') anChatFenster('agent:fehler', { art: 'text', text: e.message });
   } finally {
     mcStimmeLaeuft = false;
   }
@@ -2210,7 +2226,7 @@ function erinnerungenVerdrahten() {
 
 function agentVerdrahten() {
   for (const ereignis of ['text', 'denken', 'werkzeug', 'werkzeugFertig', 'freigabeErledigt', 'start', 'fehler', 'hinweis']) {
-    agent.on(ereignis, (d) => anAlle(`agent:${ereignis}`, d));
+    agent.on(ereignis, (d) => anAgentAlle(`agent:${ereignis}`, d));
   }
   agent.on('freigabe', (d) => {
     if (overlaySichtbar()) {
