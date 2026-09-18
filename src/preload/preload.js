@@ -8,6 +8,25 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 // Hauptprozess liefert später den vollen, an die Einstellung angepassten Satz.
 let STANDARD_TEXTE = { de: {}, en: {} };
 try { STANDARD_TEXTE = require('../shared/texte').TEXTE; } catch { /* Notfalls IPC-only */ }
+// Reine Füll-Hilfe (ohne Electron), auch für die Not-Füllung unten.
+let beschriftungen = null;
+try { beschriftungen = require('../shared/beschriftungen'); } catch { /* dann keine Not-Füllung */ }
+
+// NOT-FÜLLUNG (Issue #3/#54): Die Oberflächen-Beschriftungen werden im Renderer
+// per Skript gefüllt; kommt der synchrone Text-Satz dort (über die contextBridge)
+// leer an – auf manchen PCs beobachtet –, bleibt das Fenster leer. Das Preload
+// hat die Texte DIREKT (require oben) und füllt die Labels notfalls selbst,
+// komplett unabhängig von der Renderer-Kette. Gibt die Zahl gefüllter Labels
+// zurück (0 = nichts zu tun oder keine Texte verfügbar).
+function notFuellung() {
+  try {
+    if (!beschriftungen || typeof document === 'undefined' || !document.querySelectorAll) return 0;
+    const locale = (typeof navigator !== 'undefined' && navigator.language) || 'de';
+    const satz = beschriftungen.satzWaehlen(STANDARD_TEXTE, locale);
+    if (!satz) return 0;
+    return beschriftungen.fuellen((sel) => document.querySelectorAll(sel), satz);
+  } catch { return 0; }
+}
 
 // Die einzige Brücke zwischen Oberfläche und Hauptprozess. Die Fenster sehen
 // nur diese Funktionen, kein Node und kein Dateisystem.
@@ -189,6 +208,15 @@ if (typeof window !== 'undefined' && window.addEventListener) {
   window.addEventListener('error', (e) => fehlerMelden('fehler', e.error || e.message, e.filename, e.lineno));
   window.addEventListener('unhandledrejection', (e) => fehlerMelden('promise', e.reason, '', 0));
 
+  // Früh-Füllung: sobald das HTML steht, die Beschriftungen direkt aus den
+  // mitgelieferten Texten setzen, falls der Renderer sie (noch) nicht gefüllt
+  // hat. So ist das Fenster praktisch sofort beschriftet – unabhängig davon, ob
+  // die Renderer-Kette (contextBridge/Init) auf diesem PC greift (Issue #3/#54).
+  // Der Renderer überschreibt später mit dem echten, eingestellten Sprachsatz.
+  const fruehFuellen = () => { try { notFuellung(); } catch { /* egal */ } };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fruehFuellen);
+  else fruehFuellen();
+
   // UI-Healthcheck (Issue #45): Manchmal startet ein Fenster, aber die Oberfläche
   // bleibt „leer"/unstyled (Knöpfe und Layout fehlen), weil das CSS nicht griff
   // oder der Inhalt nicht aufgebaut wurde. Kurz nach dem Laden prüfen wir, ob
@@ -212,17 +240,28 @@ if (typeof window !== 'undefined' && window.addEventListener) {
         // Zusätzlich (Issue #26/#45): Das HTML ist zwar da, aber die Beschriftungen
         // werden erst per Skript gefüllt. Hängt der Start-IPC, bleiben alle
         // Navigations-Texte leer – für den Nutzer „keine Elemente", ohne Fehler.
-        const beschriftet = document.querySelectorAll('[data-nav],[data-t]');
-        const leereTexte = beschriftet.length > 0
+        let beschriftet = document.querySelectorAll('[data-nav],[data-t]');
+        let leereTexte = beschriftet.length > 0
           && [...beschriftet].every((el) => !el.textContent.trim());
+        // Sind alle Beschriftungen leer, ERST die Not-Füllung aus den mitgelieferten
+        // Texten versuchen (Issue #3/#54) und dann neu messen. Greift sie, ist das
+        // Fenster gerettet – kein „leeres Fenster", kein Neustart, kein FATAL.
+        let notGefuellt = 0;
+        if (leereTexte && !ohneStil && !ohneInhalt) {
+          notGefuellt = notFuellung();
+          beschriftet = document.querySelectorAll('[data-nav],[data-t]');
+          leereTexte = beschriftet.length > 0 && [...beschriftet].every((el) => !el.textContent.trim());
+        }
         leer = ohneStil || ohneInhalt || leereTexte;
         // Konkrete Diagnose ins Log (Issue #3/#54): sagt beim nächsten Mal genau,
         // WAS leer ist – Body-Kinder, wie viele Beschriftungen (leer/gesamt),
-        // Ladezustand, Stylesheets. So lässt sich ein Blank-Fenster gezielt einordnen.
+        // ob die Not-Füllung griff, wie viele Standard-Texte da sind, Ladezustand, CSS.
         const gesamt = beschriftet.length;
         const leerAnzahl = [...beschriftet].filter((el) => !el.textContent.trim()).length;
-        const diag = `body=${b ? b.childElementCount : 0} texte=${leerAnzahl}/${gesamt} css=${document.styleSheets ? document.styleSheets.length : 0} readyState=${document.readyState}`;
+        const stdAnzahl = (() => { try { return Object.keys(STANDARD_TEXTE.de || {}).length; } catch { return -1; } })();
+        const diag = `body=${b ? b.childElementCount : 0} texte=${leerAnzahl}/${gesamt} notfuellung=${notGefuellt} standardtexte=${stdAnzahl} julia=${typeof window !== 'undefined' && window.julia ? 1 : 0} css=${document.styleSheets ? document.styleSheets.length : 0} readyState=${document.readyState}`;
         grund = (ohneStil ? 'ohne Stil (CSS fehlt)' : ohneInhalt ? 'ohne Inhalt (Body leer)' : leereTexte ? 'Beschriftungen leer – Start hing beim Laden' : '') + ` [${diag}]`;
+        if (!leer && notGefuellt > 0) { try { fehlerMelden('ui-healthcheck', `Oberfläche per Not-Füllung gerettet (${notGefuellt} Beschriftungen) – [${diag}]`, '', 0); } catch { /* egal */ } }
       } catch { leer = true; grund = 'Prüfung fehlgeschlagen'; }
       if (!leer) return;
       fehlerMelden('ui-healthcheck', `Oberfläche nach dem Laden leer – ${grund}`, '', 0);

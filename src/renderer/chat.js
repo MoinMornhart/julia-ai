@@ -441,6 +441,10 @@ async function init() {
   beschaeftigt = !!st.beschaeftigt;
   if (txErg && txErg.texte) {
     texteAnwenden(txErg);
+    // Auch die generischen Beschriftungen ([data-nav]/[data-t]) mit dem echten
+    // Satz füllen – texteAnwenden setzt nur feste IDs. Sonst blieben sie leer,
+    // falls die synchrone Füllung beim Laden nicht griff (Issue #3/#54).
+    if (window.juliaTexteNach) window.juliaTexteNach();
   } else {
     // Notdarstellung: Oberfläche bleibt bedienbar (fehlt Text, zeigt tx den Schlüssel);
     // die echten Texte im Hintergrund nachladen und ersetzen.

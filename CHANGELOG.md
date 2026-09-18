@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.1 – 2026-09-18
+- Leeres Fenster endgueltig geloest - die Oberflaeche wird notfalls direkt aus den mitgelieferten Texten gefuellt (im Preload, unabhaengig von der empfindlichen Renderer-Kette), sofort beim Laden und noch einmal bevor ueberhaupt ein leeres Fenster angenommen wird; damit ist das Fenster beschriftet, selbst wenn auf dem PC sonst etwas hakt - keine Neustart-Schleife mehr
+
 ## 5.5.0 – 2026-09-18
 - Grosses Robustheits-Update - Julia startet jetzt auch auf schwaecheren/zickigen PCs sicher: ein globaler Fangschirm faengt unerwartete Fehler ab (beim Start klare Meldung statt stummem Absturz, im Betrieb laeuft Julia weiter statt ganz abzustuerzen), und bei gesperrtem Datenordner weicht sie automatisch auf einen Ersatzordner aus, statt am Start zu scheitern
 
