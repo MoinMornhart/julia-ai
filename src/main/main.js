@@ -20,9 +20,18 @@ const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
 const { istSpiel } = require('./spiele');
 
+// Start-Selbstprüfung: Logbuch, Flags und – noch vor app.whenReady – die
+// Entscheidung über Software-Rendering, damit Julia nie wortlos verschwindet.
+const startpruefung = require('./startpruefung');
+const absturzschutz = require('./absturzschutz');
 // Datenordner außerhalb des Repos. JULIA_DATEN erlaubt einen getrennten Ordner
-// (Tests, Screenshots), ohne die echte Konfiguration anzufassen.
-const DATEN = process.env.JULIA_DATEN || path.join(app.getPath('appData'), 'Julia');
+// (Tests, Screenshots), ohne die echte Konfiguration anzufassen. Ist der normale
+// Ordner gesperrt/schreibgeschützt (häufige Ursache, dass Julia gar nicht erst
+// öffnet), weicht sie automatisch auf einen Ersatzordner im Temp-Verzeichnis aus
+// (XXL-Robustheit) – statt am Start zu scheitern.
+const DATEN_NORMAL = process.env.JULIA_DATEN || path.join(app.getPath('appData'), 'Julia');
+const DATEN = startpruefung.beschreibbarerOrdner([DATEN_NORMAL, path.join(os.tmpdir(), 'Julia')]);
+const DATEN_ERSATZ = DATEN !== DATEN_NORMAL;
 app.setPath('userData', path.join(DATEN, 'electron'));
 // Die installierte Fassung muss dieselbe ID wie ihre Verknüpfung tragen, sonst
 // zeigt Windows keine Meldungen an.
@@ -30,13 +39,11 @@ app.setAppUserModelId(app.isPackaged ? 'io.github.moinmornhart.julia' : 'Julia')
 // Jede Seite läuft in der Chromium-Sandbox, auch wenn ein Fenster es vergäße.
 app.enableSandbox();
 
-// Start-Selbstprüfung: Logbuch, Flags und – noch vor app.whenReady – die
-// Entscheidung über Software-Rendering, damit Julia nie wortlos verschwindet.
-const startpruefung = require('./startpruefung');
 const diagnose = require('./diagnose');
 const selbstpruefung = require('./selbstpruefung');
 let letzteGpu = {}; // zuletzt erkannte GPU/Treiber, für den Diagnose-Bericht
 let pruefTimer = null; // wöchentliche Selbstprüfung
+let startFertig = false; // true, sobald start() durch ist – steuert den Absturzschutz
 const startLog = startpruefung.logbuchOeffnen(DATEN);
 const startFlaggen = startpruefung.flaggenPruefen(process.argv);
 startLog.schreiben('START', 'Julia startet', {
@@ -44,6 +51,7 @@ startLog.schreiben('START', 'Julia startet', {
   electron: process.versions.electron,
   flaggen: startFlaggen.flaggen,
 });
+if (DATEN_ERSATZ) startLog.schreiben('WARN', `Normaler Datenordner nicht beschreibbar – Ersatzordner wird genutzt: ${DATEN} (statt ${DATEN_NORMAL}).`);
 for (const w of startFlaggen.warnungen) startLog.schreiben('WARN', w);
 // Reparatur-/Software-Start per Kommandozeile erzwingt Software-Grafik – ein
 // Rettungsanker, falls die GPU beim Start crasht: `Julia AI.exe --reparatur`.
@@ -62,6 +70,18 @@ if (grafikModus !== 'normal' || startFlaggen.konflikt || reparatur) {
 }
 const startFatal = (text) => startpruefung.fehlerDialog({ app, dialog, shell, text, logDatei: startLog.datei, ordner: DATEN })
   .then(() => { beendenLaeuft = true; app.exit(1); });
+
+// Globaler Fangschirm für den Hauptprozess (XXL-Robustheit): ein unbehandelter
+// Fehler beendet sonst die ganze App WORTLOS. Beim Start ist er tödlich (klare
+// Meldung statt stummem Verschwinden), NACH dem Start läuft Julia weiter – ein
+// Hintergrundfehler (fremde API, Werkzeug, Timer) reißt den Assistenten nicht
+// mehr mit. So früh wie möglich eingehängt, damit auch Ladefehler gefangen sind.
+absturzschutz.installieren({
+  logbuch: startLog,
+  imStart: () => !startFertig,
+  fatal: (text) => startFatal(`Julia ist beim Start auf einen unerwarteten Fehler gestoßen.\n\n${String(text).split('\n')[0]}`),
+  melden: () => { try { melden('Julia', 'Julia hat einen internen Fehler abgefangen und läuft weiter. Einzelheiten stehen im Start-Logbuch.'); } catch { /* egal */ } },
+});
 
 const { Konfiguration } = require('./config');
 const { Gedaechtnis } = require('./gedaechtnis');
@@ -2462,6 +2482,11 @@ async function start() {
 
   setTimeout(() => updatesAutomatisch().catch(() => {}), 15000);
   setInterval(() => updatesAutomatisch().catch(() => {}), 2 * 3600 * 1000);
+
+  // Ab hier gilt Julia als hochgefahren: unbehandelte Fehler beenden die App
+  // nicht mehr, sondern werden abgefangen und Julia läuft weiter (Absturzschutz).
+  startFertig = true;
+  startLog.schreiben('BEREIT', 'Julia ist hochgefahren – der Absturzschutz lässt die App ab jetzt weiterlaufen.');
 }
 
 // Läuft Julia schon? Dann bekommt die erste Instanz das 'second-instance'-

@@ -82,6 +82,34 @@ function flaggenPruefen(argv) {
 
 // --- Schreibrechte ---
 
+// Prüft still, ob in einen Ordner geschrieben werden kann (legt ihn dafür an).
+// Gibt true/false zurück – ohne zu werfen (für die Ordner-Auswahl).
+function ordnerBeschreibbar(ordner, { fsx = fs } = {}) {
+  try {
+    fsx.mkdirSync(ordner, { recursive: true });
+    const probe = path.join(ordner, `.schreibprobe-${process.pid}`);
+    fsx.writeFileSync(probe, 'ok');
+    fsx.rmSync(probe, { force: true });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Wählt aus mehreren Kandidaten den ERSTEN wirklich beschreibbaren Datenordner
+// (XXL-Robustheit): ist der normale Ordner gesperrt/schreibgeschützt – eine
+// häufige Ursache, dass Julia gar nicht erst öffnet – weicht sie auf einen
+// Ersatzordner (z. B. im Temp-Verzeichnis) aus, statt am Start zu scheitern.
+// Ist keiner beschreibbar, kommt der letzte Kandidat als Notnagel zurück; dann
+// meldet `schreibbarPruefen` später sichtbar den echten, unlösbaren Fall.
+function beschreibbarerOrdner(kandidaten, { fsx = fs } = {}) {
+  const liste = (kandidaten || []).filter(Boolean);
+  for (const k of liste) {
+    if (ordnerBeschreibbar(k, { fsx })) return k;
+  }
+  return liste.length ? liste[liste.length - 1] : null;
+}
+
 // Legt den Datenordner an und prüft, ob wirklich hineingeschrieben werden kann.
 // Wirft mit einer verständlichen Ursache, statt später wortlos zu scheitern.
 function schreibbarPruefen(ordner) {
@@ -265,7 +293,7 @@ function gpuUeberwachen({ app, logbuch, datenOrdner, melden, neustart, fatal, sc
 }
 
 module.exports = {
-  Logbuch, logbuchOeffnen, flaggenPruefen, schreibbarPruefen,
+  Logbuch, logbuchOeffnen, flaggenPruefen, schreibbarPruefen, ordnerBeschreibbar, beschreibbarerOrdner,
   softwareRendering, softwareRenderingSetzen, grafikModus, grafikModusSetzen, blankUiAbsichern, fehlerDialog, gpuUeberwachen,
   LOG_MAX, LOG_ALTE, GPU_SCHWELLE, BEKANNTE_FLAGS,
 };

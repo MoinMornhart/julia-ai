@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.0 – 2026-09-18
+- Grosses Robustheits-Update - Julia startet jetzt auch auf schwaecheren/zickigen PCs sicher: ein globaler Fangschirm faengt unerwartete Fehler ab (beim Start klare Meldung statt stummem Absturz, im Betrieb laeuft Julia weiter statt ganz abzustuerzen), und bei gesperrtem Datenordner weicht sie automatisch auf einen Ersatzordner aus, statt am Start zu scheitern
+
 ## 5.4.1 – 2026-09-17
 - Die Gedanken-Box erscheint jetzt sofort beim Antwortstart und fuellt sich live (verschwindet wieder, wenn kein Denk-Schritt kommt); zusaetzlich laesst sich der Denkaufwand jetzt auch bei OpenAI-kompatiblen Anbietern einstellen (als reasoning_effort, mit automatischem Weglassen, wenn ein Modell ihn nicht kennt)
 
