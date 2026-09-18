@@ -1,7 +1,7 @@
 {
   "name": "julia-ai",
   "productName": "Julia",
-  "version": "5.6.0",
+  "version": "5.7.0",
   "description": "Julia – persönlicher Assistent für den Windows-PC, mit Sprache, Bildschirmblick und Ampel-Freigaben.",
   "main": "src/main/main.js",
   "author": "MoinMornhart",
@@ -87,7 +87,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "MoinMornhart",
+        "owner": "Morni-Team",
         "repo": "julia-ai",
         "releaseType": "release"
       }

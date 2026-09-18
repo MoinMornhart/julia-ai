@@ -641,6 +641,21 @@ function rauswurfText(grund) {
   return `Vom Server getrennt: ${t || 'ohne Grund'}`;
 }
 
+// Nach einem Rauswurf (Kick) wieder verbinden? JA bei vorübergehenden Gründen
+// (Zeitüberschreitung, Anti-Bot/Spam-Schutz, Neustart, „Fliegen", unklar) – so
+// kommt die Figur nach einem periodischen Timeout-/Anti-Bot-Kick von selbst
+// zurück (Nutzerwunsch). NEIN, wenn es nichts bringt: Bann, fehlende Whitelist,
+// Online-Mode/Verifizierung, Versionskonflikt oder Doppel-Login (eigenes Konto
+// nötig). Arbeitet auf dem bereits übersetzten Grund-Text (rauswurfText/endeText).
+function kickWiederverbinden(grund) {
+  const t = String(grund || '').toLowerCase();
+  // Kein Reconnect, wenn er nichts bringt oder sich sofort wiederholt: Bann,
+  // Whitelist, Online-Mode/Verifizierung, Versionskonflikt, Doppel-Login sowie
+  // der Anti-Cheat-Kick „Fliegen" (die Figur würde gleich wieder fliegen).
+  if (/gebannt|\bbann?ed\b|gesperrt|whitelist|white.?list|online-mode|microsoft-konto|verlangt ein|versionen passen nicht|duplicate|eigenes minecraft-konto|jemand anderes|fliegen|flying/i.test(t)) return false;
+  return true;
+}
+
 // Verbindung ohne Rauswurf zu Ende: mineflayer nennt einen kurzen Grund
 // ("socketClosed", "keepAliveError"), dazu kommt der letzte Fehler.
 function endeText(grund, fehler, server) {
@@ -839,7 +854,10 @@ class Minecraft extends EventEmitter {
       };
       this.grund = null;
       this._melden('getrennt', text);
-      if (!rauswurf) this._wiederVerbinden();
+      // Verbindungsverlust: immer neu versuchen. Rauswurf (Kick): nur wenn es
+      // Sinn ergibt (Timeout/Anti-Bot/Neustart …), nicht bei Bann/Whitelist etc.
+      // – so kommt die Figur nach dem periodischen ~7,5-min-Kick von selbst zurück.
+      if (!rauswurf || kickWiederverbinden(text)) this._wiederVerbinden();
     });
   }
 
@@ -2376,7 +2394,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

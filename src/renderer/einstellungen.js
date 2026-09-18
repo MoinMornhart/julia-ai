@@ -28,12 +28,12 @@ const AKZENTE = [
 ];
 
 const ANLEITUNG = {
-  de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-einrichten.md',
-  en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/google-setup.en.md',
+  de: 'https://github.com/Morni-Team/julia-ai/blob/main/docs/google-einrichten.md',
+  en: 'https://github.com/Morni-Team/julia-ai/blob/main/docs/google-setup.en.md',
 };
 const ANLEITUNG_OUTLOOK = {
-  de: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/outlook-einrichten.md',
-  en: 'https://github.com/MoinMornhart/julia-ai/blob/main/docs/outlook-setup.en.md',
+  de: 'https://github.com/Morni-Team/julia-ai/blob/main/docs/outlook-einrichten.md',
+  en: 'https://github.com/Morni-Team/julia-ai/blob/main/docs/outlook-setup.en.md',
 };
 
 function tx(k, werte) {

@@ -12,7 +12,7 @@ const { Updater, hoechsterTag } = require('./updater');
 // Installer erst nach deinem Ja und nach der laufenden Aufgabe, prüft ihn gegen
 // die SHA-512-Summe aus latest.yml und startet ihn nur, wenn sie stimmt.
 
-const REPO = 'MoinMornhart/julia-ai';
+const REPO = 'Morni-Team/julia-ai';
 const API = `https://api.github.com/repos/${REPO}/releases?per_page=30`;
 const DOWNLOAD = `https://github.com/${REPO}/releases/download/`;
 const MAX_GROESSE = 400 * 1024 * 1024;

@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.7.0 – 2026-09-18
+- Automatische Updates gehen wieder (Projekt-Umzug auf Morni-Team/julia-ai nachgezogen); Minecraft verbindet sich nach einem Rauswurf/Kick von selbst neu, ausser bei Bann/Whitelist/Version/Fliegen; Outlook-Anmeldung erklaert AADSTS90072 klar und weist versehentlich eingetragene Microsoft-eigene App-IDs (z. B. Azure-Portal) ab
+
 ## 5.6.0 – 2026-09-18
 - Nicht mehr staendig Benachrichtigungen beim Minecraft-Bauen - Julia meldet standardmaessig nur noch Wichtiges (getrennt, gestorben, Gefahr, Ziel erreicht); im Minecraft-Bereich umstellbar auf Alle/Nur Wichtiges/Keine, die Ansicht zeigt weiter alles live
 

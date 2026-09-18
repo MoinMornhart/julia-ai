@@ -24,6 +24,18 @@ const DIENST = 'outlook';
 const ANMELDE_ZEIT_MS = 5 * 60 * 1000;
 const ANHANG_GRENZE = 3 * 1024 * 1024; // größere Anhänge bräuchten eine Upload-Sitzung
 const GUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// Bekannte Microsoft-EIGENE App-IDs, die Nutzer leicht versehentlich eintragen
+// (z. B. aus der Adresszeile des Azure-Portals). Diese gehören Microsoft, nicht
+// dir – mit ihnen scheitert die Anmeldung (u. a. AADSTS90072). Julia weist sie
+// vorab mit einer klaren Erklärung ab, statt den kryptischen Fehler zu zeigen.
+const MICROSOFT_APPS = {
+  'c44b4083-3bb0-49c1-b47d-974e53cbdf3c': 'Azure-Portal',
+  '00000003-0000-0000-c000-000000000000': 'Microsoft Graph',
+  '04b07795-8ddb-461a-bbee-02f9e1bf7b46': 'Azure CLI',
+  '1950a258-227b-4e31-a9cf-717495945fc2': 'Azure PowerShell',
+  '1fec8e78-bce4-4aaf-ab1b-5451cc387264': 'Microsoft Teams',
+};
 const ORDNER = new Set(['inbox', 'sentitems', 'drafts', 'archive', 'junkemail', 'deleteditems']);
 
 function base64url(buf) {
@@ -116,6 +128,8 @@ class OutlookKonto {
     const id = String(clientId || this._daten().client_id || this.eingebauteId || '').trim();
     if (!id) throw new OutlookFehler('Trag eine Anwendungs-ID ein – wie du sie bekommst, steht in der Anleitung.');
     if (!GUID.test(id)) throw new OutlookFehler('Die Anwendungs-ID sieht nicht richtig aus. Sie hat die Form 1a2b3c4d-1234-…, zu finden in der App-Registrierung unter „Übersicht“.');
+    const microsoftApp = MICROSOFT_APPS[id.toLowerCase()];
+    if (microsoftApp) throw new OutlookFehler(`Das ist die Anwendungs-ID von „${microsoftApp}“ – die gehört Microsoft, nicht deiner eigenen App. Mit ihr kann sich dein Konto nicht anmelden. Du brauchst eine EIGENE App-Registrierung: im Azure-Portal unter „App-Registrierungen“ eine neue anlegen (Kontotypen: auch persönliche Microsoft-Konten), dann die „Anwendungs-ID (Client)“ aus der Übersicht hier eintragen (Anleitung, Schritt 1).`);
 
     const verifier = base64url(crypto.randomBytes(48));
     const challenge = base64url(crypto.createHash('sha256').update(verifier).digest());
@@ -443,6 +457,7 @@ function erklaeren(text) {
   if (/AADSTS50011|redirect/i.test(s)) return 'In der App-Registrierung fehlt die Umleitungs-URI http://localhost unter „Mobile und Desktopanwendungen“ (Anleitung, Schritt 2).';
   if (/AADSTS7000218|client_assertion|client_secret/i.test(s)) return 'Die App ist nicht als öffentlicher Client eingerichtet: In der App-Registrierung unter „Authentifizierung“ die öffentlichen Clientflows zulassen (Anleitung, Schritt 3).';
   if (/AADSTS65001|AADSTS90094|consent|admin/i.test(s)) return 'Für dieses Konto muss erst die IT (Administrator) zustimmen. Mit einem privaten Outlook.com-Konto geht es ohne.';
+  if (/AADSTS90072/i.test(s)) return 'Dein Konto passt nicht zu dieser App-Registrierung: Die App ist auf einen bestimmten Firmen-Tenant (Organisation) beschränkt, dein Konto ist aber ein privates Microsoft-Konto (outlook.com/live.com). Nutze eine EIGENE App-Registrierung, die auch persönliche Microsoft-Konten erlaubt (Kontotyp „Konten in einem beliebigen Organisationsverzeichnis und persönliche Microsoft-Konten“), und trag deren Anwendungs-ID ein. Häufige Ursache: als Anwendungs-ID wurde versehentlich die ID des Azure-Portals eingetragen.';
   return `Outlook-Anmeldung: ${s.split(/\r?\n/)[0].slice(0, 300)}`;
 }
 

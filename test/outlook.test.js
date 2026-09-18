@@ -82,6 +82,19 @@ test('Outlook: falsche Anwendungs-ID wird vor dem Browser abgelehnt', async () =
   assert.equal(geoeffnet, false);
 });
 
+test('Outlook: die Azure-Portal-ID (Microsoft-eigen) wird klar abgewiesen', async () => {
+  let geoeffnet = false;
+  const o = new OutlookKonto({ tresor: new Tresor(tmp(), krypto), oeffnen: () => { geoeffnet = true; }, abruf: async () => { throw new Error('nie'); } });
+  await assert.rejects(o.verbinden({ clientId: 'c44b4083-3bb0-49c1-b47d-974e53cbdf3c' }), /Azure-Portal|gehört Microsoft/);
+  assert.equal(geoeffnet, false); // gar nicht erst den Browser öffnen
+});
+
+test('Outlook: AADSTS90072 wird verständlich erklärt', () => {
+  const s = erklaeren("AADSTS90072: User account 'x@outlook.com' from identity provider 'live.com' does not exist in tenant 'Firma GmbH'");
+  assert.match(s, /privates Microsoft-Konto|persönliche Microsoft-Konten/);
+  assert.doesNotMatch(s, /AADSTS90072/); // der rohe Code steht nicht mehr drin
+});
+
 test('Outlook: Token wird erneuert und das neue dauerhafte Token gespeichert', async () => {
   const { o, tresor, aufrufe } = verbundenesKonto([
     [/mailFolders\/inbox\/messages/, { body: { value: [{ id: 'm1', subject: 'Treffen', isRead: false, from: { emailAddress: { name: 'Anna', address: 'anna@example.com' } }, bodyPreview: 'Hallo' }] } }],
