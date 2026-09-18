@@ -6,25 +6,45 @@ const { contextBridge, ipcRenderer, webUtils } = require('electron');
 // damit die Beschriftungen SOFORT beim Laden gesetzt werden können, ohne auf einen
 // IPC zu warten (Issue #3/#54: „leeres Fenster" auf langsamen/zickigen PCs). Der
 // Hauptprozess liefert später den vollen, an die Einstellung angepassten Satz.
+// Mitgelieferte Standard-Texte für die Sofort-/Not-Beschriftung.
+// WICHTIG (Issue #3/#54): Dieses Preload läuft in der Chromium-SANDBOX
+// (app.enableSandbox()). Dort ist `require()` von lokalen Dateien NICHT erlaubt
+// (nur `electron`/Built-ins) – `require('../shared/texte')` schlug im gepackten
+// Build also still fehl, die Beschriftungen blieben leer und Julia hielt das
+// Fenster fälschlich für „leer" (Neustart-Schleife bis FATAL). Deshalb holen wir
+// die Texte SYNCHRON per IPC vom Hauptprozess, der die Datei problemlos liest.
 let STANDARD_TEXTE = { de: {}, en: {} };
-try { STANDARD_TEXTE = require('../shared/texte').TEXTE; } catch { /* Notfalls IPC-only */ }
-// Reine Füll-Hilfe (ohne Electron), auch für die Not-Füllung unten.
-let beschriftungen = null;
-try { beschriftungen = require('../shared/beschriftungen'); } catch { /* dann keine Not-Füllung */ }
+try {
+  const t = ipcRenderer.sendSync('standard-texte');
+  if (t && (Object.keys(t.de || {}).length || Object.keys(t.en || {}).length)) STANDARD_TEXTE = t;
+} catch { /* Notfalls IPC-only */ }
 
-// NOT-FÜLLUNG (Issue #3/#54): Die Oberflächen-Beschriftungen werden im Renderer
-// per Skript gefüllt; kommt der synchrone Text-Satz dort (über die contextBridge)
-// leer an – auf manchen PCs beobachtet –, bleibt das Fenster leer. Das Preload
-// hat die Texte DIREKT (require oben) und füllt die Labels notfalls selbst,
-// komplett unabhängig von der Renderer-Kette. Gibt die Zahl gefüllter Labels
-// zurück (0 = nichts zu tun oder keine Texte verfügbar).
+// NOT-FÜLLUNG (Issue #3/#54): Die Beschriftungen ([data-nav]/[data-t]) werden im
+// Renderer per Skript gefüllt; hakt diese Kette auf einem PC, bleibt das Fenster
+// leer. Das Preload füllt die Labels dann selbst aus den Standard-Texten – die
+// Füll-Logik ist hier INLINE, weil ein sandboxed Preload keine lokalen Module
+// requiren darf. Füllt nur LEERE Labels; der Renderer überschreibt später mit dem
+// echten, eingestellten Sprachsatz. Gibt die Zahl gefüllter Labels zurück.
 function notFuellung() {
   try {
-    if (!beschriftungen || typeof document === 'undefined' || !document.querySelectorAll) return 0;
-    const locale = (typeof navigator !== 'undefined' && navigator.language) || 'de';
-    const satz = beschriftungen.satzWaehlen(STANDARD_TEXTE, locale);
+    if (typeof document === 'undefined' || !document.querySelectorAll) return 0;
+    const sc = String((typeof navigator !== 'undefined' && navigator.language) || 'de').toLowerCase().startsWith('en') ? 'en' : 'de';
+    const satz = (STANDARD_TEXTE[sc] && Object.keys(STANDARD_TEXTE[sc]).length) ? STANDARD_TEXTE[sc]
+      : (STANDARD_TEXTE.de && Object.keys(STANDARD_TEXTE.de).length) ? STANDARD_TEXTE.de : null;
     if (!satz) return 0;
-    return beschriftungen.fuellen((sel) => document.querySelectorAll(sel), satz);
+    let n = 0;
+    const fuell = (sel, attr) => {
+      document.querySelectorAll(sel).forEach((el) => {
+        const k = el.dataset && el.dataset[attr];
+        if (!k) return;
+        if (el.textContent && el.textContent.trim()) return;
+        el.textContent = (typeof satz[k] === 'string' && satz[k]) ? satz[k] : k;
+        n += 1;
+      });
+    };
+    fuell('[data-nav]', 'nav');
+    fuell('[data-t]', 't');
+    return n;
   } catch { return 0; }
 }
 
@@ -233,10 +253,12 @@ if (typeof window !== 'undefined' && window.addEventListener) {
     setTimeout(() => {
       let leer = false;
       let grund = '';
+      let renderKaputt = false; // true nur, wenn CSS/Body wirklich fehlen (echtes Grafik-/Render-Problem)
       try {
         const b = document.body;
         const ohneStil = !document.styleSheets || document.styleSheets.length === 0;
         const ohneInhalt = !b || b.childElementCount === 0;
+        renderKaputt = ohneStil || ohneInhalt;
         // Zusätzlich (Issue #26/#45): Das HTML ist zwar da, aber die Beschriftungen
         // werden erst per Skript gefüllt. Hängt der Start-IPC, bleiben alle
         // Navigations-Texte leer – für den Nutzer „keine Elemente", ohne Fehler.
@@ -262,9 +284,13 @@ if (typeof window !== 'undefined' && window.addEventListener) {
         const diag = `body=${b ? b.childElementCount : 0} texte=${leerAnzahl}/${gesamt} notfuellung=${notGefuellt} standardtexte=${stdAnzahl} julia=${typeof window !== 'undefined' && window.julia ? 1 : 0} css=${document.styleSheets ? document.styleSheets.length : 0} readyState=${document.readyState}`;
         grund = (ohneStil ? 'ohne Stil (CSS fehlt)' : ohneInhalt ? 'ohne Inhalt (Body leer)' : leereTexte ? 'Beschriftungen leer – Start hing beim Laden' : '') + ` [${diag}]`;
         if (!leer && notGefuellt > 0) { try { fehlerMelden('ui-healthcheck', `Oberfläche per Not-Füllung gerettet (${notGefuellt} Beschriftungen) – [${diag}]`, '', 0); } catch { /* egal */ } }
-      } catch { leer = true; grund = 'Prüfung fehlgeschlagen'; }
+      } catch { leer = true; grund = 'Prüfung fehlgeschlagen'; renderKaputt = true; }
       if (!leer) return;
-      fehlerMelden('ui-healthcheck', `Oberfläche nach dem Laden leer – ${grund}`, '', 0);
+      // Nur ein ECHTES Render-Problem (CSS/Body fehlt) darf über den Hauptprozess
+      // die Grafik-Leiter/FATAL auslösen ('ui-healthcheck'). Sind nur die Texte
+      // leer, ist das NIE ein Grafikproblem – dann eigener, harmloser Typ, der
+      // höchstens einmal neu lädt, aber nie neu startet/FATAL wird (Issue #3/#54).
+      fehlerMelden(renderKaputt ? 'ui-healthcheck' : 'ui-texte-leer', `Oberfläche nach dem Laden leer – ${grund}`, '', 0);
       try {
         if (!sessionStorage.getItem('ui-neu-geladen')) {
           sessionStorage.setItem('ui-neu-geladen', '1');

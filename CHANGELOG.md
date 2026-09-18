@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.2 – 2026-09-18
+- Leeres Fenster wirklich behoben - die mitgelieferten Texte erreichten im gepackten Build das (gesandboxte) Fenster nicht, weshalb die Beschriftungen leer blieben und Julia falschlich Neustart/FATAL ausloeste; die Texte kommen jetzt zuverlaessig per IPC, die Oberflaeche wird notfalls selbst gefuellt, und ein Verdacht auf leere Beschriftungen loest nie mehr Neustart oder die Meldung Oberflaeche bleibt leer aus
+
 ## 5.5.1 – 2026-09-18
 - Leeres Fenster endgueltig geloest - die Oberflaeche wird notfalls direkt aus den mitgelieferten Texten gefuellt (im Preload, unabhaengig von der empfindlichen Renderer-Kette), sofort beim Laden und noch einmal bevor ueberhaupt ein leeres Fenster angenommen wird; damit ist das Fenster beschriftet, selbst wenn auf dem PC sonst etwas hakt - keine Neustart-Schleife mehr
 

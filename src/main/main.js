@@ -112,6 +112,15 @@ const win = require('./win/win');
 const { trayBild, fensterBild } = require('./symbol');
 const { t: tt, TEXTE } = require('../shared/texte');
 
+// Standard-Texte SYNCHRON an die Fenster geben (Issue #3/#54): Ein sandboxed
+// Preload darf keine lokalen Dateien requiren (`require('../shared/texte')`
+// schlägt dort fehl) – deshalb blieb die Sofort-Beschriftung im gepackten Build
+// leer und Julia hielt das Fenster fälschlich für „leer". Der Hauptprozess (nicht
+// gesandboxt) liest die Texte problemlos und liefert sie hier synchron aus, damit
+// das Preload die Beschriftungen zur Not selbst füllen kann. So früh wie möglich
+// registriert, damit es vor dem ersten Fenster bereitsteht.
+ipcMain.on('standard-texte', (e) => { try { e.returnValue = TEXTE; } catch { e.returnValue = null; } });
+
 const APP = app.getAppPath();
 const RENDERER = path.join(__dirname, '..', 'renderer');
 const PRELOAD = path.join(__dirname, '..', 'preload', 'preload.js');
