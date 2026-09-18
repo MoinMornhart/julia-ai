@@ -38,6 +38,13 @@ Unter **Übersicht** steht die **Anwendungs-ID (Client)**, zum Beispiel
 `1a2b3c4d-1234-4abc-9def-0123456789ab`. Kopieren. Mehr brauchst du nicht: kein Secret, und
 Berechtigungen musst du nicht vorab eintragen – Julia fragt beim Anmelden selbst danach.
 
+> **Wichtig – die richtige ID:** Nimm die ID **DEINER eigenen** App-Registrierung von der
+> Übersichts-Seite (Schritt 1–3). **Kopiere NICHT** irgendeine ID aus der **Adresszeile des
+> Browsers** oder eine ID des Azure-Portals selbst (z. B. `c44b4083-3bb0-49c1-b47d-974e53cbdf3c`)
+> – das ist Microsofts eigene App, nicht deine. Mit ihr kommt der Fehler **AADSTS90072**
+> („does not exist in tenant …"), und die Anmeldung schlägt fehl. Julia weist solche
+> Microsoft-eigenen IDs inzwischen mit einem klaren Hinweis ab.
+
 ## 5. In Julia verbinden
 
 1. Julia → **Einstellungen → Verbindungen → Outlook**.

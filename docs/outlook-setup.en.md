@@ -36,6 +36,12 @@ Under **Overview** you'll find the **Application (client) ID**, for example
 `1a2b3c4d-1234-4abc-9def-0123456789ab`. Copy it. That's all you need: no secret, and you
 don't have to add permissions beforehand – Julia asks for them when you sign in.
 
+> **Important – the right ID:** Use the ID of **YOUR OWN** app registration from the Overview
+> page (steps 1–3). **Do NOT** copy an ID from the **browser address bar** or an ID of the
+> Azure Portal itself (e.g. `c44b4083-3bb0-49c1-b47d-974e53cbdf3c`) – that's Microsoft's own
+> app, not yours. It causes the error **AADSTS90072** ("does not exist in tenant …") and
+> sign-in fails. Julia now rejects such Microsoft-owned IDs with a clear hint.
+
 ## 5. Connect in Julia
 
 1. Julia → **Settings → Connections → Outlook**.
