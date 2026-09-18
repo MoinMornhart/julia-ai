@@ -105,6 +105,26 @@ function mcpAusJson(text) {
   return eintraege;
 }
 
+// Doppelte MCP-Server aus einer Liste entfernen (Issue #86: VibeWorks stand
+// doppelt in den Einstellungen). Zwei Einträge gelten als derselbe Server, wenn
+// sie dieselbe Adresse (http/sse), denselben Befehl (stdio) oder dieselbe Id
+// haben. Der ERSTE Treffer bleibt (samt seinem „an"/„vertraut"-Zustand); spätere
+// Doppel fallen weg. Reihenfolge bleibt erhalten.
+function ohneDoppelte(liste) {
+  const gesehen = new Set();
+  const aus = [];
+  for (const s of Array.isArray(liste) ? liste : []) {
+    if (!s || typeof s !== 'object') continue;
+    const schluessel = s.url ? `url:${String(s.url).trim().toLowerCase()}`
+      : s.befehl ? `cmd:${String(s.befehl).trim().toLowerCase()}`
+        : s.id ? `id:${s.id}` : null;
+    if (schluessel && gesehen.has(schluessel)) continue;
+    if (schluessel) gesehen.add(schluessel);
+    aus.push(s);
+  }
+  return aus;
+}
+
 // Eintrag aus den Einstellungen prüfen: Name, Art, Befehl oder Adresse.
 function eintragPruefen(roh) {
   const e = roh && typeof roh === 'object' ? roh : {};
@@ -450,4 +470,4 @@ class McpVerwaltung extends EventEmitter {
   }
 }
 
-module.exports = { McpVerwaltung, McpServer, eintragPruefen, mcpAusJson, befehlTeilen, werkzeugName, umgebungLesen, inhaltText, PROTOKOLL };
+module.exports = { McpVerwaltung, McpServer, eintragPruefen, ohneDoppelte, mcpAusJson, befehlTeilen, werkzeugName, umgebungLesen, inhaltText, PROTOKOLL };

@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.5.4 – 2026-09-18
+- Doppelte MCP-Server werden entdoppelt (z. B. VibeWorks stand doppelt) - beim Hinzufuegen/Import und einmalig beim Start
+
 ## 5.5.3 – 2026-09-18
 - Anzeigefehler behoben - im Overlay/Titel stand woertlich {name} statt des Assistenten-Namens (Nachwirkung der Not-Fuellung); der Platzhalter wird jetzt korrekt durch den Namen ersetzt
 

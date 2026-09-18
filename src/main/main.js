@@ -14,7 +14,7 @@ const { AppServer } = require('./appserver');
 const mikrofonRecht = require('./mikrofon-recht');
 const { Whisper } = require('./whisper');
 const { Piper } = require('./piper');
-const { McpVerwaltung, eintragPruefen: mcpEintragPruefen } = require('./mcp');
+const { McpVerwaltung, eintragPruefen: mcpEintragPruefen, ohneDoppelte: mcpOhneDoppelte } = require('./mcp');
 const vibeworks = require('./vibeworks');
 const { phrasen: weckPhrasen } = require('./weckwort');
 const { anredeEntfernen } = require('./minecraft-stimme');
@@ -1220,7 +1220,7 @@ function ipcEinrichten() {
       try {
         const eintrag = mcpEintragPruefen({ ...roh, id: undefined });
         if (roh.umgebung) mcp.umgebungSetzen(eintrag.id, String(roh.umgebung));
-        config.set('mcp.server', [...config.get('mcp.server'), eintrag]);
+        config.set('mcp.server', mcpOhneDoppelte([...config.get('mcp.server'), eintrag]));
         anzahl += 1;
       } catch (e) { fehler.push(`${roh.name || 'Server'}: ${e.message}`); }
     }
@@ -1231,7 +1231,7 @@ function ipcEinrichten() {
     try {
       const eintrag = mcpEintragPruefen({ ...(d || {}), id: undefined });
       if (d && d.umgebung) mcp.umgebungSetzen(eintrag.id, String(d.umgebung));
-      config.set('mcp.server', [...config.get('mcp.server'), eintrag]);
+      config.set('mcp.server', mcpOhneDoppelte([...config.get('mcp.server'), eintrag]));
       protokoll.eintragen({ werkzeug: 'mcp', stufe: 'INFO', ergebnis: `MCP-Server „${eintrag.name}“ hinzugefügt` });
       return { ok: true, status: mcp.status() };
     } catch (e) {
@@ -2246,6 +2246,13 @@ async function start() {
   config = new Konfiguration(DATEN);
   config.on('warnung', (text) => melden(assistentName(),text));
   config.laden();
+  // Einmalig bestehende doppelte MCP-Server bereinigen (Issue #86, z. B. VibeWorks
+  // doppelt), falls sie sich früher angesammelt haben.
+  try {
+    const mcpListe = config.get('mcp.server') || [];
+    const bereinigt = mcpOhneDoppelte(mcpListe);
+    if (bereinigt.length !== mcpListe.length) config.set('mcp.server', bereinigt);
+  } catch { /* nicht schlimm */ }
   erststartSprache();
   designAnwenden();
   nativeTheme.on('updated', fensterFarben);
