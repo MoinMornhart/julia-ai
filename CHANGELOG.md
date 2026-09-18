@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.8.1 – 2026-09-18
+- Mikro-Hotkey und Weckwort Hey Julia gehen wieder zuverlaessig (haengengebliebener Vorleser-Zaehler machte Julia dauerhaft zu spricht gerade); Google-Fehler 403 access_denied erklaert jetzt den Testnutzer-Schritt statt nur abgelehnt
+
 ## 5.8.0 – 2026-09-18
 - Eigener Video-Tab zum Schneiden - Videos schneiden und Thumbnails gibt es jetzt als eigenen Bereich (Datei waehlen, Von-Bis, Schneiden, Thumbnail, Ergebnisliste mit Im-Ordner-zeigen), komplett lokal ueber ffmpeg statt nur im Chat
 

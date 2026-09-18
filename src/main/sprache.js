@@ -618,6 +618,17 @@ class Sprache extends EventEmitter {
       this.sprechenProc.kill();
       this.sprechenProc = null;
     }
+    // Vorleser-Zähler hart zurücksetzen: Wird ein satzweises Vorlesen abgebrochen
+    // (Fehler/Abbruch), ohne dass fertig() lief, bliebe der Zähler sonst hängen –
+    // dann gälte Julia DAUERHAFT als „spricht gerade". Folge: der Mikro-Hotkey
+    // würde nur noch stummschalten statt zuzuhören, und das Weckwort („Hey Julia")
+    // würde nie wieder scharfgestellt (beides „geht zufällig nicht"). stumm()
+    // heißt „alles still" – also Zähler auf 0 und den Lautsprecher freigeben.
+    if (this.vorleserAktiv > 0) {
+      this.vorleserAktiv = 0;
+      this.emit('pegel', 0);
+      this.emit('lautsprecher', false);
+    }
   }
 
   stimmen() {

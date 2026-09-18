@@ -2,7 +2,22 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { saetzeAbtrennen, fuerSprache } = require('../src/main/sprache');
+const { saetzeAbtrennen, fuerSprache, Sprache } = require('../src/main/sprache');
+
+// stumm() muss einen hängengebliebenen Vorleser-Zähler zurücksetzen: sonst gilt
+// Julia dauerhaft als „spricht gerade" und Mikro-Hotkey UND Weckwort („Hey
+// Julia") gehen nicht mehr (zufällig wirkender Fehler nach abgebrochenem Vorlesen).
+test('stumm() räumt einen hängengebliebenen Vorleser-Zähler weg', () => {
+  const s = new Sprache({});
+  s.vorleserAktiv = 1; // simuliert Vorlesen, dessen fertig() nie lief (Abbruch/Fehler)
+  assert.equal(s.sprichtGerade, true);
+  let frei = null;
+  s.on('lautsprecher', (v) => { frei = v; });
+  s.stumm();
+  assert.equal(s.vorleserAktiv, 0);
+  assert.equal(s.sprichtGerade, false); // Mikro/Weckwort wieder scharfstellbar
+  assert.equal(frei, false); // Oberfläche erfährt: Lautsprecher frei
+});
 
 // Julia liest satzweise vor, während die Antwort noch entsteht.
 

@@ -66,6 +66,8 @@
 
 ## What's new
 
+- **Mic hotkey & "Hey Julia" work reliably again** – sometimes neither the mic hotkey nor the "Hey Julia" wake word responded, seemingly at random. The cause was a stuck internal counter after an interrupted read-aloud that made Julia think she was permanently "speaking". Fixed – muting now resets that state cleanly.
+- **Google/Outlook sign-in: clearer help** – the Google "access blocked / 403" error now explains that your account must be added as a **test user** (or the app published), instead of just saying "declined".
 - **Dedicated Video tab for cutting** – cutting videos and making thumbnails now has its own area (the "Video" nav item), not just via chat: pick a file, enter from–to, **Cut** – or grab a **thumbnail** at a given time. Runs entirely locally via ffmpeg, nothing is uploaded; the result is saved next to the source file and can be shown in the folder directly. (Needs ffmpeg on the PC; if it's missing, the tab says so clearly.)
 - **Minecraft no longer clutters the overlay & bubble** – Julia's Minecraft replies and actions no longer show up in the gaming overlay and the floating bubble; they stay in the window (chat/Minecraft tab). Important approvals (traffic light) are still shown.
 - **Automatic updates work again** – after the project moved to its new home (`Morni-Team/julia-ai`), the app was still looking for updates at the old location. Everything now points to the right address. (Please install this one version by hand once, after that it's automatic again.)

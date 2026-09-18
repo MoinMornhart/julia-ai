@@ -144,8 +144,14 @@ class GoogleKonto {
         const code = url.searchParams.get('code');
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
         if (fehler || !code || url.searchParams.get('state') !== state) {
-          res.end(antwortSeite('Nicht verbunden', fehler === 'access_denied' ? 'Du hast den Zugriff abgelehnt. Das Fenster kann zu.' : 'Die Anmeldung hat nicht geklappt. Das Fenster kann zu.'));
-          fertig(new GoogleFehler(fehler === 'access_denied' ? 'Zugriff im Browser abgelehnt.' : `Anmeldung fehlgeschlagen${fehler ? `: ${fehler}` : ''}.`));
+          // access_denied kommt in ZWEI Fällen: (a) du hast im Browser abgelehnt,
+          // oder (b) dein Google-Konto ist kein „Testnutzer" der OAuth-App (App im
+          // Status „Testing" → Fehler 403 „access_denied", Bildschirm „Zugriff
+          // blockiert: … nicht abgeschlossen"). Deshalb beide Fälle nennen.
+          res.end(antwortSeite('Nicht verbunden', fehler === 'access_denied' ? 'Zugriff nicht möglich. Das Fenster kann zu.' : 'Die Anmeldung hat nicht geklappt. Das Fenster kann zu.'));
+          fertig(new GoogleFehler(fehler === 'access_denied'
+            ? 'Google-Anmeldung abgelehnt (403 access_denied). Falls du nicht selbst abgebrochen hast: Deine OAuth-App steht auf „Testing" und dein Konto ist noch kein Testnutzer. In der Google Cloud Console → „APIs & Dienste" → „OAuth-Zustimmungsbildschirm" → „Testnutzer" deine E-Mail hinzufügen (oder die App veröffentlichen). Danach erneut verbinden.'
+            : `Anmeldung fehlgeschlagen${fehler ? `: ${fehler}` : ''}.`));
           return;
         }
         res.end(antwortSeite('Julia ist verbunden', 'Du kannst dieses Fenster schließen und zu Julia zurückgehen.'));
