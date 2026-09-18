@@ -1,6 +1,6 @@
 # Von VibeWorks angelegt: kostenloser Repo-Check ohne KI – Geheimnisse (Gitleaks),
 # Sicherheitslücken (OSV-Scanner), Fehlermuster (Semgrep), je Sprache Bandit, ShellCheck,
-# Hadolint und actionlint sowie offene Stellen (TODO/FIXME).
+# Hadolint, actionlint und fallow (JS/TS) sowie offene Stellen (TODO/FIXME).
 # Das Ergebnis liegt als Artefakt „vibeworks-check“ bereit, VibeWorks holt es selbst ab.
 # Datei löschen = Check aus.
 name: VibeWorks Repo-Check
@@ -56,7 +56,7 @@ jobs:
         run: |
           git grep -n -I -E '(//|#|/\*|\*|--|<!--)[[:space:]]*(TODO|FIXME|HACK|XXX)\b' -- ':!*.lock' ':!package-lock.json' ':!.github/workflows/vibeworks-check.yml' > .vw-todos.txt || true
 
-      - name: Sprachwerkzeuge (Bandit, ShellCheck, Hadolint, actionlint)
+      - name: Sprachwerkzeuge (Bandit, ShellCheck, Hadolint, actionlint, fallow)
         continue-on-error: true
         # Nur was im Repository vorkommt – je Sprache ein kostenloses Werkzeug
         run: |
@@ -74,6 +74,10 @@ jobs:
           done
           if git ls-files '.github/workflows/*.yml' '.github/workflows/*.yaml' | grep -q .; then
             docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:latest -format '{{json .}}' > .vw-actionlint.json || true
+          fi
+          # JavaScript/TypeScript: ungenutzter Code, ungenutzte Abhängigkeiten, Zyklen (fallow, kostenlos)
+          if [ -f package.json ] && git ls-files '*.ts' '*.tsx' '*.js' '*.jsx' '*.mjs' | grep -q .; then
+            npx -y fallow@3 dead-code --format json > .vw-fallow.json 2> /dev/null || true
           fi
 
       - name: Zusammenfassen
@@ -172,6 +176,19 @@ jobs:
               out["tools"]["actionlint"] = True
               for x in actionlint:
                   add("actionlint", x.get("filepath"), x.get("line"), x.get("kind"), "WARNING", x.get("message"))
+
+          fallow = load(".vw-fallow.json")
+          if fallow is not None:
+              out["tools"]["fallow"] = True
+              for x in (fallow.get("unused_dependencies") or [])[:15]:
+                  add("fallow", x.get("path") or "package.json", x.get("line"), "unused-dependency", "WARNING", f"Dependency {x.get('package_name')} is not used")
+              for x in (fallow.get("circular_dependencies") or [])[:10]:
+                  files = x.get("files") or []
+                  add("fallow", files[0] if files else "", x.get("line"), "circular", "WARNING", "Import cycle: " + " -> ".join(files[:6]))
+              for x in (fallow.get("unused_files") or [])[:15]:
+                  add("fallow", x.get("path"), None, "unused-file", "INFO", "File is not imported anywhere")
+              for x in (fallow.get("unused_exports") or [])[:15]:
+                  add("fallow", x.get("path"), x.get("line"), "unused-export", "INFO", f"Export {x.get('export_name')} is not used")
 
           out["findings"] = extra + out["findings"][: 400 - len(extra)]
 
