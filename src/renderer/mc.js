@@ -278,6 +278,7 @@
     if (c.weckwort) $('mcStimme').checked = !!c.weckwort.an;
     if (c.minecraft) $('mcVoice').checked = c.minecraft.stimme !== false;
     if (c.minecraft) $('mcJeder').checked = c.minecraft.jeder === true;
+    if (c.minecraft && $('mcBenachrichtigen')) $('mcBenachrichtigen').value = c.minecraft.benachrichtigen || 'wichtige';
   }
   async function stimmeZeigen() {
     try { schalterSetzen(await julia.config()); } catch { /* Fenster wird geschlossen */ }
@@ -294,6 +295,11 @@
   // Auf alle Spieler reagieren – gilt sofort, auch im laufenden Spiel.
   $('mcJeder').onchange = async () => {
     const r = await julia.setzen('minecraft.jeder', $('mcJeder').checked);
+    if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
+  };
+  // Wie oft Minecraft benachrichtigt (nicht ständig beim Bauen).
+  if ($('mcBenachrichtigen')) $('mcBenachrichtigen').onchange = async () => {
+    const r = await julia.setzen('minecraft.benachrichtigen', $('mcBenachrichtigen').value);
     if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
   };
   julia.on('config:geaendert', schalterSetzen);

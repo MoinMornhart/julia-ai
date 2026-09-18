@@ -2362,8 +2362,21 @@ const WERKZEUGE = [
   },
 ];
 
+// Welche Minecraft-Ereignis-Arten eine Windows-Benachrichtigung wert sind
+// (Standard „wichtige"). Routine wie Bauen-fertig/Essen/Hänger pusht NICHT, damit
+// man nicht ständig benachrichtigt wird, während Julia baut (Nutzerwunsch).
+const MC_WICHTIGE = new Set(['getrennt', 'gestorben', 'gefahr', 'erreicht', 'rueckzug', 'niederlage']);
+
+// Reine Entscheidung: soll dieses Ereignis (art) beim gewählten Modus pushen?
+//   'keine'   → nie; 'alle' → immer; 'wichtige' → nur die wichtigen Arten.
+function sollBenachrichtigen(art, modus = 'wichtige') {
+  if (modus === 'keine') return false;
+  if (modus === 'alle') return true;
+  return MC_WICHTIGE.has(String(art || ''));
+}
+
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

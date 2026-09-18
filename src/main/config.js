@@ -132,6 +132,7 @@ const STANDARD = {
     gruppe: '', // dieser Voice-Chat-Gruppe von selbst beitreten (Passwort verschlüsselt im Tresor)
     jeder: false, // auf alle Spieler im Chat reagieren statt nur auf den eingetragenen
     erlaubte: [], // zusätzlich zum Besitzer erlaubte Spielernamen (im Spiel per „hör auch auf X“ pflegbar)
+    benachrichtigen: 'wichtige', // Windows-Benachrichtigungen aus Minecraft: 'alle' | 'wichtige' | 'keine' (Standard: nur Wichtiges, damit Bauen/Essen nicht ständig pusht)
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -262,6 +263,11 @@ function pruefen(schluessel, wert) {
       if (wert === 'true' || wert === 'an') return true;
       if (wert === 'false' || wert === 'aus') return false;
       throw new Error(`${schluessel} ist an oder aus (true/false).`);
+    case 'minecraft.benachrichtigen': {
+      const v = String(wert || '').toLowerCase();
+      if (!['alle', 'wichtige', 'keine'].includes(v)) throw new Error("minecraft.benachrichtigen muss 'alle', 'wichtige' oder 'keine' sein.");
+      return v;
+    }
     case 'blase.monitor': return Math.round(zahl(wert, 0, 8, 'Monitor'));
     case 'blase.groesse': return Math.round(zahl(wert, 80, 2000, 'Größe'));
     case 'blase.deckkraft': return zahl(wert, 0.1, 1.0, 'Deckkraft');

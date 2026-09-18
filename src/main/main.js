@@ -8,7 +8,7 @@ const {
   app, BrowserWindow, Tray, Menu, globalShortcut, ipcMain, dialog, Notification, safeStorage, screen, shell, session, nativeTheme, net, clipboard, nativeImage,
 } = require('electron');
 const sicherheit = require('./sicherheit');
-const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen } = require('./minecraft');
+const { Minecraft, kontoSpeicher, kontoAnmelden, adresseTeilen, sollBenachrichtigen: mcSollBenachrichtigen } = require('./minecraft');
 const { Sync } = require('./sync');
 const { AppServer } = require('./appserver');
 const mikrofonRecht = require('./mikrofon-recht');
@@ -2284,7 +2284,14 @@ async function start() {
   const { Logbuch } = require('./minecraft-logbuch');
   minecraft = new Minecraft({ logbuch: new Logbuch({ ordner: path.join(DATEN, 'minecraft-logbuch') }) });
   mcSpeicher = kontoSpeicher({ datei: path.join(DATEN, 'minecraft-konto.bin'), krypto });
-  minecraft.on('ereignis', (e) => { melden(t('minecraft.titel'), e.text); anAlle('mc:geaendert'); });
+  minecraft.on('ereignis', (e) => {
+    // Nicht bei JEDEM Minecraft-Ereignis pushen (Nutzerwunsch: nicht ständig
+    // benachrichtigt werden, während Julia baut). Routine (Bauen-fertig, Essen …)
+    // aktualisiert nur die Oberfläche; nur wichtige Ereignisse melden – steuerbar
+    // über die Einstellung minecraft.benachrichtigen ('alle'|'wichtige'|'keine').
+    if (mcSollBenachrichtigen(e && e.art, config.get('minecraft.benachrichtigen'))) melden(t('minecraft.titel'), e.text);
+    anAlle('mc:geaendert');
+  });
   minecraft.on('frage', (f) => minecraftFrage(f));
   minecraft.on('stimme', (d) => minecraftStimme(d.pcm));
   minecraft.on('stimmeStatus', () => anAlle('mc:geaendert'));

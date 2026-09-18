@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.6.0 – 2026-09-18
+- Nicht mehr staendig Benachrichtigungen beim Minecraft-Bauen - Julia meldet standardmaessig nur noch Wichtiges (getrennt, gestorben, Gefahr, Ziel erreicht); im Minecraft-Bereich umstellbar auf Alle/Nur Wichtiges/Keine, die Ansicht zeigt weiter alles live
+
 ## 5.5.4 – 2026-09-18
 - Doppelte MCP-Server werden entdoppelt (z. B. VibeWorks stand doppelt) - beim Hinzufuegen/Import und einmalig beim Start
 

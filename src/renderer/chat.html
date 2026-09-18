@@ -336,6 +336,14 @@
             <p class="mc-klein" data-nav="mc.voice_hinweis"></p>
             <label class="mc-schalter"><input type="checkbox" id="mcJeder"><span data-nav="mc.jeder"></span></label>
             <p class="mc-klein" data-nav="mc.jeder_hinweis"></p>
+            <label class="mc-feld"><span data-nav="mc.benachrichtigen"></span>
+              <select id="mcBenachrichtigen">
+                <option value="wichtige" data-nav="mc.ben_wichtige"></option>
+                <option value="alle" data-nav="mc.ben_alle"></option>
+                <option value="keine" data-nav="mc.ben_keine"></option>
+              </select>
+            </label>
+            <p class="mc-klein" data-nav="mc.benachrichtigen_hinweis"></p>
             <div class="mc-zeilen" id="mcZeilen"></div>
             <form class="mc-zeile" id="mcSenden">
               <input id="mcChatText" maxlength="250" spellcheck="true" autocomplete="off">
