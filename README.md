@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Minecraft: Water-MLG & schöneres Inventar** – Julia fängt jetzt tiefe Stürze mit dem **Wassereimer** ab (setzt kurz vor dem Aufprall Wasser und nimmt es danach wieder auf) – braucht dafür einen Wassereimer im Inventar. Außerdem ist das **Inventar** ein eigener, übersichtlicher Bereich im Minecraft-Tab (Gegenstände als Chips mit Anzahl), statt in einer Zeile gequetscht.
 - **Minecraft: Herstellen bleibt nicht mehr hängen** – auf laggy/zickigen Servern schlug das Craften oft mit einem 20-Sekunden-Timeout fehl, obwohl der Gegenstand eigentlich hergestellt war – Julia versuchte es dann mehrfach umsonst. Jetzt prüft sie nach jedem Craft am Inventar, ob es geklappt hat, und macht weiter statt festzuhängen.
 - **Minecraft: Eimer & „Verlassen"** – Julia kann jetzt mit dem **Eimer** umgehen: Wasser/Lava aufnehmen, Wasser/Lava setzen (z. B. zum sicheren Runterkommen oder Löschen) und Milch trinken (hebt Effekte auf). Außerdem: drückst du **„Verlassen"**, bleibt sie jetzt sicher weg – von selbst kommt sie nur nach einem echten Absturz/Rauswurf zurück.
 - **Minecraft: Inventar sichtbar** – im Minecraft-Tab siehst du jetzt, was Julia dabeihat (z. B. „39× cobblestone, 8× coal, 8× torch"), zusammen mit Leben, Hunger, Ort und Aufgabe.

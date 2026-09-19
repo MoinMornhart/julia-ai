@@ -18,6 +18,8 @@
   const voiceText = (v) => tx(`mc.vc_${(v && v.zustand) || 'aus'}`, { version: (v && v.version) || '' });
 
   function werteZeigen(s) {
+    const kachel = $('mcInventarKachel');
+    if (kachel) kachel.hidden = !s.verbunden; // Inventar-Bereich nur zeigen, wenn verbunden
     const box = $('mcWerte');
     box.hidden = !s.verbunden;
     if (!s.verbunden) { box.innerHTML = ''; return; }
@@ -25,7 +27,6 @@
     const aufgabe = a ? tx(`mc.l_${a.art}`, { spieler: a.spieler || '', n: a.geschafft || 0, ort: a.ort || '' }) : tx('mc.l_frei');
     const spieler = (s.spieler || []).map((p) => (p.abstand != null ? `${p.name} (${p.abstand} m)` : p.name)).join(', ');
     const feinde = Object.entries(s.feinde_nah || {}).map(([n, z]) => `${z}× ${n}`).join(', ');
-    const inventar = Object.entries(s.inventar || {}).map(([n, z]) => `${z}× ${n}`).join(', ');
     box.innerHTML = [
       ['mc.w_figur', `${s.name} · ${s.version}`],
       ['mc.w_leben', `❤ ${s.leben}/20 · 🍗 ${s.hunger}/20`],
@@ -33,9 +34,29 @@
       ['mc.w_aufgabe', aufgabe],
       ['mc.w_spieler', spieler || '–'],
       ['mc.w_feinde', feinde || '–'],
-      ['mc.w_inventar', inventar || tx('mc.inv_leer')],
       ['mc.w_voice', voiceText(s.stimme)],
     ].map(([k, v]) => `<div><span>${esc(tx(k))}</span><b>${esc(v)}</b></div>`).join('');
+    inventarZeigen(s);
+  }
+
+  // Einen Gegenstandsnamen lesbar machen: „oak_planks" → „Oak Planks".
+  function itemHuebsch(name) {
+    return String(name).split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  }
+
+  // Inventar als eigener Bereich (Kachel), als Reihe von Chips „Name ×Anzahl".
+  function inventarZeigen(s) {
+    const box = $('mcInventar');
+    if (!box) return;
+    const eintraege = Object.entries((s && s.inventar) || {});
+    if (!s || !s.verbunden || !eintraege.length) {
+      box.innerHTML = `<p class="mc-inv-leer">${esc(tx('mc.inv_leer'))}</p>`;
+      return;
+    }
+    box.innerHTML = eintraege
+      .sort((a, b) => b[1] - a[1])
+      .map(([n, z]) => `<span class="mc-inv-item"><span class="mc-inv-name">${esc(itemHuebsch(n))}</span><span class="mc-inv-zahl">${esc(z)}</span></span>`)
+      .join('');
   }
 
   // Crash-Screen: Warum ist die Figur vom Server geflogen – und kommt sie zurück?

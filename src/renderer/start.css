@@ -525,6 +525,12 @@ body[data-zustand="thinking"] .held-kugel i { animation-duration: 2s; border-sty
 #mcChatText { flex: 1 1 240px; }
 .mc-zeilen { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
 .mc-zeilen p { margin: 0; overflow-wrap: anywhere; }
+/* Inventar-Bereich (eigene Kachel): Gegenstände als Chips mit Anzahl */
+.mc-inv { display: flex; flex-wrap: wrap; gap: 6px; max-height: 240px; overflow-y: auto; }
+.mc-inv-item { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 999px; background: var(--grund-2); border: 1px solid var(--linie); font-size: 12.5px; }
+.mc-inv-name { overflow-wrap: anywhere; }
+.mc-inv-zahl { min-width: 22px; text-align: center; padding: 1px 7px; border-radius: 999px; background: var(--akzent); color: var(--akzent-text, #fff); font-weight: 750; font-variant-numeric: tabular-nums; }
+.mc-inv-leer { margin: 0; color: var(--text-3); font-size: 13px; }
 .mc-schalter { display: flex; align-items: center; gap: 10px; font-weight: 650; cursor: pointer; }
 .mc-schalter input { appearance: none; width: 38px; height: 21px; border-radius: 21px; background: var(--flaeche-2); border: 1px solid var(--linie-stark); position: relative; cursor: pointer; flex: none; margin: 0; transition: background 0.2s, box-shadow 0.2s; }
 .mc-schalter input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%; background: var(--text-2); transition: transform 0.2s, background 0.2s; }

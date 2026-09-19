@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: water MLG & nicer inventory** – Julia now saves herself from deep falls with the **water bucket** (places water just before impact and picks it back up) – needs a water bucket in the inventory. Also, the **inventory** is its own clear area in the Minecraft tab (items as chips with counts) instead of being squeezed into one line.
 - **Minecraft: crafting no longer gets stuck** – on laggy/finicky servers, crafting often failed with a 20-second timeout even though the item was actually made – Julia then retried in vain. Now she checks the inventory after each craft to see whether it worked, and moves on instead of getting stuck.
 - **Minecraft: bucket & "Leave"** – Julia can now handle the **bucket**: pick up water/lava, place water/lava (e.g. for a safe descent or to douse fire) and drink milk (clears effects). Also: when you press **"Leave"**, she now stays away for good – she only comes back on her own after a real crash/kick.
 - **Minecraft: inventory visible** – the Minecraft tab now shows what Julia is carrying (e.g. "39× cobblestone, 8× coal, 8× torch"), alongside health, hunger, location and task.

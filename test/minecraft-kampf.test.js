@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { bedrohWert, gefahrReichweite } = require('../src/main/minecraft');
+const { bedrohWert, gefahrReichweite, mlgNoetig } = require('../src/main/minecraft');
 
 // Einfacher „Entity"-Ersatz mit Position und Abstand.
 const pos = (x) => ({ x, y: 0, z: 0, distanceTo: (q) => Math.abs(x - q.x) });
@@ -25,4 +25,12 @@ test('Bedrohung: Creeper vor Schütze vor Nahkämpfer, bei gleicher Art zählt N
   assert.ok(bedrohWert(feind('skeleton', 5), p) > bedrohWert(feind('zombie', 5), p));
   // Gleicher Typ: der nähere ist gefährlicher
   assert.ok(bedrohWert(feind('zombie', 2), p) > bedrohWert(feind('zombie', 9), p));
+});
+
+test('Water-MLG nur bei schädlichem, schnellem Sturz mit Wassereimer und Boden nah', () => {
+  assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.8, bodenNah: true, hatWasser: true }), true);
+  assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.8, bodenNah: true, hatWasser: false }), false); // kein Wasser
+  assert.equal(mlgNoetig({ gefallen: 2, geschwindigkeitY: -0.8, bodenNah: true, hatWasser: true }), false); // zu niedrig
+  assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.1, bodenNah: true, hatWasser: true }), false); // fällt kaum
+  assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.8, bodenNah: false, hatWasser: true }), false); // Boden zu weit
 });

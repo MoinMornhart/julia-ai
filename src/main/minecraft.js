@@ -475,6 +475,13 @@ function gefahrReichweite(name) {
   return 7;
 }
 
+// Reine Entscheidung fürs Water-MLG (Sturz mit dem Wassereimer abfangen):
+// fällt sie schnell genug, schon schädlich tief, ist der Boden nah – und hat sie
+// überhaupt einen Wassereimer? Ab ~4 Blöcken Fallhöhe gäbe es sonst Schaden.
+function mlgNoetig({ gefallen, geschwindigkeitY, bodenNah, hatWasser }) {
+  return !!hatWasser && !!bodenNah && geschwindigkeitY < -0.5 && gefallen >= 4;
+}
+
 // --- Eimer (Wasser/Lava aufnehmen & setzen, Milch trinken) ---
 // Reine Zuordnung Aktion → welcher Eimer in die Hand muss, welche Quelle gesucht
 // wird und was hinterher im Eimer ist. Getestet; die eigentliche Ausführung
@@ -1327,6 +1334,7 @@ class Minecraft extends EventEmitter {
   _tick() {
     const bot = this.bot;
     if (!bot || !bot.entity || this.isst) return;
+    this._mlgWasser(); // Sturz mit dem Wassereimer abfangen (MLG) – höchste Priorität
     this._gefahrWache();
     this._antiHaenger();
     const a = this.auftrag;
@@ -1441,6 +1449,58 @@ class Minecraft extends EventEmitter {
   // Wie viele Stück eines Gegenstands (nach internem Namen) im Inventar liegen.
   _anzahlImInventar(name) {
     return this.bot.inventory.items().reduce((s, i) => (i.name === name ? s + i.count : s), 0);
+  }
+
+  // Water-MLG: einen tiefen Sturz mit dem Wassereimer abfangen. Läuft als Reflex
+  // in jedem Tick – setzt kurz vor dem Aufprall Wasser und nimmt es danach wieder
+  // auf, damit nichts überflutet.
+  _mlgWasser() {
+    const bot = this.bot;
+    const e = bot.entity;
+    if (!e) return;
+    // Nach dem Fall (kaum noch vertikale Bewegung): gesetztes Wasser aufnehmen.
+    if (this.mlgWasser && !this.mlgBusy && e.velocity.y > -0.2) { this._mlgWasserAufnehmen(); return; }
+    if (e.onGround) { this.fallStartY = null; return; }
+    if (this.fallStartY == null || e.position.y > this.fallStartY) this.fallStartY = e.position.y;
+    if (this.mlgWasser || this.mlgBusy) return;
+    const gefallen = this.fallStartY - e.position.y;
+    const fuss = e.position.floored();
+    let bodenNah = false;
+    for (let d = 1; d <= 3; d++) {
+      const b = bot.blockAt(fuss.offset(0, -d, 0));
+      if (b && b.boundingBox === 'block') { bodenNah = true; break; }
+    }
+    if (mlgNoetig({ gefallen, geschwindigkeitY: e.velocity.y, bodenNah, hatWasser: this._hat(['water_bucket']) })) {
+      this._mlgWasserSetzen();
+    }
+  }
+
+  async _mlgWasserSetzen() {
+    const bot = this.bot;
+    this.mlgBusy = true;
+    try {
+      const eimer = bot.inventory.items().find((i) => i.name === 'water_bucket');
+      if (!eimer) return;
+      await bot.equip(eimer, 'hand');
+      await bot.look(bot.entity.yaw, Math.PI / 2, true); // gerade nach unten schauen
+      await bot.activateItem();
+      this.mlgWasser = { zeit: this.ticks };
+    } catch { /* im Fall lieber still scheitern als crashen */ } finally { this.mlgBusy = false; }
+  }
+
+  async _mlgWasserAufnehmen() {
+    const bot = this.bot;
+    this.mlgBusy = true;
+    try {
+      this.mlgWasser = null;
+      const leer = bot.inventory.items().find((i) => i.name === 'bucket');
+      if (!leer) return;
+      const wasser = bot.findBlock({ matching: (b) => b && b.name === 'water', maxDistance: 3 });
+      if (!wasser) return;
+      await bot.equip(leer, 'hand');
+      await bot.lookAt(wasser.position.offset(0.5, 0.5, 0.5), true);
+      await bot.activateItem();
+    } catch { /* egal */ } finally { this.mlgBusy = false; }
   }
 
   // Vom Ziel wegflüchten (zu wenig Leben, oder Abstand zum Creeper halten).
@@ -2514,7 +2574,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

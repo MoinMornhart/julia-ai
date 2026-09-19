@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.6 – 2026-09-19
+- Julia faengt in Minecraft tiefe Stuerze mit dem Wassereimer ab (Water-MLG) und zeigt das Inventar jetzt als eigenen, uebersichtlichen Bereich mit Gegenstaenden als Chips
+
 ## 5.9.5 – 2026-09-19
 - Julia bleibt beim Herstellen in Minecraft nicht mehr haengen - nach einem Server-Timeout prueft sie am Inventar, ob der Gegenstand doch hergestellt wurde, und macht weiter statt es mehrfach je 20 Sekunden zu wiederholen
 
