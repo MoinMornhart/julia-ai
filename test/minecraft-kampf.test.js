@@ -2,7 +2,7 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { bedrohWert, gefahrReichweite, mlgNoetig } = require('../src/main/minecraft');
+const { bedrohWert, gefahrReichweite, mlgNoetig, schwimmHoch } = require('../src/main/minecraft');
 
 // Einfacher „Entity"-Ersatz mit Position und Abstand.
 const pos = (x) => ({ x, y: 0, z: 0, distanceTo: (q) => Math.abs(x - q.x) });
@@ -33,4 +33,11 @@ test('Water-MLG nur bei schädlichem, schnellem Sturz mit Wassereimer und Boden 
   assert.equal(mlgNoetig({ gefallen: 2, geschwindigkeitY: -0.8, bodenNah: true, hatWasser: true }), false); // zu niedrig
   assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.1, bodenNah: true, hatWasser: true }), false); // fällt kaum
   assert.equal(mlgNoetig({ gefallen: 6, geschwindigkeitY: -0.8, bodenNah: false, hatWasser: true }), false); // Boden zu weit
+});
+
+test('Schwimmen: hochschwimmen nur mit Kopf unter Wasser und wenig Luft oder beim Sinken', () => {
+  assert.equal(schwimmHoch({ kopfImWasser: true, luft: 12, sinkt: false }), true); // Luft geht aus
+  assert.equal(schwimmHoch({ kopfImWasser: true, luft: 20, sinkt: true }), true); // sinkt
+  assert.equal(schwimmHoch({ kopfImWasser: true, luft: 20, sinkt: false }), false); // volle Luft, darf kurz tauchen
+  assert.equal(schwimmHoch({ kopfImWasser: false, luft: 0, sinkt: true }), false); // gar nicht im Wasser
 });

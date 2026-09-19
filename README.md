@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Minecraft: schwimmen & weniger Hängenbleiben** – Julia taucht jetzt von selbst auf, wenn ihr im Wasser die Luft ausgeht, und ertrinkt nicht mehr. Und wenn sie beim Laufen an einem Hindernis (z. B. Baumstamm) klemmt, berechnet sie den Weg neu und läuft außenrum, statt endlos dagegen zu springen.
 - **Minecraft: sparsamer mit Werkbank & Ofen** – Julia baut sich nicht mehr jedes Mal eine neue Werkbank oder einen neuen Ofen. Hat sie schon eine dabei oder steht eine in der Nähe, nutzt sie die – das spart Holz und Stein.
 - **Minecraft: Water-MLG & schöneres Inventar** – Julia fängt jetzt tiefe Stürze mit dem **Wassereimer** ab (setzt kurz vor dem Aufprall Wasser und nimmt es danach wieder auf) – braucht dafür einen Wassereimer im Inventar. Außerdem ist das **Inventar** ein eigener, übersichtlicher Bereich im Minecraft-Tab (Gegenstände als Chips mit Anzahl), statt in einer Zeile gequetscht.
 - **Minecraft: Herstellen bleibt nicht mehr hängen** – auf laggy/zickigen Servern schlug das Craften oft mit einem 20-Sekunden-Timeout fehl, obwohl der Gegenstand eigentlich hergestellt war – Julia versuchte es dann mehrfach umsonst. Jetzt prüft sie nach jedem Craft am Inventar, ob es geklappt hat, und macht weiter statt festzuhängen.

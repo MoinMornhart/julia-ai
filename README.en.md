@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: swimming & less getting stuck** – Julia now surfaces on her own when she runs low on air in water, so she no longer drowns. And when she gets stuck on an obstacle while walking (e.g. a tree trunk), she recalculates the path and goes around instead of jumping against it forever.
 - **Minecraft: thriftier with crafting table & furnace** – Julia no longer builds a new crafting table or furnace every time. If she already has one or one is nearby, she uses it – saving wood and stone.
 - **Minecraft: water MLG & nicer inventory** – Julia now saves herself from deep falls with the **water bucket** (places water just before impact and picks it back up) – needs a water bucket in the inventory. Also, the **inventory** is its own clear area in the Minecraft tab (items as chips with counts) instead of being squeezed into one line.
 - **Minecraft: crafting no longer gets stuck** – on laggy/finicky servers, crafting often failed with a 20-second timeout even though the item was actually made – Julia then retried in vain. Now she checks the inventory after each craft to see whether it worked, and moves on instead of getting stuck.

@@ -487,6 +487,13 @@ function mlgNoetig({ gefallen, geschwindigkeitY, bodenNah, hatWasser }) {
   return !!hatWasser && !!bodenNah && geschwindigkeitY < -0.5 && gefallen >= 4;
 }
 
+// Reine Entscheidung: soll Julia hochschwimmen? Nur wenn der Kopf im Wasser ist
+// UND ihr die Luft ausgeht (<18) oder sie sinkt – so taucht sie zum Atmen auf und
+// bleibt an der Oberfläche, kann aber kurz kontrolliert untertauchen (testbar).
+function schwimmHoch({ kopfImWasser, luft, sinkt }) {
+  return !!kopfImWasser && (luft < 18 || !!sinkt);
+}
+
 // --- Eimer (Wasser/Lava aufnehmen & setzen, Milch trinken) ---
 // Reine Zuordnung Aktion → welcher Eimer in die Hand muss, welche Quelle gesucht
 // wird und was hinterher im Eimer ist. Getestet; die eigentliche Ausführung
@@ -1340,6 +1347,7 @@ class Minecraft extends EventEmitter {
     const bot = this.bot;
     if (!bot || !bot.entity || this.isst) return;
     this._mlgWasser(); // Sturz mit dem Wassereimer abfangen (MLG) – höchste Priorität
+    if (this._schwimmen()) return; // Ertrinken droht → erst auftauchen, alles andere wartet
     this._gefahrWache();
     this._antiHaenger();
     const a = this.auftrag;
@@ -1491,6 +1499,29 @@ class Minecraft extends EventEmitter {
       await bot.activateItem();
       this.mlgWasser = { zeit: this.ticks };
     } catch { /* im Fall lieber still scheitern als crashen */ } finally { this.mlgBusy = false; }
+  }
+
+  // Schwimmen/Auftauchen: Ist der Kopf unter Wasser und geht die Luft aus (oder
+  // sinkt sie), hält sie „springen" = schwimmt hoch. So ertrinkt sie nicht und
+  // quert Wasser an der Oberfläche. Gibt true zurück, wenn Ertrinken droht
+  // (Luft ≤ 6) – dann soll der Tick sonst nichts weiter tun (erst auftauchen).
+  _schwimmen() {
+    const bot = this.bot;
+    const e = bot.entity;
+    if (!e) return false;
+    const kopf = bot.blockAt(e.position.offset(0, 1, 0));
+    const kopfImWasser = !!kopf && kopf.name === 'water';
+    if (!kopfImWasser) {
+      if (this._schwimmJump) { bot.setControlState('jump', false); this._schwimmJump = false; }
+      return false;
+    }
+    const luft = typeof bot.oxygenLevel === 'number' ? bot.oxygenLevel : 20;
+    const sinkt = !e.onGround && e.velocity.y < -0.02;
+    if (schwimmHoch({ kopfImWasser, luft, sinkt })) {
+      bot.setControlState('jump', true);
+      this._schwimmJump = true;
+    }
+    return luft <= 6; // Notfall: gleich ertrunken → auftauchen hat Vorrang
   }
 
   async _mlgWasserAufnehmen() {
@@ -1774,18 +1805,32 @@ class Minecraft extends EventEmitter {
     // aufhören vorwärtszudrücken, sonst springt sie endlos gegen das Hindernis
     // (Livelock, Issue #8). Bei aktiver Wegfindung nicht eingreifen – der Pathfinder
     // steuert selbst und weicht aus.
-    if (s.aufgeben && !wegsuche && bot.setControlState) {
-      try {
-        bot.setControlState('forward', false);
-        bot.setControlState('sprint', false);
-      } catch { /* getrennt */ }
+    if (s.aufgeben && bot.setControlState) {
+      if (!wegsuche) {
+        // Selbst-Laufen: Vorwärts-Drücken stoppen, sonst springt sie endlos gegen
+        // das Hindernis (Livelock, Issue #8); der nächste Schritt sucht neu.
+        try {
+          bot.setControlState('forward', false);
+          bot.setControlState('sprint', false);
+        } catch { /* getrennt */ }
+      } else {
+        // Wegfindung klemmt (z. B. am Baumstamm) trotz Sprüngen. Den Pathfinder
+        // den Weg NEU berechnen lassen (dynamisch, ohne die laufende Aufgabe
+        // abzubrechen), damit er außenrum plant statt ewig anzustoßen.
+        try {
+          const ziel = bot.pathfinder && bot.pathfinder.goal;
+          if (ziel && bot.pathfinder.setGoal) bot.pathfinder.setGoal(ziel, true);
+        } catch { /* egal */ }
+      }
       // Steck-Stelle lokal festhalten (überlebt Abstürze), damit sich solche
       // Punkte im Logbuch gezielt nachvollziehen lassen (Issue #8).
       if (this.logbuch) {
         try {
           const p = bot.entity.position;
-          this.logbuch.eintrag('haenger', 'Beim Vorlaufen nicht vorangekommen – Vorwärts gestoppt, plane neu.', {
-            x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z), imWasser,
+          this.logbuch.eintrag('haenger', wegsuche
+            ? 'Wegfindung klemmte – Weg neu berechnet.'
+            : 'Beim Vorlaufen nicht vorangekommen – Vorwärts gestoppt, plane neu.', {
+            x: Math.round(p.x), y: Math.round(p.y), z: Math.round(p.z), imWasser, wegsuche: !!wegsuche,
           });
         } catch { /* Logbuch darf nie das Spiel stören */ }
       }
@@ -2588,7 +2633,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig, EINMAL_BLOECKE,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig, EINMAL_BLOECKE, schwimmHoch,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

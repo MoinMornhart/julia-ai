@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.8 – 2026-09-19
+- Julia kann in Minecraft schwimmen (taucht bei wenig Luft von selbst auf, ertrinkt nicht mehr) und bleibt beim Laufen seltener haengen - klemmt sie an einem Hindernis, berechnet sie den Weg neu und laeuft aussenrum
+
 ## 5.9.7 – 2026-09-19
 - Julia geht in Minecraft sparsamer mit Werkbank und Ofen um - hat sie schon eine dabei oder steht eine in der Naehe, nutzt sie die statt jedes Mal eine neue zu bauen
 
