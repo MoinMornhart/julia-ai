@@ -2,7 +2,25 @@
 
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { eimerPlan, Minecraft } = require('../src/main/minecraft');
+const { eimerPlan, Minecraft, EINMAL_BLOECKE } = require('../src/main/minecraft');
+
+test('sparsam: EINMAL_BLOECKE deckt Werkbank/Ofen ab (nicht Fackeln)', () => {
+  assert.ok(EINMAL_BLOECKE.crafting_table);
+  assert.ok(EINMAL_BLOECKE.furnace);
+  assert.equal(EINMAL_BLOECKE.torch, undefined);
+});
+
+test('sparsam: vorhandene Werkbank wird wiederverwendet statt neu gebaut', () => {
+  const m = new Minecraft({ laden: () => ({}) });
+  m.bot = {
+    registry: { itemsByName: { crafting_table: { id: 1 } }, blocksByName: { crafting_table: { id: 10 } } },
+    inventory: { items: () => [{ name: 'crafting_table', count: 1 }] },
+    findBlock: () => null,
+  };
+  const text = m._herstellen('crafting_table', 1);
+  assert.match(text, /nutze die/);
+  assert.equal(m.auftrag, null); // keine neue Herstell-Aufgabe gestartet (bleibt beim Startwert)
+});
 
 test('eimerPlan: Aktionen und Aliasse werden richtig zugeordnet', () => {
   assert.deepEqual(eimerPlan('wasser_aufnehmen'), { aktion: 'wasser_aufnehmen', hand: 'bucket', quelle: 'water', ergebnis: 'water_bucket' });

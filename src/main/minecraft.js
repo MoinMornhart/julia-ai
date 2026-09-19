@@ -475,6 +475,11 @@ function gefahrReichweite(name) {
   return 7;
 }
 
+// Blöcke, von denen Julia nur EINEN braucht und wiederverwenden soll – statt bei
+// jeder Herstellung eine neue zu bauen (Nutzerwunsch: sparsamer sein). Wert = wie
+// es in der Rückmeldung heißt.
+const EINMAL_BLOECKE = { crafting_table: 'eine Werkbank', furnace: 'einen Ofen' };
+
 // Reine Entscheidung fürs Water-MLG (Sturz mit dem Wassereimer abfangen):
 // fällt sie schnell genug, schon schädlich tief, ist der Boden nah – und hat sie
 // überhaupt einen Wassereimer? Ab ~4 Blöcken Fallhöhe gäbe es sonst Schaden.
@@ -2031,6 +2036,15 @@ class Minecraft extends EventEmitter {
     const namen = itemNamen(item, Object.keys(bot.registry.itemsByName));
     if (!namen.length) throw new Error(`Einen Gegenstand "${item}" kenne ich nicht. Englische Namen wie torch gehen immer.`);
     const wunsch = Math.max(1, Math.min(64, Math.round(Number(anzahl) || 1)));
+    // Sparsam: Werkbank/Ofen nicht doppelt bauen. Liegt schon eine im Inventar
+    // oder steht eine in der Nähe, die vorhandene nutzen statt Holz/Stein zu
+    // verschwenden (der Nutzer merkte an, dass Julia sich jedes Mal eine neue baut).
+    const wieder = namen.find((n) => EINMAL_BLOECKE[n]);
+    if (wieder) {
+      if (this._anzahlImInventar(wieder) > 0) return `Ich habe schon ${EINMAL_BLOECKE[wieder]} dabei – ich nutze die statt eine neue zu bauen.`;
+      const blk = bot.registry.blocksByName[wieder];
+      if (blk && bot.findBlock({ matching: blk.id, maxDistance: 6 })) return `Hier steht schon ${EINMAL_BLOECKE[wieder]} in der Nähe – die nutze ich.`;
+    }
     const { GoalNear } = this.pf.goals;
     const a = { art: 'herstellen', item };
     this.auftrag = a;
@@ -2574,7 +2588,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig, EINMAL_BLOECKE,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

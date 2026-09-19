@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.7 – 2026-09-19
+- Julia geht in Minecraft sparsamer mit Werkbank und Ofen um - hat sie schon eine dabei oder steht eine in der Naehe, nutzt sie die statt jedes Mal eine neue zu bauen
+
 ## 5.9.6 – 2026-09-19
 - Julia faengt in Minecraft tiefe Stuerze mit dem Wassereimer ab (Water-MLG) und zeigt das Inventar jetzt als eigenen, uebersichtlichen Bereich mit Gegenstaenden als Chips
 
