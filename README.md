@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Minecraft: bessere Mob-Abwehr** – Julia reagiert jetzt **früher** auf Gegner (Schützen wie Skelette/Hexen aus größerer Entfernung, Creeper früh) und geht in einer Gruppe zuerst den **gefährlichsten** Mob an, statt sich vom nächstbesten überrennen zu lassen. Damit stirbt sie nachts seltener.
 - **Schnitt-Tab öffnet jetzt** – der Tab (jetzt „Schnitt" statt „Video") war beim Anklicken leer, weil er intern nicht registriert war. Behoben – er öffnet sich normal.
 - **Video-Schneiden funktioniert jetzt wirklich** – der Video-Tab war da, aber zum Schneiden fehlte **ffmpeg** (das Programm, das die Arbeit macht). Jetzt lädt Julia es auf Knopfdruck **einmalig herunter** (~79 MB, mit Fortschritt und Prüfsumme) und legt es lokal ab – danach geht Schneiden und Thumbnails komplett offline, ohne dass du selbst etwas installierst. (Ein selbst installiertes ffmpeg kannst du weiterhin in den Einstellungen angeben.)
 - **Mikro-Hotkey & „Hey Julia" gehen wieder zuverlässig** – manchmal reagierte weder der Mikro-Hotkey noch das Weckwort „Hey Julia", scheinbar zufällig. Ursache war ein hängengebliebener interner Zähler nach einem abgebrochenen Vorlesen, durch den Julia sich dauerhaft für „spricht gerade" hielt. Behoben – beim Stummschalten wird der Zustand jetzt sauber zurückgesetzt.

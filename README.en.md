@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: better mob defense** – Julia now reacts **earlier** to enemies (ranged ones like skeletons/witches from farther away, creepers early) and, in a group, goes for the **most dangerous** mob first instead of being overrun by the nearest one. So she dies less at night.
 - **Cut tab opens now** – the tab (now "Cut" instead of "Video") was empty when clicked because it wasn't registered internally. Fixed – it opens normally.
 - **Video cutting actually works now** – the Video tab was there, but cutting was missing **ffmpeg** (the program that does the work). Julia now **downloads it once** at the press of a button (~79 MB, with progress and checksum) and stores it locally – after that, cutting and thumbnails work entirely offline, without you installing anything. (You can still point to a self-installed ffmpeg in the settings.)
 - **Mic hotkey & "Hey Julia" work reliably again** – sometimes neither the mic hotkey nor the "Hey Julia" wake word responded, seemingly at random. The cause was a stuck internal counter after an interrupted read-aloud that made Julia think she was permanently "speaking". Fixed – muting now resets that state cleanly.

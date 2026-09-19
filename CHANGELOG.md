@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.2 – 2026-09-19
+- Minecraft kaempft besser gegen Mobs - reagiert frueher auf Gegner (Fernkaempfer wie Skelette/Hexen aus groesserer Entfernung, Creeper frueh) und geht in einer Gruppe zuerst den gefaehrlichsten Mob an statt nur den naechsten
+
 ## 5.9.1 – 2026-09-19
 - Schnitt-Tab (frueher Video) oeffnet sich jetzt - er war beim Anklicken leer, weil der Bereich intern nicht registriert war; Tab in Schnitt umbenannt
 

@@ -453,14 +453,26 @@ function istFahrzeug(e) {
   return n === 'boat' || n === 'chest_boat' || n.endsWith('_boat') || n.endsWith('_chest_boat') || n.includes('minecart') || REITTIERE.has(n);
 }
 
+// Fernkämpfer: treffen aus der Distanz, also schon früher darauf reagieren.
+const FERNKAEMPFER = new Set(['skeleton', 'stray', 'bogged', 'witch', 'pillager', 'ghast', 'blaze']);
+
 // Welchen Feind zuerst? Ein Creeper ist die größte Gefahr, danach zählt die Nähe.
 // Fernkämpfer (Skelett, Hexe) etwas vor gewöhnlichen Nahkämpfern.
 function bedrohWert(e, p) {
   const naehe = 30 - Math.min(30, e.position.distanceTo(p));
   let art = 0;
   if (e.name === 'creeper') art = 100;
-  else if (e.name === 'skeleton' || e.name === 'stray' || e.name === 'bogged' || e.name === 'witch' || e.name === 'pillager') art = 20;
+  else if (FERNKAEMPFER.has(e.name)) art = 20;
   return art + naehe;
+}
+
+// Ab welcher Entfernung wehrt sich Julia selbst? Früher reagieren gegen Fern-
+// kämpfer (Pfeile/Wurf) und Creeper, damit sie nachts nicht erst reagiert, wenn
+// der Mob schon direkt danebensteht (Nutzerwunsch: besser gegen Mobs kämpfen).
+function gefahrReichweite(name) {
+  if (name === 'creeper') return 9;
+  if (FERNKAEMPFER.has(name)) return 12;
+  return 7;
 }
 
 // Chat geht auf den eigenen Server – trotzdem keine Befehle (/op, /give …)
@@ -1302,11 +1314,18 @@ class Minecraft extends EventEmitter {
     }
   }
 
-  // Ein Monster ist so dicht dran, dass Julia sich wehren sollte (Creeper früher).
+  // Ein Monster ist nah genug, dass Julia sich wehren sollte – Fernkämpfer und
+  // Creeper früher. Von allen Bedrohungen in Reichweite wird die GEFÄHRLICHSTE
+  // gewählt (nicht bloß die nächste), damit sie nachts in einer Gruppe zuerst den
+  // schlimmsten Mob (Creeper/Schütze) angeht, statt sich vom nächstbesten
+  // überrennen zu lassen.
   _naheGefahr() {
     const bot = this.bot;
     const p = bot.entity.position;
-    return bot.nearestEntity((e) => istFeind(e) && e.position && e.position.distanceTo(p) < (e.name === 'creeper' ? 8 : 5)) || null;
+    const feinde = Object.values(bot.entities).filter((e) => istFeind(e) && e.position
+      && e.position.distanceTo(p) < gefahrReichweite(e.name));
+    if (!feinde.length) return null;
+    return feinde.sort((x, y) => bedrohWert(y, p) - bedrohWert(x, p))[0];
   }
 
   // Selbstverteidigung: Waffe/Rüstung an und den Feind bekämpfen (Kampf regelt
@@ -2394,7 +2413,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
