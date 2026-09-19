@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.1 – 2026-09-19
+- Schnitt-Tab (frueher Video) oeffnet sich jetzt - er war beim Anklicken leer, weil der Bereich intern nicht registriert war; Tab in Schnitt umbenannt
+
 ## 5.9.0 – 2026-09-19
 - Video-Schneiden funktioniert jetzt wirklich - der Video-Tab laedt ffmpeg bei Bedarf einmalig herunter (~79 MB, mit Fortschritt und Pruefsumme) statt es in den Installer zu packen; danach gehen Schneiden und Thumbnails offline
 
