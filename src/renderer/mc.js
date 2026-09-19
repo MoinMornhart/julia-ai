@@ -25,6 +25,7 @@
     const aufgabe = a ? tx(`mc.l_${a.art}`, { spieler: a.spieler || '', n: a.geschafft || 0, ort: a.ort || '' }) : tx('mc.l_frei');
     const spieler = (s.spieler || []).map((p) => (p.abstand != null ? `${p.name} (${p.abstand} m)` : p.name)).join(', ');
     const feinde = Object.entries(s.feinde_nah || {}).map(([n, z]) => `${z}× ${n}`).join(', ');
+    const inventar = Object.entries(s.inventar || {}).map(([n, z]) => `${z}× ${n}`).join(', ');
     box.innerHTML = [
       ['mc.w_figur', `${s.name} · ${s.version}`],
       ['mc.w_leben', `❤ ${s.leben}/20 · 🍗 ${s.hunger}/20`],
@@ -32,6 +33,7 @@
       ['mc.w_aufgabe', aufgabe],
       ['mc.w_spieler', spieler || '–'],
       ['mc.w_feinde', feinde || '–'],
+      ['mc.w_inventar', inventar || tx('mc.inv_leer')],
       ['mc.w_voice', voiceText(s.stimme)],
     ].map(([k, v]) => `<div><span>${esc(tx(k))}</span><b>${esc(v)}</b></div>`).join('');
   }

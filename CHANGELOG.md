@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.3 – 2026-09-19
+- Minecraft-Tab zeigt jetzt Julias Inventar (was sie dabeihat) neben Leben, Hunger, Ort und Aufgabe
+
 ## 5.9.2 – 2026-09-19
 - Minecraft kaempft besser gegen Mobs - reagiert frueher auf Gegner (Fernkaempfer wie Skelette/Hexen aus groesserer Entfernung, Creeper frueh) und geht in einer Gruppe zuerst den gefaehrlichsten Mob an statt nur den naechsten
 
