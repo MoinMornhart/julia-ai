@@ -29,6 +29,14 @@ test('Verlassen: kein automatisches Wiederverbinden', () => {
   assert.equal(m.trennung.naechsterVersuch, null); // nichts geplant
 });
 
+test('_anzahlImInventar zählt gleiche Gegenstände zusammen (für robustes Craften)', () => {
+  const m = new Minecraft({ laden: () => ({}) });
+  m.bot = { inventory: { items: () => [{ name: 'coal', count: 8 }, { name: 'coal', count: 5 }, { name: 'stone', count: 3 }] } };
+  assert.equal(m._anzahlImInventar('coal'), 13);
+  assert.equal(m._anzahlImInventar('stone'), 3);
+  assert.equal(m._anzahlImInventar('diamond'), 0);
+});
+
 test('Crash/Kick: Wiederverbinden wird geplant', () => {
   const m = new Minecraft({ laden: () => ({}), wiederPausen: [50] });
   m.trennung = { versuch: 0, naechsterVersuch: null };

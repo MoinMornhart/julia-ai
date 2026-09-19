@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.5 – 2026-09-19
+- Julia bleibt beim Herstellen in Minecraft nicht mehr haengen - nach einem Server-Timeout prueft sie am Inventar, ob der Gegenstand doch hergestellt wurde, und macht weiter statt es mehrfach je 20 Sekunden zu wiederholen
+
 ## 5.9.4 – 2026-09-19
 - Julia kann in Minecraft mit dem Eimer umgehen (Wasser/Lava aufnehmen und setzen, Milch trinken) und bleibt nach dem Verlassen-Knopf sicher weg - von selbst kommt sie nur nach echtem Absturz oder Rauswurf zurueck
 

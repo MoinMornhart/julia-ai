@@ -66,6 +66,7 @@
 
 ## Das ist neu
 
+- **Minecraft: Herstellen bleibt nicht mehr hängen** – auf laggy/zickigen Servern schlug das Craften oft mit einem 20-Sekunden-Timeout fehl, obwohl der Gegenstand eigentlich hergestellt war – Julia versuchte es dann mehrfach umsonst. Jetzt prüft sie nach jedem Craft am Inventar, ob es geklappt hat, und macht weiter statt festzuhängen.
 - **Minecraft: Eimer & „Verlassen"** – Julia kann jetzt mit dem **Eimer** umgehen: Wasser/Lava aufnehmen, Wasser/Lava setzen (z. B. zum sicheren Runterkommen oder Löschen) und Milch trinken (hebt Effekte auf). Außerdem: drückst du **„Verlassen"**, bleibt sie jetzt sicher weg – von selbst kommt sie nur nach einem echten Absturz/Rauswurf zurück.
 - **Minecraft: Inventar sichtbar** – im Minecraft-Tab siehst du jetzt, was Julia dabeihat (z. B. „39× cobblestone, 8× coal, 8× torch"), zusammen mit Leben, Hunger, Ort und Aufgabe.
 - **Minecraft: bessere Mob-Abwehr** – Julia reagiert jetzt **früher** auf Gegner (Schützen wie Skelette/Hexen aus größerer Entfernung, Creeper früh) und geht in einer Gruppe zuerst den **gefährlichsten** Mob an, statt sich vom nächstbesten überrennen zu lassen. Damit stirbt sie nachts seltener.

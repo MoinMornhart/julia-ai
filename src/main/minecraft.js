@@ -1438,6 +1438,11 @@ class Minecraft extends EventEmitter {
     return this.bot.inventory.items().some((i) => liste.includes(i.name));
   }
 
+  // Wie viele Stück eines Gegenstands (nach internem Namen) im Inventar liegen.
+  _anzahlImInventar(name) {
+    return this.bot.inventory.items().reduce((s, i) => (i.name === name ? s + i.count : s), 0);
+  }
+
   // Vom Ziel wegflüchten (zu wenig Leben, oder Abstand zum Creeper halten).
   _weg(ziel) {
     const bot = this.bot;
@@ -1991,12 +1996,25 @@ class Minecraft extends EventEmitter {
           if (this.auftrag !== a) return;
         }
         let geschafft = 0;
+        let letzterFehler = null;
         while (geschafft < wunsch && this.auftrag === a) {
           const r = bot.recipesFor(wahl.r.result.id, null, 1, wahl.tisch)[0];
           if (!r) break;
-          await bot.craft(r, 1, wahl.tisch || undefined);
-          geschafft += r.result.count;
+          const vorher = this._anzahlImInventar(wahl.n);
+          try {
+            await bot.craft(r, 1, wahl.tisch || undefined);
+          } catch (e) {
+            // „updateSlot … did not fire within timeout" heißt oft NUR, dass die
+            // Server-Bestätigung ausblieb (Lag/kurzer Disconnect) – das Item ist
+            // meist trotzdem hergestellt. Deshalb am Inventar prüfen statt blind
+            // zu scheitern (sonst versucht es die KI 4× je 20 s erneut).
+            await new Promise((res) => setTimeout(res, 400));
+            if (this._anzahlImInventar(wahl.n) <= vorher) { letzterFehler = e; break; }
+          }
+          const dazu = this._anzahlImInventar(wahl.n) - vorher;
+          geschafft += dazu > 0 ? dazu : (r.result.count || 1);
         }
+        if (!geschafft && letzterFehler) { this._fertig(a, `Herstellen hat nicht geklappt: ${letzterFehler.message}`); return; }
         this._fertig(a, geschafft ? `${geschafft}× ${wahl.n} hergestellt.` : `Für ${item} fehlen mir die Zutaten.`);
       } catch (e) {
         this._fertig(a, `Herstellen hat nicht geklappt: ${e.message}`);
