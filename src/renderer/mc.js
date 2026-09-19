@@ -9,6 +9,7 @@
   let stand = null;
   let timer = null;
   let gefuellt = false; // Felder nur einmal aus der Konfiguration füllen
+  let chatAn = true; // In-Game-Chat im Tab anzeigen (per Schalter abschaltbar)
 
   function fehler(text) {
     $('mcFehler').textContent = text || '';
@@ -37,6 +38,35 @@
       ['mc.w_voice', voiceText(s.stimme)],
     ].map(([k, v]) => `<div><span>${esc(tx(k))}</span><b>${esc(v)}</b></div>`).join('');
     inventarZeigen(s);
+    erlaubteZeigen(s);
+  }
+
+  // Einzelne erlaubte Spieler (auf die Julia zusätzlich hört) als Chips mit ✕.
+  function erlaubteZeigen(s) {
+    const box = $('mcErlaubteListe');
+    if (!box) return;
+    const liste = (s && s.erlaubte) || [];
+    if (!liste.length) { box.innerHTML = `<span class="mc-inv-leer">${esc(tx('mc.erlaubte_leer'))}</span>`; return; }
+    box.innerHTML = '';
+    for (const name of liste) {
+      const chip = document.createElement('span');
+      chip.className = 'mc-erlaubt-chip';
+      chip.append(Object.assign(document.createElement('span'), { textContent: name }));
+      const weg = document.createElement('button');
+      weg.className = 'mc-erlaubt-weg';
+      weg.type = 'button';
+      weg.textContent = '✕';
+      weg.title = tx('mc.erlaubte_weg');
+      weg.onclick = () => erlaubteSetzen(liste.filter((n) => n.toLowerCase() !== name.toLowerCase()));
+      chip.append(weg);
+      box.append(chip);
+    }
+  }
+
+  async function erlaubteSetzen(neu) {
+    const r = await julia.setzen('minecraft.erlaubte', neu);
+    if (r && r.fehler) { fehler(r.fehler); return; }
+    laden();
   }
 
   // Einen Gegenstandsnamen lesbar machen: „oak_planks" → „Oak Planks".
@@ -198,6 +228,7 @@
     document.querySelectorAll('#mcAufgaben button, #mcSenden button').forEach((b) => { b.disabled = !an; });
     werteZeigen(s);
     const z = $('mcZeilen');
+    z.hidden = !chatAn; // Nachrichtenliste per Schalter aus
     const zeilen = s.chat || [];
     z.innerHTML = zeilen.length
       ? zeilen.map((l) => `<p>${esc(l)}</p>`).join('')
@@ -302,6 +333,11 @@
     if (c.minecraft) $('mcVoice').checked = c.minecraft.stimme !== false;
     if (c.minecraft) $('mcJeder').checked = c.minecraft.jeder === true;
     if (c.minecraft && $('mcBenachrichtigen')) $('mcBenachrichtigen').value = c.minecraft.benachrichtigen || 'wichtige';
+    if (c.minecraft) {
+      chatAn = c.minecraft.chat_zeigen !== false;
+      if ($('mcChatZeigen')) $('mcChatZeigen').checked = chatAn;
+      if ($('mcZeilen')) $('mcZeilen').hidden = !chatAn;
+    }
   }
   async function stimmeZeigen() {
     try { schalterSetzen(await julia.config()); } catch { /* Fenster wird geschlossen */ }
@@ -318,6 +354,22 @@
   // Auf alle Spieler reagieren – gilt sofort, auch im laufenden Spiel.
   $('mcJeder').onchange = async () => {
     const r = await julia.setzen('minecraft.jeder', $('mcJeder').checked);
+    if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
+  };
+  // Einzelnen erlaubten Spieler hinzufügen (auf den Julia zusätzlich hört).
+  if ($('mcErlaubtForm')) $('mcErlaubtForm').onsubmit = (e) => {
+    e.preventDefault();
+    const name = $('mcErlaubtName').value.trim();
+    if (!name) return;
+    const liste = (stand && stand.erlaubte) || [];
+    if (!liste.some((n) => n.toLowerCase() === name.toLowerCase())) erlaubteSetzen([...liste, name]);
+    $('mcErlaubtName').value = '';
+  };
+  // In-Game-Chat im Tab ein-/ausblenden.
+  if ($('mcChatZeigen')) $('mcChatZeigen').onchange = async () => {
+    chatAn = $('mcChatZeigen').checked;
+    if ($('mcZeilen')) $('mcZeilen').hidden = !chatAn;
+    const r = await julia.setzen('minecraft.chat_zeigen', chatAn);
     if (r && r.fehler) { fehler(r.fehler); stimmeZeigen(); }
   };
   // Wie oft Minecraft benachrichtigt (nicht ständig beim Bauen).

@@ -133,6 +133,7 @@ const STANDARD = {
     jeder: false, // auf alle Spieler im Chat reagieren statt nur auf den eingetragenen
     erlaubte: [], // zusätzlich zum Besitzer erlaubte Spielernamen (im Spiel per „hör auch auf X“ pflegbar)
     benachrichtigen: 'wichtige', // Windows-Benachrichtigungen aus Minecraft: 'alle' | 'wichtige' | 'keine' (Standard: nur Wichtiges, damit Bauen/Essen nicht ständig pusht)
+    chat_zeigen: true, // In-Game-Chat im Minecraft-Tab anzeigen (aus = die Nachrichtenliste ausblenden)
   },
   sync: {
     an: false, // Geräte-Abgleich von PC zu PC – standardmäßig aus
@@ -256,6 +257,7 @@ function pruefen(schluessel, wert) {
     case 'beta.agenten':
     case 'minecraft.stimme':
     case 'minecraft.jeder':
+    case 'minecraft.chat_zeigen':
     case 'overlay.automatisch':
     case 'overlay.kompakt':
     case 'overlay.immer':

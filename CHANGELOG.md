@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.9 – 2026-09-19
+- Im Minecraft-Tab lassen sich jetzt einzelne Spieler eintragen, auf die Julia zusaetzlich hoert (Hinzufuegen und Entfernen, gilt sofort), und die Chat-Nachrichten im Tab per Schalter ausblenden
+
 ## 5.9.8 – 2026-09-19
 - Julia kann in Minecraft schwimmen (taucht bei wenig Luft von selbst auf, ertrinkt nicht mehr) und bleibt beim Laufen seltener haengen - klemmt sie an einem Hindernis, berechnet sie den Weg neu und laeuft aussenrum
 

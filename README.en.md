@@ -66,6 +66,7 @@
 
 ## What's new
 
+- **Minecraft: individual players & chat toggle** – in the Minecraft tab you can now add individual **players** that Julia also listens to (with "Add" and ✕ to remove) – effective immediately in-game. And the **chat messages** in the tab can be hidden with a toggle.
 - **Minecraft: swimming & less getting stuck** – Julia now surfaces on her own when she runs low on air in water, so she no longer drowns. And when she gets stuck on an obstacle while walking (e.g. a tree trunk), she recalculates the path and goes around instead of jumping against it forever.
 - **Minecraft: thriftier with crafting table & furnace** – Julia no longer builds a new crafting table or furnace every time. If she already has one or one is nearby, she uses it – saving wood and stone.
 - **Minecraft: water MLG & nicer inventory** – Julia now saves herself from deep falls with the **water bucket** (places water just before impact and picks it back up) – needs a water bucket in the inventory. Also, the **inventory** is its own clear area in the Minecraft tab (items as chips with counts) instead of being squeezed into one line.

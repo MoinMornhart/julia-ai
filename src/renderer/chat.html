@@ -371,6 +371,14 @@
             <p class="mc-klein" data-nav="mc.voice_hinweis"></p>
             <label class="mc-schalter"><input type="checkbox" id="mcJeder"><span data-nav="mc.jeder"></span></label>
             <p class="mc-klein" data-nav="mc.jeder_hinweis"></p>
+            <div class="mc-erlaubte">
+              <p class="mc-klein" data-nav="mc.erlaubte_titel"></p>
+              <form class="mc-zeile" id="mcErlaubtForm">
+                <input id="mcErlaubtName" maxlength="16" spellcheck="false" autocomplete="off">
+                <button class="knopf klein" type="submit" data-nav="mc.erlaubte_hinzu"></button>
+              </form>
+              <div class="mc-erlaubte-liste" id="mcErlaubteListe"></div>
+            </div>
             <label class="mc-feld"><span data-nav="mc.benachrichtigen"></span>
               <select id="mcBenachrichtigen">
                 <option value="wichtige" data-nav="mc.ben_wichtige"></option>
@@ -379,6 +387,7 @@
               </select>
             </label>
             <p class="mc-klein" data-nav="mc.benachrichtigen_hinweis"></p>
+            <label class="mc-schalter"><input type="checkbox" id="mcChatZeigen"><span data-nav="mc.chat_zeigen"></span></label>
             <div class="mc-zeilen" id="mcZeilen"></div>
             <form class="mc-zeile" id="mcSenden">
               <input id="mcChatText" maxlength="250" spellcheck="true" autocomplete="off">
