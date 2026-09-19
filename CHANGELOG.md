@@ -1,5 +1,8 @@
 # Changelog
 
+## 5.9.4 – 2026-09-19
+- Julia kann in Minecraft mit dem Eimer umgehen (Wasser/Lava aufnehmen und setzen, Milch trinken) und bleibt nach dem Verlassen-Knopf sicher weg - von selbst kommt sie nur nach echtem Absturz oder Rauswurf zurueck
+
 ## 5.9.3 – 2026-09-19
 - Minecraft-Tab zeigt jetzt Julias Inventar (was sie dabeihat) neben Leben, Hunger, Ort und Aufgabe
 

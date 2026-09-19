@@ -475,6 +475,32 @@ function gefahrReichweite(name) {
   return 7;
 }
 
+// --- Eimer (Wasser/Lava aufnehmen & setzen, Milch trinken) ---
+// Reine Zuordnung Aktion → welcher Eimer in die Hand muss, welche Quelle gesucht
+// wird und was hinterher im Eimer ist. Getestet; die eigentliche Ausführung
+// (anvisieren + benutzen) macht die Methode `eimer()`.
+const EIMER = {
+  wasser_aufnehmen: { hand: 'bucket', quelle: 'water', ergebnis: 'water_bucket' },
+  lava_aufnehmen: { hand: 'bucket', quelle: 'lava', ergebnis: 'lava_bucket' },
+  wasser_setzen: { hand: 'water_bucket', setzt: 'Wasser', ergebnis: 'bucket' },
+  lava_setzen: { hand: 'lava_bucket', setzt: 'Lava', ergebnis: 'bucket' },
+  milch: { hand: 'milk_bucket', trinken: true, ergebnis: 'bucket' },
+};
+const EIMER_ALIAS = {
+  wasser: 'wasser_aufnehmen', water: 'wasser_aufnehmen', wasser_holen: 'wasser_aufnehmen', auffuellen: 'wasser_aufnehmen',
+  lava: 'lava_aufnehmen', lava_holen: 'lava_aufnehmen',
+  wasser_platzieren: 'wasser_setzen', lava_platzieren: 'lava_setzen',
+  milch_trinken: 'milch', milk: 'milch', milch_holen: 'milch',
+};
+function eimerPlan(aktion) {
+  const a = String(aktion || '').toLowerCase().trim().replace(/\s+/g, '_');
+  const key = EIMER[a] ? a : EIMER_ALIAS[a];
+  if (!key || !EIMER[key]) {
+    throw new Error('Sag, was mit dem Eimer: wasser_aufnehmen, lava_aufnehmen, wasser_setzen, lava_setzen oder milch.');
+  }
+  return { aktion: key, ...EIMER[key] };
+}
+
 // Chat geht auf den eigenen Server – trotzdem keine Befehle (/op, /give …)
 // und keine Farb- oder Steuerzeichen.
 function chatText(text) {
@@ -720,6 +746,7 @@ class Minecraft extends EventEmitter {
   // gruppe: { name, passwort } – dieser Voice-Chat-Gruppe von selbst beitreten.
   async verbinden({ adresse, port = 25565, botname, besitzer, assistent, version, oeffentlich = false, konto = null, stimme = false, gruppe = null, jeder = false, erlaubte = [] } = {}) {
     clearTimeout(this.wiederTimer);
+    this.absichtlichWeg = false; // neuer, gewollter Beitritt → automatisches Wiederverbinden wieder erlaubt
     this._botWeg();
     this.letzteOptionen = { adresse, port, botname, besitzer, assistent, version, oeffentlich, konto, stimme, gruppe, jeder, erlaubte };
     this.autoGruppe = gruppe;
@@ -874,8 +901,11 @@ class Minecraft extends EventEmitter {
   }
 
   // Server verlassen, weil du es willst – kein Crash-Screen, kein Wiederversuch.
+  // Das Flag stellt sicher, dass sie NICHT von selbst wieder joint (nur ein neuer
+  // Beitritt oder ein echter Crash/Kick verbindet wieder) – Nutzerwunsch.
   trennen() {
     clearTimeout(this.wiederTimer);
+    this.absichtlichWeg = true;
     this.trennung = null;
     this._botWeg();
   }
@@ -956,6 +986,7 @@ class Minecraft extends EventEmitter {
   }
 
   _wiederVerbinden() {
+    if (this.absichtlichWeg) return; // per „Verlassen" gewollt getrennt → nicht von selbst zurück
     const t = this.trennung;
     if (!t || !this.letzteOptionen) return;
     if (t.versuch >= this.wiederPausen.length) {
@@ -1078,6 +1109,49 @@ class Minecraft extends EventEmitter {
       default:
         throw new Error(`Unbekannte Aufgabe "${art}".`);
     }
+  }
+
+  // Mit dem Eimer umgehen: Wasser/Lava aufnehmen oder setzen, Milch trinken.
+  // Läuft asynchron (anvisieren + benutzen) und liefert eine kurze Rückmeldung.
+  async eimer(aktion) {
+    if (!this.verbunden) throw new Error('Julia ist mit keinem Minecraft-Server verbunden.');
+    const bot = this.bot;
+    const plan = eimerPlan(aktion);
+    const inHand = bot.inventory.items().find((i) => i.name === plan.hand);
+    if (!inHand) {
+      const klartext = { bucket: 'einen leeren Eimer', water_bucket: 'einen Wassereimer', lava_bucket: 'einen Lavaeimer', milk_bucket: 'einen Milcheimer' }[plan.hand] || plan.hand;
+      throw new Error(`Dafür brauche ich ${klartext} im Inventar.`);
+    }
+    this._anhalten();
+    await bot.equip(inHand, 'hand');
+
+    // Milch: einfach trinken (hebt Effekte auf).
+    if (plan.trinken) {
+      await bot.consume();
+      return 'Ich habe die Milch getrunken.';
+    }
+
+    // Aufnehmen: die Quelle (Wasser/Lava) in der Nähe suchen, anschauen, benutzen.
+    if (plan.quelle) {
+      const quelle = bot.findBlock({ matching: (b) => b && b.name === plan.quelle, maxDistance: 4 });
+      if (!quelle) throw new Error(`Ich sehe ${plan.quelle === 'water' ? 'kein Wasser' : 'keine Lava'} in Reichweite (max. 4 Blöcke).`);
+      await bot.lookAt(quelle.position.offset(0.5, 0.5, 0.5), true);
+      await bot.activateItem();
+      await new Promise((r) => setTimeout(r, 250));
+      const ok = bot.inventory.items().some((i) => i.name === plan.ergebnis);
+      return ok
+        ? (plan.quelle === 'water' ? 'Ich habe Wasser aufgenommen.' : 'Ich habe Lava aufgenommen.')
+        : 'Ich habe es versucht – hat aber nicht sauber geklappt, bitte kurz prüfen.';
+    }
+
+    // Setzen: den anvisierten Block (bzw. den Block vor/unter mir) anschauen und
+    // den Eimer leeren. Wo nichts anvisiert ist, hilft ein Blick leicht nach unten.
+    const ziel = bot.blockAtCursor && bot.blockAtCursor(4);
+    if (ziel) await bot.lookAt(ziel.position.offset(0.5, 1, 0.5), true);
+    else await bot.look(bot.entity.yaw, 1.0, true); // nach unten schauen
+    await bot.activateItem();
+    await new Promise((r) => setTimeout(r, 250));
+    return `${plan.setzt} gesetzt.`;
   }
 
   status() {
@@ -2317,6 +2391,15 @@ const WERKZEUGE = [
     },
   },
   {
+    name: 'minecraft_eimer',
+    description: 'Mit dem Eimer umgehen. aktion: wasser_aufnehmen (leeren Eimer an Wasser in der Nähe füllen), lava_aufnehmen (an Lava), wasser_setzen (Wasser aus dem Wassereimer platzieren – z. B. zum sicheren Runterkommen, zum Löschen oder für Farmen), lava_setzen, milch (Milch trinken – hebt Vergiftung/Effekte auf). Der passende Eimer muss im Inventar sein; beim Aufnehmen muss die Quelle in Reichweite sein (max. 4 Blöcke).',
+    input_schema: { type: 'object', properties: { aktion: { type: 'string', enum: ['wasser_aufnehmen', 'lava_aufnehmen', 'wasser_setzen', 'lava_setzen', 'milch'] } }, required: ['aktion'] },
+    einstufen: () => gruen(),
+    async ausfuehren(e, ctx) {
+      return brauchtMinecraft(ctx).eimer(e.aktion);
+    },
+  },
+  {
     name: 'minecraft_chat',
     description: 'Eine Nachricht in den Minecraft-Chat schreiben. Keine Befehle mit /.',
     input_schema: { type: 'object', properties: { text: { type: 'string' } }, required: ['text'] },
@@ -2413,7 +2496,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,
