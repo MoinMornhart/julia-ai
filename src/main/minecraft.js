@@ -494,6 +494,16 @@ function schwimmHoch({ kopfImWasser, luft, sinkt }) {
   return !!kopfImWasser && (luft < 18 || !!sinkt);
 }
 
+// Reine Entscheidung, ob/was Julia essen soll (Überleben, Nutzer-Logs: sie starb
+// oft „nichts zum Heilen"). Bei wenig Leben früh einen Goldapfel; sonst die
+// Sättigung ≥18 halten, damit sich Leben von selbst regeneriert – so überlebt sie
+// das Erkunden/Graben deutlich besser. Gibt 'heilung' | 'essen' | null zurück.
+function essenPlan({ food, health, hatEssen, hatHeilung }) {
+  if (health <= 10 && hatHeilung) return 'heilung';
+  if (food <= 18 && hatEssen) return 'essen';
+  return null;
+}
+
 // --- Eimer (Wasser/Lava aufnehmen & setzen, Milch trinken) ---
 // Reine Zuordnung Aktion → welcher Eimer in die Hand muss, welche Quelle gesucht
 // wird und was hinterher im Eimer ist. Getestet; die eigentliche Ausführung
@@ -1363,8 +1373,9 @@ class Minecraft extends EventEmitter {
     // Hunger von selbst stillen, sobald der Balken sinkt – nur nicht mitten im
     // Duell (das regelt der Kampf). Ist das Leben knapp, hilft ein Goldapfel.
     if (!imDuell && this.ticks % 40 === 0) {
-      if (bot.health <= 8) { const g = this._essen(HEILEN); if (g) { this._essenMelden(g); return; } }
-      if (bot.food <= 16) { const g = this._essen(ESSEN); if (g) { this._essenMelden(g); return; } }
+      const plan = essenPlan({ food: bot.food, health: bot.health, hatEssen: this._hat(ESSEN), hatHeilung: this._hat(HEILEN) });
+      if (plan === 'heilung') { const g = this._essen(HEILEN); if (g) { this._essenMelden(g); return; } }
+      else if (plan === 'essen') { const g = this._essen(ESSEN); if (g) { this._essenMelden(g); return; } }
     }
     if (!a) return;
     const { GoalFollow } = this.pf.goals;
@@ -1396,7 +1407,7 @@ class Minecraft extends EventEmitter {
     } else if (a.art === 'jagen') {
       let ziel = a.zielId != null ? bot.entities[a.zielId] : null;
       if (!ziel || ziel.isValid === false) {
-        ziel = bot.nearestEntity((e) => a.tiere.includes(e.name) && e.position.distanceTo(bot.entity.position) < 32);
+        ziel = bot.nearestEntity((e) => a.tiere.includes(e.name) && e.position.distanceTo(bot.entity.position) < 48);
         a.zielId = ziel ? ziel.id : null;
       }
       if (!ziel || this.ticks > a.bis) {
@@ -2633,7 +2644,7 @@ function sollBenachrichtigen(art, modus = 'wichtige') {
 }
 
 module.exports = {
-  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig, EINMAL_BLOECKE, schwimmHoch,
+  Minecraft, WERKZEUGE, GROSSE_NETZWERKE, MC_WICHTIGE, sollBenachrichtigen, kickWiederverbinden, bedrohWert, gefahrReichweite, FERNKAEMPFER, eimerPlan, mlgNoetig, EINMAL_BLOECKE, schwimmHoch, essenPlan,
   kontoSpeicher, kontoAnmelden,
   adresseTeilen, adressePruefen, zielFinden, besteWaffe, schlagPause, besteRuestung, werkzeugArt, besteWerkzeug, blockNamen,
   istFeind, chatText, botName, anrede, befehlLesen, rauswurfText, frageLesen, hoerModus, hoerName, chatTeile, richtungAus, bauPlan, GESCHUETZT_ABBAU,

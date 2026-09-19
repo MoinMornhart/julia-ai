@@ -1,5 +1,8 @@
 # Changelog
 
+## 6.0.0 – 2026-09-19
+- Julia ueberlebt in Minecraft laenger - sie isst rechtzeitig und haelt die Saettigung hoch, damit sich Leben regeneriert (Goldapfel frueher), und sucht beim Jagen in groesserem Umkreis nach Tieren
+
 ## 5.9.9 – 2026-09-19
 - Im Minecraft-Tab lassen sich jetzt einzelne Spieler eintragen, auf die Julia zusaetzlich hoert (Hinzufuegen und Entfernen, gilt sofort), und die Chat-Nachrichten im Tab per Schalter ausblenden
 
