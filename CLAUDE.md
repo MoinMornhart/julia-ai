@@ -1,3 +1,5 @@
+Lies zuerst den Projektstand: @STAND.md
+
 # CLAUDE.md – Leitfaden & Fehler-Journal für Julia
 
 Diese Datei ist für Claude bzw. den Agenten, der an **Julia** (julia-ai) arbeitet.
